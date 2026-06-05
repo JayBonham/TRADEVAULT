@@ -477,6 +477,16 @@ function findReconv(flow, idx, buttonStep) {
         const tp = idx[s.target];
         return (tp!=null && tp>bpos) ? tp : Infinity;
       }
+      if (s.type==='buttons') {
+        const opts = s.options||[];
+        if (opts.length===1 && opts[0].goto) {
+          // Single-option buttons acts like a goto — follow it
+          const tp = idx[opts[0].goto];
+          return (tp!=null && tp>bpos) ? tp : Infinity;
+        }
+        // Multi-option buttons: this arm branches again here — treat as exit at this step
+        return pos;
+      }
       pos++;
     }
     return pos!=null ? pos : flow.length;
