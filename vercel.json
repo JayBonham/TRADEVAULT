@@ -2,6 +2,9 @@
   "functions": {
     "api/telegram.py": {
       "maxDuration": 30
+    },
+    "api/leads.py": {
+      "maxDuration": 10
     }
   }
 }
