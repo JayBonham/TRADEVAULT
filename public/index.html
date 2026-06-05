@@ -577,7 +577,9 @@ function renderTree(nodes, depth=0) {
                 <div class="arm-label">${esc(arm.label)}</div>
                 <div class="w-px bg-s-500" style="height:12px"></div>
                 ${renderTree(arm.nodes, depth+1)}
-                ${arm.nodes.length ? renderConnInArm(arm) : ''}
+                ${arm.nodes.length
+                  ? renderConnInArm(arm)
+                  : `<div class="fconn"><div class="fconn-line"></div><button class="add-btn" onclick="showAdd(event,'__arm__${esc(node.step.id)}:${ai}')">+</button><div class="fconn-line"></div></div>`}
               </div>`).join('')}
           </div>
           <div class="bmerge" data-merge="${esc(node.step.id)}"></div>
@@ -589,11 +591,12 @@ function renderTree(nodes, depth=0) {
 }
 
 function renderConnInArm(arm) {
-  // + button at end of an arm (adds after the last step in that arm)
   const lastStep = lastStepInArm(arm.nodes);
   if (!lastStep) return '';
-  // Only show if last step is NOT a goto (gotos are dead ends)
   if (lastStep.step.type==='goto') return '';
+  // Suppress the outer + connector when the terminal node is a branch with all-empty arms
+  // (each empty arm already renders its own + button inline)
+  if (lastStep.kind==='branch' && lastStep.arms.every(a=>!a.nodes.length)) return '';
   return renderConn(lastStep.step.id);
 }
 
@@ -601,7 +604,6 @@ function lastStepInArm(nodes) {
   if (!nodes||!nodes.length) return null;
   const last = nodes[nodes.length-1];
   if (last.kind==='branch') {
-    // recurse into last arm
     for (let i=last.arms.length-1; i>=0; i--) {
       const l = lastStepInArm(last.arms[i].nodes);
       if (l) return l;
@@ -763,29 +765,31 @@ function buildPanelForm(step) {
       <div class="panel-field">${lbl('Save As')}${fld('p-save_as',step.save_as,'e.g. full_name','font-mono text-xs')}</div>
       <div class="panel-field">${lbl('Validation')}${sel('p-validate',[{v:'',l:'None'},{v:'email',l:'Email'}],step.validate||'')}</div>`;
   } else if (step.type==='buttons') {
+    const datalistOpts = allIds.map(id=>`<option value="${id}">`).join('');
     const opts = (step.options||[]).map((o,i)=>`
       <div class="btn-opt-row flex items-center gap-2 mb-2">
         <input type="text" value="${esc(o.label)}" placeholder="Label"
           class="opt-lbl panel-input flex-1" style="padding:7px 10px;font-size:12px"/>
         <span class="text-gray-600 text-xs flex-shrink-0">→</span>
-        <select class="opt-goto panel-input panel-select" style="width:130px;padding:7px 10px;font-size:11px;font-family:monospace">
-          <option value="">— step id —</option>
-          ${allIds.map(id=>`<option value="${id}" ${o.goto===id?'selected':''}>${id}</option>`).join('')}
-        </select>
+        <input type="text" value="${esc(o.goto)}" placeholder="step_id" list="goto-suggestions"
+          class="opt-goto panel-input font-mono text-xs" style="width:130px;padding:7px 10px"/>
         <button onclick="this.closest('.btn-opt-row').remove()" class="text-gray-600 hover:text-red-400 transition-colors text-sm flex-shrink-0">✕</button>
       </div>`).join('');
     typeFields = `
+      <datalist id="goto-suggestions">${datalistOpts}</datalist>
       <div class="panel-field">${lbl('Message Text')}${ta('p-text',step.text,'Text above the buttons…',2)}</div>
       <div class="panel-field">${lbl('Button Options')}
         <div id="opts-list">${opts}</div>
         <button onclick="addOptRow()" class="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Add option</button>
       </div>`;
   } else if (step.type==='goto') {
-    const gopts = allIds.filter(id=>id!==step.id).map(id=>`<option value="${id}" ${step.target===id?'selected':''}>${id}</option>`).join('');
-    typeFields = `<div class="panel-field">${lbl('Jump To Step')}
-      <select id="p-target" class="panel-input panel-select font-mono text-xs">
-        <option value="">— choose step —</option>${gopts}
-      </select></div>`;
+    const datalistOpts2 = allIds.filter(id=>id!==step.id).map(id=>`<option value="${id}">`).join('');
+    typeFields = `
+      <datalist id="goto-suggestions">${datalistOpts2}</datalist>
+      <div class="panel-field">${lbl('Jump To Step')}
+      <input type="text" id="p-target" value="${esc(step.target||'')}" placeholder="step_id" list="goto-suggestions"
+        class="panel-input font-mono text-xs" style="width:100%;padding:8px 10px"/>
+      </div>`;
   } else if (step.type==='photo'||step.type==='video_note') {
     typeFields = `
       <div class="panel-field">${lbl('File ID or URL')}${fld('p-file',step.file||step.url,'Telegram file_id or https://…','font-mono text-xs')}</div>
@@ -797,15 +801,16 @@ function buildPanelForm(step) {
 
 function addOptRow() {
   const allIds = builderFlow.map(s=>s.id).filter(Boolean);
+  // refresh the datalist with current IDs
+  const dl = document.getElementById('goto-suggestions');
+  if (dl) dl.innerHTML = allIds.map(id=>`<option value="${id}">`).join('');
   const div = document.createElement('div');
   div.innerHTML = `
     <div class="btn-opt-row flex items-center gap-2 mb-2">
       <input type="text" placeholder="Label" class="opt-lbl panel-input flex-1" style="padding:7px 10px;font-size:12px"/>
       <span class="text-gray-600 text-xs flex-shrink-0">→</span>
-      <select class="opt-goto panel-input panel-select" style="width:130px;padding:7px 10px;font-size:11px;font-family:monospace">
-        <option value="">— step id —</option>
-        ${allIds.map(id=>`<option value="${id}">${id}</option>`).join('')}
-      </select>
+      <input type="text" placeholder="step_id" list="goto-suggestions"
+        class="opt-goto panel-input font-mono text-xs" style="width:130px;padding:7px 10px"/>
       <button onclick="this.closest('.btn-opt-row').remove()" class="text-gray-600 hover:text-red-400 transition-colors text-sm flex-shrink-0">✕</button>
     </div>`;
   document.getElementById('opts-list')?.appendChild(div.firstElementChild);
@@ -904,14 +909,29 @@ function commitAdd(type) {
   };
   const newStep = {id:`${type}_${builderFlow.length+1}`,type,...(defaults[type]||{})};
 
+  // Detect add-to-empty-arm: afterId = '__arm__<btnStepId>:<armIndex>'
+  let armCtx = null;
+  if (addAfterId && addAfterId.startsWith('__arm__')) {
+    const raw = addAfterId.slice(7);
+    const colon = raw.lastIndexOf(':');
+    armCtx = {btnId: raw.slice(0, colon), armIdx: parseInt(raw.slice(colon+1))};
+    addAfterId = armCtx.btnId; // insert after the buttons step
+  }
+
   if (addAfterId===null) {
     builderFlow.unshift(newStep);
   } else {
-    // Find the step with this id, or the one whose __after matches
     const cleanId = addAfterId.replace('__after','');
     const pos = builderFlow.findIndex(s=>s.id===cleanId);
     if (pos>=0) builderFlow.splice(pos+1,0,newStep);
     else builderFlow.push(newStep);
+  }
+
+  // Wire the button option goto to the new step
+  if (armCtx) {
+    const btn = builderFlow.find(s=>s.id===armCtx.btnId);
+    if (btn && btn.options && btn.options[armCtx.armIdx] != null)
+      btn.options[armCtx.armIdx].goto = newStep.id;
   }
 
   builderDirty = true;
