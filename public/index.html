@@ -707,27 +707,17 @@ function drawBranchSVG() {
     const bid  = grp.dataset.branch;
     const src  = document.querySelector(`.fnode[data-id="${CSS.escape(bid)}"]`);
     const arms = grp.querySelectorAll(`.barm[data-for="${CSS.escape(bid)}"]`);
-    const mrg  = grp.querySelector(`.bmerge[data-merge="${CSS.escape(bid)}"]`);
     if (!src||!arms.length) return;
 
     const ss = rc(src);
 
-    // source → top of each arm
+    // Draw a simple split line: source bottom → top of each arm column
+    // No merge/join lines — branches stay in their own columns unless an
+    // explicit goto step points somewhere.
     arms.forEach(arm => {
       const ar = rc(arm);
       curve(ss.cx, ss.bot, ar.cx, ar.top);
     });
-
-    // bottom of each arm's last node → merge point
-    if (mrg) {
-      const mr = rc(mrg);
-      arms.forEach(arm => {
-        const cards = arm.querySelectorAll('.fnode');
-        if (!cards.length) return;
-        const last = rc(cards[cards.length-1]);
-        curve(rc(arm).cx, last.bot, mr.cx, mr.top);
-      });
-    }
   });
 }
 
