@@ -498,13 +498,19 @@ function findReconv(flow, idx, buttonStep) {
 function buildTree(flow) {
   if (!flow||!flow.length) return [];
   const idx = buildIdx(flow);
+  // Global set: once a flat-array position is rendered in any arm, skip it everywhere else.
+  // This prevents reconvergence-point walking from re-rendering arm content that sits at
+  // higher flat-array positions than the reconv step.
+  const placed = new Set();
 
   function seg(startPos, stopAt) {
     const nodes = [];
     const seen = new Set();
     let pos = startPos;
     while (pos!=null && pos<flow.length && pos!==stopAt && !seen.has(pos)) {
+      if (placed.has(pos)) { pos++; continue; } // already rendered in another arm
       seen.add(pos);
+      placed.add(pos);
       const step = flow[pos];
       if (step.type==='goto') { nodes.push({kind:'step',step,pos}); break; }
       if (step.type==='buttons') {
