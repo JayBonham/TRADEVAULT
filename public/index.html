@@ -514,10 +514,19 @@ function buildTree(flow) {
           break;
         }
         const reconv = findReconv(flow,idx,step);
-        const arms = (step.options||[]).map(opt=>({
-          label:opt.label, goto:opt.goto,
-          nodes: idx[opt.goto]!=null ? seg(idx[opt.goto], reconv??stopAt) : []
-        }));
+        // Bound each arm at the NEXT arm's flat-array start so arms can't steal each other's steps
+        const armStarts = (step.options||[])
+          .map(o=>idx[o.goto]).filter(p=>p!=null).sort((a,b)=>a-b);
+        const arms = (step.options||[]).map(opt=>{
+          const aStart = idx[opt.goto];
+          if (aStart==null) return {label:opt.label,goto:opt.goto,nodes:[]};
+          const nextArmStart = armStarts.find(p=>p>aStart) ?? null;
+          const segStop = Math.min(
+            reconv??Infinity, nextArmStart??Infinity, stopAt??Infinity
+          );
+          return {label:opt.label, goto:opt.goto,
+            nodes: seg(aStart, segStop===Infinity?null:segStop)};
+        });
         nodes.push({kind:'branch',step,pos,arms,reconv});
         if (reconv!=null && reconv<flow.length) { pos=reconv; continue; }
         break;
