@@ -18,17 +18,20 @@
   </script>
   <style>
     body { background-color: #08080f; }
-    .fade-in { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #32324a; border-radius: 3px; }
+    .fade-in { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#32324a; border-radius:3px; }
+    .tab-active { background:#26263a; color:#fff; }
+    .tab-inactive { color:#6b7280; }
+    .tab-inactive:hover { color:#d1d5db; }
   </style>
 </head>
 <body class="text-gray-100 min-h-screen antialiased">
 
   <!-- Auth Modal -->
-  <div id="authModal" class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 hidden">
+  <div id="authModal" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center z-50 hidden">
     <div class="bg-surface-700 border border-surface-500 rounded-2xl p-8 w-full max-w-sm mx-4 fade-in">
       <div class="flex items-center gap-3 mb-6">
         <div class="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center">
@@ -41,17 +44,11 @@
           <p class="text-gray-500 text-xs">TradeVault Bot</p>
         </div>
       </div>
-      <input
-        id="tokenInput"
-        type="password"
-        placeholder="Enter your dashboard token"
-        class="w-full bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-xl px-4 py-3 text-sm outline-none transition-colors mb-3"
-      />
+      <input id="tokenInput" type="password" placeholder="Enter your dashboard token"
+        class="w-full bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-xl px-4 py-3 text-sm outline-none transition-colors mb-2"/>
       <p id="authError" class="text-red-400 text-xs mb-3 hidden">Invalid token — try again.</p>
-      <button
-        onclick="submitToken()"
-        class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl py-3 text-sm font-medium transition-colors"
-      >
+      <button onclick="submitToken()"
+        class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl py-3 text-sm font-medium transition-colors">
         Enter Dashboard
       </button>
     </div>
@@ -62,7 +59,7 @@
     <div class="max-w-7xl mx-auto px-6 py-8">
 
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-blue-600/20 flex items-center justify-center">
             <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
@@ -74,228 +71,611 @@
             <p class="text-gray-600 text-xs mt-0.5">Bot Dashboard</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <button onclick="signOut()" class="text-gray-700 hover:text-gray-400 text-xs transition-colors">Sign out</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-1 bg-surface-800 border border-surface-600 p-1 rounded-xl w-fit mb-6">
+        <button id="tab-leads" onclick="switchTab('leads')"
+          class="tab-active px-5 py-2 rounded-lg text-sm font-medium transition-colors">
+          Leads
+        </button>
+        <button id="tab-builder" onclick="switchTab('builder')"
+          class="tab-inactive px-5 py-2 rounded-lg text-sm font-medium transition-colors">
+          Flow Builder
+        </button>
+      </div>
+
+      <!-- ═══════════════════ LEADS PANEL ═══════════════════ -->
+      <div id="panel-leads">
+
+        <div class="flex items-center justify-between mb-5">
           <span id="lastUpdated" class="text-gray-700 text-xs"></span>
-          <button
-            onclick="loadLeads()"
-            id="refreshBtn"
-            class="flex items-center gap-2 bg-surface-700 hover:bg-surface-600 border border-surface-500 rounded-xl px-4 py-2 text-sm transition-colors"
-          >
+          <button onclick="loadLeads()" id="refreshBtn"
+            class="flex items-center gap-2 bg-surface-700 hover:bg-surface-600 border border-surface-500 rounded-xl px-4 py-2 text-sm transition-colors">
             <svg id="refreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
             Refresh
           </button>
-          <button onclick="signOut()" class="text-gray-700 hover:text-gray-400 text-xs transition-colors">Sign out</button>
         </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-surface-700 border border-surface-500 rounded-2xl p-5">
+            <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Total Leads</p>
+            <p id="statTotal" class="text-4xl font-bold">—</p>
+          </div>
+          <div class="bg-surface-700 border border-surface-500 rounded-2xl p-5">
+            <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Completed</p>
+            <p id="statDone" class="text-4xl font-bold text-green-400">—</p>
+          </div>
+          <div class="bg-surface-700 border border-surface-500 rounded-2xl p-5">
+            <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Today</p>
+            <p id="statToday" class="text-4xl font-bold text-blue-400">—</p>
+          </div>
+        </div>
+
+        <div class="relative mb-4">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="search" type="text" placeholder="Search by name, email or username…"
+            oninput="renderTable()"
+            class="w-full bg-surface-700 border border-surface-500 focus:border-blue-500 rounded-xl pl-11 pr-4 py-3 text-sm outline-none transition-colors"/>
+        </div>
+
+        <div class="bg-surface-700 border border-surface-500 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-600">
+                  <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">User</th>
+                  <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Name</th>
+                  <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Email</th>
+                  <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Choices</th>
+                  <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Status</th>
+                  <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Last Active</th>
+                  <th class="px-6 py-4"></th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-center text-gray-800 text-xs mt-4">Auto-refreshes every 30 seconds</p>
       </div>
 
-      <!-- Stats -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div class="bg-surface-700 border border-surface-500 rounded-2xl p-5">
-          <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Total Leads</p>
-          <p id="statTotal" class="text-4xl font-bold">—</p>
+      <!-- ═══════════════════ BUILDER PANEL ═══════════════════ -->
+      <div id="panel-builder" class="hidden">
+
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="font-semibold text-white">Flow Builder</h2>
+            <p class="text-gray-600 text-xs mt-0.5">Edit the bot's conversation sequence. Changes go live instantly on Save.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="loadBuilder()" class="text-gray-600 hover:text-gray-300 text-xs transition-colors">↺ Reload</button>
+            <button id="save-flow-btn" onclick="saveFlow()" disabled
+              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-5 py-2.5 text-sm font-medium transition-colors opacity-40 cursor-not-allowed">
+              Save Flow
+            </button>
+          </div>
         </div>
-        <div class="bg-surface-700 border border-surface-500 rounded-2xl p-5">
-          <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Completed</p>
-          <p id="statDone" class="text-4xl font-bold text-green-400">—</p>
+
+        <!-- Step list -->
+        <div id="builder-steps" class="space-y-2 mb-4">
+          <div class="text-center py-16 text-gray-700">
+            <svg class="w-5 h-5 mx-auto mb-3 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            Loading flow…
+          </div>
         </div>
-        <div class="bg-surface-700 border border-surface-500 rounded-2xl p-5">
-          <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Today</p>
-          <p id="statToday" class="text-4xl font-bold text-blue-400">—</p>
+
+        <!-- Add step -->
+        <div class="relative inline-block">
+          <button onclick="toggleAddMenu()" id="add-btn"
+            class="flex items-center gap-2 bg-surface-700 hover:bg-surface-600 border border-surface-500 border-dashed rounded-xl px-5 py-3 text-sm text-gray-400 hover:text-gray-200 transition-colors">
+            <span class="text-lg leading-none">+</span> Add Step
+          </button>
+          <div id="add-menu" class="hidden absolute left-0 top-full mt-2 bg-surface-700 border border-surface-500 rounded-xl shadow-2xl overflow-hidden z-10 w-48 fade-in">
+            <button onclick="addStep('message')"    class="add-menu-item">💬  Message</button>
+            <button onclick="addStep('input')"      class="add-menu-item">✏️  Input</button>
+            <button onclick="addStep('buttons')"    class="add-menu-item">🔘  Buttons</button>
+            <button onclick="addStep('goto')"       class="add-menu-item">↪️  Goto</button>
+            <button onclick="addStep('photo')"      class="add-menu-item">📷  Photo</button>
+            <button onclick="addStep('video_note')" class="add-menu-item">🎥  Video Note</button>
+          </div>
         </div>
+
       </div>
-
-      <!-- Search -->
-      <div class="relative mb-4">
-        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input
-          id="search"
-          type="text"
-          placeholder="Search by name, email or username…"
-          oninput="renderTable()"
-          class="w-full bg-surface-700 border border-surface-500 focus:border-blue-500 rounded-xl pl-11 pr-4 py-3 text-sm outline-none transition-colors"
-        />
-      </div>
-
-      <!-- Table -->
-      <div class="bg-surface-700 border border-surface-500 rounded-2xl overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-surface-600">
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">User</th>
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Name</th>
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Email</th>
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Choices</th>
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Status</th>
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Last Active</th>
-                <th class="px-6 py-4"></th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <tr>
-                <td colspan="7" class="px-6 py-20 text-center text-gray-700">
-                  <svg class="w-6 h-6 mx-auto mb-3 animate-spin text-gray-700" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Loading…
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <p class="text-center text-gray-800 text-xs mt-6">Auto-refreshes every 30 seconds</p>
-
     </div>
   </div>
 
+  <style>
+    .add-menu-item {
+      display:block; width:100%; text-align:left;
+      padding: 0.625rem 1rem; font-size:0.875rem; color:#d1d5db;
+      transition:background .15s;
+    }
+    .add-menu-item:hover { background:#32324a; color:#fff; }
+  </style>
+
   <script>
-    let allLeads = [];
+  // ─── Auth ────────────────────────────────────────────────────────────────
+  const getToken = () => localStorage.getItem('tv_token') || '';
 
-    const getToken = () => localStorage.getItem('tv_token') || '';
+  function submitToken() {
+    const val = document.getElementById('tokenInput').value.trim();
+    if (!val) return;
+    localStorage.setItem('tv_token', val);
+    document.getElementById('authError').classList.add('hidden');
+    document.getElementById('authModal').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    loadLeads();
+  }
 
-    function submitToken() {
-      const val = document.getElementById('tokenInput').value.trim();
-      if (!val) return;
-      localStorage.setItem('tv_token', val);
-      document.getElementById('authError').classList.add('hidden');
-      loadLeads();
+  function signOut() {
+    localStorage.removeItem('tv_token');
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('authModal').classList.remove('hidden');
+    document.getElementById('tokenInput').value = '';
+  }
+
+  document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitToken(); });
+
+  // ─── Tab switching ───────────────────────────────────────────────────────
+  function switchTab(tab) {
+    document.getElementById('panel-leads').classList.toggle('hidden', tab !== 'leads');
+    document.getElementById('panel-builder').classList.toggle('hidden', tab !== 'builder');
+    document.getElementById('tab-leads').className   = 'px-5 py-2 rounded-lg text-sm font-medium transition-colors ' + (tab === 'leads'   ? 'tab-active' : 'tab-inactive');
+    document.getElementById('tab-builder').className = 'px-5 py-2 rounded-lg text-sm font-medium transition-colors ' + (tab === 'builder' ? 'tab-active' : 'tab-inactive');
+    document.getElementById('add-menu').classList.add('hidden');
+    if (tab === 'builder' && builderFlow.length === 0) loadBuilder();
+  }
+
+  // ─── Leads ───────────────────────────────────────────────────────────────
+  let allLeads = [];
+
+  async function loadLeads() {
+    const token = getToken();
+    if (!token) return;
+    document.getElementById('refreshIcon').classList.add('animate-spin');
+    try {
+      const res = await fetch(`/api/leads?token=${encodeURIComponent(token)}`);
+      if (res.status === 401) { document.getElementById('authError').classList.remove('hidden'); signOut(); return; }
+      allLeads = await res.json();
+      updateStats();
+      renderTable();
+      document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    } catch(e) { console.error(e); }
+    finally { document.getElementById('refreshIcon').classList.remove('animate-spin'); }
+  }
+
+  function updateStats() {
+    const today = new Date().toDateString();
+    document.getElementById('statTotal').textContent = allLeads.length;
+    document.getElementById('statDone').textContent  = allLeads.filter(l => l.done).length;
+    document.getElementById('statToday').textContent = allLeads.filter(l => l.updated_at && new Date(l.updated_at).toDateString() === today).length;
+  }
+
+  function renderTable() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const leads = q ? allLeads.filter(l =>
+      (l.username||'').toLowerCase().includes(q) ||
+      (l.full_name||'').toLowerCase().includes(q) ||
+      (l.email||'').toLowerCase().includes(q)
+    ) : allLeads;
+
+    const tbody = document.getElementById('tableBody');
+    if (!leads.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">${q ? 'No results for "'+q+'".' : 'No leads yet.'}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = leads.map(lead => {
+      const initials = ((lead.full_name||lead.username||'?')+' ').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const choices  = (lead.choices||[]).length ? lead.choices.join(' → ') : '—';
+      const ago      = lead.updated_at ? timeAgo(new Date(lead.updated_at)) : '—';
+      const tgBtn    = lead.username
+        ? `<a href="https://t.me/${encodeURIComponent(lead.username)}" target="_blank" rel="noopener"
+             class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white rounded-lg px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap">
+             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/></svg>
+             Open Chat
+           </a>`
+        : `<span class="text-gray-700 text-xs">No username</span>`;
+      const badge = lead.done
+        ? `<span class="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2.5 py-1 text-xs"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>Done</span>`
+        : `<span class="inline-flex items-center gap-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2.5 py-1 text-xs"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>Active</span>`;
+      return `
+        <tr class="border-t border-surface-600 hover:bg-surface-600/40 transition-colors">
+          <td class="px-6 py-4"><div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600/30 to-purple-600/30 border border-blue-500/20 text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">${initials}</div>
+            <span class="text-gray-400 text-xs">${lead.username ? '@'+lead.username : 'ID '+lead.chat_id}</span>
+          </div></td>
+          <td class="px-6 py-4 font-medium text-gray-200">${lead.full_name||'—'}</td>
+          <td class="px-6 py-4 text-gray-400">${lead.email||'—'}</td>
+          <td class="px-6 py-4 text-gray-500 text-xs max-w-[200px] truncate" title="${choices}">${choices}</td>
+          <td class="px-6 py-4">${badge}</td>
+          <td class="px-6 py-4 text-gray-600 text-xs whitespace-nowrap">${ago}</td>
+          <td class="px-6 py-4">${tgBtn}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function timeAgo(date) {
+    const s = Math.floor((Date.now()-date)/1000);
+    if (s < 60) return 'Just now';
+    if (s < 3600) return Math.floor(s/60)+'m ago';
+    if (s < 86400) return Math.floor(s/3600)+'h ago';
+    return Math.floor(s/86400)+'d ago';
+  }
+
+  setInterval(loadLeads, 30000);
+
+  // ─── Builder ─────────────────────────────────────────────────────────────
+  let builderFlow = [];
+  let editingIdx  = -1;
+  let builderDirty = false;
+
+  const TYPE_META = {
+    message:    { label:'Message',    icon:'💬', color:'blue'   },
+    input:      { label:'Input',      icon:'✏️',  color:'purple' },
+    buttons:    { label:'Buttons',    icon:'🔘', color:'green'  },
+    goto:       { label:'Goto',       icon:'↪️',  color:'yellow' },
+    photo:      { label:'Photo',      icon:'📷', color:'pink'   },
+    video_note: { label:'Video',      icon:'🎥', color:'pink'   },
+  };
+
+  const BADGE = {
+    blue:   'bg-blue-500/15 text-blue-400 border-blue-500/30',
+    purple: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+    green:  'bg-green-500/15 text-green-400 border-green-500/30',
+    yellow: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+    pink:   'bg-pink-500/15 text-pink-400 border-pink-500/30',
+    gray:   'bg-gray-500/15 text-gray-400 border-gray-500/30',
+  };
+
+  async function loadBuilder() {
+    const token = getToken();
+    if (!token) return;
+    document.getElementById('builder-steps').innerHTML = `
+      <div class="text-center py-16 text-gray-700">
+        <svg class="w-5 h-5 mx-auto mb-3 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>Loading flow…</div>`;
+    try {
+      const res = await fetch(`/api/flow?token=${encodeURIComponent(token)}`);
+      if (res.status === 401) { signOut(); return; }
+      builderFlow  = await res.json();
+      editingIdx   = -1;
+      builderDirty = false;
+      renderBuilder();
+    } catch(e) { console.error('Load flow error:', e); }
+  }
+
+  function renderBuilder() {
+    const container = document.getElementById('builder-steps');
+    const allIds = builderFlow.map(s => s.id).filter(Boolean);
+
+    if (!builderFlow.length) {
+      container.innerHTML = `<div class="text-center py-16 text-gray-700 border border-dashed border-surface-500 rounded-xl">
+        <p class="text-3xl mb-2">📋</p><p class="text-sm">No steps yet. Click <strong>+ Add Step</strong> to begin.</p></div>`;
+      updateSaveBtn(); return;
     }
 
-    function signOut() {
-      localStorage.removeItem('tv_token');
-      document.getElementById('app').classList.add('hidden');
-      document.getElementById('authModal').classList.remove('hidden');
-      document.getElementById('tokenInput').value = '';
+    container.innerHTML = builderFlow.map((step, idx) => {
+      const meta  = TYPE_META[step.type] || { label:step.type, icon:'?', color:'gray' };
+      const badge = BADGE[meta.color] || BADGE.gray;
+      const prev  = stepPreview(step);
+      const open  = editingIdx === idx;
+
+      return `
+        <div class="border ${open ? 'border-blue-500/40 bg-surface-600/30' : 'border-surface-500 bg-surface-700'} rounded-xl overflow-hidden transition-colors">
+          <div class="flex items-center gap-3 px-4 py-3 cursor-default">
+            <span class="text-gray-700 text-xs w-5 text-right flex-shrink-0 font-mono">${idx+1}</span>
+            <span class="inline-flex items-center gap-1.5 border ${badge} rounded-lg px-2.5 py-1 text-xs font-medium flex-shrink-0 whitespace-nowrap">
+              ${meta.icon} ${meta.label}
+            </span>
+            <span class="text-gray-400 text-sm truncate flex-1 min-w-0">${esc(prev)}</span>
+            <div class="flex items-center gap-0.5 flex-shrink-0">
+              <button onclick="moveStep(${idx},-1)" ${idx===0?'disabled':''} title="Move up"
+                class="w-7 h-7 rounded-lg text-gray-600 hover:text-white hover:bg-surface-500 disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center">↑</button>
+              <button onclick="moveStep(${idx},1)" ${idx===builderFlow.length-1?'disabled':''} title="Move down"
+                class="w-7 h-7 rounded-lg text-gray-600 hover:text-white hover:bg-surface-500 disabled:opacity-20 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center">↓</button>
+              <button onclick="toggleEdit(${idx})" title="Edit"
+                class="w-7 h-7 rounded-lg ${open?'text-blue-400 bg-blue-500/15':'text-gray-500 hover:text-white hover:bg-surface-500'} transition-colors text-sm flex items-center justify-center">✏️</button>
+              <button onclick="deleteStep(${idx})" title="Delete"
+                class="w-7 h-7 rounded-lg text-gray-700 hover:text-red-400 hover:bg-red-500/10 transition-colors text-sm flex items-center justify-center">🗑</button>
+            </div>
+          </div>
+          ${open ? renderEditor(step, idx, allIds) : ''}
+        </div>`;
+    }).join('');
+
+    updateSaveBtn();
+  }
+
+  function stepPreview(step) {
+    const t = (s,n) => s && s.length>n ? s.slice(0,n)+'…' : (s||'');
+    switch(step.type) {
+      case 'message':    return t(step.text,80);
+      case 'input':      return 'Asks: '+t(step.prompt,70);
+      case 'buttons':    return t(step.text,50)+(step.options ? ` · ${step.options.length} options` : '');
+      case 'goto':       return '→ '+(step.target||'?');
+      case 'photo':      return '📷 '+(step.file||step.url||'no file set');
+      case 'video_note': return '🎥 '+(step.file||step.url||'no file set');
+      default:           return step.id||'';
+    }
+  }
+
+  function renderEditor(step, idx, allIds) {
+    const delay = step.delay ?? 0.8;
+    const fld = (id, val, ph='', extra='') =>
+      `<input type="text" id="${id}" value="${esc(val||'')}" placeholder="${ph}"
+        class="w-full bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-lg px-3 py-2 text-sm outline-none transition-colors ${extra}"/>`;
+    const ta = (id, val, ph='', rows=3) =>
+      `<textarea id="${id}" rows="${rows}" placeholder="${ph}"
+        class="w-full bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-lg px-3 py-2 text-sm outline-none transition-colors resize-none">${esc(val||'')}</textarea>`;
+    const lbl = (text) => `<label class="block text-xs text-gray-500 mb-1.5">${text}</label>`;
+
+    const header = `
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>${lbl('Step ID')}${fld('edit-id', step.id, 'step_id', 'font-mono')}</div>
+        <div>${lbl('Delay (seconds)')}
+          <div class="flex items-center gap-2 mt-1">
+            <input type="range" id="edit-delay" min="0" max="3" step="0.1" value="${delay}"
+              oninput="document.getElementById('edit-delay-val').textContent=parseFloat(this.value).toFixed(1)+'s'"
+              class="flex-1 accent-blue-500 h-1.5"/>
+            <span id="edit-delay-val" class="text-xs text-gray-500 w-8 text-right">${parseFloat(delay).toFixed(1)}s</span>
+          </div>
+        </div>
+      </div>`;
+
+    let body = '';
+    if (step.type === 'message') {
+      body = `<div class="mb-4">${lbl('Message Text')}${ta('edit-text', step.text, 'Your message…')}</div>`;
+
+    } else if (step.type === 'input') {
+      body = `
+        <div class="mb-4">${lbl('Prompt')}${ta('edit-prompt', step.prompt, 'What do you want to ask?', 2)}</div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>${lbl('Save As (variable)')}${fld('edit-save_as', step.save_as, 'e.g. full_name', 'font-mono')}</div>
+          <div>${lbl('Validation')}
+            <select id="edit-validate" class="w-full bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-lg px-3 py-2 text-sm outline-none transition-colors">
+              <option value="" ${!step.validate?'selected':''}>None</option>
+              <option value="email" ${step.validate==='email'?'selected':''}>Email</option>
+            </select>
+          </div>
+        </div>`;
+
+    } else if (step.type === 'buttons') {
+      const opts = (step.options||[]).map((o,i) => optionRow(i, o.label, o.goto, allIds)).join('');
+      body = `
+        <div class="mb-4">${lbl('Message Text')}${ta('edit-text', step.text, 'Text above the buttons…', 2)}</div>
+        <div class="mb-4">
+          ${lbl('Button Options')}
+          <div id="options-list" class="space-y-2">${opts}</div>
+          <button onclick="addOptionRow()" class="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Add option</button>
+        </div>`;
+
+    } else if (step.type === 'goto') {
+      const opts = allIds.filter(id=>id!==step.id).map(id=>`<option value="${id}" ${step.target===id?'selected':''}>${id}</option>`).join('');
+      body = `
+        <div class="mb-4">${lbl('Jump To Step')}
+          <select id="edit-target" class="w-full bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-lg px-3 py-2 text-sm outline-none transition-colors font-mono">
+            <option value="">— choose step —</option>${opts}
+          </select>
+        </div>`;
+
+    } else if (step.type === 'photo' || step.type === 'video_note') {
+      body = `
+        <div class="mb-4">${lbl('File ID or URL')}${fld('edit-file', step.file||step.url, 'Telegram file_id or https://…', 'font-mono')}</div>
+        ${step.type==='photo' ? `<div class="mb-4">${lbl('Caption (optional)')}${fld('edit-caption', step.caption, '')}</div>` : ''}`;
     }
 
-    async function loadLeads() {
-      const token = getToken();
-      if (!token) {
-        document.getElementById('authModal').classList.remove('hidden');
-        return;
-      }
+    return `
+      <div class="border-t border-surface-500 px-4 pb-4 pt-4 fade-in">
+        ${header}${body}
+        <div class="flex justify-end">
+          <button onclick="saveEdit(${idx})"
+            class="bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-5 py-2 text-sm font-medium transition-colors">
+            Done
+          </button>
+        </div>
+      </div>`;
+  }
 
-      const icon = document.getElementById('refreshIcon');
-      icon.classList.add('animate-spin');
+  function optionRow(idx, label, gotoVal, allIds) {
+    const opts = allIds.map(id=>`<option value="${id}" ${gotoVal===id?'selected':''}>${id}</option>`).join('');
+    return `
+      <div class="btn-option-row flex items-center gap-2">
+        <input type="text" placeholder="Button label" value="${esc(label||'')}"
+          class="opt-label flex-1 bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-lg px-3 py-2 text-sm outline-none transition-colors"/>
+        <span class="text-gray-600 text-xs flex-shrink-0">→</span>
+        <select class="opt-goto w-44 bg-surface-900 border border-surface-500 focus:border-blue-500 rounded-lg px-3 py-2 text-sm outline-none transition-colors font-mono">
+          <option value="">— step id —</option>${opts}
+        </select>
+        <button onclick="this.closest('.btn-option-row').remove()"
+          class="w-7 h-7 flex items-center justify-center text-gray-600 hover:text-red-400 transition-colors flex-shrink-0">✕</button>
+      </div>`;
+  }
 
-      try {
-        const res = await fetch(`/api/leads?token=${encodeURIComponent(token)}`);
-        if (res.status === 401) {
-          document.getElementById('authError').classList.remove('hidden');
-          document.getElementById('authModal').classList.remove('hidden');
-          document.getElementById('app').classList.add('hidden');
-          return;
-        }
-        allLeads = await res.json();
-        document.getElementById('authModal').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        updateStats();
-        renderTable();
-        document.getElementById('lastUpdated').textContent =
-          'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      } catch (e) {
-        console.error('Load error:', e);
-      } finally {
-        icon.classList.remove('animate-spin');
-      }
+  function addOptionRow() {
+    const container = document.getElementById('options-list');
+    if (!container) return;
+    const allIds = builderFlow.map(s=>s.id).filter(Boolean);
+    const div = document.createElement('div');
+    div.innerHTML = optionRow(Date.now(), '', '', allIds);
+    container.appendChild(div.firstElementChild);
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function toggleEdit(idx) {
+    if (editingIdx === idx) { saveEdit(idx); return; }
+    if (editingIdx >= 0) saveEdit(editingIdx);
+    editingIdx = idx;
+    renderBuilder();
+    setTimeout(() => document.querySelector(`#builder-steps > div:nth-child(${idx+1})`)?.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+  }
+
+  function saveEdit(idx) {
+    const step = builderFlow[idx];
+    const newId    = document.getElementById('edit-id')?.value.trim();
+    const newDelay = parseFloat(document.getElementById('edit-delay')?.value ?? 0.8);
+    if (newId) step.id = newId;
+    step.delay = newDelay;
+
+    if (step.type === 'message') {
+      step.text = document.getElementById('edit-text')?.value || '';
+    } else if (step.type === 'input') {
+      step.prompt  = document.getElementById('edit-prompt')?.value  || '';
+      step.save_as = document.getElementById('edit-save_as')?.value || '';
+      const v = document.getElementById('edit-validate')?.value;
+      if (v) step.validate = v; else delete step.validate;
+    } else if (step.type === 'buttons') {
+      step.text = document.getElementById('edit-text')?.value || '';
+      step.options = Array.from(document.querySelectorAll('.btn-option-row')).map(row => ({
+        label: row.querySelector('.opt-label')?.value || '',
+        goto:  row.querySelector('.opt-goto')?.value  || '',
+      })).filter(o => o.label || o.goto);
+    } else if (step.type === 'goto') {
+      step.target = document.getElementById('edit-target')?.value || '';
+    } else if (step.type === 'photo' || step.type === 'video_note') {
+      step.file = document.getElementById('edit-file')?.value || '';
+      if (step.type === 'photo') step.caption = document.getElementById('edit-caption')?.value || '';
     }
 
-    function updateStats() {
-      const today = new Date().toDateString();
-      document.getElementById('statTotal').textContent = allLeads.length;
-      document.getElementById('statDone').textContent = allLeads.filter(l => l.done).length;
-      document.getElementById('statToday').textContent = allLeads.filter(l =>
-        l.updated_at && new Date(l.updated_at).toDateString() === today
-      ).length;
-    }
+    editingIdx   = -1;
+    builderDirty = true;
+    renderBuilder();
+  }
 
-    function renderTable() {
-      const q = document.getElementById('search').value.toLowerCase();
-      const leads = q
-        ? allLeads.filter(l =>
-            (l.username || '').toLowerCase().includes(q) ||
-            (l.full_name || '').toLowerCase().includes(q) ||
-            (l.email || '').toLowerCase().includes(q)
-          )
-        : allLeads;
+  function deleteStep(idx) {
+    if (!confirm('Delete step ' + (idx+1) + '?')) return;
+    builderFlow.splice(idx, 1);
+    if (editingIdx === idx) editingIdx = -1;
+    else if (editingIdx > idx) editingIdx--;
+    builderDirty = true;
+    renderBuilder();
+  }
 
-      const tbody = document.getElementById('tableBody');
+  function moveStep(idx, dir) {
+    const ni = idx + dir;
+    if (ni < 0 || ni >= builderFlow.length) return;
+    [builderFlow[idx], builderFlow[ni]] = [builderFlow[ni], builderFlow[idx]];
+    if (editingIdx === idx) editingIdx = ni;
+    else if (editingIdx === ni) editingIdx = idx;
+    builderDirty = true;
+    renderBuilder();
+  }
 
-      if (!leads.length) {
-        tbody.innerHTML = `
-          <tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">
-            ${q ? 'No results for "' + q + '".' : 'No leads yet. Send /start to your bot to get started.'}
-          </td></tr>`;
-        return;
-      }
+  function addStep(type) {
+    document.getElementById('add-menu').classList.add('hidden');
+    const defaults = {
+      message:    { text:'', delay:0.8 },
+      input:      { prompt:'', save_as:'', delay:0.8 },
+      buttons:    { text:'', options:[{label:'',goto:''}], delay:0.6 },
+      goto:       { target:'', delay:0 },
+      photo:      { file:'', caption:'', delay:0.5 },
+      video_note: { file:'', delay:0.5 },
+    };
+    const step = { id: type + '_' + (builderFlow.length + 1), type, ...(defaults[type] || {}) };
+    builderFlow.push(step);
+    editingIdx   = builderFlow.length - 1;
+    builderDirty = true;
+    renderBuilder();
+    setTimeout(() => document.getElementById('builder-steps').lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'}), 60);
+  }
 
-      tbody.innerHTML = leads.map(lead => {
-        const initials = ((lead.full_name || lead.username || '?') + ' ').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-        const choices  = (lead.choices || []).length ? lead.choices.join(' → ') : '—';
-        const ago      = lead.updated_at ? timeAgo(new Date(lead.updated_at)) : '—';
+  function toggleAddMenu() {
+    document.getElementById('add-menu').classList.toggle('hidden');
+  }
 
-        const tgBtn = lead.username
-          ? `<a href="https://t.me/${encodeURIComponent(lead.username)}" target="_blank" rel="noopener"
-               class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white rounded-lg px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap">
-               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                 <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/>
-               </svg>
-               Open Chat
-             </a>`
-          : `<span class="text-gray-700 text-xs">No username</span>`;
+  // Close add menu on outside click
+  document.addEventListener('click', e => {
+    const btn  = document.getElementById('add-btn');
+    const menu = document.getElementById('add-menu');
+    if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target))
+      menu.classList.add('hidden');
+  });
 
-        const statusBadge = lead.done
-          ? `<span class="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2.5 py-1 text-xs font-medium">
-               <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>Done
-             </span>`
-          : `<span class="inline-flex items-center gap-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2.5 py-1 text-xs font-medium">
-               <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>Active
-             </span>`;
-
-        return `
-          <tr class="border-t border-surface-600 hover:bg-surface-600/40 transition-colors">
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600/30 to-purple-600/30 border border-blue-500/20 text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                  ${initials}
-                </div>
-                <span class="text-gray-400 text-xs">${lead.username ? '@' + lead.username : 'ID ' + lead.chat_id}</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 font-medium text-gray-200">${lead.full_name || '—'}</td>
-            <td class="px-6 py-4 text-gray-400">${lead.email || '—'}</td>
-            <td class="px-6 py-4 text-gray-500 text-xs max-w-[180px] truncate" title="${choices}">${choices}</td>
-            <td class="px-6 py-4">${statusBadge}</td>
-            <td class="px-6 py-4 text-gray-600 text-xs whitespace-nowrap">${ago}</td>
-            <td class="px-6 py-4">${tgBtn}</td>
-          </tr>`;
-      }).join('');
-    }
-
-    function timeAgo(date) {
-      const s = Math.floor((Date.now() - date) / 1000);
-      if (s < 60) return 'Just now';
-      if (s < 3600) return Math.floor(s / 60) + 'm ago';
-      if (s < 86400) return Math.floor(s / 3600) + 'h ago';
-      return Math.floor(s / 86400) + 'd ago';
-    }
-
-    document.getElementById('tokenInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') submitToken();
+  function validateFlow() {
+    const ids = new Set(builderFlow.map(s => s.id));
+    const errs = [];
+    builderFlow.forEach((step, i) => {
+      if (step.type === 'goto' && step.target && !ids.has(step.target))
+        errs.push(`Step ${i+1} (${step.id}): goto target "${step.target}" not found`);
+      if (step.type === 'buttons')
+        (step.options||[]).forEach(o => {
+          if (o.goto && !ids.has(o.goto))
+            errs.push(`Step ${i+1} (${step.id}): button "${o.label}" → "${o.goto}" not found`);
+        });
     });
+    return errs;
+  }
 
-    setInterval(loadLeads, 30000);
+  function updateSaveBtn() {
+    const btn = document.getElementById('save-flow-btn');
+    if (!btn) return;
+    btn.disabled = !builderDirty;
+    btn.classList.toggle('opacity-40', !builderDirty);
+    btn.classList.toggle('cursor-not-allowed', !builderDirty);
+    btn.classList.toggle('cursor-pointer', builderDirty);
+  }
 
-    if (getToken()) loadLeads();
-    else document.getElementById('authModal').classList.remove('hidden');
+  async function saveFlow() {
+    if (editingIdx >= 0) saveEdit(editingIdx);
+    const errs = validateFlow();
+    if (errs.length) { alert('Fix before saving:\n\n' + errs.join('\n')); return; }
+
+    const btn  = document.getElementById('save-flow-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin inline mr-1.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Saving…';
+    btn.disabled = true;
+
+    try {
+      const res  = await fetch(`/api/flow?token=${encodeURIComponent(getToken())}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(builderFlow),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        builderDirty = false;
+        btn.innerHTML = '✓ Saved';
+        btn.classList.replace('bg-blue-600','bg-green-600');
+        btn.classList.remove('hover:bg-blue-500');
+        setTimeout(() => {
+          btn.innerHTML = 'Save Flow';
+          btn.classList.replace('bg-green-600','bg-blue-600');
+          btn.classList.add('hover:bg-blue-500');
+          updateSaveBtn();
+        }, 2000);
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch(e) {
+      btn.innerHTML = '✗ Error';
+      btn.classList.replace('bg-blue-600','bg-red-600');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.replace('bg-red-600','bg-blue-600'); updateSaveBtn(); }, 2500);
+    }
+  }
+
+  // ─── Init ────────────────────────────────────────────────────────────────
+  if (getToken()) {
+    document.getElementById('authModal').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    loadLeads();
+  } else {
+    document.getElementById('authModal').classList.remove('hidden');
+  }
   </script>
 </body>
 </html>

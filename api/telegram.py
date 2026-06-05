@@ -1,6 +1,6 @@
 """
 Vercel serverless entry point. One POST per Telegram update.
-Loads per-user flow state from Neon, runs the engine, saves state back.
+Loads the live flow from Neon, runs the engine, persists state back.
 """
 
 import asyncio
@@ -10,13 +10,12 @@ import os
 import sys
 from http.server import BaseHTTPRequestHandler
 
-# Vercel adds the project root to sys.path, but insert explicitly to be safe.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from telegram import Bot, Update
 
-from bot_engine import EMAIL_RE, FLOW, STEP_INDEX, render, run_flow
-from db import load_state, save_lead, save_state
+from bot_engine import EMAIL_RE, render, run_flow
+from db import load_flow, load_state, save_lead, save_state
 
 logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO)
 log = logging.getLogger("flowbot")
@@ -45,31 +44,34 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, *args):
-        pass  # suppress default request logging
+        pass
 
 
 async def process_update(data: dict) -> None:
+    flow = await load_flow()
+    step_index = {s["id"]: i for i, s in enumerate(flow)}
+
     bot = Bot(token=TOKEN)
     async with bot:
         update = Update.de_json(data, bot)
 
         if update.message and update.message.text:
             if update.message.text.startswith("/start"):
-                await on_start(bot, update)
+                await on_start(bot, update, flow, step_index)
             else:
-                await on_text(bot, update)
+                await on_text(bot, update, flow, step_index)
         elif update.callback_query:
-            await on_button(bot, update)
+            await on_button(bot, update, flow, step_index)
 
 
-async def on_start(bot: Bot, update: Update) -> None:
+async def on_start(bot: Bot, update: Update, flow: list, step_index: dict) -> None:
     chat_id = update.effective_chat.id
     state = {"pos": 0, "data": {}, "awaiting": None, "done": False}
-    await run_flow(bot, chat_id, state)
+    await run_flow(bot, chat_id, state, flow)
     await save_state(chat_id, state)
 
 
-async def on_text(bot: Bot, update: Update) -> None:
+async def on_text(bot: Bot, update: Update, flow: list, step_index: dict) -> None:
     chat_id = update.effective_chat.id
     state = await load_state(chat_id)
     awaiting = state.get("awaiting")
@@ -77,7 +79,7 @@ async def on_text(bot: Bot, update: Update) -> None:
     if not awaiting or awaiting.get("mode") != "input":
         return
 
-    step = FLOW[STEP_INDEX[awaiting["step_id"]]]
+    step = flow[step_index[awaiting["step_id"]]]
     value = update.message.text.strip()
 
     if step.get("validate") == "email" and not EMAIL_RE.match(value):
@@ -87,11 +89,11 @@ async def on_text(bot: Bot, update: Update) -> None:
     state["data"][step["save_as"]] = value
     state["awaiting"] = None
     await save_lead(chat_id, update.effective_user.username or "", state["data"])
-    await run_flow(bot, chat_id, state)
+    await run_flow(bot, chat_id, state, flow)
     await save_state(chat_id, state)
 
 
-async def on_button(bot: Bot, update: Update) -> None:
+async def on_button(bot: Bot, update: Update, flow: list, step_index: dict) -> None:
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id
@@ -101,14 +103,25 @@ async def on_button(bot: Bot, update: Update) -> None:
         return
 
     target = query.data.split(":", 1)[1]
+    awaiting = state.get("awaiting")
 
-    if state.get("awaiting") and state["awaiting"].get("mode") == "buttons":
-        state["data"].setdefault("choices", []).append(target)
+    if awaiting and awaiting.get("mode") == "buttons":
+        step_id = awaiting.get("step_id")
+        if step_id and step_id in step_index:
+            buttons_step = flow[step_index[step_id]]
+            label = next(
+                (opt["label"] for opt in buttons_step.get("options", []) if opt["goto"] == target),
+                target,
+            )
+        else:
+            label = target
+        state["data"].setdefault("choices", []).append(label)
+
     state["awaiting"] = None
 
-    if target in STEP_INDEX:
-        state["pos"] = STEP_INDEX[target]
-        await run_flow(bot, chat_id, state)
+    if target in step_index:
+        state["pos"] = step_index[target]
+        await run_flow(bot, chat_id, state, flow)
     else:
         log.warning("Button points to unknown step id: %s", target)
 

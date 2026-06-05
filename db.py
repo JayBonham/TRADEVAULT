@@ -6,6 +6,33 @@ import psycopg
 DATABASE_URL = os.environ["DATABASE_URL"]
 
 
+async def load_flow() -> list:
+    from flow_config import FLOW as _default
+    async with await psycopg.AsyncConnection.connect(DATABASE_URL) as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("SELECT flow FROM flow_config WHERE id = 1")
+            row = await cur.fetchone()
+    if row is None:
+        await save_flow(_default)
+        return _default
+    return row[0]
+
+
+async def save_flow(flow: list) -> None:
+    async with await psycopg.AsyncConnection.connect(DATABASE_URL) as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                INSERT INTO flow_config (id, flow, updated_at)
+                VALUES (1, %s::jsonb, NOW())
+                ON CONFLICT (id) DO UPDATE SET
+                    flow       = EXCLUDED.flow,
+                    updated_at = NOW()
+                """,
+                (json.dumps(flow),),
+            )
+
+
 async def load_state(chat_id: int) -> dict:
     async with await psycopg.AsyncConnection.connect(DATABASE_URL) as conn:
         async with conn.cursor() as cur:

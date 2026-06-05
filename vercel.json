@@ -5,6 +5,9 @@
     },
     "api/leads.py": {
       "maxDuration": 10
+    },
+    "api/flow.py": {
+      "maxDuration": 10
     }
   }
 }

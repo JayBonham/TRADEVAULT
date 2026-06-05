@@ -1,6 +1,6 @@
 """
-Flow engine. Handlers accept a Bot instance + a plain state dict loaded from DB.
-flow_config.py drives all behaviour; this file should rarely need editing.
+Flow engine. Accepts a Bot instance, per-user state dict, and the live flow list.
+flow_config.py is the fallback seed; the live flow is read from Neon at runtime.
 """
 
 import asyncio
@@ -10,12 +10,9 @@ import re
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ChatAction
 
-from flow_config import FLOW
-
 log = logging.getLogger("flowbot")
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-STEP_INDEX = {step["id"]: i for i, step in enumerate(FLOW)}
 
 
 def render(text: str, data: dict) -> str:
@@ -31,10 +28,12 @@ async def _pause(bot: Bot, chat_id: int, delay: float) -> None:
         await asyncio.sleep(delay)
 
 
-async def run_flow(bot: Bot, chat_id: int, state: dict) -> None:
-    """Advance through FLOW steps until the user must act (input / buttons)."""
-    while state["pos"] < len(FLOW):
-        step = FLOW[state["pos"]]
+async def run_flow(bot: Bot, chat_id: int, state: dict, flow: list) -> None:
+    """Advance through flow steps until the user must act (input / buttons)."""
+    step_index = {s["id"]: i for i, s in enumerate(flow)}
+
+    while state["pos"] < len(flow):
+        step = flow[state["pos"]]
         kind = step["type"]
 
         if kind == "message":
@@ -60,11 +59,11 @@ async def run_flow(bot: Bot, chat_id: int, state: dict) -> None:
                 render(step["text"], state["data"]),
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
-            state["awaiting"] = {"mode": "buttons"}
+            state["awaiting"] = {"mode": "buttons", "step_id": step["id"]}
             return
 
         elif kind == "goto":
-            state["pos"] = STEP_INDEX[step["target"]]
+            state["pos"] = step_index[step["target"]]
 
         elif kind in ("photo", "video_note"):
             log.info("Skipping media step %r (not configured yet)", step.get("id"))
