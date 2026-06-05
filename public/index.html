@@ -514,22 +514,25 @@ function buildTree(flow) {
       const step = flow[pos];
       if (step.type==='goto') { nodes.push({kind:'step',step,pos}); break; }
       if (step.type==='buttons') {
-        // Single-option buttons whose goto IS the reconv point → treat as leaf (like goto)
-        if (stopAt!=null && (step.options||[]).length===1 && idx[(step.options[0]||{}).goto]===stopAt) {
-          nodes.push({kind:'step',step,pos});
-          break;
+        // Single-option buttons whose target is backward or already placed → treat as leaf
+        if ((step.options||[]).length===1) {
+          const tp = idx[(step.options[0]||{}).goto];
+          if (tp==null || tp<=pos || placed.has(tp)) {
+            nodes.push({kind:'step',step,pos});
+            break;
+          }
         }
         const reconv = findReconv(flow,idx,step);
-        // Bound each arm at the NEXT arm's flat-array start so arms can't steal each other's steps
+        // Each arm's territory = [armStart, nextArmStart).
+        // reconv is NOT used as an arm boundary — it only tells the parent where to
+        // continue from. The placed set prevents any step from rendering twice.
         const armStarts = (step.options||[])
           .map(o=>idx[o.goto]).filter(p=>p!=null).sort((a,b)=>a-b);
         const arms = (step.options||[]).map(opt=>{
           const aStart = idx[opt.goto];
           if (aStart==null) return {label:opt.label,goto:opt.goto,nodes:[]};
           const nextArmStart = armStarts.find(p=>p>aStart) ?? null;
-          const segStop = Math.min(
-            reconv??Infinity, nextArmStart??Infinity, stopAt??Infinity
-          );
+          const segStop = Math.min(nextArmStart??Infinity, stopAt??Infinity);
           return {label:opt.label, goto:opt.goto,
             nodes: seg(aStart, segStop===Infinity?null:segStop)};
         });
