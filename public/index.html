@@ -199,14 +199,18 @@
     <button onclick="closePanel()" class="text-gray-600 hover:text-gray-300 transition-colors text-lg leading-none">×</button>
   </div>
   <div id="edit-panel-body"></div>
-  <div class="px-6 pb-6 pt-2 border-t border-s-600 flex gap-3">
+  <div class="px-6 pb-6 pt-2 border-t border-s-600 flex gap-2">
     <button onclick="saveEdit()"
       class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 text-sm font-medium transition-colors">
       Save Changes
     </button>
+    <button onclick="moveStep(-1)" title="Move up in flow"
+      class="px-3 bg-s-700 hover:bg-s-600 border border-s-500 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">↑</button>
+    <button onclick="moveStep(1)" title="Move down in flow"
+      class="px-3 bg-s-700 hover:bg-s-600 border border-s-500 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">↓</button>
     <button onclick="deleteSelected()"
-      class="px-4 bg-s-700 hover:bg-red-500/20 border border-s-500 hover:border-red-500/40 text-gray-500 hover:text-red-400 rounded-xl text-sm transition-colors">
-      Delete
+      class="px-3 bg-s-700 hover:bg-red-500/20 border border-s-500 hover:border-red-500/40 text-gray-500 hover:text-red-400 rounded-xl text-sm transition-colors">
+      🗑
     </button>
   </div>
 </div>
@@ -890,6 +894,20 @@ function saveEdit() {
   const updated = builderFlow.find(s=>s.id===selectedId);
   if (updated) openPanel(updated);
   document.querySelector(`.fnode[data-id="${CSS.escape(selectedId)}"]`)?.classList.add('sel');
+}
+
+function moveStep(dir) {
+  if (!selectedId) return;
+  const i = builderFlow.findIndex(s=>s.id===selectedId);
+  if (i<0) return;
+  const j = i+dir;
+  if (j<0||j>=builderFlow.length) return;
+  [builderFlow[i],builderFlow[j]] = [builderFlow[j],builderFlow[i]];
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+  // Re-select so panel stays open and arrows stay active
+  setTimeout(()=>selectNode(selectedId),60);
 }
 
 function deleteSelected() {
