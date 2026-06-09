@@ -632,7 +632,12 @@ function renderTree(nodes, depth=0) {
                 ${renderTree(arm.nodes, depth+1)}
                 ${arm.nodes.length
                   ? renderConnInArm(arm)
-                  : `<div class="fconn"><div class="fconn-line"></div><button class="add-btn" onclick="showAdd(event,'__arm__${esc(node.step.id)}:${ai}')">+</button><div class="fconn-line"></div></div>`}
+                  : arm.goto && builderFlow.some(s=>s.id===arm.goto)
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;padding:6px 0">
+                         <div class="w-px bg-s-500" style="height:14px"></div>
+                         <div style="font-size:11px;color:#818cf8;background:#1e1e38;border:1px solid #3730a3;border-radius:20px;padding:3px 12px;font-family:monospace;white-space:nowrap">↪ ${esc(arm.goto)}</div>
+                       </div>`
+                    : `<div class="fconn"><div class="fconn-line"></div><button class="add-btn" onclick="showAdd(event,'__arm__${esc(node.step.id)}:${ai}')">+</button><div class="fconn-line"></div></div>`}
               </div>`).join('')}
           </div>
           <div class="bmerge" data-merge="${esc(node.step.id)}"></div>
