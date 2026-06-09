@@ -41,8 +41,15 @@
       cursor:pointer; transition:border-color .15s, box-shadow .15s;
       position:relative; overflow:hidden;
     }
-    .fnode:hover  { border-color:#4a4a6a; }
-    .fnode.sel    { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+    .fnode:hover   { border-color:#4a4a6a; }
+    .fnode.sel     { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+    .fnode.dragging { opacity:.4; }
+    .fnode.drag-over { border-color:#a78bfa; box-shadow:0 0 0 3px rgba(167,139,250,.18); }
+    .fnode .drag-handle { position:absolute; top:0; right:0; bottom:0; width:18px;
+      display:flex; align-items:center; justify-content:center;
+      color:#32324a; font-size:11px; cursor:grab; opacity:0; transition:opacity .15s; }
+    .fnode:hover .drag-handle { opacity:1; }
+    .fnode .drag-handle:active { cursor:grabbing; }
     .fnode-accent { position:absolute; left:0; top:0; bottom:0; width:3px; }
     .fnode-head   { display:flex; align-items:center; justify-content:space-between;
                     padding:9px 12px 9px 15px; }
@@ -575,7 +582,14 @@ function renderCard(step, pos) {
   const sel = selectedId===step.id ? ' sel' : '';
   const delay = step.delay!=null ? `<span class="delay-chip">⏱ ${step.delay}s</span>` : '';
   return `
-    <div class="fnode${sel}" data-id="${esc(step.id)}" onclick="selectNode('${esc(step.id)}')">
+    <div class="fnode${sel}" data-id="${esc(step.id)}"
+      draggable="true"
+      ondragstart="dndStart(event,'${esc(step.id)}')"
+      ondragend="dndEnd(event)"
+      ondragover="dndOver(event,'${esc(step.id)}')"
+      ondragleave="dndLeave(event)"
+      ondrop="dndDrop(event,'${esc(step.id)}')"
+      onclick="selectNode('${esc(step.id)}')">
       <div class="fnode-accent ${m.acc}"></div>
       <div class="fnode-head">
         <span class="type-badge ${m.cls}">${m.icon} ${m.label}</span>
@@ -583,6 +597,7 @@ function renderCard(step, pos) {
       </div>
       <div class="fnode-body">${esc(nodePreview(step))}</div>
       ${delay ? `<div class="fnode-foot">${delay}</div>` : ''}
+      <div class="drag-handle" ondragstart="dndStart(event,'${esc(step.id)}')" onclick="event.stopPropagation()">⠿</div>
     </div>`;
 }
 
@@ -894,6 +909,47 @@ function saveEdit() {
   const updated = builderFlow.find(s=>s.id===selectedId);
   if (updated) openPanel(updated);
   document.querySelector(`.fnode[data-id="${CSS.escape(selectedId)}"]`)?.classList.add('sel');
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — drag-and-drop reorder
+// ═══════════════════════════════════════════════════════
+let dndId = null;
+
+function dndStart(e, id) {
+  dndId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id);
+  setTimeout(() => document.querySelector(`.fnode[data-id="${CSS.escape(id)}"]`)?.classList.add('dragging'), 0);
+}
+function dndEnd(e) {
+  document.querySelectorAll('.fnode.dragging,.fnode.drag-over').forEach(n=>n.classList.remove('dragging','drag-over'));
+  dndId = null;
+}
+function dndOver(e, id) {
+  e.preventDefault();
+  if (id===dndId) return;
+  document.querySelectorAll('.fnode.drag-over').forEach(n=>n.classList.remove('drag-over'));
+  document.querySelector(`.fnode[data-id="${CSS.escape(id)}"]`)?.classList.add('drag-over');
+}
+function dndLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function dndDrop(e, targetId) {
+  e.preventDefault();
+  document.querySelectorAll('.fnode.drag-over,.fnode.dragging').forEach(n=>n.classList.remove('drag-over','dragging'));
+  if (!dndId || dndId===targetId) return;
+  const fromIdx = builderFlow.findIndex(s=>s.id===dndId);
+  const toIdx   = builderFlow.findIndex(s=>s.id===targetId);
+  if (fromIdx<0||toIdx<0) return;
+  const [moved] = builderFlow.splice(fromIdx, 1);
+  const insertAt = builderFlow.findIndex(s=>s.id===targetId);
+  builderFlow.splice(insertAt, 0, moved);
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+  setTimeout(()=>{ if(selectedId===dndId) selectNode(dndId); }, 60);
+  dndId = null;
 }
 
 function moveStep(dir) {
