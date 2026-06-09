@@ -930,7 +930,12 @@ function commitAdd(type) {
     photo:      {file:'',caption:'',delay:0.5},
     video_note: {file:'',delay:0.5},
   };
-  const newStep = {id:`${type}_${builderFlow.length+1}`,type,...(defaults[type]||{})};
+  const existingNums = builderFlow
+    .map(s=>s.id||'').filter(id=>id.startsWith(type+'_'))
+    .map(id=>parseInt(id.slice(type.length+1))).filter(n=>!isNaN(n));
+  let nextNum = existingNums.length ? Math.max(...existingNums)+1 : builderFlow.length+1;
+  while (builderFlow.some(s=>s.id===`${type}_${nextNum}`)) nextNum++;
+  const newStep = {id:`${type}_${nextNum}`,type,...(defaults[type]||{})};
 
   // Detect add-to-empty-arm: afterId = '__arm__<btnStepId>:<armIndex>'
   let armCtx = null;
