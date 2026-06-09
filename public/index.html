@@ -624,7 +624,8 @@ function renderTree(nodes, depth=0) {
         <div class="bgroup" data-branch="${esc(node.step.id)}">
           <div class="barms" id="arms-${esc(node.step.id)}">
             ${node.arms.map((arm,ai)=>`
-              <div class="barm" data-arm="${ai}" data-for="${esc(node.step.id)}">
+              <div class="barm" data-arm="${ai}" data-for="${esc(node.step.id)}"
+                ondragover="dndOverArm(event)" ondrop="dndDropArm(event,'${esc(node.step.id)}',${ai})">
                 <div class="w-px bg-s-500" style="height:20px"></div>
                 <div class="arm-label">${esc(arm.label)}</div>
                 <div class="w-px bg-s-500" style="height:12px"></div>
@@ -940,16 +941,59 @@ function dndDrop(e, targetId) {
   document.querySelectorAll('.fnode.drag-over,.fnode.dragging').forEach(n=>n.classList.remove('drag-over','dragging'));
   if (!dndId || dndId===targetId) return;
   const fromIdx = builderFlow.findIndex(s=>s.id===dndId);
-  const toIdx   = builderFlow.findIndex(s=>s.id===targetId);
-  if (fromIdx<0||toIdx<0) return;
+  if (fromIdx<0 || !builderFlow.some(s=>s.id===targetId)) return;
   const [moved] = builderFlow.splice(fromIdx, 1);
   const insertAt = builderFlow.findIndex(s=>s.id===targetId);
   builderFlow.splice(insertAt, 0, moved);
   builderDirty = true;
   updateSaveBtn();
   renderCanvas();
-  setTimeout(()=>{ if(selectedId===dndId) selectNode(dndId); }, 60);
+  setTimeout(()=>{ if(selectedId===moved.id) selectNode(moved.id); }, 60);
   dndId = null;
+}
+
+function dndOverArm(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function dndDropArm(e, btnStepId, armIdx) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.querySelectorAll('.fnode.drag-over,.fnode.dragging').forEach(n=>n.classList.remove('drag-over','dragging'));
+  if (!dndId) return;
+  const savedId = dndId;
+  dndId = null;
+
+  // If arm has cards, insert before the first one
+  const armEl = e.currentTarget;
+  const firstCard = armEl.querySelector('.fnode');
+  if (firstCard && firstCard.dataset.id !== savedId) {
+    const targetId = firstCard.dataset.id;
+    const fromIdx = builderFlow.findIndex(s=>s.id===savedId);
+    if (fromIdx<0) return;
+    const [moved] = builderFlow.splice(fromIdx, 1);
+    const insertAt = builderFlow.findIndex(s=>s.id===targetId);
+    builderFlow.splice(insertAt, 0, moved);
+    builderDirty = true; updateSaveBtn(); renderCanvas();
+    setTimeout(()=>selectNode(savedId), 60);
+    return;
+  }
+
+  // Empty arm: insert after the buttons step and wire the goto
+  const btnIdx = builderFlow.findIndex(s=>s.id===btnStepId);
+  if (btnIdx<0) return;
+  const fromIdx = builderFlow.findIndex(s=>s.id===savedId);
+  if (fromIdx<0) return;
+  const [moved] = builderFlow.splice(fromIdx, 1);
+  const newBtnIdx = builderFlow.findIndex(s=>s.id===btnStepId);
+  builderFlow.splice(newBtnIdx+1, 0, moved);
+  // Wire the button option goto to the dropped step
+  const btn = builderFlow.find(s=>s.id===btnStepId);
+  if (btn?.options?.[armIdx] != null) btn.options[armIdx].goto = moved.id;
+  builderDirty = true; updateSaveBtn(); renderCanvas();
+  setTimeout(()=>selectNode(savedId), 60);
 }
 
 function moveStep(dir) {
