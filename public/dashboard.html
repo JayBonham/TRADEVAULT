@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TradeVault — Bot Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        s: { 950:'#08080f', 900:'#0f0f1a', 800:'#161623', 700:'#1e1e2e', 600:'#26263a', 500:'#32324a', 400:'#44445e' }
+      }}}
+    }
+  </script>
+  <style>
+    body { background:#08080f; }
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#32324a; border-radius:3px; }
+
+    /* ── Canvas ── */
+    #flow-canvas {
+      position:relative; overflow:auto; background:#0b0b14;
+      border:1px solid #26263a; border-radius:16px; min-height:480px;
+    }
+    #conn-svg {
+      position:absolute; top:0; left:0;
+      pointer-events:none; overflow:visible;
+    }
+    #flow-content {
+      position:relative; z-index:1;
+      padding:48px 80px; display:flex;
+      flex-direction:column; align-items:center;
+      min-width:max-content;
+    }
+
+    /* ── Node card ── */
+    .fnode {
+      width:260px; background:#1e1e2e;
+      border:1.5px solid #32324a; border-radius:12px;
+      cursor:pointer; transition:border-color .15s, box-shadow .15s;
+      position:relative; overflow:hidden;
+    }
+    .fnode:hover   { border-color:#4a4a6a; }
+    .fnode.sel     { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+    .fnode.dragging { opacity:.4; }
+    .fnode.drag-over { border-color:#a78bfa; box-shadow:0 0 0 3px rgba(167,139,250,.18); }
+    .fnode .drag-handle { position:absolute; top:0; right:0; bottom:0; width:18px;
+      display:flex; align-items:center; justify-content:center;
+      color:#32324a; font-size:11px; cursor:grab; opacity:0; transition:opacity .15s; }
+    .fnode:hover .drag-handle { opacity:1; }
+    .fnode .drag-handle:active { cursor:grabbing; }
+    .fnode-accent { position:absolute; left:0; top:0; bottom:0; width:3px; }
+    .fnode-head   { display:flex; align-items:center; justify-content:space-between;
+                    padding:9px 12px 9px 15px; }
+    .fnode-body   { padding:2px 15px 11px; font-size:12.5px; color:#9ca3af;
+                    line-height:1.45; word-break:break-word; }
+    .fnode-foot   { padding:0 15px 9px; display:flex; gap:6px; }
+    .type-badge   { font-size:11px; font-weight:500; padding:3px 8px;
+                    border-radius:20px; border:1px solid; white-space:nowrap; }
+    .node-id-tag  { font-size:10px; color:#44445e; font-family:monospace; }
+    .delay-chip   { font-size:10px; color:#44445e; background:#161623;
+                    border:1px solid #26263a; border-radius:20px; padding:2px 7px; }
+
+    /* type colours */
+    .c-msg  { background:#3b82f608; color:#60a5fa; border-color:#3b82f630; }
+    .c-inp  { background:#a855f708; color:#c084fc; border-color:#a855f730; }
+    .c-btn  { background:#22c55e08; color:#4ade80; border-color:#22c55e30; }
+    .c-goto { background:#eab30808; color:#fbbf24; border-color:#eab30830; }
+    .c-med  { background:#ec489908; color:#f472b6; border-color:#ec489930; }
+    .a-msg  { background:#3b82f6; }
+    .a-inp  { background:#a855f7; }
+    .a-btn  { background:#22c55e; }
+    .a-goto { background:#eab308; }
+    .a-med  { background:#ec4899; }
+
+    /* ── Connector ── */
+    .fconn {
+      display:flex; flex-direction:column; align-items:center;
+      height:52px; position:relative; width:260px;
+    }
+    .fconn-line { width:2px; flex:1; background:#26263a; }
+    .add-btn {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:22px; height:22px; border-radius:50%;
+      background:#161623; border:1.5px solid #32324a;
+      color:#44445e; font-size:15px; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .15s; z-index:2;
+      opacity:0;
+    }
+    .fconn:hover .add-btn { opacity:1; }
+    .add-btn:hover {
+      background:#1e1e2e; border-color:#3b82f6;
+      color:#3b82f6; width:26px; height:26px;
+    }
+
+    /* ── Branch layout ── */
+    .bgroup    { display:flex; flex-direction:column; align-items:center; }
+    .barms     { display:flex; gap:32px; align-items:flex-start; }
+    .barm      { display:flex; flex-direction:column; align-items:center; min-width:260px; }
+    .arm-label {
+      font-size:11px; color:#6b7280; background:#1e1e2e;
+      border:1px solid #32324a; border-radius:20px;
+      padding:3px 12px; margin-bottom:0; white-space:nowrap;
+      max-width:240px; overflow:hidden; text-overflow:ellipsis;
+    }
+    .bmerge { width:2px; height:1px; } /* invisible anchor for SVG */
+
+    /* ── End-of-flow add ── */
+    .end-add {
+      margin-top:4px;
+      display:flex; flex-direction:column; align-items:center; gap:0;
+    }
+    .end-add-line { width:2px; height:24px; background:#26263a; }
+    .end-add-btn {
+      display:flex; align-items:center; gap:6px;
+      background:#161623; border:1.5px dashed #32324a;
+      border-radius:10px; padding:8px 18px;
+      font-size:12px; color:#44445e; cursor:pointer;
+      transition:all .15s;
+    }
+    .end-add-btn:hover { border-color:#3b82f6; color:#3b82f6; background:#1e1e2e; }
+
+    /* ── Add-step dropdown ── */
+    #add-dropdown {
+      position:fixed; z-index:200;
+      background:#1e1e2e; border:1px solid #32324a;
+      border-radius:12px; overflow:hidden;
+      box-shadow:0 16px 48px rgba(0,0,0,.5);
+      min-width:160px;
+    }
+    .add-opt {
+      display:block; width:100%; text-align:left;
+      padding:9px 16px; font-size:13px; color:#d1d5db;
+      transition:background .1s; cursor:pointer;
+    }
+    .add-opt:hover { background:#26263a; color:#fff; }
+
+    /* ── Edit panel ── */
+    #edit-panel {
+      position:fixed; top:0; right:-440px; bottom:0;
+      width:420px; background:#161623;
+      border-left:1px solid #26263a; z-index:150;
+      transition:right .25s cubic-bezier(.4,0,.2,1);
+      display:flex; flex-direction:column;
+    }
+    #edit-panel.open { right:0; }
+    #edit-panel-body { flex:1; overflow-y:auto; padding:24px; }
+    .panel-field { margin-bottom:18px; }
+    .panel-label { display:block; font-size:11px; color:#6b7280;
+                   text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+    .panel-input {
+      width:100%; background:#0f0f1a; border:1px solid #32324a;
+      border-radius:8px; padding:9px 12px; font-size:13px;
+      color:#e5e7eb; outline:none; transition:border-color .15s;
+    }
+    .panel-input:focus { border-color:#3b82f6; }
+    .panel-textarea { resize:vertical; min-height:80px; }
+    .panel-select  { appearance:none; cursor:pointer; }
+
+    /* ── Tab bar ── */
+    .tab-pill { padding:7px 20px; border-radius:10px;
+                font-size:13.5px; font-weight:500; transition:all .15s; cursor:pointer; }
+    .tab-pill.active { background:#26263a; color:#fff; }
+    .tab-pill.idle   { color:#6b7280; }
+    .tab-pill.idle:hover { color:#d1d5db; }
+
+    /* ── Misc ── */
+    .fade-in { animation:fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+  </style>
+</head>
+<body class="text-gray-100 antialiased">
+
+<!-- ═══════ Auth modal ═══════ -->
+<div id="authModal" class="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center z-50 hidden">
+  <div class="bg-s-700 border border-s-500 rounded-2xl p-8 w-full max-w-sm mx-4 fade-in">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="font-semibold text-white">Dashboard Access</h2>
+        <p class="text-gray-500 text-xs">TradeVault Bot</p>
+      </div>
+    </div>
+    <input id="tokenInput" type="password" placeholder="Enter your dashboard token"
+      class="w-full bg-s-900 border border-s-500 focus:border-blue-500 rounded-xl px-4 py-3 text-sm outline-none transition-colors mb-2"/>
+    <p id="authError" class="text-red-400 text-xs mb-3 hidden">Invalid token — try again.</p>
+    <button onclick="submitToken()"
+      class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-sm font-medium transition-colors">
+      Enter Dashboard
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ Edit panel ═══════ -->
+<div id="edit-panel">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-s-600">
+    <h3 id="panel-title" class="font-semibold text-sm">Edit Step</h3>
+    <button onclick="closePanel()" class="text-gray-600 hover:text-gray-300 transition-colors text-lg leading-none">×</button>
+  </div>
+  <div id="edit-panel-body"></div>
+  <div class="px-6 pb-6 pt-2 border-t border-s-600 flex gap-2">
+    <button onclick="saveEdit()"
+      class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 text-sm font-medium transition-colors">
+      Save Changes
+    </button>
+    <button onclick="moveStep(-1)" title="Move up in flow"
+      class="px-3 bg-s-700 hover:bg-s-600 border border-s-500 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">↑</button>
+    <button onclick="moveStep(1)" title="Move down in flow"
+      class="px-3 bg-s-700 hover:bg-s-600 border border-s-500 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">↓</button>
+    <button onclick="deleteSelected()"
+      class="px-3 bg-s-700 hover:bg-red-500/20 border border-s-500 hover:border-red-500/40 text-gray-500 hover:text-red-400 rounded-xl text-sm transition-colors">
+      🗑
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ Add-step dropdown ═══════ -->
+<div id="add-dropdown" class="hidden">
+  <div class="px-4 py-2 border-b border-s-600 text-xs text-gray-600 uppercase tracking-widest">Add Step</div>
+  <button class="add-opt" onclick="commitAdd('message')">    💬  Message</button>
+  <button class="add-opt" onclick="commitAdd('input')">      ✏️   Input</button>
+  <button class="add-opt" onclick="commitAdd('buttons')">    🔘  Buttons</button>
+  <button class="add-opt" onclick="commitAdd('goto')">       ↪️   Goto</button>
+  <button class="add-opt" onclick="commitAdd('photo')">      📷  Photo</button>
+  <button class="add-opt" onclick="commitAdd('video_note')"> 🎥  Video Note</button>
+</div>
+
+<!-- ═══════ App ═══════ -->
+<div id="app" class="hidden">
+  <div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-600/20 flex items-center justify-center">
+          <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-none">TradeVault</h1>
+          <p class="text-gray-600 text-xs mt-0.5">Bot Dashboard</p>
+        </div>
+      </div>
+      <button onclick="signOut()" class="text-gray-700 hover:text-gray-400 text-xs transition-colors">Sign out</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 bg-s-800 border border-s-600 p-1 rounded-xl w-fit mb-6">
+      <button id="tab-leads"   onclick="switchTab('leads')"   class="tab-pill active">Leads</button>
+      <button id="tab-builder" onclick="switchTab('builder')" class="tab-pill idle">Flow Builder</button>
+    </div>
+
+    <!-- ════════ LEADS PANEL ════════ -->
+    <div id="panel-leads">
+      <div class="flex items-center justify-between mb-5">
+        <span id="lastUpdated" class="text-gray-700 text-xs"></span>
+        <button onclick="loadLeads()"
+          class="flex items-center gap-2 bg-s-700 hover:bg-s-600 border border-s-500 rounded-xl px-4 py-2 text-sm transition-colors">
+          <svg id="refreshIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-s-700 border border-s-500 rounded-2xl p-5">
+          <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Total Leads</p>
+          <p id="statTotal" class="text-4xl font-bold">—</p>
+        </div>
+        <div class="bg-s-700 border border-s-500 rounded-2xl p-5">
+          <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Completed</p>
+          <p id="statDone" class="text-4xl font-bold text-green-400">—</p>
+        </div>
+        <div class="bg-s-700 border border-s-500 rounded-2xl p-5">
+          <p class="text-gray-600 text-xs uppercase tracking-widest mb-3">Today</p>
+          <p id="statToday" class="text-4xl font-bold text-blue-400">—</p>
+        </div>
+      </div>
+      <div class="relative mb-4">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input id="search" type="text" placeholder="Search by name, email or username…"
+          oninput="renderTable()"
+          class="w-full bg-s-700 border border-s-500 focus:border-blue-500 rounded-xl pl-11 pr-4 py-3 text-sm outline-none transition-colors"/>
+      </div>
+      <div class="bg-s-700 border border-s-500 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-s-600">
+                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">User</th>
+                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Name</th>
+                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Email</th>
+                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Choices</th>
+                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Status</th>
+                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Last Active</th>
+                <th class="px-6 py-4"></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="text-center text-gray-800 text-xs mt-4">Auto-refreshes every 30 seconds</p>
+    </div>
+
+    <!-- ════════ BUILDER PANEL ════════ -->
+    <div id="panel-builder" class="hidden">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="font-semibold">Flow Builder</h2>
+          <p class="text-gray-600 text-xs mt-0.5">Click any node to edit. Changes go live on Save.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="loadBuilder()" class="text-gray-600 hover:text-gray-300 text-xs transition-colors">↺ Reload</button>
+          <button id="save-btn" onclick="saveFlow()" disabled
+            class="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl px-5 py-2.5 text-sm font-medium transition-colors">
+            Save Flow
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div id="flow-canvas">
+        <svg id="conn-svg"></svg>
+        <div id="flow-content">
+          <div class="text-gray-700 text-sm">Loading flow…</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// SHARED
+// ═══════════════════════════════════════════════════════
+const getToken = () => localStorage.getItem('tv_token') || '';
+
+function submitToken() {
+  const v = document.getElementById('tokenInput').value.trim();
+  if (!v) return;
+  localStorage.setItem('tv_token', v);
+  document.getElementById('authError').classList.add('hidden');
+  document.getElementById('authModal').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  loadLeads();
+}
+function signOut() {
+  localStorage.removeItem('tv_token');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('authModal').classList.remove('hidden');
+  document.getElementById('tokenInput').value = '';
+}
+document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key==='Enter') submitToken(); });
+
+function switchTab(tab) {
+  document.getElementById('panel-leads').classList.toggle('hidden', tab!=='leads');
+  document.getElementById('panel-builder').classList.toggle('hidden', tab!=='builder');
+  document.getElementById('tab-leads').className   = 'tab-pill ' + (tab==='leads'   ? 'active' : 'idle');
+  document.getElementById('tab-builder').className = 'tab-pill ' + (tab==='builder' ? 'active' : 'idle');
+  closePanel(); hideAddDropdown();
+  if (tab==='builder' && !builderFlow.length) loadBuilder();
+}
+
+// ═══════════════════════════════════════════════════════
+// LEADS
+// ═══════════════════════════════════════════════════════
+let allLeads = [];
+
+async function loadLeads() {
+  const token = getToken(); if (!token) return;
+  document.getElementById('refreshIcon').classList.add('animate-spin');
+  try {
+    const res = await fetch(`/api/leads?token=${encodeURIComponent(token)}`);
+    if (res.status===401) { signOut(); return; }
+    allLeads = await res.json();
+    updateStats(); renderTable();
+    document.getElementById('lastUpdated').textContent =
+      'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  } catch(e) { console.error(e); }
+  finally { document.getElementById('refreshIcon').classList.remove('animate-spin'); }
+}
+function updateStats() {
+  const today = new Date().toDateString();
+  document.getElementById('statTotal').textContent = allLeads.length;
+  document.getElementById('statDone').textContent  = allLeads.filter(l=>l.done).length;
+  document.getElementById('statToday').textContent = allLeads.filter(l=>l.updated_at&&new Date(l.updated_at).toDateString()===today).length;
+}
+function renderTable() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const leads = q ? allLeads.filter(l=>
+    (l.username||'').toLowerCase().includes(q)||
+    (l.full_name||'').toLowerCase().includes(q)||
+    (l.email||'').toLowerCase().includes(q)) : allLeads;
+  const tbody = document.getElementById('tableBody');
+  if (!leads.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">${q?'No results.':'No leads yet.'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = leads.map(l => {
+    const ini = ((l.full_name||l.username||'?')+' ').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const choices = (l.choices||[]).length ? l.choices.join(' → ') : '—';
+    const ago = l.updated_at ? timeAgo(new Date(l.updated_at)) : '—';
+    const tg = l.username
+      ? `<a href="https://t.me/${encodeURIComponent(l.username)}" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap">
+           <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/></svg>
+           Open Chat</a>`
+      : `<span class="text-gray-700 text-xs">No username</span>`;
+    const badge = l.done
+      ? `<span class="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2.5 py-1 text-xs"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>Done</span>`
+      : `<span class="inline-flex items-center gap-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2.5 py-1 text-xs"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>Active</span>`;
+    return `<tr class="border-t border-s-600 hover:bg-s-600/40 transition-colors">
+      <td class="px-6 py-4"><div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600/30 to-purple-600/30 border border-blue-500/20 text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">${ini}</div>
+        <span class="text-gray-400 text-xs">${l.username?'@'+l.username:'ID '+l.chat_id}</span>
+      </div></td>
+      <td class="px-6 py-4 font-medium text-gray-200">${l.full_name||'—'}</td>
+      <td class="px-6 py-4 text-gray-400">${l.email||'—'}</td>
+      <td class="px-6 py-4 text-gray-500 text-xs max-w-[200px] truncate" title="${choices}">${choices}</td>
+      <td class="px-6 py-4">${badge}</td>
+      <td class="px-6 py-4 text-gray-600 text-xs whitespace-nowrap">${ago}</td>
+      <td class="px-6 py-4">${tg}</td>
+    </tr>`;
+  }).join('');
+}
+function timeAgo(d) {
+  const s=Math.floor((Date.now()-d)/1000);
+  if(s<60) return 'Just now';
+  if(s<3600) return Math.floor(s/60)+'m ago';
+  if(s<86400) return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+setInterval(loadLeads, 30000);
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — state
+// ═══════════════════════════════════════════════════════
+let builderFlow    = [];
+let builderDirty   = false;
+let selectedId     = null;
+let addAfterId     = null;   // step id after which to insert
+
+const TYPE_META = {
+  message:    { label:'Message',    icon:'💬', cls:'c-msg',  acc:'a-msg'  },
+  input:      { label:'Input',      icon:'✏️',  cls:'c-inp',  acc:'a-inp'  },
+  buttons:    { label:'Buttons',    icon:'🔘', cls:'c-btn',  acc:'a-btn'  },
+  goto:       { label:'Goto',       icon:'↪️',  cls:'c-goto', acc:'a-goto' },
+  photo:      { label:'Photo',      icon:'📷', cls:'c-med',  acc:'a-med'  },
+  video_note: { label:'Video',      icon:'🎥', cls:'c-med',  acc:'a-med'  },
+};
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — tree algorithm
+// ═══════════════════════════════════════════════════════
+function buildIdx(flow) {
+  const idx = {};
+  flow.forEach((s,i) => { idx[s.id]=i; });
+  return idx;
+}
+
+function findReconv(flow, idx, buttonStep) {
+  const bpos = idx[buttonStep.id];
+  const exits = (buttonStep.options||[]).map(opt => {
+    let pos = idx[opt.goto];
+    const seen = new Set();
+    while (pos!=null && pos<flow.length && !seen.has(pos)) {
+      seen.add(pos);
+      const s = flow[pos];
+      if (s.type==='goto') {
+        const tp = idx[s.target];
+        return (tp!=null && tp>bpos) ? tp : Infinity;
+      }
+      if (s.type==='buttons') {
+        const opts = s.options||[];
+        if (opts.length===1 && opts[0].goto) {
+          // Single-option buttons acts like a goto — follow it
+          const tp = idx[opts[0].goto];
+          return (tp!=null && tp>bpos) ? tp : Infinity;
+        }
+        // Multi-option buttons: this arm branches again here — treat as exit at this step
+        return pos;
+      }
+      pos++;
+    }
+    return pos!=null ? pos : flow.length;
+  });
+  const finite = exits.filter(e=>e<Infinity&&e<flow.length);
+  return finite.length ? Math.min(...finite) : null;
+}
+
+function buildTree(flow) {
+  if (!flow||!flow.length) return [];
+  const idx = buildIdx(flow);
+  // Global set: once a flat-array position is rendered in any arm, skip it everywhere else.
+  // This prevents reconvergence-point walking from re-rendering arm content that sits at
+  // higher flat-array positions than the reconv step.
+  const placed = new Set();
+
+  function seg(startPos, stopAt) {
+    const nodes = [];
+    const seen = new Set();
+    let pos = startPos;
+    while (pos!=null && pos<flow.length && pos!==stopAt && !seen.has(pos)) {
+      if (placed.has(pos)) { pos++; continue; } // already rendered in another arm
+      seen.add(pos);
+      placed.add(pos);
+      const step = flow[pos];
+      if (step.type==='goto') { nodes.push({kind:'step',step,pos}); break; }
+      if (step.type==='buttons') {
+        // Single-option buttons whose target is backward or already placed → treat as leaf
+        if ((step.options||[]).length===1) {
+          const tp = idx[(step.options[0]||{}).goto];
+          if (tp==null || tp<=pos || placed.has(tp)) {
+            nodes.push({kind:'step',step,pos});
+            break;
+          }
+        }
+        const reconv = findReconv(flow,idx,step);
+        // Each arm's territory = [armStart, nextArmStart).
+        // reconv is NOT used as an arm boundary — it only tells the parent where to
+        // continue from. The placed set prevents any step from rendering twice.
+        const armStarts = (step.options||[])
+          .map(o=>idx[o.goto]).filter(p=>p!=null).sort((a,b)=>a-b);
+        const arms = (step.options||[]).map(opt=>{
+          const aStart = idx[opt.goto];
+          if (aStart==null) return {label:opt.label,goto:opt.goto,nodes:[]};
+          const nextArmStart = armStarts.find(p=>p>aStart) ?? null;
+          const segStop = Math.min(nextArmStart??Infinity, stopAt??Infinity);
+          return {label:opt.label, goto:opt.goto,
+            nodes: seg(aStart, segStop===Infinity?null:segStop)};
+        });
+        nodes.push({kind:'branch',step,pos,arms,reconv});
+        if (reconv!=null && reconv<flow.length) { pos=reconv; continue; }
+        break;
+      }
+      nodes.push({kind:'step',step,pos});
+      pos++;
+    }
+    return nodes;
+  }
+  return seg(0, null);
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — render
+// ═══════════════════════════════════════════════════════
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function nodePreview(step) {
+  const t=(s,n)=>s&&s.length>n?s.slice(0,n)+'…':(s||'');
+  switch(step.type){
+    case 'message':    return t(step.text,75);
+    case 'input':      return t(step.prompt,75);
+    case 'buttons':    return t(step.text,55)+(step.options?` · ${step.options.length} options`:'');
+    case 'goto':       return '→ '+(step.target||'?');
+    case 'photo':      return step.file||step.url||'(no file)';
+    case 'video_note': return step.file||step.url||'(no file)';
+    default:           return step.id||'';
+  }
+}
+
+function renderCard(step, pos) {
+  const m = TYPE_META[step.type] || {label:step.type,icon:'?',cls:'c-goto',acc:'a-goto'};
+  const sel = selectedId===step.id ? ' sel' : '';
+  const delay = step.delay!=null ? `<span class="delay-chip">⏱ ${step.delay}s</span>` : '';
+  return `
+    <div class="fnode${sel}" data-id="${esc(step.id)}"
+      draggable="true"
+      ondragstart="dndStart(event,'${esc(step.id)}')"
+      ondragend="dndEnd(event)"
+      ondragover="dndOver(event,'${esc(step.id)}')"
+      ondragleave="dndLeave(event)"
+      ondrop="dndDrop(event,'${esc(step.id)}')"
+      onclick="selectNode('${esc(step.id)}')">
+      <div class="fnode-accent ${m.acc}"></div>
+      <div class="fnode-head">
+        <span class="type-badge ${m.cls}">${m.icon} ${m.label}</span>
+        <span class="node-id-tag">#${esc(step.id)}</span>
+      </div>
+      <div class="fnode-body">${esc(nodePreview(step))}</div>
+      ${delay ? `<div class="fnode-foot">${delay}</div>` : ''}
+      <div class="drag-handle" ondragstart="dndStart(event,'${esc(step.id)}')" onclick="event.stopPropagation()">⠿</div>
+    </div>`;
+}
+
+function renderConn(afterId) {
+  return `
+    <div class="fconn" data-after="${esc(afterId)}">
+      <div class="fconn-line"></div>
+      <button class="add-btn" onclick="showAdd(event,'${esc(afterId)}')">+</button>
+      <div class="fconn-line"></div>
+    </div>`;
+}
+
+function renderTree(nodes, depth=0) {
+  if (!nodes||!nodes.length) return '';
+  let html = '';
+  nodes.forEach((node,i) => {
+    const last = i===nodes.length-1;
+    if (node.kind==='step') {
+      html += renderCard(node.step, node.pos);
+      if (!last) html += renderConn(node.step.id);
+    } else if (node.kind==='branch') {
+      html += renderCard(node.step, node.pos);
+      html += `
+        <div class="bgroup" data-branch="${esc(node.step.id)}">
+          <div class="barms" id="arms-${esc(node.step.id)}">
+            ${node.arms.map((arm,ai)=>`
+              <div class="barm" data-arm="${ai}" data-for="${esc(node.step.id)}"
+                ondragover="dndOverArm(event)" ondrop="dndDropArm(event,'${esc(node.step.id)}',${ai})">
+                <div class="w-px bg-s-500" style="height:20px"></div>
+                <div class="arm-label">${esc(arm.label)}</div>
+                <div class="w-px bg-s-500" style="height:12px"></div>
+                ${renderTree(arm.nodes, depth+1)}
+                ${arm.nodes.length
+                  ? renderConnInArm(arm)
+                  : arm.goto && builderFlow.some(s=>s.id===arm.goto)
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;padding:6px 0">
+                         <div class="w-px bg-s-500" style="height:14px"></div>
+                         <div style="font-size:11px;color:#818cf8;background:#1e1e38;border:1px solid #3730a3;border-radius:20px;padding:3px 12px;font-family:monospace;white-space:nowrap">↪ ${esc(arm.goto)}</div>
+                       </div>`
+                    : `<div class="fconn"><div class="fconn-line"></div><button class="add-btn" onclick="showAdd(event,'__arm__${esc(node.step.id)}:${ai}')">+</button><div class="fconn-line"></div></div>`}
+              </div>`).join('')}
+          </div>
+          <div class="bmerge" data-merge="${esc(node.step.id)}"></div>
+        </div>`;
+      if (!last) html += renderConn(node.step.id+'__after');
+    }
+  });
+  return html;
+}
+
+function renderConnInArm(arm) {
+  const lastStep = lastStepInArm(arm.nodes);
+  if (!lastStep) return '';
+  if (lastStep.step.type==='goto') return '';
+  // Suppress the outer + connector when the terminal node is a branch with all-empty arms
+  // (each empty arm already renders its own + button inline)
+  if (lastStep.kind==='branch' && lastStep.arms.every(a=>!a.nodes.length)) return '';
+  return renderConn(lastStep.step.id);
+}
+
+function lastStepInArm(nodes) {
+  if (!nodes||!nodes.length) return null;
+  const last = nodes[nodes.length-1];
+  if (last.kind==='branch') {
+    for (let i=last.arms.length-1; i>=0; i--) {
+      const l = lastStepInArm(last.arms[i].nodes);
+      if (l) return l;
+    }
+  }
+  return last;
+}
+
+function renderCanvas() {
+  const content = document.getElementById('flow-content');
+  if (!builderFlow.length) {
+    content.innerHTML = `
+      <div style="color:#44445e;text-align:center;padding:60px 40px;">
+        <div style="font-size:32px;margin-bottom:12px">📋</div>
+        <div style="font-size:13px">No steps yet.</div>
+        <div class="end-add" style="margin-top:20px">
+          <button class="end-add-btn" onclick="showAdd(event,null)">+ Add First Step</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const tree = buildTree(builderFlow);
+  const lastTopNode = tree[tree.length-1];
+  const lastId = lastTopNode ? (lastTopNode.kind==='step' ? lastTopNode.step.id : lastTopNode.step.id+'__after') : null;
+
+  content.innerHTML = renderTree(tree) + `
+    <div class="end-add">
+      <div class="end-add-line"></div>
+      <button class="end-add-btn" onclick="showAdd(event,'${esc(lastId||'')}')">+ Add Step</button>
+    </div>`;
+
+  // Re-apply selection highlight
+  if (selectedId) {
+    document.querySelector(`.fnode[data-id="${CSS.escape(selectedId)}"]`)?.classList.add('sel');
+  }
+
+  // Draw SVG branch connections after layout
+  requestAnimationFrame(drawBranchSVG);
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — SVG branch curves
+// ═══════════════════════════════════════════════════════
+function drawBranchSVG() {
+  const canvas  = document.getElementById('flow-canvas');
+  const svg     = document.getElementById('conn-svg');
+  const content = document.getElementById('flow-content');
+  svg.innerHTML = '';
+  svg.setAttribute('width',  content.scrollWidth);
+  svg.setAttribute('height', content.scrollHeight);
+
+  const cr    = canvas.getBoundingClientRect();
+  const sx    = canvas.scrollLeft;
+  const sy    = canvas.scrollTop;
+
+  function rc(el) {
+    const r = el.getBoundingClientRect();
+    return {
+      cx:   r.left - cr.left + sx + r.width/2,
+      top:  r.top  - cr.top  + sy,
+      bot:  r.bottom - cr.top + sy,
+    };
+  }
+
+  function curve(x1,y1,x2,y2,color='#32324a') {
+    const my = y1+(y2-y1)*.45;
+    const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',`M${x1} ${y1} C${x1} ${my},${x2} ${my},${x2} ${y2}`);
+    p.setAttribute('stroke',color);
+    p.setAttribute('stroke-width','2');
+    p.setAttribute('fill','none');
+    svg.appendChild(p);
+  }
+
+  document.querySelectorAll('.bgroup').forEach(grp => {
+    const bid  = grp.dataset.branch;
+    const src  = document.querySelector(`.fnode[data-id="${CSS.escape(bid)}"]`);
+    const arms = grp.querySelectorAll(`.barm[data-for="${CSS.escape(bid)}"]`);
+    if (!src||!arms.length) return;
+
+    const ss = rc(src);
+
+    // Draw a simple split line: source bottom → top of each arm column
+    // No merge/join lines — branches stay in their own columns unless an
+    // explicit goto step points somewhere.
+    arms.forEach(arm => {
+      const ar = rc(arm);
+      curve(ss.cx, ss.bot, ar.cx, ar.top);
+    });
+  });
+}
+
+window.addEventListener('resize', () => { if (!document.getElementById('panel-builder').classList.contains('hidden')) drawBranchSVG(); });
+document.getElementById('flow-canvas').addEventListener('scroll', drawBranchSVG);
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — selection + edit panel
+// ═══════════════════════════════════════════════════════
+function selectNode(id) {
+  // Deselect previous
+  document.querySelectorAll('.fnode.sel').forEach(n=>n.classList.remove('sel'));
+  selectedId = id;
+  document.querySelector(`.fnode[data-id="${CSS.escape(id)}"]`)?.classList.add('sel');
+  const step = builderFlow.find(s=>s.id===id);
+  if (step) openPanel(step);
+}
+
+function openPanel(step) {
+  const m = TYPE_META[step.type]||{label:step.type,icon:'?'};
+  document.getElementById('panel-title').textContent = `${m.icon} ${m.label}`;
+  document.getElementById('edit-panel-body').innerHTML = buildPanelForm(step);
+  document.getElementById('edit-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('edit-panel').classList.remove('open');
+  document.querySelectorAll('.fnode.sel').forEach(n=>n.classList.remove('sel'));
+  selectedId = null;
+}
+
+function buildPanelForm(step) {
+  const allIds = builderFlow.map(s=>s.id).filter(Boolean);
+  const fld = (id,val,ph='',extra='') =>
+    `<input id="${id}" type="text" value="${esc(val||'')}" placeholder="${ph}" class="panel-input ${extra}"/>`;
+  const ta  = (id,val,ph='',rows=4) =>
+    `<textarea id="${id}" rows="${rows}" placeholder="${ph}" class="panel-input panel-textarea">${esc(val||'')}</textarea>`;
+  const lbl = t => `<label class="panel-label">${t}</label>`;
+  const sel = (id,opts,cur) =>
+    `<select id="${id}" class="panel-input panel-select">${opts.map(o=>`<option value="${o.v}" ${cur===o.v?'selected':''}>${o.l}</option>`).join('')}</select>`;
+
+  const baseFields = `
+    <div class="panel-field">${lbl('Step ID')}${fld('p-id',step.id,'','font-mono text-xs')}</div>
+    <div class="panel-field">${lbl('Delay (seconds)')}
+      <div class="flex items-center gap-3">
+        <input type="range" id="p-delay" min="0" max="3" step="0.1" value="${step.delay??0.8}"
+          oninput="document.getElementById('p-delay-v').textContent=parseFloat(this.value).toFixed(1)+'s'"
+          class="flex-1 accent-blue-500 h-1.5"/>
+        <span id="p-delay-v" class="text-xs text-gray-500 w-10 text-right">${parseFloat(step.delay??0.8).toFixed(1)}s</span>
+      </div>
+    </div>`;
+
+  let typeFields = '';
+  if (step.type==='message') {
+    typeFields = `<div class="panel-field">${lbl('Message Text')}${ta('p-text',step.text,'Your message…')}</div>`;
+  } else if (step.type==='input') {
+    typeFields = `
+      <div class="panel-field">${lbl('Prompt')}${ta('p-prompt',step.prompt,'What to ask?',3)}</div>
+      <div class="panel-field">${lbl('Save As')}${fld('p-save_as',step.save_as,'e.g. full_name','font-mono text-xs')}</div>
+      <div class="panel-field">${lbl('Validation')}${sel('p-validate',[{v:'',l:'None'},{v:'email',l:'Email'}],step.validate||'')}</div>`;
+  } else if (step.type==='buttons') {
+    const datalistOpts = allIds.map(id=>`<option value="${id}">`).join('');
+    const opts = (step.options||[]).map((o,i)=>`
+      <div class="btn-opt-row flex items-center gap-2 mb-2">
+        <input type="text" value="${esc(o.label)}" placeholder="Label"
+          class="opt-lbl panel-input flex-1" style="padding:7px 10px;font-size:12px"/>
+        <span class="text-gray-600 text-xs flex-shrink-0">→</span>
+        <input type="text" value="${esc(o.goto)}" placeholder="step_id" list="goto-suggestions"
+          class="opt-goto panel-input font-mono text-xs" style="width:130px;padding:7px 10px"/>
+        <button onclick="this.closest('.btn-opt-row').remove()" class="text-gray-600 hover:text-red-400 transition-colors text-sm flex-shrink-0">✕</button>
+      </div>`).join('');
+    typeFields = `
+      <datalist id="goto-suggestions">${datalistOpts}</datalist>
+      <div class="panel-field">${lbl('Message Text')}${ta('p-text',step.text,'Text above the buttons…',2)}</div>
+      <div class="panel-field">${lbl('Button Options')}
+        <div id="opts-list">${opts}</div>
+        <button onclick="addOptRow()" class="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">+ Add option</button>
+      </div>`;
+  } else if (step.type==='goto') {
+    const datalistOpts2 = allIds.filter(id=>id!==step.id).map(id=>`<option value="${id}">`).join('');
+    typeFields = `
+      <datalist id="goto-suggestions">${datalistOpts2}</datalist>
+      <div class="panel-field">${lbl('Jump To Step')}
+      <input type="text" id="p-target" value="${esc(step.target||'')}" placeholder="step_id" list="goto-suggestions"
+        class="panel-input font-mono text-xs" style="width:100%;padding:8px 10px"/>
+      </div>`;
+  } else if (step.type==='photo'||step.type==='video_note') {
+    typeFields = `
+      <div class="panel-field">${lbl('File ID or URL')}${fld('p-file',step.file||step.url,'Telegram file_id or https://…','font-mono text-xs')}</div>
+      ${step.type==='photo'?`<div class="panel-field">${lbl('Caption')}${fld('p-caption',step.caption,'')}</div>`:''}`;
+  }
+
+  return baseFields + typeFields;
+}
+
+function addOptRow() {
+  const allIds = builderFlow.map(s=>s.id).filter(Boolean);
+  // refresh the datalist with current IDs
+  const dl = document.getElementById('goto-suggestions');
+  if (dl) dl.innerHTML = allIds.map(id=>`<option value="${id}">`).join('');
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <div class="btn-opt-row flex items-center gap-2 mb-2">
+      <input type="text" placeholder="Label" class="opt-lbl panel-input flex-1" style="padding:7px 10px;font-size:12px"/>
+      <span class="text-gray-600 text-xs flex-shrink-0">→</span>
+      <input type="text" placeholder="step_id" list="goto-suggestions"
+        class="opt-goto panel-input font-mono text-xs" style="width:130px;padding:7px 10px"/>
+      <button onclick="this.closest('.btn-opt-row').remove()" class="text-gray-600 hover:text-red-400 transition-colors text-sm flex-shrink-0">✕</button>
+    </div>`;
+  document.getElementById('opts-list')?.appendChild(div.firstElementChild);
+}
+
+function saveEdit() {
+  if (!selectedId) return;
+  const i = builderFlow.findIndex(s=>s.id===selectedId);
+  if (i<0) return;
+  const step = {...builderFlow[i]};
+
+  const newId    = document.getElementById('p-id')?.value.trim();
+  const newDelay = parseFloat(document.getElementById('p-delay')?.value??0.8);
+  const oldId    = step.id;
+
+  step.delay = newDelay;
+
+  if (step.type==='message') {
+    step.text = document.getElementById('p-text')?.value||'';
+  } else if (step.type==='input') {
+    step.prompt  = document.getElementById('p-prompt')?.value||'';
+    step.save_as = document.getElementById('p-save_as')?.value||'';
+    const v = document.getElementById('p-validate')?.value;
+    if (v) step.validate=v; else delete step.validate;
+  } else if (step.type==='buttons') {
+    step.text = document.getElementById('p-text')?.value||'';
+    step.options = Array.from(document.querySelectorAll('.btn-opt-row')).map(r=>({
+      label: r.querySelector('.opt-lbl')?.value||'',
+      goto:  r.querySelector('.opt-goto')?.value||'',
+    })).filter(o=>o.label||o.goto);
+  } else if (step.type==='goto') {
+    step.target = document.getElementById('p-target')?.value||'';
+  } else if (step.type==='photo'||step.type==='video_note') {
+    step.file = document.getElementById('p-file')?.value||'';
+    if (step.type==='photo') step.caption=document.getElementById('p-caption')?.value||'';
+  }
+
+  // Apply ID change + update all goto references
+  if (newId && newId!==oldId) {
+    step.id = newId;
+    builderFlow = builderFlow.map(s=>{
+      if (s.type==='goto'&&s.target===oldId) return {...s,target:newId};
+      if (s.type==='buttons') return {...s,options:(s.options||[]).map(o=>o.goto===oldId?{...o,goto:newId}:o)};
+      return s;
+    });
+    selectedId = newId;
+  }
+
+  builderFlow[i] = step;
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+  // Re-open panel with updated step
+  const updated = builderFlow.find(s=>s.id===selectedId);
+  if (updated) openPanel(updated);
+  document.querySelector(`.fnode[data-id="${CSS.escape(selectedId)}"]`)?.classList.add('sel');
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — drag-and-drop reorder
+// ═══════════════════════════════════════════════════════
+let dndId = null;
+
+function dndStart(e, id) {
+  dndId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id);
+  setTimeout(() => document.querySelector(`.fnode[data-id="${CSS.escape(id)}"]`)?.classList.add('dragging'), 0);
+}
+function dndEnd(e) {
+  document.querySelectorAll('.fnode.dragging,.fnode.drag-over').forEach(n=>n.classList.remove('dragging','drag-over'));
+  dndId = null;
+}
+function dndOver(e, id) {
+  e.preventDefault();
+  if (id===dndId) return;
+  document.querySelectorAll('.fnode.drag-over').forEach(n=>n.classList.remove('drag-over'));
+  document.querySelector(`.fnode[data-id="${CSS.escape(id)}"]`)?.classList.add('drag-over');
+}
+function dndLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function dndDrop(e, targetId) {
+  e.preventDefault();
+  document.querySelectorAll('.fnode.drag-over,.fnode.dragging').forEach(n=>n.classList.remove('drag-over','dragging'));
+  if (!dndId || dndId===targetId) return;
+  const fromIdx = builderFlow.findIndex(s=>s.id===dndId);
+  if (fromIdx<0 || !builderFlow.some(s=>s.id===targetId)) return;
+  const [moved] = builderFlow.splice(fromIdx, 1);
+  const insertAt = builderFlow.findIndex(s=>s.id===targetId);
+  builderFlow.splice(insertAt, 0, moved);
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+  setTimeout(()=>{ if(selectedId===moved.id) selectNode(moved.id); }, 60);
+  dndId = null;
+}
+
+function dndOverArm(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function dndDropArm(e, btnStepId, armIdx) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.querySelectorAll('.fnode.drag-over,.fnode.dragging').forEach(n=>n.classList.remove('drag-over','dragging'));
+  if (!dndId) return;
+  const savedId = dndId;
+  dndId = null;
+
+  // If arm has cards, insert before the first one
+  const armEl = e.currentTarget;
+  const firstCard = armEl.querySelector('.fnode');
+  if (firstCard && firstCard.dataset.id !== savedId) {
+    const targetId = firstCard.dataset.id;
+    const fromIdx = builderFlow.findIndex(s=>s.id===savedId);
+    if (fromIdx<0) return;
+    const [moved] = builderFlow.splice(fromIdx, 1);
+    const insertAt = builderFlow.findIndex(s=>s.id===targetId);
+    builderFlow.splice(insertAt, 0, moved);
+    builderDirty = true; updateSaveBtn(); renderCanvas();
+    setTimeout(()=>selectNode(savedId), 60);
+    return;
+  }
+
+  // Empty arm: insert after the buttons step and wire the goto
+  const btnIdx = builderFlow.findIndex(s=>s.id===btnStepId);
+  if (btnIdx<0) return;
+  const fromIdx = builderFlow.findIndex(s=>s.id===savedId);
+  if (fromIdx<0) return;
+  const [moved] = builderFlow.splice(fromIdx, 1);
+  const newBtnIdx = builderFlow.findIndex(s=>s.id===btnStepId);
+  builderFlow.splice(newBtnIdx+1, 0, moved);
+  // Wire the button option goto to the dropped step
+  const btn = builderFlow.find(s=>s.id===btnStepId);
+  if (btn?.options?.[armIdx] != null) btn.options[armIdx].goto = moved.id;
+  builderDirty = true; updateSaveBtn(); renderCanvas();
+  setTimeout(()=>selectNode(savedId), 60);
+}
+
+function moveStep(dir) {
+  if (!selectedId) return;
+  const i = builderFlow.findIndex(s=>s.id===selectedId);
+  if (i<0) return;
+  const j = i+dir;
+  if (j<0||j>=builderFlow.length) return;
+  [builderFlow[i],builderFlow[j]] = [builderFlow[j],builderFlow[i]];
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+  // Re-select so panel stays open and arrows stay active
+  setTimeout(()=>selectNode(selectedId),60);
+}
+
+function deleteSelected() {
+  if (!selectedId) return;
+  if (!confirm(`Delete step "${selectedId}"?`)) return;
+  builderFlow = builderFlow.filter(s=>s.id!==selectedId);
+  closePanel();
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — add step
+// ═══════════════════════════════════════════════════════
+function showAdd(e, afterId) {
+  e.stopPropagation();
+  addAfterId = afterId;
+  const dd = document.getElementById('add-dropdown');
+  dd.style.top  = (e.clientY+8)+'px';
+  dd.style.left = Math.min(e.clientX-80, window.innerWidth-180)+'px';
+  dd.classList.remove('hidden');
+}
+function hideAddDropdown() {
+  document.getElementById('add-dropdown').classList.add('hidden');
+}
+document.addEventListener('click', e=>{
+  if (!document.getElementById('add-dropdown').contains(e.target)) hideAddDropdown();
+});
+
+function commitAdd(type) {
+  hideAddDropdown();
+  const defaults = {
+    message:    {text:'',delay:0.8},
+    input:      {prompt:'',save_as:'',delay:0.8},
+    buttons:    {text:'',options:[{label:'',goto:''},{label:'',goto:''}],delay:0.6},
+    goto:       {target:'',delay:0},
+    photo:      {file:'',caption:'',delay:0.5},
+    video_note: {file:'',delay:0.5},
+  };
+  const existingNums = builderFlow
+    .map(s=>s.id||'').filter(id=>id.startsWith(type+'_'))
+    .map(id=>parseInt(id.slice(type.length+1))).filter(n=>!isNaN(n));
+  let nextNum = existingNums.length ? Math.max(...existingNums)+1 : builderFlow.length+1;
+  while (builderFlow.some(s=>s.id===`${type}_${nextNum}`)) nextNum++;
+  const newStep = {id:`${type}_${nextNum}`,type,...(defaults[type]||{})};
+
+  // Detect add-to-empty-arm: afterId = '__arm__<btnStepId>:<armIndex>'
+  let armCtx = null;
+  if (addAfterId && addAfterId.startsWith('__arm__')) {
+    const raw = addAfterId.slice(7);
+    const colon = raw.lastIndexOf(':');
+    armCtx = {btnId: raw.slice(0, colon), armIdx: parseInt(raw.slice(colon+1))};
+    addAfterId = armCtx.btnId; // insert after the buttons step
+  }
+
+  if (addAfterId===null) {
+    builderFlow.unshift(newStep);
+  } else {
+    const cleanId = addAfterId.replace('__after','');
+    const pos = builderFlow.findIndex(s=>s.id===cleanId);
+    if (pos>=0) builderFlow.splice(pos+1,0,newStep);
+    else builderFlow.push(newStep);
+  }
+
+  // Wire the button option goto to the new step
+  if (armCtx) {
+    const btn = builderFlow.find(s=>s.id===armCtx.btnId);
+    if (btn && btn.options && btn.options[armCtx.armIdx] != null)
+      btn.options[armCtx.armIdx].goto = newStep.id;
+  }
+
+  builderDirty = true;
+  updateSaveBtn();
+  renderCanvas();
+  // Auto-open the new step for editing
+  setTimeout(()=>selectNode(newStep.id), 60);
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILDER — save + load
+// ═══════════════════════════════════════════════════════
+function updateSaveBtn() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = !builderDirty;
+}
+
+function validateFlow() {
+  const ids = new Set(builderFlow.map(s=>s.id));
+  const errs = [];
+  builderFlow.forEach((s,i)=>{
+    if (s.type==='goto'&&s.target&&!ids.has(s.target))
+      errs.push(`Step ${i+1} "${s.id}": goto target "${s.target}" not found`);
+    if (s.type==='buttons')
+      (s.options||[]).forEach(o=>{if(o.goto&&!ids.has(o.goto)) errs.push(`Step ${i+1} "${s.id}": button "${o.label}" → "${o.goto}" not found`);});
+  });
+  return errs;
+}
+
+async function saveFlow() {
+  const errs = validateFlow();
+  if (errs.length) { alert('Fix before saving:\n\n'+errs.join('\n')); return; }
+  const btn = document.getElementById('save-btn');
+  btn.textContent='Saving…'; btn.disabled=true;
+  try {
+    const res = await fetch(`/api/flow?token=${encodeURIComponent(getToken())}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(builderFlow)
+    });
+    const d = await res.json();
+    if (d.ok) {
+      builderDirty=false;
+      btn.textContent='✓ Saved';
+      btn.classList.replace('bg-blue-600','bg-green-600');
+      btn.classList.remove('hover:bg-blue-500');
+      setTimeout(()=>{ btn.textContent='Save Flow'; btn.classList.replace('bg-green-600','bg-blue-600'); btn.classList.add('hover:bg-blue-500'); updateSaveBtn(); },2000);
+    } else throw new Error(d.error);
+  } catch(e) {
+    btn.textContent='✗ Error';
+    setTimeout(()=>{ btn.textContent='Save Flow'; updateSaveBtn(); },2500);
+  }
+}
+
+async function loadBuilder() {
+  const token=getToken(); if(!token) return;
+  document.getElementById('flow-content').innerHTML='<div style="color:#44445e;font-size:13px">Loading…</div>';
+  try {
+    const res=await fetch(`/api/flow?token=${encodeURIComponent(token)}`);
+    if(res.status===401){signOut();return;}
+    builderFlow=await res.json();
+    builderDirty=false; selectedId=null;
+    updateSaveBtn();
+    renderCanvas();
+  } catch(e){ console.error(e); }
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+if (getToken()) {
+  document.getElementById('authModal').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  loadLeads();
+} else {
+  document.getElementById('authModal').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
