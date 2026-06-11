@@ -10,11 +10,12 @@
       "maxDuration": 10
     }
   },
-  "rewrites": [
+  "redirects": [
     {
       "source": "/",
       "has": [{ "type": "host", "value": "bot\\.freesignalspro\\.com" }],
-      "destination": "/dashboard.html"
+      "destination": "/dashboard.html",
+      "permanent": false
     }
   ]
 }
