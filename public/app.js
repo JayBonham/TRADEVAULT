@@ -6,7 +6,7 @@
 const CONFIG = {
   // CTA destination. Currently the Telegram link; swap for the broker
   // signup/deposit URL once the broker flow is ready.
-  ctaUrl: 'https://t.me/+HBFbbw4_Qc9hYjdh',
+  ctaUrl: 'https://vtm.pro/ym6jim',
 
   // Trust-strip numbers. PLACEHOLDERS — replace with verified figures only.
   // [value, suffix]. Set to null to hide a stat's number.
