@@ -13,7 +13,7 @@
   "rewrites": [
     {
       "source": "/",
-      "has": [{ "type": "host", "value": "bot.freesignalspro.com" }],
+      "has": [{ "type": "host", "value": "bot\\.freesignalspro\\.com" }],
       "destination": "/dashboard.html"
     }
   ]
