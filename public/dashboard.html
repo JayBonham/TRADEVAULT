@@ -304,14 +304,13 @@
                 <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">User</th>
                 <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Name</th>
                 <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Email</th>
-                <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Choices</th>
                 <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Status</th>
                 <th class="text-left px-6 py-4 text-gray-600 text-xs uppercase tracking-widest font-medium">Last Active</th>
                 <th class="px-6 py-4"></th>
               </tr>
             </thead>
             <tbody id="tableBody">
-              <tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">Loading…</td></tr>
+              <tr><td colspan="6" class="px-6 py-20 text-center text-gray-700">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -411,12 +410,11 @@ function renderTable() {
     (l.email||'').toLowerCase().includes(q)) : allLeads;
   const tbody = document.getElementById('tableBody');
   if (!leads.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-700">${q?'No results.':'No leads yet.'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-20 text-center text-gray-700">${q?'No results.':'No leads yet.'}</td></tr>`;
     return;
   }
-  tbody.innerHTML = leads.map(l => {
+  tbody.innerHTML = leads.map((l,idx) => {
     const ini = ((l.full_name||l.username||'?')+' ').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
-    const choices = (l.choices||[]).length ? l.choices.join(' → ') : '—';
     const ago = l.updated_at ? timeAgo(new Date(l.updated_at)) : '—';
     const tg = l.username
       ? `<a href="https://t.me/${encodeURIComponent(l.username)}" target="_blank" rel="noopener"
@@ -427,19 +425,68 @@ function renderTable() {
     const badge = l.done
       ? `<span class="inline-flex items-center gap-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2.5 py-1 text-xs"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>Done</span>`
       : `<span class="inline-flex items-center gap-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2.5 py-1 text-xs"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>Active</span>`;
-    return `<tr class="border-t border-s-600 hover:bg-s-600/40 transition-colors">
+
+    // Build detail panel: choices + any extra state fields
+    const choices = l.choices||[];
+    const state   = l.state||{};
+    const choicePills = choices.length
+      ? choices.map(c=>`<span class="inline-flex items-center bg-s-600 border border-s-500 text-gray-300 rounded-full px-2.5 py-0.5 text-xs">${esc(c)}</span>`).join('')
+      : '<span class="text-gray-700 text-xs">No choices recorded</span>';
+    const stateRows = Object.entries(state).length
+      ? Object.entries(state).map(([k,v])=>`
+          <div class="flex gap-3 items-start">
+            <span class="text-gray-600 text-xs font-mono min-w-[120px]">${esc(k)}</span>
+            <span class="text-gray-300 text-xs break-all">${esc(String(v))}</span>
+          </div>`).join('')
+      : '';
+
+    const detailId = `detail-${idx}`;
+    const detailRow = `
+      <tr id="${detailId}" class="hidden border-t border-s-600 bg-s-800/60">
+        <td colspan="6" class="px-6 py-4">
+          <div class="space-y-4">
+            <div>
+              <p class="text-gray-600 text-xs uppercase tracking-widest mb-2">Button Choices</p>
+              <div class="flex flex-wrap gap-2">${choicePills}</div>
+            </div>
+            ${stateRows ? `<div>
+              <p class="text-gray-600 text-xs uppercase tracking-widest mb-2">Collected Answers</p>
+              <div class="space-y-1.5">${stateRows}</div>
+            </div>` : ''}
+          </div>
+        </td>
+      </tr>`;
+
+    const mainRow = `<tr class="border-t border-s-600 hover:bg-s-600/30 transition-colors cursor-pointer" onclick="toggleDetail('${detailId}',this)">
       <td class="px-6 py-4"><div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600/30 to-purple-600/30 border border-blue-500/20 text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">${ini}</div>
-        <span class="text-gray-400 text-xs">${l.username?'@'+l.username:'ID '+l.chat_id}</span>
+        <div>
+          <span class="text-gray-400 text-xs">${l.username?'@'+l.username:'ID '+l.chat_id}</span>
+          ${choices.length?`<div class="text-gray-700 text-xs mt-0.5">${choices.length} choice${choices.length!==1?'s':''}</div>`:''}
+        </div>
       </div></td>
       <td class="px-6 py-4 font-medium text-gray-200">${l.full_name||'—'}</td>
       <td class="px-6 py-4 text-gray-400">${l.email||'—'}</td>
-      <td class="px-6 py-4 text-gray-500 text-xs max-w-[200px] truncate" title="${choices}">${choices}</td>
       <td class="px-6 py-4">${badge}</td>
       <td class="px-6 py-4 text-gray-600 text-xs whitespace-nowrap">${ago}</td>
-      <td class="px-6 py-4">${tg}</td>
+      <td class="px-6 py-4 flex items-center gap-2 justify-end">
+        ${tg}
+        <span class="text-gray-700 text-xs ml-1">▾</span>
+      </td>
     </tr>`;
+    return mainRow + detailRow;
   }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toggleDetail(id, row) {
+  // Don't toggle when clicking the Open Chat link
+  if (event.target.closest('a')) return;
+  const detail = document.getElementById(id);
+  const arrow = row.querySelector('span.text-gray-700');
+  const open = detail.classList.toggle('hidden');
+  if (arrow) arrow.textContent = open ? '▾' : '▴';
 }
 function timeAgo(d) {
   const s=Math.floor((Date.now()-d)/1000);
@@ -562,7 +609,6 @@ function buildTree(flow) {
 // ═══════════════════════════════════════════════════════
 // BUILDER — render
 // ═══════════════════════════════════════════════════════
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function nodePreview(step) {
   const t=(s,n)=>s&&s.length>n?s.slice(0,n)+'…':(s||'');

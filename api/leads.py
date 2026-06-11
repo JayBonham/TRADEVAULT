@@ -71,12 +71,17 @@ async def fetch_leads():
         state_data = row["state_data"] or {}
         merged     = {**state_data, **lead_data}
 
+        # Pull known top-level fields, then expose the rest as collected state
+        top_keys = {"full_name", "email", "choices"}
+        extra = {k: v for k, v in merged.items() if k not in top_keys}
+
         result.append({
             "chat_id":    row["chat_id"],
             "username":   row["username"],
             "full_name":  merged.get("full_name", ""),
             "email":      merged.get("email", ""),
             "choices":    merged.get("choices", []),
+            "state":      extra,
             "done":       bool(row["done"]),
             "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
         })
