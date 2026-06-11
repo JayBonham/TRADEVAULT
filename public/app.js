@@ -122,7 +122,7 @@ const FAQS = [
   ['Are profits guaranteed?',
    'No. Trading involves risk and no signal provider can guarantee results. We aim to be clear and consistent, but every trade carries risk and you are responsible for your own decisions.'],
   ['What markets do you send signals for?',
-   'Forex, gold, crypto and indices, depending on what is active that session. (Replace this with your verified market list before publishing.)'],
+   'Primarily gold (XAUUSD) and indices (DJ30), with forex pairs covered when setups are clear. We focus on quality over quantity — fewer, higher-conviction trades rather than firing signals on everything.'],
   ['How do I get access after depositing?',
    'After signing up and funding your account, follow the access instructions on this page, submit confirmation, or message support — and you\'ll be added to the premium Telegram feed.'],
   ['Can beginners follow the signals?',
