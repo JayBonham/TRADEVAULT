@@ -9,5 +9,12 @@
     "api/flow.py": {
       "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "bot.freesignalspro.com" }],
+      "destination": "/dashboard.html"
+    }
+  ]
 }
