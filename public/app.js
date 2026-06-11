@@ -35,47 +35,49 @@ window.addEventListener('scroll', onScroll, { passive: true });
 
 /* ── Proof wall ─────────────────────────────────────────────────────────── */
 const MKT = {
-  gold:   { cls: 'mkt-gold',   tag: 'XAU' },
-  forex:  { cls: 'mkt-fx',     tag: 'FX'  },
-  crypto: { cls: 'mkt-crypto', tag: 'BTC' },
+  gold:    { cls: 'mkt-gold',   tag: 'XAU' },
+  indices: { cls: 'mkt-fx',     tag: 'DJ30' },
+  members: { cls: 'mkt-crypto', tag: 'MBR' },
 };
-// label, market(s), height(px for placeholder), caption, status, rr
+
+// src, market tags, caption, status, result label
 const PROOFS = [
-  { m: ['gold','wins'],          h: 200, cap: 'XAUUSD · TP2 hit',         st: 'win',  rr: '+38 pips' },
-  { m: ['forex','active'],       h: 250, cap: 'GBPUSD · running',         st: 'live', rr: 'R:R 1:2' },
-  { m: ['crypto','wins'],        h: 175, cap: 'BTCUSD · TP1 hit',         st: 'win',  rr: '+2.4%' },
-  { m: ['members'],              h: 230, cap: 'Member result · approved', st: 'win',  rr: '' },
-  { m: ['forex','wins'],         h: 190, cap: 'EURUSD · closed in profit',st: 'win',  rr: '+22 pips' },
-  { m: ['gold','active'],        h: 260, cap: 'XAUUSD · setup forming',   st: 'live', rr: 'pending' },
-  { m: ['crypto','active'],      h: 210, cap: 'ETHUSD · running',         st: 'live', rr: 'R:R 1:3' },
-  { m: ['members'],              h: 185, cap: 'Member screenshot',        st: 'win',  rr: '' },
-  { m: ['forex'],                h: 240, cap: 'USDJPY · trade recap',     st: 'info', rr: 'closed' },
-  { m: ['gold','wins'],          h: 200, cap: 'XAUUSD · partial + runner',st: 'win',  rr: '+51 pips' },
-  { m: ['crypto'],               h: 220, cap: 'SOLUSD · setup breakdown', st: 'info', rr: 'analysis' },
-  { m: ['forex','active'],       h: 180, cap: 'AUDUSD · live alert',      st: 'live', rr: 'R:R 1:2' },
+  { src: 'Screenshots/ss10.jpg', m: ['gold','wins'],    cap: 'XAUUSD sell · +$1,144 single trade',   st: 'win',  rr: '+$1,144' },
+  { src: 'Screenshots/ss02.jpg', m: ['gold','members'], cap: 'XAUUSD · member account +$1,890',      st: 'win',  rr: '+$1,890' },
+  { src: 'Screenshots/ss06.jpg', m: ['indices'],        cap: 'DJ30 · session profit +$672',           st: 'win',  rr: '+$672' },
+  { src: 'Screenshots/ss09.jpg', m: ['gold','wins'],    cap: 'XAUUSD sell · +€233 session',          st: 'win',  rr: '+€233' },
+  { src: 'Screenshots/ss11.jpg', m: ['gold','members'], cap: 'XAUUSD · member result +$322',         st: 'win',  rr: '+$322' },
+  { src: 'Screenshots/ss04.jpg', m: ['indices'],        cap: 'DJ30 · closed session +$250',          st: 'win',  rr: '+$250' },
+  { src: 'Screenshots/ss08.jpg', m: ['gold','wins'],    cap: 'XAUUSD sell · profit $373',            st: 'win',  rr: '+$373' },
+  { src: 'Screenshots/ss01.jpg', m: ['gold','members'], cap: 'XAUUSD · large account history',       st: 'win',  rr: 'Balance $5.1M' },
+  { src: 'Screenshots/ss05.jpg', m: ['indices'],        cap: 'DJ30 · session closed +$304',          st: 'win',  rr: '+$304' },
+  { src: 'Screenshots/ss13.jpg', m: ['gold','wins'],    cap: 'XAUUSD sell · multiple winners',       st: 'win',  rr: '+$97 / +$78' },
+  { src: 'Screenshots/ss03.jpg', m: ['gold','members'], cap: 'XAUUSD-ECN · member result +$31',      st: 'win',  rr: '+$31' },
+  { src: 'Screenshots/ss12.jpg', m: ['gold'],           cap: 'XAUUSD · German member +€104',         st: 'win',  rr: '+€104' },
+  { src: 'Screenshots/ss14.jpg', m: ['gold','members'], cap: 'XAUUSD-STD · member session +$162',    st: 'win',  rr: '+$162' },
+  { src: 'Screenshots/ss15.jpg', m: ['gold'],           cap: 'XAUUSD · sell session closed',         st: 'win',  rr: 'closed' },
+  { src: 'Screenshots/ss07.jpg', m: ['indices'],        cap: 'DJ30 · buy & sell both green',         st: 'win',  rr: '+$672' },
 ];
 
 const STATUS_MAP = {
-  win:  { cls: 'win',  label: 'TP Hit',  ic: 'check' },
-  live: { cls: 'live', label: 'Running', ic: null },
-  info: { cls: 'info', label: 'Closed',  ic: 'circle' },
+  win:  { cls: 'win',  label: 'TP Hit', ic: 'check' },
+  live: { cls: 'live', label: 'Live',   ic: null },
 };
 
 function primaryMarket(tags) {
-  if (tags.includes('gold')) return 'gold';
-  if (tags.includes('forex')) return 'forex';
-  if (tags.includes('crypto')) return 'crypto';
-  return 'forex';
+  if (tags.includes('gold'))    return 'gold';
+  if (tags.includes('indices')) return 'indices';
+  return 'members';
 }
 
 const wall = document.getElementById('proofWall');
 PROOFS.forEach(p => {
-  const pm = primaryMarket(p.m);
-  const mk = MKT[pm];
+  const pm  = primaryMarket(p.m);
+  const mk  = MKT[pm];
   const stt = STATUS_MAP[p.st];
   const statusInner = stt.cls === 'live'
-    ? `<span class="pill live"><span class="dot"></span> Running</span>`
-    : `<span class="pill ${stt.cls}">${stt.ic ? `<i data-lucide="${stt.ic}"></i>` : ''} ${stt.label}</span>`;
+    ? `<span class="pill live"><span class="dot"></span> Live</span>`
+    : `<span class="pill ${stt.cls}"><i data-lucide="${stt.ic}"></i> ${stt.label}</span>`;
 
   const el = document.createElement('div');
   el.className = 'proof';
@@ -83,15 +85,10 @@ PROOFS.forEach(p => {
   el.innerHTML = `
     <div class="proof-img">
       <div class="proof-badges">
-        <span class="badge-mkt ${mk.cls}" style="width:30px;height:30px;font-size:11px;">${mk.tag}</span>
+        <span class="badge-mkt ${mk.cls}" style="width:34px;height:34px;font-size:10px;letter-spacing:-0.03em;">${mk.tag}</span>
         ${statusInner}
       </div>
-      <div class="proof-ph" style="height:${p.h}px;">
-        <div style="display:flex;flex-direction:column;align-items:center;">
-          <i data-lucide="image" class="ico"></i>
-          <span class="txt">Replace with trade screenshot</span>
-        </div>
-      </div>
+      <img src="${p.src}" alt="${p.cap}" loading="lazy">
     </div>
     <div class="proof-meta">
       <span class="cap">${p.cap}</span>
@@ -155,12 +152,12 @@ FAQS.forEach(([q, a], i) => {
 
 /* ── Live feed (slow auto-scrolling signal room) ────────────────────────── */
 const FEED = [
-  { ic: 'trending-up', cls: 'win',  txt: 'XAUUSD · TP1 hit',        t: 'now' },
-  { ic: 'send',        cls: 'info', txt: 'GBPUSD buy · alert sent', t: '2m' },
-  { ic: 'check',       cls: 'win',  txt: 'BTCUSD · closed +2.4%',   t: '9m' },
-  { ic: 'activity',    cls: 'info', txt: 'EURUSD · setup forming',  t: '14m' },
-  { ic: 'trending-up', cls: 'win',  txt: 'USDJPY · TP2 hit',        t: '22m' },
-  { ic: 'send',        cls: 'info', txt: 'ETHUSD · update posted',  t: '31m' },
+  { ic: 'trending-down', cls: 'win',  txt: 'XAUUSD sell · +$1,144 closed', t: 'now' },
+  { ic: 'trending-up',   cls: 'win',  txt: 'DJ30 buy · +$95 TP hit',       t: '4m'  },
+  { ic: 'check',         cls: 'win',  txt: 'XAUUSD sell · +€233 session',  t: '11m' },
+  { ic: 'send',          cls: 'info', txt: 'XAUUSD sell · signal sent',     t: '18m' },
+  { ic: 'trending-down', cls: 'win',  txt: 'DJ30 sell · +$90 closed',      t: '26m' },
+  { ic: 'check',         cls: 'win',  txt: 'XAUUSD · session +$373',       t: '41m' },
 ];
 const feedList = document.getElementById('feedList');
 const feedTrack = document.createElement('div');

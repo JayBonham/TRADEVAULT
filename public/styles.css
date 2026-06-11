@@ -339,6 +339,11 @@ svg.chart { width: 100%; height: auto; display: block; }
 }
 .proof:hover { border-color: rgba(163,255,53,0.3); box-shadow: var(--glow-card); }
 .proof-img { position: relative; overflow: hidden; }
+.proof-img img {
+  width: 100%; height: auto; display: block;
+  transition: transform .35s ease;
+}
+.proof:hover .proof-img img { transform: scale(1.03); }
 .proof-ph {
   display: grid; place-items: center; text-align: center; color: var(--text-faint);
   background: repeating-linear-gradient(135deg, rgba(255,255,255,0.018) 0 12px, transparent 12px 24px), var(--s3);
