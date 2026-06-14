@@ -146,16 +146,16 @@ h1, h2, h3 { line-height: 1.1; letter-spacing: -0.02em; font-weight: 700; }
 
 /* ── Nav ──────────────────────────────────────────────────────────────────── */
 .nav {
-  position: sticky; top: 0; z-index: 50;
+  position: relative; z-index: 50;
   background: rgba(32,33,36,0.72);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid transparent;
   transition: border-color .2s, background .2s;
 }
 .nav.scrolled { border-bottom-color: var(--border); background: rgba(28,29,32,0.86); }
-.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 140px; }
 .brand { display: flex; align-items: center; gap: 11px; }
-.brand img { width: 34px; height: 34px; border-radius: 9px; }
+.brand img { height: 130px; width: auto; max-width: none; border-radius: 0; }
 .brand .name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
 .brand .name span { color: var(--neon); }
 .nav-links { display: flex; align-items: center; gap: 30px; }
