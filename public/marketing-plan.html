@@ -421,6 +421,14 @@
     .final img { height: 36px; width: auto; margin-bottom: 16px; }
     .final p { color: #444; font-size: 13px; }
 
+    /* ── Bot two-col ── */
+    .bot-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 0 20px 20px;
+    }
+
     /* ── Mobile ── */
     @media (max-width: 640px) {
       .page { padding: 24px 16px 80px; }
@@ -446,9 +454,9 @@
       .step-wide { max-width: 100%; margin-left: 0; margin-right: 0; }
 
       /* Bot two-column → single column */
-      .step-wide .step-card > div[style*="grid-template-columns:1fr 1fr"] {
-        display: flex !important;
-        flex-direction: column !important;
+      .bot-split {
+        grid-template-columns: 1fr;
+        padding: 0 14px 14px;
       }
 
       /* FB carousel: smaller slides */
@@ -597,7 +605,7 @@
         </div>
       </div>
       <!-- Two column layout -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 20px 20px;">
+      <div class="bot-split">
 
         <!-- LEFT: Chat -->
         <div class="bot-mock" style="margin:0;">
