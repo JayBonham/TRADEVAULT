@@ -17,7 +17,8 @@
       min-height: 100vh;
     }
 
-    .page { max-width: 720px; margin: 0 auto; padding: 32px 24px 100px; }
+    .page { max-width: 720px; margin: 0 auto; padding: 32px 24px 100px; overflow: visible; }
+    .step-wide { max-width: 1100px; margin-left: calc(50% - 550px); margin-right: calc(50% - 550px); }
 
     /* ── Header ── */
     .header {
@@ -31,18 +32,16 @@
       gap: 16px;
       margin-bottom: 20px;
     }
-    .header img { height: 100px; width: auto; display: block; }
+    .header img { height: 36px; width: auto; display: block; }
     .divider-x { font-size: 20px; color: #444; font-weight: 300; }
     .vt-badge {
-      background: #003087;
-      color: #fff;
-      font-weight: 700;
-      font-size: 13px;
-      padding: 8px 16px;
+      background: #0a1628;
+      padding: 8px 14px;
       border-radius: 8px;
-      letter-spacing: .04em;
-      white-space: nowrap;
+      display: flex;
+      align-items: center;
     }
+    .vt-badge img { height: 28px; width: auto; display: block; }
     .header-eyebrow {
       display: inline-flex;
       align-items: center;
@@ -419,7 +418,7 @@
       padding-top: 40px;
       border-top: 1px solid #1e1e1e;
     }
-    .final img { height: 100px; width: auto; margin-bottom: 16px; }
+    .final img { height: 36px; width: auto; margin-bottom: 16px; }
     .final p { color: #444; font-size: 13px; }
   </style>
 </head>
@@ -431,7 +430,7 @@
     <div class="header-logos">
       <img src="assets/fsp-logo.png" alt="Free Signals Pro">
       <span class="divider-x">×</span>
-      <div class="vt-badge">VT MARKETS</div>
+      <div class="vt-badge"><img src="Screenshots/VTLogo.webp" alt="VT Markets"></div>
     </div>
     <div class="header-eyebrow">⚡ Partnership Strategy</div>
     <h1>Here's exactly how<br><span>the funnel works.</span></h1>
@@ -531,7 +530,7 @@
   <div class="step-arrow"><div class="arrow-line"></div><div class="arrow-head">↓</div></div>
 
   <!-- STEP 3 — BOT SEQUENCE -->
-  <div class="step">
+  <div class="step step-wide">
     <div class="step-card">
       <div class="step-top">
         <div class="step-num">3</div>
@@ -540,18 +539,68 @@
           <p>They tap the link and the bot starts. It runs them through a short sequence — captures name, email, experience level. Qualifies intent before they even see the broker ask.</p>
         </div>
       </div>
-      <div class="bot-mock">
-        <div class="bot-bubble">👋 Welcome to Free Signals Pro! Before we get you set up, quick question — are you already trading, or are you new?</div>
-        <div class="bot-btns">
-          <button class="bot-btn">I already trade ✅</button>
-          <button class="bot-btn">I'm new 👀</button>
+      <!-- Two column layout -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 20px 20px;">
+
+        <!-- LEFT: Chat -->
+        <div class="bot-mock" style="margin:0;">
+          <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Live conversation</div>
+          <div class="bot-bubble">Welcome! Great to have you here. 👋</div>
+          <div class="bot-bubble">Let me know your full name below please.</div>
+          <div class="bot-bubble user-reply">Alex</div>
+          <div class="bot-bubble">Thanks Alex! — please enter your email for access.</div>
+          <div class="bot-bubble user-reply">alex@email.com</div>
+          <div class="bot-bubble">Here's a quick rundown of what's inside:<br><br>✅ 5-7+ High quality trades per day.<br>✅ 85% success rate on gold signals.<br>✅ Full step by step guide on how to take trades.<br>✅ Weekly mindset coaching.<br>✅ Trusted broker partnership.</div>
+          <div class="bot-bubble">Ready when you are 👇</div>
+          <div class="bot-btns">
+            <button class="bot-btn">Next Steps</button>
+            <button class="bot-btn">Why is it free?</button>
+          </div>
+          <div class="bot-bubble user-reply">Next Steps</div>
+          <div class="bot-bubble">Awesome — let's get you set up.<br><br>Do you already have an account with VT Markets?</div>
+          <div class="bot-btns">
+            <button class="bot-btn">Yes I do</button>
+            <button class="bot-btn">No I'm new to this</button>
+          </div>
         </div>
-        <div class="bot-bubble user-reply">I already trade ✅</div>
-        <div class="bot-bubble">Nice. What's your name?</div>
-        <div class="bot-bubble user-reply">Alex</div>
-        <div class="bot-bubble">And your email? We'll send you the access details.</div>
-        <div class="bot-bubble user-reply">alex@email.com</div>
-        <div class="bot-bubble">✅ Perfect. Head to <strong style="color:#a3ff35">freesignalspro.com</strong> to unlock your premium access — takes 5 minutes 👇</div>
+
+        <!-- RIGHT: Flow builder mockup -->
+        <div style="background:#0f0f1a;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:0;">
+          <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Flow builder — bot.freesignalspro.com</div>
+          <!-- Node chain -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
+            <div style="width:100%;background:#1e1e2e;border:1.5px solid #3b82f630;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#60a5fa;font-weight:600;margin-bottom:4px;">💬 Message</div>
+              <div style="font-size:11px;color:#9ca3af;">Welcome! Great to have you here. 👋</div>
+            </div>
+            <div style="width:2px;height:12px;background:#26263a;"></div>
+            <div style="width:100%;background:#1e1e2e;border:1.5px solid #a855f730;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#c084fc;font-weight:600;margin-bottom:4px;">✏️ Input → full_name</div>
+              <div style="font-size:11px;color:#9ca3af;">Let me know your full name below please.</div>
+            </div>
+            <div style="width:2px;height:12px;background:#26263a;"></div>
+            <div style="width:100%;background:#1e1e2e;border:1.5px solid #a855f730;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#c084fc;font-weight:600;margin-bottom:4px;">✏️ Input → email</div>
+              <div style="font-size:11px;color:#9ca3af;">Great — please enter your email for access.</div>
+            </div>
+            <div style="width:2px;height:12px;background:#26263a;"></div>
+            <div style="width:100%;background:#1e1e2e;border:1.5px solid #3b82f630;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#60a5fa;font-weight:600;margin-bottom:4px;">💬 Message</div>
+              <div style="font-size:11px;color:#9ca3af;">Here's what's inside: 5-7 trades/day, 85% win rate, broker partnership...</div>
+            </div>
+            <div style="width:2px;height:12px;background:#26263a;"></div>
+            <div style="width:100%;background:#1e1e2e;border:1.5px solid #22c55e30;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#4ade80;font-weight:600;margin-bottom:4px;">🔘 Buttons</div>
+              <div style="font-size:11px;color:#9ca3af;">Next Steps · Why is it free?</div>
+            </div>
+            <div style="width:2px;height:12px;background:#26263a;"></div>
+            <div style="width:100%;background:#1e1e2e;border:1.5px solid #22c55e30;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:10px;color:#4ade80;font-weight:600;margin-bottom:4px;">🔘 Buttons</div>
+              <div style="font-size:11px;color:#9ca3af;">Do you have a VT Markets account? Yes I do · No I'm new</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -605,10 +654,19 @@
           <p>The bot sends them here. The page explains the unlock offer — open a funded account through the broker link and get added to the premium signal feed. Social proof, real screenshots, clear CTA.</p>
         </div>
       </div>
-      <div class="lp-mock">
-        <div class="lp-headline">Unlock our <span>premium trading signals</span><br>when you fund your broker account.</div>
-        <div class="lp-sub">Real XAUUSD & DJ30 setups · Entry, SL, TP included · Live results</div>
-        <div class="lp-cta">⚡ Unlock Premium Signals</div>
+      <!-- Browser chrome + iframe -->
+      <div style="margin:0 20px 20px;border-radius:12px;overflow:hidden;border:1px solid #2a2a2a;">
+        <div style="background:#1a1a1a;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2a2a2a;">
+          <div style="display:flex;gap:5px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#28c840;"></div>
+          </div>
+          <div style="flex:1;background:#0d0d0d;border:1px solid #333;border-radius:6px;padding:4px 12px;font-size:11px;color:#555;text-align:center;">freesignalspro.com</div>
+        </div>
+        <div style="position:relative;height:420px;overflow:hidden;">
+          <iframe src="/" scrolling="no" style="width:1440px;height:900px;border:none;transform:scale(0.48);transform-origin:top left;pointer-events:none;"></iframe>
+        </div>
       </div>
     </div>
   </div>
@@ -625,11 +683,17 @@
           <p>Every CTA on the page goes directly to the VT Markets affiliate link. They sign up, fund their account, and confirm back to us. We add them to the premium feed. Commission tracked to your link.</p>
         </div>
       </div>
-      <div class="vt-mock">
-        <div class="vt-logo-text">VT <span>MARKETS</span></div>
-        <div class="vt-sub">Open your account via our partner link</div>
-        <div class="vt-btn">Open Account → vtm.pro/ym6jim</div>
-        <div class="vt-note">Affiliate tracked · Commission on every deposit</div>
+      <!-- Browser chrome + real VT page screenshot -->
+      <div style="margin:0 20px 20px;border-radius:12px;overflow:hidden;border:1px solid #2a2a2a;">
+        <div style="background:#1a1a1a;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #2a2a2a;">
+          <div style="display:flex;gap:5px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#28c840;"></div>
+          </div>
+          <div style="flex:1;background:#0d0d0d;border:1px solid #333;border-radius:6px;padding:4px 12px;font-size:11px;color:#555;text-align:center;">latam.vtmarkets.com/en/trade-now/?affid=7257221</div>
+        </div>
+        <img src="Screenshots/VTpage.jpeg" alt="VT Markets signup" style="width:100%;display:block;">
       </div>
     </div>
   </div>

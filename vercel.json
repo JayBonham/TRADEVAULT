@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "functions": {
     "api/telegram.py": {
       "maxDuration": 30
@@ -14,7 +15,7 @@
     {
       "source": "/",
       "has": [{ "type": "host", "value": "bot\\.freesignalspro\\.com" }],
-      "destination": "/dashboard.html",
+      "destination": "/dashboard",
       "permanent": false
     }
   ]
