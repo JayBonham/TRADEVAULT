@@ -420,6 +420,63 @@
     }
     .final img { height: 36px; width: auto; margin-bottom: 16px; }
     .final p { color: #444; font-size: 13px; }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .page { padding: 24px 16px 80px; }
+
+      /* Header */
+      .header { margin-bottom: 28px; }
+      .header-logos { gap: 10px; flex-wrap: wrap; justify-content: center; }
+      .header img { height: 26px; }
+      .vt-badge img { height: 20px; }
+      .vt-badge { padding: 6px 10px; }
+      .divider-x { font-size: 14px; }
+      .header h1 { font-size: 26px; }
+      .header p { font-size: 14px; }
+
+      /* Step cards */
+      .step-card { border-radius: 14px; }
+      .step-top { padding: 20px 20px 16px; gap: 12px; }
+      .step-num { width: 30px; height: 30px; font-size: 13px; flex-shrink: 0; }
+      .step-text h2 { font-size: 15px; }
+      .step-text p { font-size: 13px; }
+
+      /* Step-wide: kill the breakout on mobile */
+      .step-wide { max-width: 100%; margin-left: 0; margin-right: 0; }
+
+      /* Bot two-column → single column */
+      .step-wide .step-card > div[style*="grid-template-columns:1fr 1fr"] {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      /* FB carousel: smaller slides */
+      .fb-slide { width: 140px; }
+      .fb-slide img, .fb-slide-ph { height: 160px; }
+      .fb-copy { font-size: 12px; }
+
+      /* Telegram mock */
+      .tg-body { padding: 10px 12px; }
+      .tg-msg p { font-size: 12px; }
+
+      /* Bot bubbles */
+      .bot-mock { padding: 12px; }
+      .bot-bubble { font-size: 12px; padding: 8px 11px; }
+      .bot-btn { font-size: 11px; padding: 5px 11px; }
+
+      /* Dashboard */
+      .dash-mock { padding: 12px; }
+      .dash-stat .n { font-size: 18px; }
+
+      /* iframe preview: scale down more aggressively */
+      .lp-iframe-wrap { height: 260px !important; }
+      .lp-iframe-wrap iframe { transform: scale(0.3) !important; width: 1440px !important; height: 900px !important; }
+
+      /* Arrow */
+      .step-arrow { padding: 4px 0; }
+      .arrow-line { height: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -664,7 +721,7 @@
           </div>
           <div style="flex:1;background:#0d0d0d;border:1px solid #333;border-radius:6px;padding:4px 12px;font-size:11px;color:#555;text-align:center;">freesignalspro.com</div>
         </div>
-        <div style="position:relative;height:420px;overflow:hidden;">
+        <div class="lp-iframe-wrap" style="position:relative;height:420px;overflow:hidden;">
           <iframe src="/" scrolling="no" style="width:1440px;height:900px;border:none;transform:scale(0.48);transform-origin:top left;pointer-events:none;"></iframe>
         </div>
       </div>
