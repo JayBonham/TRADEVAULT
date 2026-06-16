@@ -153,9 +153,9 @@ h1, h2, h3 { line-height: 1.1; letter-spacing: -0.02em; font-weight: 700; }
   transition: border-color .2s, background .2s;
 }
 .nav.scrolled { border-bottom-color: var(--border); background: rgba(28,29,32,0.86); }
-.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 140px; }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
 .brand { display: flex; align-items: center; gap: 11px; }
-.brand img { height: 130px; width: auto; max-width: none; border-radius: 0; }
+.brand img { height: 32px; width: auto; max-width: none; border-radius: 0; }
 .brand .name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
 .brand .name span { color: var(--neon); }
 .nav-links { display: flex; align-items: center; gap: 30px; }

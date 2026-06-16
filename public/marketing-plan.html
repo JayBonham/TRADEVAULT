@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FSP × VT Markets — Strategy</title>
+  <link rel="icon" href="assets/fsp-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .page { max-width: 720px; margin: 0 auto; padding: 32px 24px 100px; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header-logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .header img { height: 100px; width: auto; display: block; }
+    .divider-x { font-size: 20px; color: #444; font-weight: 300; }
+    .vt-badge {
+      background: #003087;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .header-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(163,255,53,.1);
+      border: 1px solid rgba(163,255,53,.25);
+      color: #a3ff35;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      margin-bottom: 14px;
+    }
+    .header h1 span { color: #a3ff35; }
+    .header p {
+      color: #888;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Step ── */
+    .step {
+      position: relative;
+      margin-bottom: 0;
+    }
+
+    .step-card {
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .step-top {
+      padding: 28px 32px 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #a3ff35;
+      color: #0d0d0d;
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -.01em;
+    }
+    .step-text p {
+      font-size: 14px;
+      color: #888;
+      line-height: 1.6;
+    }
+
+    /* Visual area */
+    .step-visual {
+      margin: 0 20px 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #2a2a2a;
+      background: #111;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-visual img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 48px 24px;
+      color: #444;
+      text-align: center;
+      width: 100%;
+    }
+    .placeholder .ph-icon { font-size: 36px; }
+    .placeholder .ph-label { font-size: 13px; font-weight: 500; }
+    .placeholder .ph-sub { font-size: 11px; color: #333; }
+
+    /* Arrow between steps */
+    .step-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 0;
+      gap: 4px;
+    }
+    .arrow-line {
+      width: 2px;
+      height: 32px;
+      background: linear-gradient(to bottom, #2a2a2a, #a3ff35);
+    }
+    .arrow-head {
+      color: #a3ff35;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* ── FB Ad mockup ── */
+    .fb-mock {
+      background: #f0f2f5;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 20px 20px;
+      border: 1px solid #2a2a2a;
+    }
+    .fb-bar {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .fb-av {
+      width: 36px; height: 36px;
+      background: #a3ff35;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 12px; color: #0d0d0d;
+    }
+    .fb-info .name { font-size: 13px; font-weight: 700; color: #111; }
+    .fb-info .spon { font-size: 11px; color: #888; }
+    .fb-copy { padding: 12px 14px; font-size: 13px; color: #111; line-height: 1.5; }
+    .fb-copy strong { display: block; margin-bottom: 4px; }
+    .fb-slides { display: flex; gap: 8px; padding: 0 14px 12px; overflow-x: auto; }
+    .fb-slide {
+      flex-shrink: 0;
+      width: 170px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #ddd;
+      background: #e8e8e8;
+    }
+    .fb-slide img { width: 100%; height: 190px; object-fit: cover; display: block; }
+    .fb-slide-ph {
+      width: 100%; height: 190px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px; color: #aaa; font-size: 11px;
+      background: linear-gradient(135deg,#e8e8e8,#d8d8d8);
+    }
+    .fb-slide-ph span { font-size: 24px; }
+    .fb-slide-cap { padding: 8px 10px; background: #fff; font-size: 11px; font-weight: 600; color: #111; border-top: 1px solid #eee; }
+    .fb-slide-cap small { display: block; font-weight: 400; color: #888; }
+    .fb-foot { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #ddd; }
+    .fb-foot span { font-size: 11px; color: #888; }
+    .fb-foot button { background: #e4e6eb; border: none; font-size: 13px; font-weight: 600; color: #111; padding: 7px 18px; border-radius: 6px; cursor: pointer; }
+
+    /* ── Telegram group mockup ── */
+    .tg-mock {
+      background: #212121;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 20px 20px;
+      font-size: 13px;
+    }
+    .tg-header {
+      background: #2b2b2b;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #333;
+    }
+    .tg-av {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #a3ff35;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #0d0d0d;
+    }
+    .tg-name { font-size: 14px; font-weight: 600; }
+    .tg-members { font-size: 11px; color: #888; }
+    .tg-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .tg-msg {
+      background: #2b2b2b;
+      border-radius: 10px 10px 10px 2px;
+      padding: 10px 14px;
+      max-width: 85%;
+    }
+    .tg-msg.pinned {
+      border: 1px solid rgba(163,255,53,.3);
+      background: rgba(163,255,53,.05);
+    }
+    .tg-pinned-label {
+      font-size: 10px;
+      color: #a3ff35;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+    .tg-msg p { color: #ddd; line-height: 1.5; margin-bottom: 6px; }
+    .tg-msg a { color: #a3ff35; text-decoration: none; font-weight: 600; }
+    .tg-time { font-size: 10px; color: #555; text-align: right; margin-top: 4px; }
+
+    /* ── Bot sequence mockup ── */
+    .bot-mock {
+      background: #0f1923;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 20px 20px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .bot-bubble {
+      background: #1e2d3d;
+      border-radius: 10px 10px 10px 2px;
+      padding: 10px 14px;
+      max-width: 82%;
+      font-size: 13px;
+      color: #e0e0e0;
+      line-height: 1.5;
+    }
+    .bot-bubble.user-reply {
+      background: #2b6cb0;
+      border-radius: 10px 10px 2px 10px;
+      align-self: flex-end;
+    }
+    .bot-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .bot-btn {
+      background: transparent;
+      border: 1px solid #2b6cb0;
+      color: #60a5fa;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* ── Dashboard mockup ── */
+    .dash-mock {
+      background: #0f0f1a;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 20px 20px;
+      padding: 16px;
+    }
+    .dash-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .dash-stat {
+      flex: 1;
+      background: #1e1e2e;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .dash-stat .n { font-size: 22px; font-weight: 700; color: #fff; }
+    .dash-stat .l { font-size: 10px; color: #555; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+    .dash-lead {
+      background: #1e1e2e;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .lead-av {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+    }
+    .lead-info { flex: 1; }
+    .lead-info .ln { font-size: 13px; font-weight: 600; }
+    .lead-info .le { font-size: 11px; color: #555; }
+    .lead-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .lead-badge.done { background: rgba(34,197,94,.1); color: #4ade80; border: 1px solid rgba(34,197,94,.2); }
+    .lead-badge.active { background: rgba(234,179,8,.1); color: #fbbf24; border: 1px solid rgba(234,179,8,.2); }
+
+    /* ── Landing page mockup ── */
+    .lp-mock {
+      background: #0a0a0a;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 20px 20px;
+      padding: 20px;
+      text-align: center;
+    }
+    .lp-mock .lp-headline {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 10px;
+      letter-spacing: -.01em;
+    }
+    .lp-mock .lp-headline span { color: #a3ff35; }
+    .lp-mock .lp-sub { font-size: 12px; color: #666; margin-bottom: 16px; }
+    .lp-cta {
+      display: inline-block;
+      background: #a3ff35;
+      color: #0a0a0a;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 100px;
+    }
+
+    /* ── VT signup ── */
+    .vt-mock {
+      background: #001f6b;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 20px 20px;
+      padding: 24px;
+      text-align: center;
+    }
+    .vt-logo-text {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+    .vt-logo-text span { color: #f59e0b; }
+    .vt-sub { font-size: 12px; color: rgba(255,255,255,.5); margin-bottom: 16px; }
+    .vt-btn {
+      display: inline-block;
+      background: #f59e0b;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 8px;
+    }
+    .vt-note { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 10px; }
+
+    /* ── Final note ── */
+    .final {
+      text-align: center;
+      margin-top: 56px;
+      padding-top: 40px;
+      border-top: 1px solid #1e1e1e;
+    }
+    .final img { height: 100px; width: auto; margin-bottom: 16px; }
+    .final p { color: #444; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logos">
+      <img src="assets/fsp-logo.png" alt="Free Signals Pro">
+      <span class="divider-x">×</span>
+      <div class="vt-badge">VT MARKETS</div>
+    </div>
+    <div class="header-eyebrow">⚡ Partnership Strategy</div>
+    <h1>Here's exactly how<br><span>the funnel works.</span></h1>
+    <p>From the first ad impression to a funded broker account — every step, laid out.</p>
+  </div>
+
+  <!-- STEP 1 — FB ADS -->
+  <div class="step">
+    <div class="step-card">
+      <div class="step-top">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <h2>Paid Ad — Facebook / TikTok</h2>
+          <p>Carousel ad targeting retail traders. Slide 1 is a lifestyle visual, slide 2 is a real trading results screenshot. Stops the scroll, builds instant curiosity.</p>
+        </div>
+      </div>
+      <!-- FB carousel mockup -->
+      <div class="fb-mock">
+        <div class="fb-bar">
+          <div class="fb-av">FSP</div>
+          <div class="fb-info">
+            <div class="name">Free Signals Pro</div>
+            <div class="spon">Sponsored · 🌐</div>
+          </div>
+        </div>
+        <div class="fb-copy">
+          <strong>🚨 FREE DAILY GOLD & INDICES SIGNALS →</strong>
+          Many traders lose money trading without direction. We share daily XAUUSD &amp; DJ30 setups — entry, SL, TP and live results — completely free.
+        </div>
+        <div class="fb-slides">
+          <div class="fb-slide">
+            <img src="Screenshots/Screenshotguy.jpeg" alt="Lifestyle">
+            <div class="fb-slide-cap">Free Signals Pro<small>Join the Telegram →</small></div>
+          </div>
+          <div class="fb-slide">
+            <img src="Screenshots/Screenshotstats.jpeg" alt="Results">
+            <div class="fb-slide-cap">XAUUSD · +$18,497<small>Live account</small></div>
+          </div>
+          <div class="fb-slide">
+            <div class="fb-slide-ph" style="background:linear-gradient(135deg,#0a0a0a,#1a1a2e);">
+              <span style="color:#a3ff35;font-size:28px;">⚡</span>
+              <span style="color:#a3ff35;font-weight:700;font-size:12px;">Unlock Signals</span>
+              <span style="color:#555;font-size:10px;">freesignalspro.com</span>
+            </div>
+            <div class="fb-slide-cap">Fund &amp; unlock access<small>Takes 5 minutes</small></div>
+          </div>
+        </div>
+        <div class="fb-foot">
+          <span>freesignalspro.com</span>
+          <button>Learn More</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-arrow"><div class="arrow-line"></div><div class="arrow-head">↓</div></div>
+
+  <!-- STEP 2 — TELEGRAM GROUP -->
+  <div class="step">
+    <div class="step-card">
+      <div class="step-top">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <h2>Free Telegram Group</h2>
+          <p>Ad clicks land them in the free public Telegram channel. Real signals are posted here daily. Pinned at the top — a message directing them to start the bot and unlock premium.</p>
+        </div>
+      </div>
+      <div class="tg-mock">
+        <div class="tg-header">
+          <div class="tg-av">FSP</div>
+          <div>
+            <div class="tg-name">Free Signals Pro 📡</div>
+            <div class="tg-members">5,200 members</div>
+          </div>
+        </div>
+        <div class="tg-body">
+          <div class="tg-msg pinned">
+            <div class="tg-pinned-label">📌 Pinned</div>
+            <p>Want our <strong>premium XAUUSD setups</strong> with full entry, SL and TP?<br><br>
+            Click below to get started — takes 2 minutes 👇</p>
+            <a href="#">👉 t.me/FreeSignalsProBot</a>
+            <div class="tg-time">Pinned by admin</div>
+          </div>
+          <div class="tg-msg">
+            <p>🟢 <strong>XAUUSD SELL</strong> — Entry 4198.50 · SL 4212.00 · TP1 4182.00 · TP2 4165.00</p>
+            <div class="tg-time">11:42</div>
+          </div>
+          <div class="tg-msg">
+            <p>✅ TP1 Hit — XAUUSD sell <strong>+$373</strong></p>
+            <div class="tg-time">14:18</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-arrow"><div class="arrow-line"></div><div class="arrow-head">↓</div></div>
+
+  <!-- STEP 3 — BOT SEQUENCE -->
+  <div class="step">
+    <div class="step-card">
+      <div class="step-top">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <h2>Telegram Bot — Qualification Sequence</h2>
+          <p>They tap the link and the bot starts. It runs them through a short sequence — captures name, email, experience level. Qualifies intent before they even see the broker ask.</p>
+        </div>
+      </div>
+      <div class="bot-mock">
+        <div class="bot-bubble">👋 Welcome to Free Signals Pro! Before we get you set up, quick question — are you already trading, or are you new?</div>
+        <div class="bot-btns">
+          <button class="bot-btn">I already trade ✅</button>
+          <button class="bot-btn">I'm new 👀</button>
+        </div>
+        <div class="bot-bubble user-reply">I already trade ✅</div>
+        <div class="bot-bubble">Nice. What's your name?</div>
+        <div class="bot-bubble user-reply">Alex</div>
+        <div class="bot-bubble">And your email? We'll send you the access details.</div>
+        <div class="bot-bubble user-reply">alex@email.com</div>
+        <div class="bot-bubble">✅ Perfect. Head to <strong style="color:#a3ff35">freesignalspro.com</strong> to unlock your premium access — takes 5 minutes 👇</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-arrow"><div class="arrow-line"></div><div class="arrow-head">↓</div></div>
+
+  <!-- STEP 4 — DASHBOARD -->
+  <div class="step">
+    <div class="step-card">
+      <div class="step-top">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <h2>Backend Dashboard — Lead Tracking</h2>
+          <p>Every person who goes through the bot lands in a live dashboard. Name, email, their answers, status. You can see exactly who's in the funnel and where they dropped off.</p>
+        </div>
+      </div>
+      <div class="dash-mock">
+        <div class="dash-row">
+          <div class="dash-stat"><div class="n">24</div><div class="l">Total Leads</div></div>
+          <div class="dash-stat"><div class="n" style="color:#4ade80">18</div><div class="l">Completed</div></div>
+          <div class="dash-stat"><div class="n" style="color:#60a5fa">3</div><div class="l">Today</div></div>
+        </div>
+        <div class="dash-lead">
+          <div class="lead-av">JB</div>
+          <div class="lead-info"><div class="ln">Jay Bonham</div><div class="le">bonham.jay@gmail.com · Already trades</div></div>
+          <div class="lead-badge done">Done</div>
+        </div>
+        <div class="dash-lead">
+          <div class="lead-av">AT</div>
+          <div class="lead-info"><div class="ln">Alex T</div><div class="le">alex@email.com · Already trades</div></div>
+          <div class="lead-badge active">Active</div>
+        </div>
+        <div class="dash-lead">
+          <div class="lead-av">MR</div>
+          <div class="lead-info"><div class="ln">Mike R</div><div class="le">mike@email.com · New to trading</div></div>
+          <div class="lead-badge active">Active</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-arrow"><div class="arrow-line"></div><div class="arrow-head">↓</div></div>
+
+  <!-- STEP 5 — LANDING PAGE -->
+  <div class="step">
+    <div class="step-card">
+      <div class="step-top">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <h2>Landing Page — freesignalspro.com</h2>
+          <p>The bot sends them here. The page explains the unlock offer — open a funded account through the broker link and get added to the premium signal feed. Social proof, real screenshots, clear CTA.</p>
+        </div>
+      </div>
+      <div class="lp-mock">
+        <div class="lp-headline">Unlock our <span>premium trading signals</span><br>when you fund your broker account.</div>
+        <div class="lp-sub">Real XAUUSD & DJ30 setups · Entry, SL, TP included · Live results</div>
+        <div class="lp-cta">⚡ Unlock Premium Signals</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-arrow"><div class="arrow-line"></div><div class="arrow-head">↓</div></div>
+
+  <!-- STEP 6 — VT MARKETS -->
+  <div class="step">
+    <div class="step-card">
+      <div class="step-top">
+        <div class="step-num">6</div>
+        <div class="step-text">
+          <h2>VT Markets — Account Open & Deposit</h2>
+          <p>Every CTA on the page goes directly to the VT Markets affiliate link. They sign up, fund their account, and confirm back to us. We add them to the premium feed. Commission tracked to your link.</p>
+        </div>
+      </div>
+      <div class="vt-mock">
+        <div class="vt-logo-text">VT <span>MARKETS</span></div>
+        <div class="vt-sub">Open your account via our partner link</div>
+        <div class="vt-btn">Open Account → vtm.pro/ym6jim</div>
+        <div class="vt-note">Affiliate tracked · Commission on every deposit</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="final">
+    <img src="assets/fsp-logo.png" alt="Free Signals Pro">
+    <p>Free Signals Pro · freesignalspro.com · June 2026</p>
+  </div>
+
+</div>
+</body>
+</html>
