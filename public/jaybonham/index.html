@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%232FE39B'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%232FE39B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif}
+  ::selection{background:#2FE39B;color:#06080B}
+  a{color:inherit;text-decoration:none}
+  input{font-family:inherit}
+  @keyframes jbmarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes jbdraw{from{stroke-dashoffset:2600}to{stroke-dashoffset:0}}
+  @keyframes jbblink{0%,100%{opacity:1}50%{opacity:.2}}
+  @keyframes jbpulse{0%{transform:scale(1);opacity:.9}70%{transform:scale(2.2);opacity:0}100%{opacity:0}}
+  @keyframes jbrise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes jbspin{to{transform:rotate(360deg)}}
+  @keyframes jbspinr{to{transform:rotate(-360deg)}}
+</style>
+</helmet>
+<div id="top" style="position:relative;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;overflow-x:hidden;min-height:100vh">
+
+  <!-- ===== NAV ===== -->
+  <nav ref="{{ navRef }}" style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,56px);border-bottom:1px solid rgba(255,255,255,0);transition:background .35s ease,border-color .35s ease,backdrop-filter .35s ease">
+    <a onClick="{{ goHero }}" style="display:flex;align-items:center;gap:12px;cursor:pointer">
+      <svg width="36" height="36" viewBox="0 0 56 56" fill="none" style="flex:none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#2FE39B">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#2FE39B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#2FE39B"/></svg>
+      <div style="line-height:1">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase">JAY BONHAM</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+      </div>
+    </a>
+    <div data-deskonly data-disp="flex" style="display:flex;align-items:center;gap:34px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.14em;text-transform:uppercase">
+      <a onClick="{{ goStory }}" style="cursor:pointer;color:#9AA4B0;transition:color .2s" style-hover="color:#F2F5F7">Story</a>
+      <a onClick="{{ goMethod }}" style="cursor:pointer;color:#9AA4B0;transition:color .2s" style-hover="color:#F2F5F7">Method</a>
+      <a onClick="{{ goPrograms }}" style="cursor:pointer;color:#9AA4B0;transition:color .2s" style-hover="color:#F2F5F7">Programs</a>
+      <a onClick="{{ goSpeaking }}" style="cursor:pointer;color:#9AA4B0;transition:color .2s" style-hover="color:#F2F5F7">Speaking</a>
+      <a onClick="{{ goNews }}" style="cursor:pointer;color:#9AA4B0;transition:color .2s" style-hover="color:#F2F5F7">The Edge</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a data-deskonly data-disp="inline-flex" onClick="{{ goApply }}" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:11px 20px;transition:transform .2s,box-shadow .2s" style-hover="transform:translateY(-1px);box-shadow:0 8px 28px rgba(47,227,155,.32)">Apply →</a>
+      <button data-mobonly data-disp="flex" onClick="{{ toggleMenu }}" style="display:none;align-items:center;justify-content:center;width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer;color:#F2F5F7">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M1 4h16M1 9h16M1 14h16" stroke="#F2F5F7" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== MOBILE MENU ===== -->
+  <div ref="{{ menuRef }}" style="position:fixed;inset:0;z-index:200;background:#06080B;transform:translateX(100%);transition:transform .42s cubic-bezier(.7,0,.2,1);display:flex;flex-direction:column;padding:24px clamp(20px,6vw,40px)">
+    <div style="display:flex;align-items:center;justify-content:space-between;height:44px">
+      <div style="display:flex;align-items:center;gap:10px"><svg width="34" height="34" viewBox="0 0 56 56" fill="none" style="flex:none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#2FE39B">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#2FE39B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#2FE39B"/></svg><div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase">JAY BONHAM</div></div>
+      <button onClick="{{ toggleMenu }}" style="width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer;color:#F2F5F7">
+        <svg width="16" height="16" viewBox="0 0 16 16"><path d="M1 1l14 14M15 1L1 15" stroke="#F2F5F7" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:48px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,11vw,60px);line-height:1.05">
+      <a onClick="{{ goStory }}" style="cursor:pointer">Story</a>
+      <a onClick="{{ goMethod }}" style="cursor:pointer">Method</a>
+      <a onClick="{{ goPrograms }}" style="cursor:pointer">Programs</a>
+      <a onClick="{{ goSpeaking }}" style="cursor:pointer">Speaking</a>
+      <a onClick="{{ goNews }}" style="cursor:pointer">The Edge</a>
+    </div>
+    <div style="margin-top:auto;padding-top:30px;border-top:1px solid rgba(255,255,255,.1)">
+      <a onClick="{{ goApply }}" style="display:block;text-align:center;cursor:pointer;background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:18px;font-size:13px">Apply for Coaching →</a>
+    </div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <header style="position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden">
+    <img src="assets/raw/ev-3.jpg" alt="Jay Bonham on stage" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% 38%;filter:contrast(1.08) saturate(.92)"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,8,11,.94) 0%,rgba(6,8,11,.74) 38%,rgba(6,8,11,.28) 70%,rgba(6,8,11,.55) 100%)"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(0deg,#06080B 2%,rgba(6,8,11,0) 32%)"></div>
+    <!-- technical grid + chart line -->
+    <svg data-chart viewBox="0 0 1440 900" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;opacity:.5">
+      <polyline points="0,640 120,610 240,650 360,560 480,600 600,500 720,540 840,440 960,470 1080,360 1200,400 1320,300 1440,250" fill="none" stroke="#2FE39B" stroke-width="2" stroke-dasharray="2600" stroke-dashoffset="2600" style="animation:jbdraw 2.6s cubic-bezier(.6,0,.2,1) .3s forwards"/>
+      <circle cx="1320" cy="300" r="3.5" fill="#2FE39B"/>
+    </svg>
+    <div style="position:absolute;top:0;left:clamp(18px,4vw,56px);bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.12) 30%,rgba(255,255,255,.12) 70%,transparent)"></div>
+
+    <div style="position:relative;z-index:5;width:100%;max-width:1280px;margin:0 auto;padding:0 clamp(18px,4vw,56px) clamp(40px,7vh,86px)">
+      <div style="display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px">
+        <span style="width:28px;height:1px;background:#58E9FF"></span>
+        Market Educator · Performance Mentor · Speaker
+      </div>
+      <h1 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(54px,9.5vw,148px);line-height:0.88;letter-spacing:-0.012em;margin:0;max-width:14ch">
+        Master the markets.<br><span style="color:#2FE39B">Master yourself.</span>
+      </h1>
+      <p style="max-width:54ch;margin:28px 0 0;font-size:clamp(15px,1.5vw,19px);line-height:1.65;color:#C3CBD3">
+        Markets expose everything — your patience, your ego, your discipline. Jay Bonham trains traders to read risk, control emotion, and execute with precision when it counts most.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:38px">
+        <a onClick="{{ goApply }}" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:17px 28px;transition:transform .2s,box-shadow .2s" style-hover="transform:translateY(-2px);box-shadow:0 12px 36px rgba(47,227,155,.34)">Apply for Coaching →</a>
+        <a onClick="{{ goNews }}" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;background:transparent;color:#F2F5F7;border:1px solid rgba(255,255,255,.22);font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:17px 28px;transition:border-color .2s,background .2s" style-hover="border-color:#58E9FF;background:rgba(88,233,255,.06)">Get the Edge</a>
+      </div>
+    </div>
+
+    <div style="position:absolute;right:clamp(18px,4vw,56px);bottom:clamp(40px,7vh,86px);z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-family:'IBM Plex Mono',monospace">
+      <div data-deskonly data-disp="flex" style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.2em;color:#5C6672"><span style="width:6px;height:6px;border-radius:50%;background:#2FE39B;animation:jbblink 2s infinite"></span>LIVE COACHING · GLOBAL</div>
+      <div data-deskonly data-disp="block" style="font-size:11px;letter-spacing:0.2em;color:#5C6672">SCROLL ↓</div>
+    </div>
+  </header>
+
+  <!-- ===== MANTRA MARQUEE ===== -->
+  <div style="border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);overflow:hidden;background:#080B0F">
+    <div data-marquee style="display:flex;width:max-content;animation:jbmarquee 32s linear infinite;padding:18px 0">
+      <div style="display:flex;align-items:center;gap:40px;padding-right:40px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:0.08em;color:#6B7682">
+        <span>Discipline</span><span style="color:#2FE39B">/</span><span>Risk</span><span style="color:#2FE39B">/</span><span>Psychology</span><span style="color:#2FE39B">/</span><span>Execution</span><span style="color:#2FE39B">/</span><span>Review</span><span style="color:#2FE39B">/</span><span>Precision</span><span style="color:#2FE39B">/</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:40px;padding-right:40px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:0.08em;color:#6B7682" aria-hidden="true">
+        <span>Discipline</span><span style="color:#2FE39B">/</span><span>Risk</span><span style="color:#2FE39B">/</span><span>Psychology</span><span style="color:#2FE39B">/</span><span>Execution</span><span style="color:#2FE39B">/</span><span>Review</span><span style="color:#2FE39B">/</span><span>Precision</span><span style="color:#2FE39B">/</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MANIFESTO ===== -->
+  <section id="manifesto" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px)">
+    <div style="max-width:1280px;margin:0 auto">
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:46px">
+        <span>01</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">The Philosophy</span>
+      </div>
+      <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease .05s,transform .8s ease .05s;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(27px,3.4vw,50px);line-height:1.06;letter-spacing:-0.01em;margin:0;max-width:26ch">
+        Trading isn't signals. It's <span style="color:#2FE39B">decisions made under pressure</span> — repeated with discipline until precision becomes a habit.
+      </h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:clamp(28px,4vw,64px);margin-top:64px">
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;margin:0;font-size:clamp(15px,1.4vw,18px);line-height:1.7;color:#C3CBD3">
+          Most traders don't lose because their strategy is wrong. They lose because they can't follow it. The chart is the easy part. The hard part is the human behind it.
+        </p>
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .18s,transform .7s ease .18s;margin:0;font-size:clamp(15px,1.4vw,18px);line-height:1.7;color:#C3CBD3">
+          Jay teaches a complete operating system for the trader: a tested strategy, hard rules for risk, and the mental control to execute them the same way on your best day and your worst.
+        </p>
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .26s,transform .7s ease .26s;margin:0;font-size:clamp(15px,1.4vw,18px);line-height:1.7;color:#C3CBD3">
+          No hype. No lifestyle bait. Just structure, accountability, and sharper decisions — the difference between gambling and a profession.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROOF STRIP ===== -->
+  <section style="border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);background:#080B0F">
+    <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;padding:clamp(38px,5vw,64px) clamp(20px,3vw,44px);border-right:1px solid rgba(255,255,255,.08)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(46px,6vw,76px);line-height:1;color:#F2F5F7"><span data-count="12" data-suffix="">12</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.16em;text-transform:uppercase;color:#7A8590;margin-top:12px">Years trading the markets</div>
+      </div>
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .6s ease .08s,transform .6s ease .08s;padding:clamp(38px,5vw,64px) clamp(20px,3vw,44px);border-right:1px solid rgba(255,255,255,.08)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(46px,6vw,76px);line-height:1;color:#2FE39B"><span data-count="10" data-suffix="K+">10K+</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.16em;text-transform:uppercase;color:#7A8590;margin-top:12px">Traders mentored</div>
+      </div>
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .6s ease .16s,transform .6s ease .16s;padding:clamp(38px,5vw,64px) clamp(20px,3vw,44px);border-right:1px solid rgba(255,255,255,.08)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(46px,6vw,76px);line-height:1;color:#F2F5F7"><span data-count="30" data-suffix="+">30+</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.16em;text-transform:uppercase;color:#7A8590;margin-top:12px">Countries reached</div>
+      </div>
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .6s ease .24s,transform .6s ease .24s;padding:clamp(38px,5vw,64px) clamp(20px,3vw,44px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(46px,6vw,76px);line-height:1;color:#F2F5F7"><span data-count="250" data-suffix="+">250+</span></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.16em;text-transform:uppercase;color:#7A8590;margin-top:12px">Live stages &amp; talks</div>
+      </div>
+    </div>
+    <div style="max-width:1280px;margin:0 auto;padding:14px clamp(20px,3vw,44px) 22px"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:#626C77">Indicative figures — to be verified before launch.</span></div>
+  </section>
+
+  <!-- ===== CINEMATIC BAND ===== -->
+  <section style="position:relative;min-height:clamp(440px,72vh,760px);display:flex;align-items:flex-end;overflow:hidden">
+    <img src="assets/raw/ev-5.jpg" alt="Jay Bonham on stage" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:68% 40%;filter:contrast(1.08) brightness(.92)"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,8,11,.93) 0%,rgba(6,8,11,.6) 44%,rgba(6,8,11,.18) 78%)"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(0deg,#06080B 2%,rgba(6,8,11,0) 34%)"></div>
+    <div style="position:relative;z-index:5;width:100%;max-width:1280px;margin:0 auto;padding:0 clamp(18px,4vw,56px) clamp(48px,8vh,92px)">
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:22px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#58E9FF"></span>The Mantra</div>
+      <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(32px,5.6vw,84px);line-height:0.92;letter-spacing:-0.01em;margin:0;max-width:19ch">Strategy is the easy part. <span style="color:#2FE39B">Discipline is where traders are made.</span></h2>
+    </div>
+  </section>
+
+  <!-- ===== STORY ===== -->
+  <section id="story" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px)">
+    <div style="max-width:1280px;margin:0 auto">
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:48px">
+        <span>02</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">The Operator</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(40px,5vw,84px);align-items:center">
+        <!-- media stack -->
+        <div data-reveal style="opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease;position:relative;padding:0 clamp(30px,5vw,58px) clamp(40px,6vw,64px) 0">
+          <div style="position:absolute;left:-2%;top:-6%;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(90px,14vw,190px);line-height:0.72;color:rgba(255,255,255,.035);letter-spacing:-0.04em;pointer-events:none">JB</div>
+          <div style="position:relative;overflow:hidden;background:#0B0E13">
+            <img src="assets/raw/headshot-cover.png" alt="Jay Bonham portrait" style="width:100%;display:block;aspect-ratio:4/5;object-fit:cover;object-position:32% 26%;filter:grayscale(.16) contrast(1.07) brightness(.9)"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,0) 58%,rgba(6,8,11,.7) 100%)"></div>
+            <div style="position:absolute;left:18px;top:18px;width:22px;height:22px;border-left:1.5px solid #2FE39B;border-top:1.5px solid #2FE39B"></div>
+            <div style="position:absolute;left:18px;bottom:16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#8C97A2">Fig. A — The operator</div>
+          </div>
+          <!-- inset candid -->
+          <div style="position:absolute;right:0;bottom:0;width:56%;border:6px solid #06080B;overflow:hidden;background:#0B0E13">
+            <img src="assets/raw/ev-30.jpg" alt="Jay with traders" style="width:100%;display:block;aspect-ratio:3/2;object-fit:cover;object-position:42% 42%;filter:contrast(1.05)"/>
+            <div style="position:absolute;left:10px;bottom:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#B9C6C0">In the room</div>
+          </div>
+        </div>
+        <!-- narrative -->
+        <div>
+          <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(36px,5vw,74px);line-height:0.94;letter-spacing:-0.01em;margin:0 0 24px">
+            Built in the<br><span style="color:#2FE39B">drawdown.</span>
+          </h2>
+          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#7E8893;border:1px dashed rgba(255,255,255,.2);padding:9px 14px;margin-bottom:30px">
+            <span style="color:#2FE39B">✎ Draft</span> — placeholder until Jay's real story is confirmed
+          </div>
+          <div style="display:flex;flex-direction:column;gap:26px;max-width:54ch">
+            <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .05s,transform .7s ease .05s">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:10px">01 — Origin</div>
+              <p style="margin:0;font-size:clamp(15px,1.4vw,17px);line-height:1.7;color:#C3CBD3">Where Jay started, what he was doing before the markets, and the moment trading entered the picture. <span style="color:#6B7682">[ Replace with Jay's real beginning. ]</span></p>
+            </div>
+            <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .12s,transform .7s ease .12s">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:10px">02 — The Turn</div>
+              <p style="margin:0;font-size:clamp(15px,1.4vw,17px);line-height:1.7;color:#C3CBD3">The hard lesson and the shift from reacting to executing — the point where discipline replaced emotion. <span style="color:#6B7682">[ Confirm the real turning point with Jay. ]</span></p>
+            </div>
+            <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .19s,transform .7s ease .19s">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:10px">03 — The Mission</div>
+              <p style="margin:0;font-size:clamp(15px,1.4vw,17px);line-height:1.7;color:#C3CBD3">Why he coaches today and what he wants every trader in the room to become. <span style="color:#6B7682">[ Replace with Jay's own words. ]</span></p>
+            </div>
+            <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .26s,transform .7s ease .26s;display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:8px 14px">US30 / Indices</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:8px 14px">Risk Management</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:8px 14px">Trading Psychology</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== WARM CANDID BREAK ===== -->
+  <section style="position:relative;background:#100C09;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-items:stretch">
+      <div style="position:relative;min-height:clamp(320px,42vw,540px);overflow:hidden;background:#0B0E13">
+        <img src="assets/raw/ev-30.jpg" alt="Jay with traders after an event" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 40%;filter:contrast(1.04) saturate(1.05)"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(16,12,9,0) 55%,rgba(16,12,9,.85) 100%)"></div>
+        <div style="position:absolute;left:20px;bottom:18px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#C9BBA8">After the room · candid</div>
+      </div>
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;display:flex;flex-direction:column;justify-content:center;padding:clamp(40px,6vw,90px) clamp(24px,5vw,72px)">
+        <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#E0A86B;margin-bottom:26px"><span style="width:26px;height:1px;background:#E0A86B"></span>Off the clock</div>
+        <p style="margin:0;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(26px,3.4vw,46px);line-height:1.04;letter-spacing:-0.005em;color:#F4F1EC;max-width:20ch">Markets don't care how you feel. Your job is to show up the same way every day — <span style="color:#2FE39B">prepared, patient, and willing to do the boring work.</span></p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:30px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#9C9183">— Jay Bonham</div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#6B6051;border:1px dashed rgba(224,168,107,.4);padding:5px 9px">draft wording</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== METHOD ===== -->
+  <section id="method" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="max-width:1280px;margin:0 auto">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:60px">
+        <div>
+          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px">
+            <span>03</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">The Method</span>
+          </div>
+          <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5.2vw,72px);line-height:0.98;letter-spacing:-0.01em;margin:0">The Precision<br><span style="color:#2FE39B">Loop.</span></h2>
+        </div>
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;max-width:40ch;margin:0;font-size:15px;line-height:1.7;color:#9AA4B0">Jay's five-protocol system. Run it in order, every session — then the loop closes and the last step feeds the next trade. Not theory: a standing operating procedure for traders.</p>
+      </div>
+      <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .8s ease,transform .8s ease;display:flex;flex-direction:column;align-items:center;margin:0 0 56px">
+        <svg width="300" height="300" viewBox="0 0 260 260" fill="none" style="max-width:78vw">
+          <circle cx="130" cy="130" r="100" stroke="rgba(255,255,255,.13)" stroke-width="1"/>
+          <circle cx="130" cy="130" r="100" stroke="#2FE39B" stroke-width="1.4" stroke-dasharray="2 10" opacity="0.45"/>
+          <g style="transform-box:view-box;transform-origin:center;animation:jbspin 18s linear infinite">
+            <circle cx="130" cy="30" r="6.5" fill="#2FE39B"/>
+            <circle cx="130" cy="30" r="13" fill="#2FE39B" opacity="0.18"/>
+          </g>
+          <circle cx="130" cy="30" r="5" fill="#0B0E13" stroke="#2FE39B" stroke-width="1.6"/>
+          <circle cx="225.1" cy="99.1" r="5" fill="#0B0E13" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+          <circle cx="188.8" cy="210.9" r="5" fill="#0B0E13" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+          <circle cx="71.2" cy="210.9" r="5" fill="#0B0E13" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+          <circle cx="34.9" cy="99.1" r="5" fill="#0B0E13" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+          <text x="130" y="17" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1" fill="#2FE39B">01</text>
+          <text x="243" y="103" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1" fill="#7A8590">02</text>
+          <text x="200" y="232" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1" fill="#7A8590">03</text>
+          <text x="60" y="232" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1" fill="#7A8590">04</text>
+          <text x="17" y="103" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1" fill="#7A8590">05</text>
+          <text x="130" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9.5" letter-spacing="3" fill="#5C6672">THE</text>
+          <text x="130" y="142" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="26" letter-spacing="0.5" fill="#F2F5F7">PRECISION</text>
+          <text x="130" y="166" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="26" letter-spacing="0.5" fill="#2FE39B">LOOP</text>
+        </svg>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:30px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#9AA4B0">
+          <span><span style="color:#2FE39B">01</span> Strategy</span><span style="color:#3A424C">·</span>
+          <span><span style="color:#2FE39B">02</span> Risk</span><span style="color:#3A424C">·</span>
+          <span><span style="color:#2FE39B">03</span> Psychology</span><span style="color:#3A424C">·</span>
+          <span><span style="color:#2FE39B">04</span> Execution</span><span style="color:#3A424C">·</span>
+          <span><span style="color:#2FE39B">05</span> Review</span><span style="color:#2FE39B">↻</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.13)">
+
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease;display:grid;grid-template-columns:104px 1fr;gap:clamp(18px,4vw,56px);padding:clamp(28px,3.6vw,44px) 0;border-bottom:1px solid rgba(255,255,255,.13);align-items:start;transition:background .3s" style-hover="background:rgba(255,255,255,.018)">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(38px,5vw,56px);line-height:0.8;color:rgba(255,255,255,.2)">01</div>
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M6 10H38L27 23V37L17 32V23L6 10Z" stroke="#2FE39B" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:18px 32px;justify-content:space-between;align-items:flex-start">
+            <div style="max-width:60ch">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:8px">Protocol 01 · Strategy</div>
+              <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:1;letter-spacing:0.005em;margin:0 0 14px">The Setup Filter</h3>
+              <p style="margin:0;font-size:clamp(14.5px,1.3vw,16.5px);line-height:1.62;color:#9AA4B0">Only setups you can name and defend make the cut. Defined entries, a hard invalidation level, and zero improvising at the open.</p>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#C3CBD3;border-left:2px solid #2FE39B;padding:4px 0 4px 14px;max-width:24ch"><span style="color:#5C6672;display:block;margin-bottom:5px">Output</span>If you can't name it, you don't take it.</div>
+          </div>
+        </div>
+
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .6s ease .05s,transform .6s ease .05s;display:grid;grid-template-columns:104px 1fr;gap:clamp(18px,4vw,56px);padding:clamp(28px,3.6vw,44px) 0;border-bottom:1px solid rgba(255,255,255,.13);align-items:start;transition:background .3s" style-hover="background:rgba(255,255,255,.018)">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(38px,5vw,56px);line-height:0.8;color:rgba(255,255,255,.2)">02</div>
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect x="7" y="24" width="9" height="13" fill="#FF5C5C"/><rect x="22" y="8" width="9" height="29" fill="#2FE39B"/><line x1="4" y1="37" x2="40" y2="37" stroke="#2A323C" stroke-width="1.5"/></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:18px 32px;justify-content:space-between;align-items:flex-start">
+            <div style="max-width:60ch">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:8px">Protocol 02 · Risk</div>
+              <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:1;letter-spacing:0.005em;margin:0 0 14px">The Risk Envelope</h3>
+              <p style="margin:0;font-size:clamp(14.5px,1.3vw,16.5px);line-height:1.62;color:#9AA4B0">Size and stop are fixed before entry — a set percent per trade and a capped daily loss. A bad day stays a bad day, never a blown account.</p>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#C3CBD3;border-left:2px solid #2FE39B;padding:4px 0 4px 14px;max-width:24ch"><span style="color:#5C6672;display:block;margin-bottom:5px">Output</span>Risk is set before the open.</div>
+          </div>
+        </div>
+
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .6s ease .1s,transform .6s ease .1s;display:grid;grid-template-columns:104px 1fr;gap:clamp(18px,4vw,56px);padding:clamp(28px,3.6vw,44px) 0;border-bottom:1px solid rgba(255,255,255,.13);align-items:start;transition:background .3s" style-hover="background:rgba(255,255,255,.018)">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(38px,5vw,56px);line-height:0.8;color:rgba(255,255,255,.2)">03</div>
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><polyline points="4,24 13,24 17,12 22,32 27,24 40,24" fill="none" stroke="#2FE39B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:18px 32px;justify-content:space-between;align-items:flex-start">
+            <div style="max-width:60ch">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:8px">Protocol 03 · Psychology</div>
+              <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:1;letter-spacing:0.005em;margin:0 0 14px">The Cold Mind</h3>
+              <p style="margin:0;font-size:clamp(14.5px,1.3vw,16.5px);line-height:1.62;color:#9AA4B0">A pre-trade state you can repeat. Breathe, check the plan, kill the revenge trade — train the mind like an athlete so emotion stops trading for you.</p>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#C3CBD3;border-left:2px solid #2FE39B;padding:4px 0 4px 14px;max-width:24ch"><span style="color:#5C6672;display:block;margin-bottom:5px">Output</span>Same trader, green or red.</div>
+          </div>
+        </div>
+
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .6s ease .15s,transform .6s ease .15s;display:grid;grid-template-columns:104px 1fr;gap:clamp(18px,4vw,56px);padding:clamp(28px,3.6vw,44px) 0;border-bottom:1px solid rgba(255,255,255,.13);align-items:start;transition:background .3s" style-hover="background:rgba(255,255,255,.018)">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(38px,5vw,56px);line-height:0.8;color:rgba(255,255,255,.2)">04</div>
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="10" cy="22" r="4" stroke="#2A323C" stroke-width="1.5"/><path d="M14 22H34M28 15l8 7-8 7" stroke="#2FE39B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:18px 32px;justify-content:space-between;align-items:flex-start">
+            <div style="max-width:60ch">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:8px">Protocol 04 · Execution</div>
+              <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:1;letter-spacing:0.005em;margin:0 0 14px">The Trigger Routine</h3>
+              <p style="margin:0;font-size:clamp(14.5px,1.3vw,16.5px);line-height:1.62;color:#9AA4B0">A checklist that fires the same way every time. Hesitation and impulse both removed — you stop deciding in the moment and simply run the routine.</p>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#C3CBD3;border-left:2px solid #2FE39B;padding:4px 0 4px 14px;max-width:24ch"><span style="color:#5C6672;display:block;margin-bottom:5px">Output</span>One routine. Every entry.</div>
+          </div>
+        </div>
+
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .6s ease .2s,transform .6s ease .2s;display:grid;grid-template-columns:104px 1fr;gap:clamp(18px,4vw,56px);padding:clamp(28px,3.6vw,44px) 0;border-bottom:1px solid rgba(255,255,255,.13);align-items:start;transition:background .3s" style-hover="background:rgba(255,255,255,.018)">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(38px,5vw,56px);line-height:0.8;color:#2FE39B">05</div>
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M37 22a15 15 0 11-5-11" stroke="#2FE39B" stroke-width="1.6" stroke-linecap="round"/><path d="M33 4v8h-8" stroke="#2FE39B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:18px 32px;justify-content:space-between;align-items:flex-start">
+            <div style="max-width:60ch">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:8px">Protocol 05 · Review → loop</div>
+              <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:1;letter-spacing:0.005em;margin:0 0 14px">The Honest Review</h3>
+              <p style="margin:0;font-size:clamp(14.5px,1.3vw,16.5px);line-height:1.62;color:#9AA4B0">Journal every trade and grade the decision, not just the result. Lessons feed straight back into Protocol 01 — and the loop compounds your edge.</p>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#C3CBD3;border-left:2px solid #2FE39B;padding:4px 0 4px 14px;max-width:24ch"><span style="color:#5C6672;display:block;margin-bottom:5px">Output</span>The loop closes. Edge compounds.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROGRAMS ===== -->
+  <section id="programs" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px)">
+    <div style="max-width:1280px;margin:0 auto">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:58px">
+        <div>
+          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px">
+            <span>04</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">Work With Jay</span>
+          </div>
+          <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5.2vw,72px);line-height:0.98;letter-spacing:-0.01em;margin:0">Three levels.<br><span style="color:#2FE39B">One path.</span></h2>
+        </div>
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;max-width:38ch;margin:0;font-size:15px;line-height:1.7;color:#9AA4B0">Each level builds on the one before it. Start with the system, step into the room, then go direct with Jay — every path runs on the Precision Loop.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <!-- LEVEL 01 -->
+        <div data-reveal style="opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease,border-color .3s;background:#0A0D12;border:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(22px,3vw,48px);padding:clamp(26px,3vw,44px)" style-hover="border-color:rgba(88,233,255,.4)">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px">Level 01 · Self-guided</div>
+            <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,3.2vw,42px);line-height:0.96;margin:0 0 12px">Build the System</h3>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#9AA4B0;max-width:30ch">For new &amp; self-directed traders who want the framework and the tools.</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:22px"><span style="width:28px;height:4px;background:#2FE39B"></span><span style="width:28px;height:4px;background:#1A2027"></span><span style="width:28px;height:4px;background:#1A2027"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#7A8590;margin-left:6px">Support: self-guided</span></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.1)">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6B7682">A screen full of red</span>
+              <span style="color:#2FE39B">→</span>
+              <span style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:0.02em">A system you can run</span>
+            </div>
+            <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:11px;font-size:13.5px;color:#C3CBD3">
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Strategy &amp; setup library</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Risk &amp; position-size tools</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Trade journal templates</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Self-paced video lessons</li>
+            </ul>
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start">
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(40px,4vw,54px);line-height:1">$70</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#5C6672">one-time</span></div>
+            <a onClick="{{ goApply }}" style="margin-top:20px;width:100%;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,.24);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:15px;transition:border-color .2s,background .2s" style-hover="border-color:#58E9FF;background:rgba(88,233,255,.06)">Build the System</a>
+          </div>
+        </div>
+
+        <!-- LEVEL 02 -->
+        <div data-reveal style="opacity:0;transform:translateY(20px);transition:opacity .7s ease .08s,transform .7s ease .08s,border-color .3s;background:linear-gradient(140deg,#0B1A15 0%,#0A0D12 55%);border:1px solid rgba(47,227,155,.5);display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(22px,3vw,48px);padding:clamp(26px,3vw,44px);position:relative;box-shadow:0 24px 70px rgba(0,0,0,.35)">
+          <div style="position:absolute;top:0;right:clamp(20px,3vw,40px);transform:translateY(-50%);background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;padding:6px 12px">Most chosen</div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#2FE39B;margin-bottom:18px">Level 02 · Group + Jay</div>
+            <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,3.2vw,42px);line-height:0.96;margin:0 0 12px">Enter the Room</h3>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#B9C6C0;max-width:30ch">For traders who need accountability and live guidance to stay on the plan.</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:22px"><span style="width:28px;height:4px;background:#2FE39B"></span><span style="width:28px;height:4px;background:#2FE39B"></span><span style="width:28px;height:4px;background:#1A2027"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#7A8590;margin-left:6px">Support: group + Jay</span></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid rgba(47,227,155,.22)">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6B7682">Trading alone</span>
+              <span style="color:#2FE39B">→</span>
+              <span style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:0.02em">A room that holds you to it</span>
+            </div>
+            <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:11px;font-size:13.5px;color:#DCE6E1">
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Everything in Level 01</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Live group coaching calls</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Community &amp; trade reviews</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Weekly market notes</li>
+            </ul>
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start">
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(40px,4vw,54px);line-height:1;color:#2FE39B">$140</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#5C6672">/ month</span></div>
+            <a onClick="{{ goApply }}" style="margin-top:20px;width:100%;text-align:center;cursor:pointer;background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:15px;transition:transform .2s,box-shadow .2s" style-hover="transform:translateY(-2px);box-shadow:0 12px 32px rgba(47,227,155,.34)">Enter the Room</a>
+          </div>
+        </div>
+
+        <!-- LEVEL 03 -->
+        <div data-reveal style="opacity:0;transform:translateY(20px);transition:opacity .7s ease .16s,transform .7s ease .16s,border-color .3s;background:#0A0D12;border:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(22px,3vw,48px);padding:clamp(26px,3vw,44px)" style-hover="border-color:rgba(88,233,255,.4)">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px">Level 03 · By application</div>
+            <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,3.2vw,42px);line-height:0.96;margin:0 0 12px">Work With Jay</h3>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#9AA4B0;max-width:30ch">For serious traders going all-in who want Jay direct, over 90 days. Limited seats.</p>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:22px"><span style="width:28px;height:4px;background:#2FE39B"></span><span style="width:28px;height:4px;background:#2FE39B"></span><span style="width:28px;height:4px;background:#2FE39B"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#7A8590;margin-left:6px">Support: direct 1:1</span></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.1)">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6B7682">Good but inconsistent</span>
+              <span style="color:#2FE39B">→</span>
+              <span style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:0.02em">A personal operator</span>
+            </div>
+            <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:11px;font-size:13.5px;color:#C3CBD3">
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Private 1:1 sessions with Jay</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Personal trading plan &amp; review</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Direct message access</li>
+              <li style="display:flex;gap:9px"><span style="color:#2FE39B">→</span>Full room included</li>
+            </ul>
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start">
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(40px,4vw,54px);line-height:1">$3,500</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#5C6672">/ 90 days</span></div>
+            <a onClick="{{ goApply }}" style="margin-top:20px;width:100%;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,.24);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:15px;transition:border-color .2s,background .2s" style-hover="border-color:#58E9FF;background:rgba(88,233,255,.06)">Apply Now</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESULTS ===== -->
+  <section id="results" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="max-width:1280px;margin:0 auto">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:48px">
+        <div>
+          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px">
+            <span>05</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">Proof</span>
+          </div>
+          <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5.2vw,72px);line-height:0.96;letter-spacing:-0.01em;margin:0">From inside<br>the room.</h2>
+        </div>
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;max-width:40ch;margin:0;font-size:15px;line-height:1.7;color:#9AA4B0">Real students, real screens, real conversations. <span style="color:#6B7682">Every tile below is a slot — drop in verified video, DM screenshots, result shots and quotes.</span></p>
+      </div>
+      <!-- proof wall: featured row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+        <!-- big video testimonial -->
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;position:relative;overflow:hidden;min-height:clamp(340px,42vw,440px);background:#0B0E13;cursor:pointer" style-hover="">
+          <img src="assets/raw/ev-18.jpg" alt="Jay on stage with a student" style="width:100%;height:100%;position:absolute;inset:0;object-fit:cover;filter:contrast(1.06) brightness(.82)"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.1) 30%,rgba(6,8,11,.92) 100%)"></div>
+          <div style="position:absolute;left:24px;top:24px;display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:#06080B;background:#2FE39B;padding:6px 11px">▶ Video · Student story</div>
+          <div style="position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M7 4l11 7-11 7V4z" fill="#F2F5F7"/></svg></div>
+          <div style="position:absolute;left:24px;bottom:22px;right:24px">
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(22px,2.4vw,30px);line-height:1.05;margin-bottom:6px">“I stopped gambling and started executing.”</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#9AA4B0">[ Name · Mentorship Circle · replace with real clip ]</div>
+          </div>
+        </div>
+        <!-- right stack -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <!-- DM screenshot slot -->
+          <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .06s,transform .7s ease .06s;flex:1;border:1px dashed rgba(255,255,255,.2);background:#06080B;padding:24px;display:flex;flex-direction:column;min-height:170px">
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:auto">
+              <span style="align-self:flex-start;max-width:80%;background:#11161E;color:#8C97A2;font-size:12px;padding:9px 13px;border-radius:12px 12px 12px 3px">Started the week down, followed the plan…</span>
+              <span style="align-self:flex-end;max-width:80%;background:rgba(47,227,155,.16);color:#CDEBE0;font-size:12px;padding:9px 13px;border-radius:12px 12px 3px 12px">That's the loop working. Keep going.</span>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672;margin-top:16px">DM / message screenshot slot</div>
+          </div>
+          <!-- result screenshot slot -->
+          <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .12s,transform .7s ease .12s;flex:1;border:1px dashed rgba(255,255,255,.2);background:#06080B;padding:24px;display:flex;flex-direction:column;justify-content:space-between;min-height:170px;overflow:hidden">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#7A8590">Verified result</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#2FE39B">+ %</span></div>
+            <svg viewBox="0 0 200 60" preserveAspectRatio="none" style="width:100%;height:54px;opacity:.6"><polyline points="0,50 30,46 60,48 90,34 120,38 150,22 200,8" fill="none" stroke="#2FE39B" stroke-width="2"/></svg>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672">Verified result screenshot</div>
+          </div>
+        </div>
+      </div>
+      <!-- proof wall: lower row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:14px">
+        <!-- event clip -->
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;position:relative;overflow:hidden;min-height:240px;background:#0B0E13;cursor:pointer">
+          <img src="assets/raw/ev-11.jpg" alt="On stage at a live event" style="width:100%;height:100%;position:absolute;inset:0;object-fit:cover;filter:contrast(1.05) brightness(.82)"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.05) 40%,rgba(6,8,11,.9) 100%)"></div>
+          <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 22 22" fill="none"><path d="M7 4l11 7-11 7V4z" fill="#F2F5F7"/></svg></div>
+          <div style="position:absolute;left:20px;bottom:18px;right:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2FE39B;margin-bottom:5px">Event clip</div><div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:19px;line-height:1.05">Live from the stage</div></div>
+        </div>
+        <!-- student quote -->
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .07s,transform .7s ease .07s;background:#06080B;border:1px solid rgba(255,255,255,.1);padding:26px;display:flex;flex-direction:column;min-height:240px">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" style="margin-bottom:auto"><path d="M6 20c0-7 4-11 10-12M19 20c0-7 4-11 10-12" stroke="#2FE39B" stroke-width="1.5"/><path d="M6 20h7v8H6zM19 20h7v8h-7z" stroke="#2FE39B" stroke-width="1.5"/></svg>
+          <p style="font-family:'Saira Condensed',sans-serif;font-weight:600;text-transform:uppercase;font-size:clamp(18px,1.7vw,22px);line-height:1.14;margin:18px 0 14px">“He taught me to follow a plan instead of my emotions. First green month in a year.”</p>
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#11161E;border:1px solid rgba(255,255,255,.12)"></div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#5C6672">[ Name · photo ]</div></div>
+        </div>
+        <!-- second video testimonial -->
+        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .14s,transform .7s ease .14s;position:relative;overflow:hidden;min-height:240px;background:#0B0E13;cursor:pointer">
+          <img src="assets/raw/b3-h4.jpg" alt="Jay with a student" style="width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:50% 30%;filter:contrast(1.04) brightness(.84)"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.05) 40%,rgba(6,8,11,.9) 100%)"></div>
+          <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 22 22" fill="none"><path d="M7 4l11 7-11 7V4z" fill="#F2F5F7"/></svg></div>
+          <div style="position:absolute;left:20px;bottom:18px;right:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2FE39B;margin-bottom:5px">Photo with student</div><div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:19px;line-height:1.05">Jay + a member</div></div>
+        </div>
+      </div>
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;margin-top:30px;display:flex;flex-wrap:wrap;gap:9px;align-items:center">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7A8590;margin-right:4px">Assets needed:</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Video testimonial</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">DM screenshot</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Verified result screenshot</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Student quote</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Event clip</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Photo with student</span>
+      </div>
+      <p style="margin:18px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;letter-spacing:0.04em;color:#5A646F">Results disclaimer: any results or screenshots shown are individual and not typical. Trading involves substantial risk of loss and is not suitable for everyone; past performance does not guarantee future results. Only verified material will be used — no fabricated or guaranteed returns.</p>
+    </div>
+  </section>
+
+  <!-- ===== SPEAKING ===== -->
+  <section id="speaking" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px)">
+    <div style="max-width:1280px;margin:0 auto">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(36px,5vw,72px);align-items:center">
+        <div>
+          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px">
+            <span>06</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">Book Jay</span>
+          </div>
+          <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5vw,68px);line-height:0.98;letter-spacing:-0.01em;margin:0 0 24px">A speaker who's<br>actually <span style="color:#2FE39B">done it.</span></h2>
+          <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .08s,transform .7s ease .08s;margin:0 0 30px;max-width:48ch;font-size:clamp(15px,1.4vw,18px);line-height:1.7;color:#C3CBD3">From arena stages to private rooms, Jay delivers high-energy, no-fluff talks on performance, discipline and decision-making under pressure — for traders, teams and leaders.</p>
+          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .14s,transform .7s ease .14s;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);margin-bottom:32px">
+            <div style="background:#06080B;padding:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B;margin-bottom:8px">Keynotes</div><div style="font-size:13.5px;color:#9AA4B0;line-height:1.5">Main-stage talks on performance &amp; markets</div></div>
+            <div style="background:#06080B;padding:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B;margin-bottom:8px">Workshops</div><div style="font-size:13.5px;color:#9AA4B0;line-height:1.5">Corporate &amp; private trading intensives</div></div>
+            <div style="background:#06080B;padding:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B;margin-bottom:8px">Podcasts</div><div style="font-size:13.5px;color:#9AA4B0;line-height:1.5">Guest appearances &amp; interviews</div></div>
+            <div style="background:#06080B;padding:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B;margin-bottom:8px">Live Trainings</div><div style="font-size:13.5px;color:#9AA4B0;line-height:1.5">Events for trading communities</div></div>
+          </div>
+          <a data-reveal onClick="{{ goApply }}" style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .2s,transform .7s ease .2s;display:inline-flex;align-items:center;gap:10px;cursor:pointer;background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:16px 28px" style-hover="transform:translateY(-2px);box-shadow:0 12px 32px rgba(47,227,155,.3)">Book Jay to Speak →</a>
+        </div>
+        <div data-reveal style="opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:160px;gap:12px">
+          <div style="grid-row:span 2;position:relative;overflow:hidden;background:#0B0E13"><img src="assets/raw/ev-14.jpg" alt="Jay on stage" style="width:100%;height:100%;object-fit:cover;filter:contrast(1.05)"/></div>
+          <div style="position:relative;overflow:hidden;background:#0B0E13"><img src="assets/raw/ev-3.jpg" alt="Jay walking on stage" style="width:100%;height:100%;object-fit:cover;object-position:60% 40%;filter:contrast(1.05)"/></div>
+          <div style="position:relative;overflow:hidden;background:#0B0E13"><img src="assets/raw/ev-25.jpg" alt="Jay talking with attendees" style="width:100%;height:100%;object-fit:cover;filter:contrast(1.05)"/></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE EDGE (NEWSLETTER) ===== -->
+  <section id="edge" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);overflow:hidden">
+    <svg data-chart viewBox="0 0 1440 400" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;opacity:.18">
+      <polyline points="0,300 160,280 320,310 480,230 640,260 800,180 960,210 1120,120 1280,150 1440,70" fill="none" stroke="#2FE39B" stroke-width="1.5"/>
+    </svg>
+    <div style="position:relative;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(40px,5vw,80px);align-items:center">
+      <!-- LEFT: pitch + what you get + form -->
+      <div>
+        <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:24px">
+          <span style="width:6px;height:6px;border-radius:50%;background:#2FE39B"></span>The Edge Letter
+        </div>
+        <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5vw,68px);line-height:0.94;letter-spacing:-0.01em;margin:0">Sharper decisions,<br><span style="color:#2FE39B">every week.</span></h2>
+        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .08s,transform .7s ease .08s;margin:22px 0 0;max-width:48ch;font-size:clamp(15px,1.4vw,17px);line-height:1.7;color:#C3CBD3">Four short things in your inbox every week — no noise, no signals-for-hype. Plus the trading-mindset blueprint Jay gives every new trader the moment you join.</p>
+        <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .12s,transform .7s ease .12s;border:1px solid rgba(255,255,255,.1);margin:30px 0 0">
+          <div style="display:flex;gap:16px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)"><span style="flex:0 0 116px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B">Market Notes</span><span style="font-size:13.5px;line-height:1.5;color:#9AA4B0">What Jay's watching on US30 &amp; indices this week.</span></div>
+          <div style="display:flex;gap:16px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)"><span style="flex:0 0 116px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B">Risk Lesson</span><span style="font-size:13.5px;line-height:1.5;color:#9AA4B0">One rule to protect your account, explained simply.</span></div>
+          <div style="display:flex;gap:16px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)"><span style="flex:0 0 116px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B">Mindset Rep</span><span style="font-size:13.5px;line-height:1.5;color:#9AA4B0">A short psychology drill to train discipline.</span></div>
+          <div style="display:flex;gap:16px;padding:16px 18px"><span style="flex:0 0 116px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#2FE39B">The Decision</span><span style="font-size:13.5px;line-height:1.5;color:#9AA4B0">A real trade broken down — what he did, and why.</span></div>
+        </div>
+        <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:24px 0 0;max-width:520px;border:1px solid rgba(47,227,155,.5);background:rgba(47,227,155,.07);padding:22px;display:flex;align-items:center;gap:12px">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10" stroke="#2FE39B" stroke-width="1.4"/><path d="M6 11l3.5 3.5L16 8" stroke="#2FE39B" stroke-width="1.6"/></svg>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#2FE39B">You're in. Check your inbox for the blueprint.</span>
+          </div>
+        </sc-if>
+        <form onSubmit="{{ submitNews }}" data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .16s,transform .7s ease .16s;margin:24px 0 0;max-width:520px;display:flex;flex-wrap:wrap;gap:10px">
+          <input type="email" required placeholder="you@email.com" style="flex:1 1 220px;background:#06080B;border:1px solid rgba(255,255,255,.18);color:#F2F5F7;font-size:15px;padding:16px 18px;outline:none" style-focus="border-color:#2FE39B"/>
+          <button type="submit" style="flex:0 0 auto;cursor:pointer;background:#2FE39B;color:#05231A;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:0 28px" style-hover="box-shadow:0 10px 30px rgba(47,227,155,.32)">Get the Edge →</button>
+        </form>
+        <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .2s,transform .7s ease .2s;margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672">Join 10,000+ traders <span style="color:#5A646F">[ placeholder count ]</span></div>
+      </div>
+      <!-- RIGHT: letter preview -->
+      <div data-reveal style="opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease">
+        <div style="background:#0B0E13;border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 80px rgba(0,0,0,.45)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.1)">
+            <div style="display:flex;align-items:center;gap:9px"><svg width="22" height="22" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#2FE39B">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#2FE39B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:0.16em;text-transform:uppercase">The Edge Letter</span></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#5C6672">ISSUE №047</span>
+          </div>
+          <div style="padding:22px 20px;display:flex;flex-direction:column;gap:18px">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2FE39B;margin-bottom:9px">01 · Market Notes</div>
+              <div style="height:8px;width:100%;background:#161C24;margin-bottom:7px"></div><div style="height:8px;width:82%;background:#161C24;margin-bottom:7px"></div><div style="height:8px;width:64%;background:#11161E"></div>
+            </div>
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2FE39B;margin-bottom:9px">02 · Risk Lesson</div>
+              <div style="height:8px;width:92%;background:#161C24;margin-bottom:7px"></div><div style="height:8px;width:70%;background:#11161E"></div>
+            </div>
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2FE39B;margin-bottom:9px">03 · Mindset Rep</div>
+              <div style="height:8px;width:88%;background:#161C24;margin-bottom:7px"></div><div style="height:8px;width:54%;background:#11161E"></div>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,.08);padding-top:16px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#2FE39B;margin-bottom:10px">04 · The Decision</div>
+              <svg viewBox="0 0 260 60" preserveAspectRatio="none" style="width:100%;height:46px;opacity:.7"><polyline points="0,48 36,42 70,46 104,30 140,36 176,18 220,24 260,8" fill="none" stroke="#2FE39B" stroke-width="2"/><circle cx="260" cy="8" r="3" fill="#2FE39B"/></svg>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672">— Jay</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#626C77">Sample issue · for layout only</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FINAL CTA / APPLY ===== -->
+  <section id="apply" style="position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden">
+    <img src="assets/raw/ev-14.jpg" alt="Jay Bonham on stage" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 35%;filter:contrast(1.08) saturate(.9)"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,8,11,.95) 0%,rgba(6,8,11,.8) 45%,rgba(6,8,11,.5) 100%)"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(0deg,#06080B 1%,rgba(6,8,11,0) 30%)"></div>
+    <div style="position:relative;z-index:5;width:100%;max-width:1280px;margin:0 auto;padding:clamp(60px,10vh,110px) clamp(18px,4vw,56px)">
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:24px">Make the decision</div>
+      <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(44px,8vw,120px);line-height:0.9;letter-spacing:-0.012em;margin:0;max-width:13ch">Precision isn't luck. <span style="color:#2FE39B">It's trained.</span></h2>
+      <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .08s,transform .7s ease .08s;margin:28px 0 0;max-width:50ch;font-size:clamp(15px,1.5vw,19px);line-height:1.65;color:#C3CBD3">Pick your starting point. Whether you want the tools, the room, or direct access to Jay — the work starts the moment you commit.</p>
+      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .14s,transform .7s ease .14s;display:flex;flex-wrap:wrap;gap:14px;margin-top:40px">
+        <a onClick="{{ goPrograms }}" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;background:#2FE39B;color:#05231A;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:17px 28px" style-hover="transform:translateY(-2px);box-shadow:0 12px 36px rgba(47,227,155,.34)">Apply for Coaching →</a>
+        <a onClick="{{ goPrograms }}" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;border:1px solid rgba(255,255,255,.24);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:17px 28px" style-hover="border-color:#58E9FF;background:rgba(88,233,255,.06)">Enter the Room</a>
+        <a onClick="{{ goNews }}" style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;border:1px solid rgba(255,255,255,.24);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:17px 28px" style-hover="border-color:#58E9FF;background:rgba(88,233,255,.06)">Get the Edge</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="position:relative;padding:clamp(56px,8vh,90px) clamp(18px,4vw,56px) 36px">
+    <div style="max-width:1280px;margin:0 auto">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:40px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.1)">
+        <div style="grid-column:1/-1;max-width:420px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+            <svg width="42" height="42" viewBox="0 0 56 56" fill="none" style="flex:none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#2FE39B">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#2FE39B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#2FE39B"/></svg>
+            <div><div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase">JAY BONHAM</div><div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:0.32em;color:#58E9FF;text-transform:uppercase;margin-top:2px">Precision Under Pressure</div></div>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.65;color:#7A8590;max-width:38ch">Market education, mentorship and high-performance coaching for traders who want structure over noise.</p>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#5C6672;margin-bottom:18px">Explore</div>
+          <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;color:#9AA4B0">
+            <a onClick="{{ goStory }}" style="cursor:pointer" style-hover="color:#F2F5F7">Story</a>
+            <a onClick="{{ goMethod }}" style="cursor:pointer" style-hover="color:#F2F5F7">The Method</a>
+            <a onClick="{{ goPrograms }}" style="cursor:pointer" style-hover="color:#F2F5F7">Programs</a>
+            <a onClick="{{ goSpeaking }}" style="cursor:pointer" style-hover="color:#F2F5F7">Speaking</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#5C6672;margin-bottom:18px">Connect</div>
+          <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;color:#9AA4B0">
+            <a href="#" style="cursor:pointer" style-hover="color:#F2F5F7">Instagram</a>
+            <a href="#" style="cursor:pointer" style-hover="color:#F2F5F7">YouTube</a>
+            <a href="#" style="cursor:pointer" style-hover="color:#F2F5F7">X / Twitter</a>
+            <a href="mailto:hello@jaybonham.com" style="cursor:pointer" style-hover="color:#F2F5F7">hello@jaybonham.com</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#5C6672;margin-bottom:18px">The Edge Letter</div>
+          <p style="margin:0 0 14px;font-size:13.5px;line-height:1.6;color:#9AA4B0">Weekly market &amp; mindset notes.</p>
+          <a onClick="{{ goNews }}" style="display:inline-flex;cursor:pointer;border:1px solid rgba(255,255,255,.22);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;padding:11px 18px" style-hover="border-color:#2FE39B;color:#2FE39B">Subscribe →</a>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;padding-top:26px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:#626C77">
+        <div>© 2025 Jay Bonham. All rights reserved.</div>
+        <div style="display:flex;gap:24px"><a href="#" style="cursor:pointer" style-hover="color:#9AA4B0">Privacy</a><a href="#" style="cursor:pointer" style-hover="color:#9AA4B0">Terms</a><a href="#" style="cursor:pointer" style-hover="color:#9AA4B0">Risk Disclaimer</a></div>
+      </div>
+      <p style="margin:22px 0 0;max-width:90ch;font-size:10.5px;line-height:1.6;color:#5A646F">Trading involves substantial risk and is not suitable for every investor. Past performance is not indicative of future results. All education is for informational purposes only and is not financial advice.</p>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;marqueeSpeed&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Calm&quot;,&quot;Default&quot;,&quot;Fast&quot;],&quot;default&quot;:&quot;Default&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showChartLines&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { done: false };
+
+  go(id){
+    const el = document.getElementById(id);
+    if(el){ const y = el.getBoundingClientRect().top + window.scrollY - 64; window.scrollTo({top:y, behavior:'smooth'}); }
+    if(this.menuEl && this.menuOpen){ this.menuEl.style.transform='translateX(100%)'; this.menuOpen=false; }
+  }
+  toggleMenu(){
+    this.menuOpen = !this.menuOpen;
+    if(this.menuEl){ this.menuEl.style.transform = this.menuOpen ? 'translateX(0)' : 'translateX(100%)'; }
+  }
+  count(el){
+    const target = parseFloat(el.getAttribute('data-count'));
+    const suf = el.getAttribute('data-suffix') || '';
+    const dur = 1500, st = performance.now();
+    const step = (now)=>{
+      let p = Math.min(1,(now-st)/dur); p = 1 - Math.pow(1-p,3);
+      const v = target * p;
+      el.textContent = (target % 1 === 0 ? Math.round(v) : v.toFixed(1)) + suf;
+      if(p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  applyResp(){
+    const m = window.innerWidth < 880;
+    document.querySelectorAll('[data-deskonly]').forEach(el=>{ el.style.display = m ? 'none' : (el.getAttribute('data-disp')||'flex'); });
+    document.querySelectorAll('[data-mobonly]').forEach(el=>{ el.style.display = m ? (el.getAttribute('data-disp')||'flex') : 'none'; });
+  }
+  componentDidMount(){
+    this.onScroll = ()=>{
+      const s = window.scrollY > 24;
+      if(this.nav){
+        this.nav.style.background = s ? 'rgba(6,8,11,0.82)' : 'rgba(6,8,11,0)';
+        this.nav.style.borderBottomColor = s ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0)';
+        this.nav.style.backdropFilter = s ? 'blur(14px)' : 'none';
+        this.nav.style.webkitBackdropFilter = s ? 'blur(14px)' : 'none';
+      }
+    };
+    window.addEventListener('scroll', this.onScroll, {passive:true});
+    this.onScroll();
+    this.applyResp();
+    this.onResize = ()=> this.applyResp();
+    window.addEventListener('resize', this.onResize);
+
+    const io = new IntersectionObserver((es)=>{
+      es.forEach(e=>{ if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; io.unobserve(e.target); } });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('[data-reveal]').forEach(el=>io.observe(el));
+
+    const co = new IntersectionObserver((es)=>{
+      es.forEach(e=>{ if(e.isIntersecting){ this.count(e.target); co.unobserve(e.target); } });
+    }, {threshold:0.6});
+    document.querySelectorAll('[data-count]').forEach(el=>co.observe(el));
+
+    this.applyTweaks();
+  }
+  applyTweaks(){
+    const speed = this.props.marqueeSpeed || 'Default';
+    const dur = speed === 'Calm' ? '54s' : (speed === 'Fast' ? '18s' : '32s');
+    document.querySelectorAll('[data-marquee]').forEach(el=> el.style.animationDuration = dur);
+    const show = this.props.showChartLines !== false;
+    document.querySelectorAll('[data-chart]').forEach(el=> el.style.display = show ? '' : 'none');
+  }
+  componentDidUpdate(){ this.applyTweaks(); }
+  componentWillUnmount(){
+    if(this.onScroll) window.removeEventListener('scroll', this.onScroll);
+    if(this.onResize) window.removeEventListener('resize', this.onResize);
+  }
+  renderVals(){
+    return {
+      navRef: (el)=> this.nav = el,
+      menuRef: (el)=> this.menuEl = el,
+      toggleMenu: ()=> this.toggleMenu(),
+      goHero: ()=> this.go('top'),
+      goStory: ()=> this.go('story'),
+      goMethod: ()=> this.go('method'),
+      goPrograms: ()=> this.go('programs'),
+      goSpeaking: ()=> this.go('speaking'),
+      goNews: ()=> this.go('edge'),
+      goApply: ()=> this.go('apply'),
+      submitNews: (e)=>{ e.preventDefault(); this.setState({done:true}); },
+      done: this.state.done
+    };
+  }
+}
+</script>
+</body>
+</html>

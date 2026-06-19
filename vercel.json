@@ -18,5 +18,27 @@
       "destination": "/dashboard",
       "permanent": false
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "jaybonham.com" }],
+      "destination": "/jaybonham/index.html"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.jaybonham.com" }],
+      "destination": "/jaybonham/index.html"
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "jaybonham.com" }],
+      "destination": "/jaybonham/:path*"
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.jaybonham.com" }],
+      "destination": "/jaybonham/:path*"
+    }
   ]
 }
