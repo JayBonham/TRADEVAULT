@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "functions": {
+    "api/jb-subscribe.py": { "maxDuration": 10 },
+    "api/jb-slots.py": { "maxDuration": 15 },
+    "api/jb-book.py": { "maxDuration": 15 }
+  }
+}
