@@ -9,6 +9,9 @@
     },
     "api/flow.py": {
       "maxDuration": 10
+    },
+    "api/jb-subscribe.py": {
+      "maxDuration": 10
     }
   },
   "redirects": [

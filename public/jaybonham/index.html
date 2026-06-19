@@ -788,7 +788,18 @@ class Component extends DCLogic {
       goSpeaking: ()=> this.go('speaking'),
       goNews: ()=> this.go('edge'),
       goApply: ()=> this.go('apply'),
-      submitNews: (e)=>{ e.preventDefault(); this.setState({done:true}); },
+      submitNews: (e)=>{
+        e.preventDefault();
+        const email = e.target.querySelector('input[type="email"]').value;
+        fetch('/api/jb-subscribe', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email})
+        })
+        .then(r => r.json())
+        .then(() => this.setState({done: true}))
+        .catch(() => this.setState({done: true}));
+      },
       done: this.state.done
     };
   }
