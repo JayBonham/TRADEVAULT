@@ -4,6 +4,8 @@ import os
 from http.server import BaseHTTPRequestHandler
 
 CAL_API_KEY = os.environ.get("CAL_API_KEY", "")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+BREVO_JB_LIST_ID = int(os.environ.get("BREVO_JB_LIST_ID", "0"))
 EVENT_TYPE_ID = 6066137
 
 
@@ -48,12 +50,31 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(res.read().decode())
 
             if res.status in (200, 201):
+                self._add_to_brevo(name, email)
                 self._json(200, {"ok": True, "booking": data.get("data", {})})
             else:
                 self._json(res.status, {"error": "Booking failed", "detail": data})
 
         except Exception as e:
             self._json(500, {"error": str(e)})
+
+    def _add_to_brevo(self, name, email):
+        try:
+            payload = json.dumps({
+                "email": email,
+                "attributes": {"FIRSTNAME": name.split()[0], "LASTNAME": " ".join(name.split()[1:])},
+                "listIds": [BREVO_JB_LIST_ID],
+                "updateEnabled": True,
+            }).encode()
+            conn = http.client.HTTPSConnection("api.brevo.com")
+            conn.request("POST", "/v3/contacts", payload, {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "api-key": BREVO_API_KEY,
+            })
+            conn.getresponse()
+        except Exception:
+            pass  # don't fail the booking if Brevo is down
 
     def _json(self, status, body):
         payload = json.dumps(body).encode()

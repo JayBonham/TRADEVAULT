@@ -5,7 +5,7 @@ from http.server import BaseHTTPRequestHandler
 
 
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
-BREVO_JB_LIST_ID = int(os.environ.get("BREVO_JB_LIST_ID", "0"))
+BREVO_JB_NEWSLETTER_ID = int(os.environ.get("BREVO_JB_NEWSLETTER_ID", "0"))
 
 
 class handler(BaseHTTPRequestHandler):
@@ -24,7 +24,7 @@ class handler(BaseHTTPRequestHandler):
 
             payload = json.dumps({
                 "email": email,
-                "listIds": [BREVO_JB_LIST_ID],
+                "listIds": [BREVO_JB_NEWSLETTER_ID],
                 "updateEnabled": True
             }).encode()
 
