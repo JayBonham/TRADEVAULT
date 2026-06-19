@@ -606,10 +606,12 @@
             <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#4B9EFF">You're in. Check your inbox for the blueprint.</span>
           </div>
         </sc-if>
+        <sc-if value="{{ !done }}" hint-placeholder-val="{{ true }}">
         <form onSubmit="{{ submitNews }}" data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .16s,transform .7s ease .16s;margin:24px 0 0;max-width:520px;display:flex;flex-wrap:wrap;gap:10px">
           <input type="email" required placeholder="you@email.com" style="flex:1 1 220px;background:#06080B;border:1px solid rgba(255,255,255,.18);color:#F2F5F7;font-size:15px;padding:16px 18px;outline:none" style-focus="border-color:#4B9EFF"/>
           <button type="submit" style="flex:0 0 auto;cursor:pointer;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;padding:0 28px" style-hover="box-shadow:0 10px 30px rgba(75,158,255,.32)">Get the Edge →</button>
         </form>
+        </sc-if>
         <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .2s,transform .7s ease .2s;margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672">Join 10,000+ traders <span style="color:#5A646F">[ placeholder count ]</span></div>
       </div>
       <!-- RIGHT: letter preview -->
