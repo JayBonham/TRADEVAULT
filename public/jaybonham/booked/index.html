@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You're Booked — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+<!-- =========================================================
+     PIXEL PLACEHOLDER — META
+     Replace YOUR_PIXEL_ID with actual ID when ready
+     ========================================================= -->
+<!--
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'YOUR_PIXEL_ID');
+fbq('track', 'PageView');
+fbq('track', 'Schedule');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=Schedule&noscript=1"/></noscript>
+-->
+
+<!-- =========================================================
+     PIXEL PLACEHOLDER — GOOGLE
+     Replace YOUR_GTAG_ID with actual ID when ready
+     ========================================================= -->
+<!--
+<script async src="https://www.googletagmanager.com/gtag/js?id=YOUR_GTAG_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'YOUR_GTAG_ID');
+  gtag('event', 'conversion', { 'send_to': 'YOUR_GTAG_ID/YOUR_CONVERSION_LABEL' });
+</script>
+-->
+
+<style>
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  html,body{margin:0;padding:0;min-height:100vh;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif}
+  ::selection{background:#4B9EFF;color:#030D1F}
+  a{color:inherit;text-decoration:none}
+
+  @keyframes jbcheck{
+    from{stroke-dashoffset:60}
+    to{stroke-dashoffset:0}
+  }
+  @keyframes jbring{
+    0%{transform:scale(0.7);opacity:0}
+    60%{transform:scale(1.06)}
+    100%{transform:scale(1);opacity:1}
+  }
+  @keyframes jbpulse{
+    0%{transform:scale(1);opacity:0.5}
+    70%{transform:scale(2.4);opacity:0}
+    100%{opacity:0}
+  }
+  @keyframes jbrise{
+    from{opacity:0;transform:translateY(20px)}
+    to{opacity:1;transform:none}
+  }
+
+  .jb-anim-1{animation:jbrise .6s ease .15s both}
+  .jb-anim-2{animation:jbrise .6s ease .3s both}
+  .jb-anim-3{animation:jbrise .6s ease .45s both}
+  .jb-anim-4{animation:jbrise .6s ease .6s both}
+  .jb-anim-5{animation:jbrise .6s ease .75s both}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,56px);border-bottom:1px solid rgba(255,255,255,0.07);background:#06080B">
+  <a href="/jaybonham/" style="display:flex;align-items:center;gap:12px">
+    <svg width="36" height="36" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
+    <div style="line-height:1">
+      <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase">JAY BONHAM</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+    </div>
+  </a>
+</nav>
+
+<!-- Main -->
+<main style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px clamp(20px,5vw,60px) 60px;text-align:center">
+
+  <!-- Check icon -->
+  <div class="jb-anim-1" style="position:relative;width:88px;height:88px;margin-bottom:40px">
+    <!-- Pulse ring -->
+    <div style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(75,158,255,0.4);animation:jbpulse 2s ease 0.5s infinite"></div>
+    <!-- Circle + check -->
+    <svg width="88" height="88" viewBox="0 0 88 88" fill="none" style="animation:jbring .5s cubic-bezier(.34,1.56,.64,1) both">
+      <circle cx="44" cy="44" r="42" stroke="rgba(75,158,255,0.15)" stroke-width="1.5"/>
+      <circle cx="44" cy="44" r="42" stroke="#4B9EFF" stroke-width="1.5" stroke-dasharray="264" stroke-dashoffset="264" style="animation:jbcheck .6s cubic-bezier(.6,0,.2,1) .2s forwards"/>
+      <polyline points="27,44 40,57 62,34" fill="none" stroke="#4B9EFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="60" stroke-dashoffset="60" style="animation:jbcheck .4s cubic-bezier(.6,0,.2,1) .55s forwards"/>
+    </svg>
+  </div>
+
+  <!-- Label -->
+  <div class="jb-anim-2" style="display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#58E9FF;margin-bottom:20px">
+    <span style="width:22px;height:1px;background:#58E9FF"></span>
+    Session Confirmed
+    <span style="width:22px;height:1px;background:#58E9FF"></span>
+  </div>
+
+  <!-- Headline -->
+  <h1 class="jb-anim-3" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(42px,7vw,96px);line-height:0.9;letter-spacing:-0.01em;margin:0 0 24px;max-width:14ch">
+    You're in.<br><span style="color:#4B9EFF">See you soon.</span>
+  </h1>
+
+  <!-- Sub -->
+  <p class="jb-anim-4" style="font-size:clamp(15px,1.4vw,18px);line-height:1.7;color:#9AA4B0;max-width:46ch;margin:0 0 48px">
+    Check your email for the calendar invite and session details. Come prepared — Jay doesn't do small talk.
+  </p>
+
+  <!-- Next steps -->
+  <div class="jb-anim-4" style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;margin-bottom:52px;text-align:left">
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:18px 20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02)">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4B9EFF;letter-spacing:0.1em;min-width:24px;margin-top:2px">01</span>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F7;margin-bottom:4px">Check your inbox</div>
+        <div style="font-size:13px;color:#7A8590;line-height:1.5">Cal Video link + calendar invite on the way.</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:18px 20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02)">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4B9EFF;letter-spacing:0.1em;min-width:24px;margin-top:2px">02</span>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F7;margin-bottom:4px">Come prepared</div>
+        <div style="font-size:13px;color:#7A8590;line-height:1.5">Know your current setup, your biggest blocker, and what you want to change.</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:18px 20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02)">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4B9EFF;letter-spacing:0.1em;min-width:24px;margin-top:2px">03</span>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F7;margin-bottom:4px">While you wait</div>
+        <div style="font-size:13px;color:#7A8590;line-height:1.5">Subscribe to The Edge — Jay's weekly letter on discipline and execution.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTAs -->
+  <div class="jb-anim-5" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+    <a href="/jaybonham/" style="display:inline-flex;align-items:center;gap:8px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:14px 26px">← Back to Site</a>
+    <a href="mailto:hello@jaybonham.com" style="display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.2);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:14px 26px">Questions? Email Jay</a>
+  </div>
+
+</main>
+
+<!-- Footer rule -->
+<div style="border-top:1px solid rgba(255,255,255,0.06);padding:24px clamp(18px,4vw,56px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#3C4650">© Jay Bonham</span>
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#3C4650">Precision Under Pressure</span>
+</div>
+
+</body>
+</html>
