@@ -794,5 +794,88 @@ class Component extends DCLogic {
   }
 }
 </script>
+
+<!-- ===== BOOKING OVERLAY ===== -->
+<div id="jb-cal-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#06080B;overflow-y:auto">
+
+  <!-- Top bar -->
+  <div style="position:sticky;top:0;z-index:10;background:#06080B;border-bottom:1px solid rgba(255,255,255,0.08);height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,56px)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <svg width="36" height="36" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
+      <div style="line-height:1">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase;color:#F2F5F7">JAY BONHAM</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+      </div>
+    </div>
+    <button onclick="jbCloseBooking()" style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);cursor:pointer;color:#F2F5F7;font-size:18px;font-family:inherit">✕</button>
+  </div>
+
+  <!-- Booking header -->
+  <div style="max-width:900px;margin:0 auto;padding:clamp(32px,5vw,56px) clamp(20px,4vw,40px) 0">
+    <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px">
+      <span style="width:24px;height:1px;background:#58E9FF"></span>
+      Work With Jay
+    </div>
+    <h2 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,4vw,52px);line-height:0.94;letter-spacing:-0.01em;margin:0 0 10px;color:#F2F5F7">Book Your <span style="color:#4B9EFF">Strategy Session</span></h2>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#7A8590;letter-spacing:0.04em;margin:0 0 clamp(28px,4vw,44px)">30 min · Cal Video · Select a time that works for you</p>
+  </div>
+
+  <!-- Cal.com embed -->
+  <div id="jb-cal-embed" style="max-width:900px;margin:0 auto;padding:0 clamp(20px,4vw,40px) 60px;min-height:600px"></div>
+
+</div>
+
+<script>
+(function(C,A,L){let p=function(a,ar){a.q.push(ar);};let d=C.document;C.Cal=C.Cal||function(){let cal=C.Cal;let ar=arguments;if(!cal.loaded){cal.ns={};cal.q=cal.q||[];d.head.appendChild(d.createElement("script")).src=A;cal.loaded=true;}if(ar[0]===L){const api=function(){p(api,arguments);};const namespace=ar[1];api.q=api.q||[];if(typeof namespace==="string"){cal.ns[namespace]=cal.ns[namespace]||api;p(cal.ns[namespace],ar);p(cal,[L,namespace,ar[2]])}else p(cal,ar);return;}p(cal,ar);};})(window,"https://app.cal.com/embed/embed.js","init");
+Cal("init","work-with-jay",{origin:"https://cal.com"});
+
+document.addEventListener("click",function(e){
+  var link=e.target.closest('a[href*="cal.com/jaybonham"]');
+  if(link){e.preventDefault();jbOpenBooking();}
+});
+
+function jbOpenBooking(){
+  var o=document.getElementById("jb-cal-overlay");
+  o.style.display="block";
+  o.scrollTop=0;
+  document.body.style.overflow="hidden";
+  if(!window._jbCalLoaded){
+    Cal.ns["work-with-jay"]("inline",{
+      elementOrSelector:"#jb-cal-embed",
+      calLink:"jaybonham/work-with-jay",
+      layout:"month_view"
+    });
+    Cal.ns["work-with-jay"]("ui",{
+      theme:"dark",
+      hideEventTypeDetails:false,
+      cssVarsPerTheme:{
+        dark:{
+          "cal-brand":"#4B9EFF",
+          "cal-brand-emphasis":"#6DB3FF",
+          "cal-brand-text":"#030D1F",
+          "cal-bg":"#06080B",
+          "cal-bg-emphasis":"#0D1117",
+          "cal-bg-muted":"#0A0C10",
+          "cal-bg-subtle":"#0D1117",
+          "cal-text":"#F2F5F7",
+          "cal-text-emphasis":"#FFFFFF",
+          "cal-text-muted":"#7A8590",
+          "cal-border":"rgba(255,255,255,0.1)",
+          "cal-border-emphasis":"rgba(75,158,255,0.35)",
+          "cal-border-subtle":"rgba(255,255,255,0.06)"
+        }
+      }
+    });
+    window._jbCalLoaded=true;
+  }
+}
+
+function jbCloseBooking(){
+  document.getElementById("jb-cal-overlay").style.display="none";
+  document.body.style.overflow="";
+}
+
+document.addEventListener("keydown",function(e){if(e.key==="Escape")jbCloseBooking();});
+</script>
 </body>
 </html>
