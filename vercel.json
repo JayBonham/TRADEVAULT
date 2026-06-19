@@ -30,6 +30,16 @@
   ],
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "has": [{ "type": "host", "value": "jaybonham.com" }],
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "has": [{ "type": "host", "value": "www.jaybonham.com" }],
+      "destination": "/api/:path*"
+    },
+    {
       "source": "/",
       "has": [{ "type": "host", "value": "jaybonham.com" }],
       "destination": "/jaybonham/index.html"
