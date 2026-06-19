@@ -807,86 +807,289 @@ class Component extends DCLogic {
 </script>
 
 <!-- ===== BOOKING OVERLAY ===== -->
-<div id="jb-cal-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#06080B;overflow-y:auto">
+<style>
+  .jb-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;transition:background .12s,color .12s;border:1px solid transparent}
+  .jb-day-avail{cursor:pointer;color:#F2F5F7}
+  .jb-day-avail:hover{background:rgba(75,158,255,0.12);color:#4B9EFF}
+  .jb-day-sel{background:#4B9EFF!important;color:#030D1F!important}
+  .jb-day-today{border-color:rgba(75,158,255,0.4)}
+  .jb-day-dim{color:#2C3340;cursor:default}
+  .jb-slot{width:100%;padding:13px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:0.04em;cursor:pointer;text-align:left;transition:background .12s,border-color .12s,color .12s}
+  .jb-slot:hover{background:rgba(75,158,255,0.1);border-color:rgba(75,158,255,0.35);color:#4B9EFF}
+  .jb-slot-sel{background:rgba(75,158,255,0.15)!important;border-color:#4B9EFF!important;color:#4B9EFF!important}
+  .jb-inp{width:100%;box-sizing:border-box;background:#06080B;border:1px solid rgba(255,255,255,0.14);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:border-color .2s}
+  .jb-inp:focus{border-color:#4B9EFF}
+  .jb-btn-back{flex:0 0 auto;padding:15px 24px;background:transparent;border:1px solid rgba(255,255,255,0.14);color:#7A8590;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s}
+  .jb-btn-back:hover{border-color:rgba(255,255,255,0.3);color:#F2F5F7}
+  .jb-btn-next{flex:1;padding:15px;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s}
+  .jb-btn-next:hover{box-shadow:0 8px 28px rgba(75,158,255,0.35)}
+  .jb-btn-next:disabled{background:rgba(75,158,255,0.35);cursor:not-allowed}
+  @media(max-width:640px){.jb-grid{grid-template-columns:1fr!important}}
+</style>
 
-  <!-- Top bar -->
+<div id="jb-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#06080B;overflow-y:auto">
   <div style="position:sticky;top:0;z-index:10;background:#06080B;border-bottom:1px solid rgba(255,255,255,0.08);height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,56px)">
     <div style="display:flex;align-items:center;gap:12px">
       <svg width="36" height="36" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
       <div style="line-height:1">
-        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase;color:#F2F5F7">JAY BONHAM</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:0.17em;text-transform:uppercase">JAY BONHAM</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:0.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
       </div>
     </div>
-    <button onclick="jbCloseBooking()" style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);cursor:pointer;color:#F2F5F7;font-size:18px;font-family:inherit">✕</button>
+    <button onclick="JB.close()" style="width:42px;height:42px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);cursor:pointer;color:#F2F5F7;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
   </div>
-
-  <!-- Booking header -->
-  <div style="max-width:900px;margin:0 auto;padding:clamp(32px,5vw,56px) clamp(20px,4vw,40px) 0">
-    <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px">
-      <span style="width:24px;height:1px;background:#58E9FF"></span>
-      Work With Jay
+  <div style="max-width:960px;margin:0 auto;padding:clamp(36px,5vw,56px) clamp(20px,4vw,48px) 80px">
+    <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#58E9FF;margin-bottom:clamp(28px,4vw,40px)">
+      <span style="width:22px;height:1px;background:#58E9FF"></span>Work With Jay
     </div>
-    <h2 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,4vw,52px);line-height:0.94;letter-spacing:-0.01em;margin:0 0 10px;color:#F2F5F7">Book Your <span style="color:#4B9EFF">Strategy Session</span></h2>
-    <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#7A8590;letter-spacing:0.04em;margin:0 0 clamp(28px,4vw,44px)">30 min · Cal Video · Select a time that works for you</p>
+    <div id="jb-body"></div>
   </div>
-
-  <!-- Cal.com embed -->
-  <div id="jb-cal-embed" style="max-width:900px;margin:0 auto;padding:0 clamp(20px,4vw,40px) 60px;min-height:600px"></div>
-
 </div>
 
 <script>
-(function(C,A,L){let p=function(a,ar){a.q.push(ar);};let d=C.document;C.Cal=C.Cal||function(){let cal=C.Cal;let ar=arguments;if(!cal.loaded){cal.ns={};cal.q=cal.q||[];d.head.appendChild(d.createElement("script")).src=A;cal.loaded=true;}if(ar[0]===L){const api=function(){p(api,arguments);};const namespace=ar[1];api.q=api.q||[];if(typeof namespace==="string"){cal.ns[namespace]=cal.ns[namespace]||api;p(cal.ns[namespace],ar);p(cal,[L,namespace,ar[2]])}else p(cal,ar);return;}p(cal,ar);};})(window,"https://app.cal.com/embed/embed.js","init");
-Cal("init","work-with-jay",{origin:"https://cal.com"});
+var JB=(function(){
+  var S={step:1,slots:{},dates:[],yr:0,mo:0,date:null,time:null,name:'',email:'',loading:false,sloading:true,err:null};
+  var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-document.addEventListener("click",function(e){
-  var link=e.target.closest('a[href*="cal.com/jaybonham"]');
-  if(link){e.preventDefault();jbOpenBooking();}
-});
+  function pad(n){return n<10?'0'+n:''+n;}
+  function el(id){return document.getElementById(id);}
+  function body(){return el('jb-body');}
 
-function jbOpenBooking(){
-  var o=document.getElementById("jb-cal-overlay");
-  o.style.display="block";
-  o.scrollTop=0;
-  document.body.style.overflow="hidden";
-  if(!window._jbCalLoaded){
-    Cal.ns["work-with-jay"]("inline",{
-      elementOrSelector:"#jb-cal-embed",
-      calLink:"jaybonham/work-with-jay",
-      layout:"month_view"
-    });
-    Cal.ns["work-with-jay"]("ui",{
-      theme:"dark",
-      hideEventTypeDetails:false,
-      cssVarsPerTheme:{
-        dark:{
-          "cal-brand":"#4B9EFF",
-          "cal-brand-emphasis":"#6DB3FF",
-          "cal-brand-text":"#030D1F",
-          "cal-bg":"#06080B",
-          "cal-bg-emphasis":"#0D1117",
-          "cal-bg-muted":"#0A0C10",
-          "cal-bg-subtle":"#0D1117",
-          "cal-text":"#F2F5F7",
-          "cal-text-emphasis":"#FFFFFF",
-          "cal-text-muted":"#7A8590",
-          "cal-border":"rgba(255,255,255,0.1)",
-          "cal-border-emphasis":"rgba(75,158,255,0.35)",
-          "cal-border-subtle":"rgba(255,255,255,0.06)"
-        }
-      }
-    });
-    window._jbCalLoaded=true;
+  function render(){
+    var b=body();if(!b)return;
+    b.innerHTML=steps()+content();
+    hooks();
   }
-}
 
-function jbCloseBooking(){
-  document.getElementById("jb-cal-overlay").style.display="none";
-  document.body.style.overflow="";
-}
+  function steps(){
+    var labels=['Time','Details','Confirm'];
+    var h='<div style="display:flex;align-items:center;margin-bottom:clamp(28px,4vw,44px)">';
+    labels.forEach(function(l,i){
+      var n=i+1,done=n<S.step,active=n===S.step;
+      var c=done||active?'#4B9EFF':'#2C3340';
+      var tc=active?'#F2F5F7':done?'#7A8590':'#2C3340';
+      h+='<div style="display:flex;align-items:center;gap:9px">';
+      h+='<div style="width:26px;height:26px;border-radius:50%;border:1.5px solid '+c+';display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:'+c+';">'+(done?'✓':n)+'</div>';
+      h+='<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:'+tc+'">'+l+'</span>';
+      h+='</div>';
+      if(i<2)h+='<div style="flex:1;height:1px;background:rgba(255,255,255,0.07);margin:0 14px"></div>';
+    });
+    return h+'</div>';
+  }
 
-document.addEventListener("keydown",function(e){if(e.key==="Escape")jbCloseBooking();});
+  function content(){
+    if(S.sloading)return spinner('Loading availability…');
+    if(S.err&&S.step===1)return errBox(S.err,'<button onclick="JB.reload()" class="jb-btn-next" style="flex:none;margin-top:16px;padding:13px 26px">Retry</button>');
+    if(S.step===1)return step1();
+    if(S.step===2)return step2();
+    if(S.step===3)return step3();
+    return '';
+  }
+
+  function spinner(msg){
+    return '<div style="text-align:center;padding:80px 0"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#4B9EFF">'+msg+'</div></div>';
+  }
+  function errBox(msg,extra){
+    return '<div style="padding:20px 24px;border:1px solid rgba(255,100,100,0.25);background:rgba(255,100,100,0.06);font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:#FF8080;margin-bottom:0">'+msg+'</div>'+(extra||'');
+  }
+
+  /* ---- STEP 1: calendar + slots ---- */
+  function step1(){
+    return '<div class="jb-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,52px);align-items:start">'+cal()+times()+'</div>';
+  }
+
+  function cal(){
+    var yr=S.yr,mo=S.mo;
+    var first=new Date(Date.UTC(yr,mo,1));
+    var last=new Date(Date.UTC(yr,mo+1,0));
+    var dow=first.getUTCDay();
+    var dim=last.getUTCDate();
+    var now=new Date();
+    var todayStr=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+
+    var h='<div>';
+    // header
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">';
+    h+='<button onclick="JB.prevMo()" style="width:34px;height:34px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#F2F5F7;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center">‹</button>';
+    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;font-size:19px;letter-spacing:0.08em;text-transform:uppercase">'+MO[mo]+' '+yr+'</div>';
+    h+='<button onclick="JB.nextMo()" style="width:34px;height:34px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#F2F5F7;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center">›</button>';
+    h+='</div>';
+    // day labels
+    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px">';
+    DY.forEach(function(d){h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#3C4650;text-align:center;padding:3px 0">'+d+'</div>';});
+    h+='</div>';
+    // grid
+    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+    for(var i=0;i<dow;i++)h+='<div></div>';
+    for(var d=1;d<=dim;d++){
+      var ds=yr+'-'+pad(mo+1)+'-'+pad(d);
+      var avail=S.slots[ds]&&S.slots[ds].length>0;
+      var sel=ds===S.date;
+      var today=ds===todayStr;
+      var past=ds<todayStr;
+      var cls='jb-day'+(sel?' jb-day-sel':avail&&!past?' jb-day-avail':' jb-day-dim')+(today&&!sel?' jb-day-today':'');
+      var click=avail&&!past?' onclick="JB.pickDate(\''+ds+'\')"':'';
+      h+='<div class="'+cls+'"'+click+'>'+d+'</div>';
+    }
+    h+='</div>';
+    h+='<div style="margin-top:14px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#2C3340">Times shown in your local timezone</div>';
+    h+='</div>';
+    return h;
+  }
+
+  function times(){
+    if(!S.date){
+      return '<div style="display:flex;align-items:center;justify-content:center;min-height:220px;border:1px dashed rgba(255,255,255,0.07)"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#2C3340;text-align:center">Select a date<br>to see times</div></div>';
+    }
+    var slots=S.slots[S.date]||[];
+    var d=new Date(S.date+'T12:00:00');
+    var label=DY[d.getDay()]+', '+MO[d.getMonth()]+' '+d.getDate();
+    var h='<div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#58E9FF;margin-bottom:14px">'+label+'</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:7px;max-height:380px;overflow-y:auto;padding-right:4px">';
+    slots.forEach(function(slot){
+      var t=new Date(slot.time);
+      var ts=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      var sel=slot.time===S.time;
+      h+='<button class="jb-slot'+(sel?' jb-slot-sel':'')+'" onclick="JB.pickTime(\''+slot.time+'\')">'+ts+'</button>';
+    });
+    h+='</div>';
+    if(S.time){
+      h+='<button class="jb-btn-next" onclick="JB.go(2)" style="width:100%;margin-top:18px">Next →</button>';
+    }
+    h+='</div>';
+    return h;
+  }
+
+  /* ---- STEP 2: details ---- */
+  function step2(){
+    var summary=timeSummary();
+    var h='<div style="max-width:520px">';
+    h+='<h2 style="font-family:\'Saira Condensed\',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,46px);line-height:0.94;margin:0 0 28px">Your <span style="color:#4B9EFF">Details</span></h2>';
+    if(summary)h+='<div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border:1px solid rgba(75,158,255,0.22);background:rgba(75,158,255,0.05);margin-bottom:26px;font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#4B9EFF">&#128197; '+summary+'</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">';
+    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#7A8590;margin-bottom:7px">Full Name</label><input id="jb-name" class="jb-inp" type="text" placeholder="Your full name" value="'+esc(S.name)+'"></div>';
+    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:#7A8590;margin-bottom:7px">Email</label><input id="jb-email" class="jb-inp" type="email" placeholder="you@email.com" value="'+esc(S.email)+'"></div>';
+    h+='</div>';
+    if(S.err)h+=errBox(S.err);
+    h+='<div style="display:flex;gap:10px"><button class="jb-btn-back" onclick="JB.go(1)">← Back</button><button class="jb-btn-next" onclick="JB.submitDetails()">Next →</button></div>';
+    h+='</div>';
+    return h;
+  }
+
+  /* ---- STEP 3: confirm ---- */
+  function step3(){
+    var summary=timeSummary(true);
+    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var h='<div style="max-width:520px">';
+    h+='<h2 style="font-family:\'Saira Condensed\',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,46px);line-height:0.94;margin:0 0 28px">Confirm <span style="color:#4B9EFF">Booking</span></h2>';
+    h+='<div style="border:1px solid rgba(255,255,255,0.09);margin-bottom:24px">';
+    h+='<div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.07)">';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3C4650;margin-bottom:6px">Session</div>';
+    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:0.06em">'+summary+'</div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#5C6672;margin-top:4px">30 min · Cal Video · '+tz+'</div>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr">';
+    h+='<div style="padding:16px 20px;border-right:1px solid rgba(255,255,255,0.07)"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3C4650;margin-bottom:5px">Name</div><div style="font-size:14px">'+esc(S.name)+'</div></div>';
+    h+='<div style="padding:16px 20px"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3C4650;margin-bottom:5px">Email</div><div style="font-size:14px">'+esc(S.email)+'</div></div>';
+    h+='</div></div>';
+    if(S.err)h+=errBox(S.err,'<br>');
+    h+='<div style="display:flex;gap:10px">';
+    h+='<button class="jb-btn-back" onclick="JB.go(2)">← Back</button>';
+    h+='<button class="jb-btn-next" onclick="JB.confirm()" '+(S.loading?'disabled':'')+'>'+( S.loading?'Booking…':'Confirm Booking →')+'</button>';
+    h+='</div></div>';
+    return h;
+  }
+
+  function timeSummary(full){
+    if(!S.time)return '';
+    var d=new Date(S.date+'T12:00:00');
+    var t=new Date(S.time);
+    var dateStr=DY[d.getDay()]+', '+MO[d.getMonth()]+' '+d.getDate()+(full?', '+d.getFullYear():'');
+    var timeStr=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return dateStr+' · '+timeStr;
+  }
+
+  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+  function hooks(){
+    // nothing extra needed — all wired via onclick
+  }
+
+  function loadSlots(){
+    S.sloading=true;S.err=null;render();
+    fetch('/api/jb-slots')
+      .then(function(r){return r.json();})
+      .then(function(data){
+        var raw=(data.data&&data.data.slots)||{};
+        S.slots=raw;
+        S.dates=Object.keys(raw).sort();
+        S.sloading=false;
+        var now=new Date();
+        if(S.dates.length){
+          var first=S.dates[0].split('-');
+          S.yr=parseInt(first[0]);S.mo=parseInt(first[1])-1;
+        } else {
+          S.yr=now.getFullYear();S.mo=now.getMonth();
+        }
+        render();
+      })
+      .catch(function(){
+        S.sloading=false;S.err='Could not load availability. Please try again.';render();
+      });
+  }
+
+  // intercept Apply links
+  document.addEventListener('click',function(e){
+    var link=e.target.closest('a[href*="cal.com/jaybonham"]');
+    if(link){e.preventDefault();JB.open();}
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')JB.close();});
+
+  return {
+    open:function(){
+      el('jb-overlay').style.display='block';
+      el('jb-overlay').scrollTop=0;
+      document.body.style.overflow='hidden';
+      if(!S.dates.length&&!S.sloading)loadSlots();
+      else render();
+    },
+    close:function(){
+      el('jb-overlay').style.display='none';
+      document.body.style.overflow='';
+    },
+    reload:function(){loadSlots();},
+    prevMo:function(){S.mo--;if(S.mo<0){S.mo=11;S.yr--;}render();},
+    nextMo:function(){S.mo++;if(S.mo>11){S.mo=0;S.yr++;}render();},
+    pickDate:function(ds){S.date=ds;S.time=null;render();},
+    pickTime:function(ts){S.time=ts;render();},
+    go:function(n){S.step=n;S.err=null;el('jb-overlay').scrollTop=0;render();},
+    submitDetails:function(){
+      var n=(el('jb-name')||{}).value||S.name;
+      var em=(el('jb-email')||{}).value||S.email;
+      n=(n||'').trim();em=(em||'').trim();
+      if(!n){S.err='Please enter your full name.';render();return;}
+      if(!em||!em.includes('@')){S.err='Please enter a valid email address.';render();return;}
+      S.name=n;S.email=em;S.err=null;S.step=3;el('jb-overlay').scrollTop=0;render();
+    },
+    confirm:function(){
+      S.loading=true;S.err=null;render();
+      var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      fetch('/api/jb-book',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:S.name,email:S.email,start:S.time,timezone:tz})
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.ok){window.location.href='/jaybonham/booked';}
+        else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
+      })
+      .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
+    }
+  };
+})();
 </script>
 </body>
 </html>
