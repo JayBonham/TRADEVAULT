@@ -37,6 +37,8 @@ class handler(BaseHTTPRequestHandler):
             res = conn.getresponse()
             res_body = res.read().decode()
 
+            print(f"Brevo status: {res.status}, body: {res_body[:500]}")
+
             # 201 = created, 204 = updated, 400 with "already" = already subscribed (fine)
             if res.status in (201, 204):
                 self._json(200, {"ok": True})
