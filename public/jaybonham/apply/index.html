@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Killshot Program — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth}
+body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;overflow-x:hidden}
+::selection{background:#4B9EFF;color:#06080B}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+@keyframes jbrise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes jbmarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes jbblink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes jbpulse{0%{transform:scale(1);opacity:.6}70%{transform:scale(2.2);opacity:0}100%{opacity:0}}
+@keyframes jbdraw{from{stroke-dashoffset:800}to{stroke-dashoffset:0}}
+@keyframes jbspin{to{transform:rotate(360deg)}}
+@keyframes jbfadein{from{opacity:0}to{opacity:1}}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* booking overlay — full-screen calendar version */
+.jb-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;transition:background .12s,color .12s;border:1px solid transparent}
+.jb-day-avail{cursor:pointer;color:#F2F5F7}
+.jb-day-avail:hover{background:rgba(75,158,255,.12);color:#4B9EFF}
+.jb-day-sel{background:#4B9EFF!important;color:#030D1F!important}
+.jb-day-today{border-color:rgba(75,158,255,.4)}
+.jb-day-dim{color:#2C3340;cursor:default}
+.jb-slot{width:100%;padding:13px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;text-align:left;transition:background .12s,border-color .12s,color .12s}
+.jb-slot:hover{background:rgba(75,158,255,.1);border-color:rgba(75,158,255,.35);color:#4B9EFF}
+.jb-slot-sel{background:rgba(75,158,255,.15)!important;border-color:#4B9EFF!important;color:#4B9EFF!important}
+.jb-inp{width:100%;box-sizing:border-box;background:#06080B;border:1px solid rgba(255,255,255,.14);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:border-color .2s}
+.jb-inp:focus{border-color:#4B9EFF}
+.jb-btn-back{flex:0 0 auto;padding:15px 24px;background:transparent;border:1px solid rgba(255,255,255,.14);color:#7A8590;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s}
+.jb-btn-back:hover{border-color:rgba(255,255,255,.3);color:#F2F5F7}
+.jb-btn-next{flex:1;padding:15px;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s}
+.jb-btn-next:hover{box-shadow:0 8px 28px rgba(75,158,255,.35)}
+.jb-btn-next:disabled{background:rgba(75,158,255,.35);cursor:not-allowed}
+
+/* mobile */
+@media(max-width:640px){
+  .jb-grid{grid-template-columns:1fr!important}
+  #phaseTabs{display:flex!important;overflow-x:auto;gap:2px;scrollbar-width:none}
+  #phaseTabs::-webkit-scrollbar{display:none}
+  #phaseTabs button{min-width:110px;flex:none}
+  .pillar-mockup{height:160px!important}
+  #jb-nav-cta{display:none!important}
+  #jb-nav{justify-content:center}
+  #jb-nav-logo{margin:0 auto}
+}
+
+/* FAQ accordion */
+.faq-item{border-bottom:1px solid rgba(255,255,255,.08)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(18px,2.2vw,24px);letter-spacing:.01em}
+.faq-q:hover{color:#4B9EFF}
+.faq-icon{flex:none;width:28px;height:28px;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:18px;color:#4B9EFF;transition:transform .3s}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.faq-item.open .faq-a{max-height:400px;padding-bottom:22px}
+.faq-a p{margin:0;font-size:15px;line-height:1.7;color:#9AA4B0}
+
+/* 12-week timeline */
+.week-phase{border-left:2px solid rgba(75,158,255,.2);padding-left:24px;margin-bottom:8px}
+.week-phase.active-phase{border-left-color:#4B9EFF}
+
+/* nav scroll */
+#jb-nav{transition:background .35s ease,border-color .35s ease,backdrop-filter .35s ease;border-bottom:1px solid rgba(255,255,255,0)}
+#jb-nav.scrolled{background:rgba(6,8,11,.92);backdrop-filter:blur(12px);border-color:rgba(255,255,255,.08)}
+</style>
+</head>
+<body>
+
+<!-- ===== BOOKING OVERLAY ===== -->
+<div id="jb-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#06080B;overflow-y:auto">
+  <div style="position:sticky;top:0;z-index:10;background:#06080B;border-bottom:1px solid rgba(255,255,255,.08);height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,56px)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <svg width="36" height="36" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
+      <div style="line-height:1">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:.17em;text-transform:uppercase">JAY BONHAM</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+      </div>
+    </div>
+    <button onclick="JB.close()" style="width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer;color:#F2F5F7;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <div style="max-width:960px;margin:0 auto;padding:clamp(36px,5vw,56px) clamp(20px,4vw,48px) 80px">
+    <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#58E9FF;margin-bottom:clamp(28px,4vw,40px)">
+      <span style="width:22px;height:1px;background:#58E9FF"></span>Book a Strategy Call
+    </div>
+    <div id="jb-body"></div>
+  </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav id="jb-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,48px)">
+  <a href="https://jaybonham.com" id="jb-nav-logo" style="display:flex;align-items:center;gap:12px">
+    <svg width="34" height="34" viewBox="0 0 56 56" fill="none" style="flex:none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
+    <div style="line-height:1">
+      <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:.17em;text-transform:uppercase">JAY BONHAM</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+    </div>
+  </a>
+  <button id="jb-nav-cta" onclick="JB.open()" style="display:inline-flex;align-items:center;gap:8px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:11px 20px;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 28px rgba(75,158,255,.32)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Book a Call →</button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section style="position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden">
+
+  <!-- background photo -->
+  <img src="../assets/raw/ev-3.jpg" alt="Jay Bonham" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% 28%;filter:contrast(1.1) saturate(.8)"/>
+  <!-- dark overlay — heavy so text always reads -->
+  <div style="position:absolute;inset:0;background:rgba(6,8,11,.82)"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,#06080B 0%,transparent 14%,transparent 82%,#06080B 100%)"></div>
+  <!-- grid -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.03) 1px,transparent 1px);background-size:64px 64px"></div>
+
+  <div style="position:relative;z-index:5;width:100%;padding:90px clamp(18px,4vw,56px) 48px;text-align:center">
+    <div style="max-width:640px;margin:0 auto">
+
+      <!-- trust bar -->
+      <div class="reveal" style="display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(75,158,255,.22);padding:6px 14px;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">
+        <span style="width:6px;height:6px;border-radius:50%;background:#4B9EFF;flex:none;animation:jbblink 2s infinite"></span>
+        Hedge Fund Manager · KNF Regulated · $40M+ AUM · LP Partner
+      </div>
+
+      <!-- headline -->
+      <h1 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(56px,9vw,110px);line-height:.86;letter-spacing:-.02em;margin:0 0 14px">
+        THE KILLSHOT<br><span style="color:#4B9EFF">PROGRAM</span>
+      </h1>
+      <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px">12-Week Private Mentorship · By Application Only</div>
+      <p class="reveal" style="font-size:clamp(14px,1.4vw,16px);line-height:1.6;color:#9AA4B0;margin:0 auto 24px;max-width:44ch">
+        The exact system behind Jay's hedge fund and proprietary scanners — now available to a select group of serious traders.
+      </p>
+
+      <!-- VSL player -->
+      <div class="reveal" style="position:relative;width:100%;aspect-ratio:16/9;background:#080C12;border:1px solid rgba(255,255,255,.1);overflow:hidden;cursor:pointer;margin-bottom:20px" onclick="JB.open()">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.05) 1px,transparent 1px);background-size:36px 36px"></div>
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.3" viewBox="0 0 640 360" preserveAspectRatio="none">
+          <polyline points="0,290 80,255 160,272 260,195 360,218 460,148 560,168 640,98" fill="none" stroke="#4B9EFF" stroke-width="1.8" stroke-dasharray="800" stroke-dashoffset="800" style="animation:jbdraw 2s ease .5s forwards"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+          <div style="position:relative">
+            <div style="position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(75,158,255,.22);animation:jbpulse 2.4s ease infinite"></div>
+            <div style="width:60px;height:60px;border-radius:50%;background:rgba(75,158,255,.12);border:1.5px solid rgba(75,158,255,.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 3l11 7-11 7V3z" fill="#4B9EFF"/></svg>
+            </div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#3C4650">Video Coming Soon</div>
+        </div>
+        <div style="position:absolute;left:12px;top:12px;width:14px;height:14px;border-left:1.5px solid rgba(75,158,255,.5);border-top:1.5px solid rgba(75,158,255,.5)"></div>
+        <div style="position:absolute;right:12px;bottom:12px;width:14px;height:14px;border-right:1.5px solid rgba(75,158,255,.5);border-bottom:1.5px solid rgba(75,158,255,.5)"></div>
+        <div style="position:absolute;left:12px;bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#2A343E">Jay Bonham · The Killshot Program</div>
+      </div>
+
+      <!-- CTA -->
+      <div class="reveal" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <button onclick="JB.open()" style="display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:17px 36px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          Book Your Strategy Call →
+        </button>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.25)">Limited spots · Free · No commitment</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST BADGES ===== -->
+<section style="border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);background:#080B0F">
+  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;padding:clamp(22px,3vw,32px) clamp(18px,3vw,36px);border-right:1px solid rgba(255,255,255,.07)">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M16 3L4 8v8c0 7 5.3 13.5 12 15.5C22.7 29.5 28 23 28 16V8L16 3z" stroke="#4B9EFF" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 16l3.5 3.5L21 12" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:.04em">12-Week Program</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:3px">Structured curriculum</div>
+      </div>
+    </div>
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;padding:clamp(22px,3vw,32px) clamp(18px,3vw,36px);border-right:1px solid rgba(255,255,255,.07)">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="10" r="5" stroke="#4B9EFF" stroke-width="1.5"/><path d="M6 26c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:.04em">1-on-1 Guided</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:3px">Direct access to Jay</div>
+      </div>
+    </div>
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;padding:clamp(22px,3vw,32px) clamp(18px,3vw,36px);border-right:1px solid rgba(255,255,255,.07)">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><polyline points="4,20 10,14 16,18 22,10 28,6" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="24,6 28,6 28,10" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:.04em">Daily Signals</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:3px">Jay's live trade calls</div>
+      </div>
+    </div>
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;padding:clamp(22px,3vw,32px) clamp(18px,3vw,36px)">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="11" height="11" stroke="#4B9EFF" stroke-width="1.5"/><rect x="17" y="4" width="11" height="11" stroke="rgba(75,158,255,.4)" stroke-width="1.5"/><rect x="4" y="17" width="11" height="11" stroke="rgba(75,158,255,.4)" stroke-width="1.5"/><rect x="17" y="17" width="11" height="11" stroke="rgba(75,158,255,.4)" stroke-width="1.5"/></svg>
+      <div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:.04em">Full Ecosystem</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:3px">Scanners · fund · brokerage</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MARQUEE ===== -->
+<div style="border-bottom:1px solid rgba(255,255,255,.06);overflow:hidden;background:#040608">
+  <div style="display:flex;width:max-content;animation:jbmarquee 28s linear infinite;padding:16px 0">
+    <div style="display:flex;align-items:center;gap:36px;padding-right:36px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:16px;letter-spacing:.08em;color:#2A323C">
+      <span>Killshot System</span><span style="color:#4B9EFF">/</span><span>Risk Management</span><span style="color:#4B9EFF">/</span><span>Precision</span><span style="color:#4B9EFF">/</span><span>Discipline</span><span style="color:#4B9EFF">/</span><span>Mindset</span><span style="color:#4B9EFF">/</span><span>Execution</span><span style="color:#4B9EFF">/</span><span>Consistency</span><span style="color:#4B9EFF">/</span>
+    </div>
+    <div aria-hidden="true" style="display:flex;align-items:center;gap:36px;padding-right:36px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:16px;letter-spacing:.08em;color:#2A323C">
+      <span>Killshot System</span><span style="color:#4B9EFF">/</span><span>Risk Management</span><span style="color:#4B9EFF">/</span><span>Precision</span><span style="color:#4B9EFF">/</span><span>Discipline</span><span style="color:#4B9EFF">/</span><span>Mindset</span><span style="color:#4B9EFF">/</span><span>Execution</span><span style="color:#4B9EFF">/</span><span>Consistency</span><span style="color:#4B9EFF">/</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AUTHORITY ===== -->
+<section style="padding:clamp(70px,10vh,120px) clamp(18px,4vw,56px);background:#080B0F;border-bottom:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:20px">
+      <span style="width:36px;height:1px;background:rgba(88,233,255,.5)"></span>Why Jay
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(36px,6vw,80px);line-height:.92;letter-spacing:-.01em;margin:0 0 56px">
+      He doesn't teach theory.<br><span style="color:#4B9EFF">He runs the playbook.</span>
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:rgba(255,255,255,.07)">
+      <div class="reveal" style="background:#080B0F;padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1;color:#4B9EFF;margin-bottom:10px">$40M+</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F2F5F7;margin-bottom:6px">AUM at Hedge Fund</div>
+        <div style="font-size:13px;color:#5C6672;line-height:1.5">Actively managing institutional capital — the same strategies he now teaches.</div>
+      </div>
+      <div class="reveal" style="background:#080B0F;padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1;color:#4B9EFF;margin-bottom:10px">KNF</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F2F5F7;margin-bottom:6px">Regulated Fund · Poland</div>
+        <div style="font-size:13px;color:#5C6672;line-height:1.5">30 days from launching a fully regulated fund with KNF approval and institutional partners.</div>
+      </div>
+      <div class="reveal" style="background:#080B0F;padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1;color:#4B9EFF;margin-bottom:10px">LP</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F2F5F7;margin-bottom:6px">Partner & IB Broker</div>
+        <div style="font-size:13px;color:#5C6672;line-height:1.5">LP partner and licensed IB broker — not just a coach, an operator with real capital at risk.</div>
+      </div>
+      <div class="reveal" style="background:#080B0F;padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1;color:#4B9EFF;margin-bottom:10px">Own</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F2F5F7;margin-bottom:6px">Brokerage Launching</div>
+        <div style="font-size:13px;color:#5C6672;line-height:1.5">3–6 months from launching his own brokerage — the full trading ecosystem under one roof.</div>
+      </div>
+      <div class="reveal" style="background:#080B0F;padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1;color:#4B9EFF;margin-bottom:10px">3+</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F2F5F7;margin-bottom:6px">Proprietary Scanners</div>
+        <div style="font-size:13px;color:#5C6672;line-height:1.5">Custom-built market scanners. Killshot students get access as part of the ecosystem.</div>
+      </div>
+      <div class="reveal" style="background:#080B0F;padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(34px,4vw,52px);line-height:1;color:#4B9EFF;margin-bottom:10px">10K+</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F2F5F7;margin-bottom:6px">Traders in the Network</div>
+        <div style="font-size:13px;color:#5C6672;line-height:1.5">Free signal groups, live trading sessions, and an education platform already running.</div>
+      </div>
+      <!-- headshot cell -->
+      <div class="reveal" style="position:relative;overflow:hidden;min-height:220px;grid-column:span 2">
+        <img src="../assets/raw/headshot-cover.png" alt="Jay Bonham" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:32% 18%;filter:grayscale(.1) contrast(1.06)"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,11,15,.85) 0%,rgba(8,11,15,.2) 60%)"></div>
+        <div style="position:absolute;left:clamp(20px,3vw,32px);bottom:clamp(20px,3vw,28px)">
+          <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(20px,2.4vw,28px);line-height:1;margin-bottom:6px">Jay Bonham</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#58E9FF">Precision Under Pressure</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE 3 PILLARS ===== -->
+<section style="padding:clamp(80px,12vh,140px) clamp(18px,4vw,56px)">
+  <div style="max-width:1160px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:64px">
+      <div class="reveal" style="display:inline-flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:20px">
+        <span style="width:28px;height:1px;background:rgba(88,233,255,.5)"></span>What You Get<span style="width:28px;height:1px;background:rgba(88,233,255,.5)"></span>
+      </div>
+      <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(36px,6vw,80px);line-height:.92;letter-spacing:-.01em;margin:0">
+        One program.<br><span style="color:#4B9EFF">Three unfair edges.</span>
+      </h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px;background:rgba(255,255,255,.07)">
+
+      <!-- pillar 1 -->
+      <div class="reveal" style="background:#06080B;display:flex;flex-direction:column">
+        <!-- visual mockup: course platform -->
+        <div class="pillar-mockup" style="position:relative;background:#070D14;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden;height:200px;flex:none">
+          <!-- top chrome bar -->
+          <div style="background:#0B1520;padding:9px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(75,158,255,.1)">
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,80,80,.35)"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(255,180,0,.25)"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:rgba(75,158,255,.25)"></span>
+            <div style="flex:1;margin-left:8px;height:16px;background:rgba(255,255,255,.04);border-radius:2px;display:flex;align-items:center;padding:0 10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);letter-spacing:.06em">killshot-program / week-03</span></div>
+          </div>
+          <!-- sidebar + content -->
+          <div style="display:flex;height:calc(100% - 35px)">
+            <!-- sidebar -->
+            <div style="width:130px;flex:none;border-right:1px solid rgba(75,158,255,.08);padding:10px 0;overflow:hidden">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:rgba(75,158,255,.4);padding:0 10px;margin-bottom:8px">Modules</div>
+              <div style="background:rgba(75,158,255,.08);border-left:2px solid #4B9EFF;padding:6px 10px;margin-bottom:2px">
+                <div style="font-size:9px;color:#4B9EFF;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em">▶ Week 3 — Mindset</div>
+              </div>
+              <div style="padding:6px 10px 6px 12px;margin-bottom:2px;opacity:.5">
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(75,158,255,.4);display:inline-block;margin-right:5px;vertical-align:middle"></div>
+                <span style="font-size:9px;color:#5C6672;font-family:'IBM Plex Mono',monospace">Week 4</span>
+              </div>
+              <div style="padding:6px 10px 6px 12px;margin-bottom:2px;opacity:.4">
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15);display:inline-block;margin-right:5px;vertical-align:middle"></div>
+                <span style="font-size:9px;color:#5C6672;font-family:'IBM Plex Mono',monospace">Week 5</span>
+              </div>
+              <div style="padding:6px 10px 6px 12px;opacity:.3">
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.1);display:inline-block;margin-right:5px;vertical-align:middle"></div>
+                <span style="font-size:9px;color:#5C6672;font-family:'IBM Plex Mono',monospace">Week 6</span>
+              </div>
+            </div>
+            <!-- main content -->
+            <div style="flex:1;padding:12px 14px;overflow:hidden">
+              <!-- video thumb -->
+              <div style="position:relative;aspect-ratio:16/9;background:#0D1825;border:1px solid rgba(75,158,255,.12);margin-bottom:10px;display:flex;align-items:center;justify-content:center">
+                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.04) 1px,transparent 1px);background-size:16px 16px"></div>
+                <div style="width:24px;height:24px;border-radius:50%;background:rgba(75,158,255,.15);border:1px solid rgba(75,158,255,.4);display:flex;align-items:center;justify-content:center;position:relative;z-index:1">
+                  <svg width="8" height="8" viewBox="0 0 8 8"><path d="M2 1l5 3-5 3V1z" fill="#4B9EFF"/></svg>
+                </div>
+                <!-- scanline -->
+                <div style="position:absolute;left:0;right:0;top:35%;height:1px;background:linear-gradient(90deg,transparent,rgba(75,158,255,.25),transparent)"></div>
+              </div>
+              <!-- lesson title -->
+              <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;color:#C3CBD3;margin-bottom:4px">Mindset & Trading Plan</div>
+              <!-- progress bar -->
+              <div style="height:2px;background:rgba(255,255,255,.06);margin-bottom:6px;border-radius:1px;overflow:hidden">
+                <div style="width:62%;height:100%;background:linear-gradient(90deg,#4B9EFF,#58E9FF)"></div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(75,158,255,.5);letter-spacing:.1em">62% COMPLETE · 3 OF 5 LESSONS</div>
+            </div>
+          </div>
+          <!-- corner accents -->
+          <div style="position:absolute;left:0;top:0;width:16px;height:16px;border-left:1.5px solid rgba(75,158,255,.3);border-top:1.5px solid rgba(75,158,255,.3)"></div>
+          <div style="position:absolute;right:0;bottom:0;width:16px;height:16px;border-right:1.5px solid rgba(75,158,255,.3);border-bottom:1.5px solid rgba(75,158,255,.3)"></div>
+        </div>
+        <!-- copy -->
+        <div style="padding:clamp(28px,3vw,44px);display:flex;flex-direction:column;gap:16px;flex:1">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1;color:rgba(75,158,255,.15)">01</span>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF">The Course</div>
+          </div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:.96;margin:0">The Killshot<br>System</h3>
+          <p style="margin:0;font-size:14px;line-height:1.65;color:#7A8590">12 structured weeks of Jay's proprietary Killshot trading framework — from the core rules and backtesting, to advanced strategies including Killshot Gold. Video training, email sequences, and a full trading plan.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Killshot rules & backtesting</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Killshot Gold advanced strategy</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>POC, S&R levels, 238 breaks</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Weekly email modules & resources</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Full close-out PDF playbook</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- pillar 2 -->
+      <div class="reveal" style="background:#070C10;display:flex;flex-direction:column;border-top:2px solid #4B9EFF">
+        <!-- visual mockup: 1-on-1 coaching session -->
+        <div class="pillar-mockup" style="position:relative;background:#070D14;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden;height:200px;flex:none">
+          <!-- top chrome bar -->
+          <div style="background:#0B1520;padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(75,158,255,.1)">
+            <div style="width:7px;height:7px;border-radius:50%;background:#4B9EFF;box-shadow:0 0 6px rgba(75,158,255,.5)"></div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.3);letter-spacing:.1em">LIVE · Weekly Check-In with Jay</span>
+            <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(75,158,255,.6)">32:14</span>
+          </div>
+          <!-- call UI -->
+          <div style="display:flex;gap:2px;height:calc(100% - 35px);padding:10px;align-items:center">
+            <!-- jay's video tile -->
+            <div style="flex:1;position:relative;background:#0B1825;border:1px solid rgba(75,158,255,.15);overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:100px">
+              <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(75,158,255,.06) 0%,transparent 60%)"></div>
+              <!-- silhouette placeholder -->
+              <div style="position:relative;z-index:1;text-align:center">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(75,158,255,.3),rgba(75,158,255,.1));border:1.5px solid rgba(75,158,255,.3);margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:14px;color:#4B9EFF">JB</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(75,158,255,.6);letter-spacing:.1em">JAY BONHAM</div>
+              </div>
+              <!-- mic indicator -->
+              <div style="position:absolute;left:6px;bottom:6px;font-size:8px">🎙</div>
+              <!-- corner -->
+              <div style="position:absolute;right:6px;top:6px;font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(75,158,255,.4);letter-spacing:.06em">HOST</div>
+            </div>
+            <div style="width:8px;flex:none"></div>
+            <!-- you tile -->
+            <div style="flex:1;position:relative;background:#0A1520;border:1px solid rgba(255,255,255,.07);overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:100px">
+              <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);margin:0 auto;display:flex;align-items:center;justify-content:center;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:12px;color:rgba(255,255,255,.4)">YOU</div>
+              <!-- waveform animation stub -->
+              <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:2px;align-items:flex-end">
+                <div style="width:2px;height:6px;background:rgba(75,158,255,.3);border-radius:1px"></div>
+                <div style="width:2px;height:10px;background:rgba(75,158,255,.4);border-radius:1px"></div>
+                <div style="width:2px;height:4px;background:rgba(75,158,255,.25);border-radius:1px"></div>
+                <div style="width:2px;height:8px;background:rgba(75,158,255,.35);border-radius:1px"></div>
+                <div style="width:2px;height:5px;background:rgba(75,158,255,.2);border-radius:1px"></div>
+              </div>
+            </div>
+          </div>
+          <div style="position:absolute;left:0;top:0;width:16px;height:16px;border-left:1.5px solid rgba(75,158,255,.3);border-top:1.5px solid rgba(75,158,255,.3)"></div>
+          <div style="position:absolute;right:0;bottom:0;width:16px;height:16px;border-right:1.5px solid rgba(75,158,255,.3);border-bottom:1.5px solid rgba(75,158,255,.3)"></div>
+        </div>
+        <!-- copy -->
+        <div style="padding:clamp(28px,3vw,44px);display:flex;flex-direction:column;gap:16px;flex:1">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1;color:rgba(75,158,255,.15)">02</span>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF">Coaching</div>
+          </div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:.96;margin:0">Direct Access<br>to Jay</h3>
+          <p style="margin:0;font-size:14px;line-height:1.65;color:#7A8590">Jay checks in with you personally — weekly reviews, daily trade signals, emotional check-ins, real accountability. Not a Discord with 1,000 people. Jay in your corner, tracking your progress.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Weekly personal check-ins</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Daily/semi-daily trade signals</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Mindset & emotional accountability</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Trading journal review</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Greed & discipline email check-ins</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- pillar 3 -->
+      <div class="reveal" style="background:#06080B;display:flex;flex-direction:column">
+        <!-- visual mockup: ecosystem dashboard -->
+        <div class="pillar-mockup" style="position:relative;background:#070D14;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden;height:200px;flex:none">
+          <div style="background:#0B1520;padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(75,158,255,.1)">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.3);letter-spacing:.1em">JB ECOSYSTEM</span>
+            <span style="margin-left:auto;display:flex;gap:5px;align-items:center"><span style="width:5px;height:5px;border-radius:50%;background:#4B9EFF;animation:jbblink 1.8s infinite"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(75,158,255,.7)">LIVE</span></span>
+          </div>
+          <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px;height:calc(100% - 35px)">
+            <!-- signal card -->
+            <div style="background:#0B1825;border:1px solid rgba(75,158,255,.12);padding:8px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(75,158,255,.5);letter-spacing:.1em;margin-bottom:4px">SIGNAL · EUR/USD</div>
+              <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px;color:#4B9EFF">LONG ↑</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(255,255,255,.25);margin-top:2px">1.0847 · SL 1.0812</div>
+              <!-- mini chart -->
+              <svg style="width:100%;height:22px;margin-top:4px" viewBox="0 0 80 22" preserveAspectRatio="none">
+                <polyline points="0,18 12,16 24,14 36,10 48,12 60,7 72,5 80,3" fill="none" stroke="rgba(75,158,255,.5)" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <!-- scanner card -->
+            <div style="background:#0B1825;border:1px solid rgba(88,233,255,.1);padding:8px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(88,233,255,.4);letter-spacing:.1em;margin-bottom:4px">SCANNER HIT</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#C3CBD3">GBP/JPY</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(255,255,255,.2);margin-top:2px">Killshot setup · H1</div>
+              <div style="margin-top:6px;display:flex;gap:3px">
+                <div style="flex:1;height:3px;background:#4B9EFF;border-radius:1px;opacity:.8"></div>
+                <div style="flex:1;height:3px;background:#4B9EFF;border-radius:1px;opacity:.5"></div>
+                <div style="flex:1;height:3px;background:rgba(75,158,255,.15);border-radius:1px"></div>
+                <div style="flex:1;height:3px;background:rgba(75,158,255,.15);border-radius:1px"></div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(75,158,255,.4);margin-top:3px">Strength: HIGH</div>
+            </div>
+            <!-- community card -->
+            <div style="background:#0B1825;border:1px solid rgba(255,255,255,.06);padding:8px;grid-column:1/-1">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(255,255,255,.25);letter-spacing:.1em;margin-bottom:6px">COMMUNITY · 47 MEMBERS ONLINE</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+                <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,rgba(75,158,255,.35),rgba(75,158,255,.1));flex:none;display:flex;align-items:center;justify-content:center;font-family:'Saira Condensed',sans-serif;font-size:7px;font-weight:800;color:#4B9EFF">JB</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#5C6672">Jay just posted a trade review</div>
+                <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(75,158,255,.35)">now</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.06);flex:none"></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#3C4650">Live session starts in 2h</div>
+                <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(255,255,255,.15)">2h</span>
+              </div>
+            </div>
+          </div>
+          <div style="position:absolute;left:0;top:0;width:16px;height:16px;border-left:1.5px solid rgba(75,158,255,.3);border-top:1.5px solid rgba(75,158,255,.3)"></div>
+          <div style="position:absolute;right:0;bottom:0;width:16px;height:16px;border-right:1.5px solid rgba(75,158,255,.3);border-bottom:1.5px solid rgba(75,158,255,.3)"></div>
+        </div>
+        <!-- copy -->
+        <div style="padding:clamp(28px,3vw,44px);display:flex;flex-direction:column;gap:16px;flex:1">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1;color:rgba(75,158,255,.15)">03</span>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF">Community</div>
+          </div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:.96;margin:0">The Full<br>Ecosystem</h3>
+          <p style="margin:0;font-size:14px;line-height:1.65;color:#7A8590">After 12 weeks you're not cut loose — you step into the full Jay Bonham trading ecosystem. Proprietary scanners, signal groups, live trading sessions, and the path into his brokerage, fund, and LP structure if you qualify.</p>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Proprietary scanner access</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Free signal groups</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Live trading sessions</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Education platform access</li>
+            <li style="display:flex;gap:10px;font-size:13px;color:#C3CBD3"><span style="color:#4B9EFF;flex:none">→</span>Path to LP, brokerage & fund</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== CINEMATIC BREAK ===== -->
+<section style="position:relative;min-height:clamp(380px,52vh,620px);display:flex;align-items:flex-end;overflow:hidden">
+  <img src="../assets/raw/ev-5.jpg" alt="Jay Bonham on stage" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:60% 35%;filter:contrast(1.08) brightness(.88)"/>
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,8,11,.94) 0%,rgba(6,8,11,.5) 50%,rgba(6,8,11,.2) 100%)"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(0deg,#06080B 2%,transparent 36%)"></div>
+  <div style="position:relative;z-index:5;width:100%;max-width:1100px;margin:0 auto;padding:0 clamp(18px,4vw,56px) clamp(48px,8vh,80px)">
+    <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px;display:flex;align-items:center;gap:12px"><span style="width:24px;height:1px;background:#58E9FF"></span>The Philosophy</div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,5vw,72px);line-height:.92;letter-spacing:-.01em;margin:0;max-width:22ch">
+      Markets don't care how you feel.<br><span style="color:#4B9EFF">Your job is to show up the same way every day.</span>
+    </h2>
+    <div class="reveal" style="margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650">— Jay Bonham</div>
+  </div>
+</section>
+
+<!-- ===== 12-WEEK JOURNEY ===== -->
+<section style="padding:clamp(70px,10vh,120px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:16px">
+      <span style="width:36px;height:1px;background:rgba(88,233,255,.5)"></span>The 12-Week Journey
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(34px,5.5vw,72px);line-height:.92;letter-spacing:-.01em;margin:0 0 48px">
+      Week by week.<br><span style="color:#4B9EFF">Step by step.</span>
+    </h2>
+
+    <!-- phase tab nav -->
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-bottom:2px" id="phaseTabs">
+      <button onclick="showPhase(1)" id="tab-1" style="background:rgba(75,158,255,.12);border:none;border-top:2px solid #4B9EFF;padding:14px 10px;cursor:pointer;text-align:left;transition:background .2s">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:4px">Phase 1</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;color:#fff;line-height:1.1">Foundation</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.3);margin-top:3px">Wk 1–2</div>
+      </button>
+      <button onclick="showPhase(2)" id="tab-2" style="background:rgba(255,255,255,.03);border:none;border-top:2px solid rgba(255,255,255,.1);padding:14px 10px;cursor:pointer;text-align:left;transition:background .2s">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#5C6672;margin-bottom:4px">Phase 2</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;color:#7A8590;line-height:1.1">Deployment</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);margin-top:3px">Wk 3–4</div>
+      </button>
+      <button onclick="showPhase(3)" id="tab-3" style="background:rgba(255,255,255,.03);border:none;border-top:2px solid rgba(255,255,255,.1);padding:14px 10px;cursor:pointer;text-align:left;transition:background .2s">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#5C6672;margin-bottom:4px">Phase 3</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;color:#7A8590;line-height:1.1">Emotional Mastery</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);margin-top:3px">Wk 5–6</div>
+      </button>
+      <button onclick="showPhase(4)" id="tab-4" style="background:rgba(255,255,255,.03);border:none;border-top:2px solid rgba(255,255,255,.1);padding:14px 10px;cursor:pointer;text-align:left;transition:background .2s">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#5C6672;margin-bottom:4px">Phase 4</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;color:#7A8590;line-height:1.1">Advanced</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);margin-top:3px">Wk 7–9</div>
+      </button>
+      <button onclick="showPhase(5)" id="tab-5" style="background:rgba(255,255,255,.03);border:none;border-top:2px solid rgba(255,255,255,.1);padding:14px 10px;cursor:pointer;text-align:left;transition:background .2s">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#5C6672;margin-bottom:4px">Phase 5</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;color:#7A8590;line-height:1.1">Gold Strategy</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);margin-top:3px">Wk 10–11</div>
+      </button>
+      <button onclick="showPhase(6)" id="tab-6" style="background:rgba(255,255,255,.03);border:none;border-top:2px solid rgba(255,255,255,.1);padding:14px 10px;cursor:pointer;text-align:left;transition:background .2s">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#5C6672;margin-bottom:4px">Phase 6</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;color:#7A8590;line-height:1.1">Graduation</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.2);margin-top:3px">Wk 12</div>
+      </button>
+    </div>
+
+    <!-- phase panels -->
+    <div style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)">
+
+      <div id="phase-1" class="phase-panel" style="padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B9EFF"></span>Phase 1 — Weeks 1–2 · Foundation</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 1</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Onboarding & Rules</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Welcome, expectations, Killshot rules for the first 30 days and how to backtest. Mindset email + rules sheet.</div>
+          </div>
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 2</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Killshot Training</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">What the Killshot is and how it was created. The inverse setup and why it works. Rules email reinforcement.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="phase-2" class="phase-panel" style="display:none;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B9EFF"></span>Phase 2 — Weeks 3–4 · Deployment</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 3</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Mindset & Trading Plan</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Daily expectations and how to prepare for trading. Building and using your personal trading plan.</div>
+          </div>
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 4</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Check-In & Greed</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Daily trade signals start. Mindset on greed in trading. Emotional checklist email sent.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="phase-3" class="phase-panel" style="display:none;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B9EFF"></span>Phase 3 — Weeks 5–6 · Emotional Mastery</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 5</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Profitability Check</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Are we profitable? New pullback rules to get you sharper. Mindset on discipline. Discipline email.</div>
+          </div>
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 6</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Emotional Awareness</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Journaling practice introduced. Check-in on new rules. Backtest email including new rule set.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="phase-4" class="phase-panel" style="display:none;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B9EFF"></span>Phase 4 — Weeks 7–9 · Advanced Training</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 7</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">POC Training</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">What POC is and what it does in your trades. How to read and trade it effectively.</div>
+          </div>
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 8</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">The Stars</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">What the stars do and why. Mindset on failure — embracing setbacks as part of the process.</div>
+          </div>
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 9</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">238 Breaks & S&R</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">New rules: 238 breaks. Advanced training on Support & Resistance levels.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="phase-5" class="phase-panel" style="display:none;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B9EFF"></span>Phase 5 — Weeks 10–11 · Gold Strategy</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 10</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Killshot Gold</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Long-term mindset: think monthly/yearly, not daily. Killshot Gold strategy video introduced.</div>
+          </div>
+          <div style="background:#06080B;border:1px solid rgba(75,158,255,.15);padding:24px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 11</div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:20px;margin-bottom:8px;line-height:1">Gold Advanced</div>
+            <div style="font-size:13.5px;color:#5C6672;line-height:1.6">Advanced Killshot Gold. Backtesting both basic and gold. Path into the company introduced.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="phase-6" class="phase-panel" style="display:none;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:20px;display:flex;align-items:center;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B9EFF"></span>Phase 6 — Week 12 · Graduation</div>
+        <div style="background:linear-gradient(135deg,rgba(75,158,255,.07) 0%,rgba(75,158,255,.02) 100%);border:1px solid rgba(75,158,255,.18);padding:clamp(24px,3vw,40px)">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:10px">Week 12</div>
+          <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(22px,3vw,36px);margin-bottom:12px;line-height:1">You graduate into the ecosystem.</div>
+          <div style="font-size:14px;color:#9AA4B0;line-height:1.65;max-width:60ch">Final trading video. Final mindset video. A full close-out PDF with everything — rules, strategies, frameworks. Then Jay pitches you on the next level: the company, scanners, live trading, and the full ecosystem. Only those who've done the work get here.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+function showPhase(n) {
+  for (var i = 1; i <= 6; i++) {
+    var panel = document.getElementById('phase-' + i);
+    var tab = document.getElementById('tab-' + i);
+    if (i === n) {
+      panel.style.display = 'block';
+      tab.style.background = 'rgba(75,158,255,.12)';
+      tab.style.borderTopColor = '#4B9EFF';
+      tab.querySelector('div').style.color = '#4B9EFF';
+      tab.querySelectorAll('div')[1].style.color = '#fff';
+    } else {
+      panel.style.display = 'none';
+      tab.style.background = 'rgba(255,255,255,.03)';
+      tab.style.borderTopColor = 'rgba(255,255,255,.1)';
+      tab.querySelector('div').style.color = '#5C6672';
+      tab.querySelectorAll('div')[1].style.color = '#7A8590';
+    }
+  }
+}
+</script>
+
+<!-- ===== MID CTA ===== -->
+<section style="padding:clamp(60px,9vh,100px) clamp(18px,4vw,56px);background:#06080B">
+  <div style="max-width:820px;margin:0 auto;border:1px solid rgba(75,158,255,.2);background:linear-gradient(135deg,rgba(75,158,255,.06) 0%,rgba(75,158,255,.02) 100%);padding:clamp(36px,5vw,60px);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:32px">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:12px">Limited Spots Available</div>
+      <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,4vw,52px);line-height:.96;margin:0;max-width:18ch">Ready to trade with <span style="color:#4B9EFF">precision?</span></h3>
+    </div>
+    <button onclick="JB.open()" style="flex:none;display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:18px 32px;border:none;cursor:pointer;white-space:nowrap;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.36)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      Book a Strategy Call →
+    </button>
+  </div>
+</section>
+
+<!-- ===== PHOTO STRIP ===== -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);height:clamp(160px,24vw,280px);gap:2px;background:#06080B">
+  <div style="overflow:hidden;position:relative"><img src="../assets/raw/ev-30.jpg" alt="" style="width:100%;height:100%;object-fit:cover;object-position:30% 40%;filter:contrast(1.06) saturate(.9);transition:transform .5s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"/><div style="position:absolute;inset:0;background:rgba(6,8,11,.28)"></div></div>
+  <div style="overflow:hidden;position:relative"><img src="../assets/raw/ev-18.jpg" alt="" style="width:100%;height:100%;object-fit:cover;object-position:40% 30%;filter:contrast(1.06) saturate(.9);transition:transform .5s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"/><div style="position:absolute;inset:0;background:rgba(6,8,11,.28)"></div></div>
+  <div style="overflow:hidden;position:relative"><img src="../assets/raw/ev-8.jpg" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;filter:contrast(1.06) saturate(.9);transition:transform .5s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"/><div style="position:absolute;inset:0;background:rgba(6,8,11,.28)"></div></div>
+  <div style="overflow:hidden;position:relative"><img src="../assets/raw/ev-20.jpg" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 25%;filter:contrast(1.06) saturate(.9);transition:transform .5s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"/><div style="position:absolute;inset:0;background:rgba(6,8,11,.28)"></div></div>
+</div>
+
+<!-- ===== WHO THIS IS FOR ===== -->
+<section style="padding:clamp(70px,10vh,120px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="reveal" style="text-align:center;margin-bottom:56px">
+      <h2 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(36px,6vw,72px);line-height:.92;letter-spacing:-.01em;margin:0">Is this <span style="color:#4B9EFF">for you?</span></h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px;background:rgba(255,255,255,.07)">
+      <div class="reveal" style="background:#080B0F;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;margin-bottom:24px;display:flex;align-items:center;gap:10px"><span style="width:22px;height:1px;background:#4B9EFF"></span>This is for you if</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px;font-size:14px;color:#C3CBD3;line-height:1.5"><span style="color:#4B9EFF;flex:none;margin-top:2px">✓</span>You've been trading but lack a consistent, repeatable system</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#C3CBD3;line-height:1.5"><span style="color:#4B9EFF;flex:none;margin-top:2px">✓</span>You're willing to commit 12 weeks and do the actual work</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#C3CBD3;line-height:1.5"><span style="color:#4B9EFF;flex:none;margin-top:2px">✓</span>You understand that discipline and mindset matter as much as strategy</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#C3CBD3;line-height:1.5"><span style="color:#4B9EFF;flex:none;margin-top:2px">✓</span>You want a mentor who is actively in the market — not just talking about it</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#C3CBD3;line-height:1.5"><span style="color:#4B9EFF;flex:none;margin-top:2px">✓</span>You're serious about the long game — monthly and yearly, not get-rich-this-week</div>
+        </div>
+      </div>
+      <div class="reveal" style="background:#07090D;padding:clamp(28px,4vw,48px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-bottom:24px;display:flex;align-items:center;gap:10px"><span style="width:22px;height:1px;background:#5C6672"></span>This is not for you if</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px;font-size:14px;color:#5C6672;line-height:1.5"><span style="flex:none;margin-top:2px">✗</span>You're looking for a get-rich-quick shortcut</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#5C6672;line-height:1.5"><span style="flex:none;margin-top:2px">✗</span>You're not prepared to follow a rules-based system with discipline</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#5C6672;line-height:1.5"><span style="flex:none;margin-top:2px">✗</span>You want someone to just trade for you while you do nothing</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#5C6672;line-height:1.5"><span style="flex:none;margin-top:2px">✗</span>You're not open to mindset and emotional development work</div>
+          <div style="display:flex;gap:12px;font-size:14px;color:#5C6672;line-height:1.5"><span style="flex:none;margin-top:2px">✗</span>You expect results without backtesting and putting in the repetitions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BOOK YOUR CALL ===== -->
+<section style="position:relative;overflow:hidden">
+  <!-- background candid -->
+  <img src="../assets/raw/ev-1.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:55% 30%;filter:contrast(1.06) saturate(.85) brightness(.6)"/>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,#06080B 0%,rgba(6,8,11,.7) 30%,rgba(6,8,11,.8) 70%,#06080B 100%)"></div>
+<div style="position:relative;z-index:5;padding:clamp(80px,12vh,140px) clamp(18px,4vw,56px);text-align:center">
+  <div style="max-width:700px;margin:0 auto">
+    <div class="reveal" style="display:inline-flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:24px">
+      <span style="width:24px;height:1px;background:rgba(88,233,255,.5)"></span>Application Only<span style="width:24px;height:1px;background:rgba(88,233,255,.5)"></span>
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(42px,7vw,96px);line-height:.88;letter-spacing:-.02em;margin:0 0 24px">
+      We can't work<br>with <span style="color:#4B9EFF">everyone.</span>
+    </h2>
+    <p class="reveal" style="font-size:clamp(15px,1.5vw,18px);line-height:1.7;color:#9AA4B0;max-width:44ch;margin:0 auto 44px">
+      The Killshot Program is kept small by design. Book a strategy call — 20 minutes with Jay to see if you're the right fit. No hard sell. If it's not right for you, Jay will tell you.
+    </p>
+    <div class="reveal" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+      <button onclick="JB.open()" style="display:inline-flex;align-items:center;gap:12px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:22px 48px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 16px 48px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        Book Your Strategy Call →
+      </button>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3)">Free · 20 minutes · No commitment</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section style="padding:clamp(70px,10vh,120px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:760px;margin:0 auto">
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:16px">
+      <span style="width:36px;height:1px;background:rgba(88,233,255,.5)"></span>Still got questions?
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(34px,5vw,64px);line-height:.92;letter-spacing:-.01em;margin:0 0 48px">FAQ</h2>
+
+    <div id="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What is the Killshot system?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>The Killshot is Jay's proprietary trading strategy built and refined over years of active trading and hedge fund management. It includes specific entry rules, risk parameters, and backtesting frameworks. The system also includes an advanced variant called Killshot Gold, introduced in weeks 10–11.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Who is this program for?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Traders at any level who are serious about developing a consistent, rules-based approach to the markets. You don't need to be a professional — but you do need to be ready to follow a structured system, do the mindset work, and commit to 12 weeks of real effort.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How does the coaching work?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Jay checks in with you personally throughout the 12 weeks — weekly reviews, daily or semi-daily trade signals, and mindset accountability. This isn't a course you buy and forget. Jay monitors your progress and adjusts the coaching based on where you are.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What happens after the 12 weeks?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>You step into Jay's full ecosystem — proprietary scanners, signal groups, live trading sessions, and education platform. For those who qualify, there's a path into the broader company: brokerage, LP structure, and the regulated fund once it launches.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How many spots are available?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>The program is deliberately small. Jay works directly with each person, which means availability is limited. The strategy call will confirm whether there's a spot open and whether you're the right fit for the current cohort.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What's the strategy call?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>A 20-minute call with Jay to understand where you are as a trader, what you're trying to achieve, and whether the Killshot Program is the right next step for you. There's no hard pitch — if it's not the right fit, Jay will tell you that directly.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="border-top:1px solid rgba(255,255,255,.06);padding:clamp(24px,3vw,36px) clamp(18px,4vw,56px)">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <a href="https://jaybonham.com" style="display:flex;align-items:center;gap:10px">
+      <svg width="28" height="28" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.17em;text-transform:uppercase">Jay Bonham</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <a href="https://jaybonham.com" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650;transition:color .2s" onmouseover="this.style.color='#9AA4B0'" onmouseout="this.style.color='#3C4650'">Main Site</a>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650">© Jay Bonham · Precision Under Pressure</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ===== SCROLL REVEAL =====
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }});
+}, {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// ===== NAV SCROLL =====
+window.addEventListener('scroll', () => {
+  document.getElementById('jb-nav').classList.toggle('scrolled', window.scrollY > 40);
+}, {passive:true});
+
+// ===== FAQ =====
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+
+// ===== BOOKING =====
+var JB=(function(){
+  var S={step:1,slots:{},dates:[],yr:0,mo:0,date:null,time:null,name:'',email:'',loading:false,sloading:true,err:null};
+  var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  function pad(n){return n<10?'0'+n:''+n;}
+  function el(id){return document.getElementById(id);}
+  function body(){return el('jb-body');}
+
+  function render(){
+    var b=body();if(!b)return;
+    b.innerHTML=steps()+content();
+    hooks();
+  }
+
+  function steps(){
+    var labels=['Time','Details','Confirm'];
+    var h='<div style="display:flex;align-items:center;margin-bottom:clamp(28px,4vw,44px)">';
+    labels.forEach(function(l,i){
+      var n=i+1,done=n<S.step,active=n===S.step;
+      var c=done||active?'#4B9EFF':'#2C3340';
+      var tc=active?'#F2F5F7':done?'#7A8590':'#2C3340';
+      h+='<div style="display:flex;align-items:center;gap:9px">';
+      h+='<div style="width:26px;height:26px;border-radius:50%;border:1.5px solid '+c+';display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:'+c+';">'+(done?'✓':n)+'</div>';
+      h+='<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:'+tc+'">'+l+'</span>';
+      h+='</div>';
+      if(i<2)h+='<div style="flex:1;height:1px;background:rgba(255,255,255,.07);margin:0 14px"></div>';
+    });
+    return h+'</div>';
+  }
+
+  function content(){
+    if(S.sloading)return spinner('Loading availability…');
+    if(S.err&&S.step===1)return errBox(S.err,'<button onclick="JB.reload()" class="jb-btn-next" style="flex:none;margin-top:16px;padding:13px 26px">Retry</button>');
+    if(S.step===1)return step1();
+    if(S.step===2)return step2();
+    if(S.step===3)return step3();
+    return '';
+  }
+
+  function spinner(msg){
+    return '<div style="text-align:center;padding:80px 0"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#4B9EFF">'+msg+'</div></div>';
+  }
+  function errBox(msg,extra){
+    return '<div style="padding:20px 24px;border:1px solid rgba(255,100,100,.25);background:rgba(255,100,100,.06);font-family:\'IBM Plex Mono\',monospace;font-size:12px;color:#FF8080;margin-bottom:0">'+msg+'</div>'+(extra||'');
+  }
+
+  function step1(){
+    return '<div class="jb-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,52px);align-items:start">'+cal()+times()+'</div>';
+  }
+
+  function cal(){
+    var yr=S.yr,mo=S.mo;
+    var first=new Date(Date.UTC(yr,mo,1));
+    var last=new Date(Date.UTC(yr,mo+1,0));
+    var dow=first.getUTCDay();
+    var dim=last.getUTCDate();
+    var now=new Date();
+    var todayStr=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+    var h='<div>';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">';
+    h+='<button onclick="JB.prevMo()" style="width:34px;height:34px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center">‹</button>';
+    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;font-size:19px;letter-spacing:.08em;text-transform:uppercase">'+MO[mo]+' '+yr+'</div>';
+    h+='<button onclick="JB.nextMo()" style="width:34px;height:34px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center">›</button>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px">';
+    DY.forEach(function(d){h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#3C4650;text-align:center;padding:3px 0">'+d+'</div>';});
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+    for(var i=0;i<dow;i++)h+='<div></div>';
+    for(var d=1;d<=dim;d++){
+      var ds=yr+'-'+pad(mo+1)+'-'+pad(d);
+      var avail=S.slots[ds]&&S.slots[ds].length>0;
+      var sel=ds===S.date;
+      var today=ds===todayStr;
+      var past=ds<todayStr;
+      var cls='jb-day'+(sel?' jb-day-sel':avail&&!past?' jb-day-avail':' jb-day-dim')+(today&&!sel?' jb-day-today':'');
+      var click=avail&&!past?' onclick="JB.pickDate(\''+ds+'\')"':'';
+      h+='<div class="'+cls+'"'+click+'>'+d+'</div>';
+    }
+    h+='</div>';
+    h+='<div style="margin-top:14px;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#2C3340">Times in your local timezone</div>';
+    h+='</div>';
+    return h;
+  }
+
+  function times(){
+    if(!S.date){
+      return '<div style="display:flex;align-items:center;justify-content:center;min-height:220px;border:1px dashed rgba(255,255,255,.07)"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#2C3340;text-align:center">Select a date<br>to see times</div></div>';
+    }
+    var slots=S.slots[S.date]||[];
+    var d=new Date(S.date+'T12:00:00');
+    var label=DY[d.getDay()]+', '+MO[d.getMonth()]+' '+d.getDate();
+    var h='<div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-bottom:14px">'+label+'</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:7px;max-height:380px;overflow-y:auto;padding-right:4px">';
+    slots.forEach(function(slot){
+      var t=new Date(slot.time);
+      var ts=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      var sel=slot.time===S.time;
+      h+='<button class="jb-slot'+(sel?' jb-slot-sel':'')+'" onclick="JB.pickTime(\''+slot.time+'\')">'+ts+'</button>';
+    });
+    h+='</div>';
+    if(S.time){
+      h+='<button class="jb-btn-next" onclick="JB.go(2)" style="width:100%;margin-top:18px">Next →</button>';
+    }
+    h+='</div>';
+    return h;
+  }
+
+  function step2(){
+    var summary=timeSummary();
+    var h='<div style="max-width:520px">';
+    h+='<h2 style="font-family:\'Saira Condensed\',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,46px);line-height:.94;margin:0 0 28px">Your <span style="color:#4B9EFF">Details</span></h2>';
+    if(summary)h+='<div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border:1px solid rgba(75,158,255,.22);background:rgba(75,158,255,.05);margin-bottom:26px;font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#4B9EFF">📅 '+summary+'</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">';
+    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#7A8590;margin-bottom:7px">Full Name</label><input id="jb-name" class="jb-inp" type="text" placeholder="Your full name" value="'+esc(S.name)+'"></div>';
+    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#7A8590;margin-bottom:7px">Email</label><input id="jb-email" class="jb-inp" type="email" placeholder="you@email.com" value="'+esc(S.email)+'"></div>';
+    h+='</div>';
+    if(S.err)h+=errBox(S.err);
+    h+='<div style="display:flex;gap:10px"><button class="jb-btn-back" onclick="JB.go(1)">← Back</button><button class="jb-btn-next" onclick="JB.submitDetails()">Next →</button></div>';
+    h+='</div>';
+    return h;
+  }
+
+  function step3(){
+    var summary=timeSummary(true);
+    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var h='<div style="max-width:520px">';
+    h+='<h2 style="font-family:\'Saira Condensed\',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,46px);line-height:.94;margin:0 0 28px">Confirm <span style="color:#4B9EFF">Booking</span></h2>';
+    h+='<div style="border:1px solid rgba(255,255,255,.09);margin-bottom:24px">';
+    h+='<div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.07)">';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#3C4650;margin-bottom:6px">Session</div>';
+    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.06em">'+summary+'</div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#5C6672;margin-top:4px">Strategy Call · '+tz+'</div>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr">';
+    h+='<div style="padding:16px 20px;border-right:1px solid rgba(255,255,255,.07)"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#3C4650;margin-bottom:5px">Name</div><div style="font-size:14px">'+esc(S.name)+'</div></div>';
+    h+='<div style="padding:16px 20px"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#3C4650;margin-bottom:5px">Email</div><div style="font-size:14px">'+esc(S.email)+'</div></div>';
+    h+='</div></div>';
+    if(S.err)h+=errBox(S.err,'<br>');
+    h+='<div style="display:flex;gap:10px">';
+    h+='<button class="jb-btn-back" onclick="JB.go(2)">← Back</button>';
+    h+='<button class="jb-btn-next" onclick="JB.confirm()" '+(S.loading?'disabled':'')+'>'+( S.loading?'Booking…':'Confirm Booking →')+'</button>';
+    h+='</div></div>';
+    return h;
+  }
+
+  function timeSummary(full){
+    if(!S.time)return '';
+    var d=new Date(S.date+'T12:00:00');
+    var t=new Date(S.time);
+    var dateStr=DY[d.getDay()]+', '+MO[d.getMonth()]+' '+d.getDate()+(full?', '+d.getFullYear():'');
+    var timeStr=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return dateStr+' · '+timeStr;
+  }
+
+  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+  function hooks(){}
+
+  function loadSlots(){
+    S.sloading=true;S.err=null;render();
+    fetch('/api/jb-slots')
+      .then(function(r){return r.json();})
+      .then(function(data){
+        var raw=(data.data&&data.data.slots)||{};
+        S.slots=raw;
+        S.dates=Object.keys(raw).sort();
+        S.sloading=false;
+        var now=new Date();
+        if(S.dates.length){
+          var first=S.dates[0].split('-');
+          S.yr=parseInt(first[0]);S.mo=parseInt(first[1])-1;
+        } else {
+          S.yr=now.getFullYear();S.mo=now.getMonth();
+        }
+        render();
+      })
+      .catch(function(){
+        S.sloading=false;S.err='Could not load availability. Please try again.';render();
+      });
+  }
+
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')JB.close();});
+
+  return {
+    open:function(){
+      el('jb-overlay').style.display='block';
+      el('jb-overlay').scrollTop=0;
+      document.body.style.overflow='hidden';
+      if(!S.dates.length&&!S.sloading)loadSlots();
+      else render();
+    },
+    close:function(){
+      el('jb-overlay').style.display='none';
+      document.body.style.overflow='';
+    },
+    reload:function(){loadSlots();},
+    prevMo:function(){S.mo--;if(S.mo<0){S.mo=11;S.yr--;}render();},
+    nextMo:function(){S.mo++;if(S.mo>11){S.mo=0;S.yr++;}render();},
+    pickDate:function(ds){S.date=ds;S.time=null;render();},
+    pickTime:function(ts){S.time=ts;render();},
+    go:function(n){S.step=n;S.err=null;el('jb-overlay').scrollTop=0;render();},
+    submitDetails:function(){
+      var n=(el('jb-name')||{}).value||S.name;
+      var em=(el('jb-email')||{}).value||S.email;
+      n=(n||'').trim();em=(em||'').trim();
+      if(!n){S.err='Please enter your full name.';render();return;}
+      if(!em||!em.includes('@')){S.err='Please enter a valid email address.';render();return;}
+      S.name=n;S.email=em;S.err=null;S.step=3;el('jb-overlay').scrollTop=0;render();
+    },
+    confirm:function(){
+      S.loading=true;S.err=null;render();
+      var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      fetch('/api/jb-book',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:S.name,email:S.email,start:S.time,timezone:tz})
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.ok){window.location.href='/jaybonham/booked';}
+        else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
+      })
+      .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
+    }
+  };
+})();
+</script>
+</body>
+</html>
