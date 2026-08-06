@@ -5,7 +5,8 @@ from http.server import BaseHTTPRequestHandler
 
 CAL_API_KEY = os.environ.get("CAL_API_KEY", "")
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
-BREVO_JB_LIST_ID = int(os.environ.get("BREVO_JB_LIST_ID", "0"))
+BREVO_JB_LIST_ID = int(os.environ.get("BREVO_JB_LIST_ID", "3"))       # call bookings
+BREVO_JB_APPLY_LIST_ID = int(os.environ.get("BREVO_JB_APPLY_LIST_ID", "5"))  # applicants (removed on book)
 EVENT_TYPE_ID = 6066137
 
 
@@ -51,6 +52,7 @@ class handler(BaseHTTPRequestHandler):
 
             if res.status in (200, 201):
                 self._add_to_brevo(name, email)
+                self._remove_from_apply_list(email)
                 self._json(200, {"ok": True, "booking": data.get("data", {})})
             else:
                 self._json(res.status, {"error": "Booking failed", "detail": data})
@@ -75,6 +77,25 @@ class handler(BaseHTTPRequestHandler):
             conn.getresponse()
         except Exception:
             pass  # don't fail the booking if Brevo is down
+
+    def _remove_from_apply_list(self, email):
+        """Remove contact from applicants list (List #5) once they've booked."""
+        try:
+            payload = json.dumps({"emails": [email]}).encode()
+            conn = http.client.HTTPSConnection("api.brevo.com")
+            conn.request(
+                "POST",
+                f"/v3/contacts/lists/{BREVO_JB_APPLY_LIST_ID}/contacts/remove",
+                payload,
+                {
+                    "accept": "application/json",
+                    "content-type": "application/json",
+                    "api-key": BREVO_API_KEY,
+                },
+            )
+            conn.getresponse()
+        except Exception:
+            pass  # non-critical — booking already confirmed
 
     def _json(self, status, body):
         payload = json.dumps(body).encode()

@@ -27,23 +27,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
 .reveal.in{opacity:1;transform:none}
 
-/* booking overlay — full-screen calendar version */
-.jb-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;transition:background .12s,color .12s;border:1px solid transparent}
-.jb-day-avail{cursor:pointer;color:#F2F5F7}
-.jb-day-avail:hover{background:rgba(75,158,255,.12);color:#4B9EFF}
-.jb-day-sel{background:#4B9EFF!important;color:#030D1F!important}
-.jb-day-today{border-color:rgba(75,158,255,.4)}
-.jb-day-dim{color:#2C3340;cursor:default}
-.jb-slot{width:100%;padding:13px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;text-align:left;transition:background .12s,border-color .12s,color .12s}
-.jb-slot:hover{background:rgba(75,158,255,.1);border-color:rgba(75,158,255,.35);color:#4B9EFF}
-.jb-slot-sel{background:rgba(75,158,255,.15)!important;border-color:#4B9EFF!important;color:#4B9EFF!important}
-.jb-inp{width:100%;box-sizing:border-box;background:#06080B;border:1px solid rgba(255,255,255,.14);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:border-color .2s}
-.jb-inp:focus{border-color:#4B9EFF}
-.jb-btn-back{flex:0 0 auto;padding:15px 24px;background:transparent;border:1px solid rgba(255,255,255,.14);color:#7A8590;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s}
-.jb-btn-back:hover{border-color:rgba(255,255,255,.3);color:#F2F5F7}
-.jb-btn-next{flex:1;padding:15px;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s}
-.jb-btn-next:hover{box-shadow:0 8px 28px rgba(75,158,255,.35)}
-.jb-btn-next:disabled{background:rgba(75,158,255,.35);cursor:not-allowed}
+/* application form */
+.app-inp{width:100%;box-sizing:border-box;background:#06080B;border:1px solid rgba(255,255,255,.14);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:border-color .2s}
+.app-inp:focus{border-color:#4B9EFF}
+.app-sel{width:100%;box-sizing:border-box;background:#06080B;border:1px solid rgba(255,255,255,.14);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C6672' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.app-sel:focus{border-color:#4B9EFF}
+.app-sel option{background:#06080B}
+.app-lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7A8590;margin-bottom:8px}
+.app-field{margin-bottom:20px}
+.app-btn{width:100%;padding:18px;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s}
+.app-btn:hover{box-shadow:0 12px 36px rgba(75,158,255,.38)}
+.app-btn:disabled{background:rgba(75,158,255,.35);cursor:not-allowed}
 
 /* mobile */
 @media(max-width:640px){
@@ -78,26 +72,6 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 </head>
 <body>
 
-<!-- ===== BOOKING OVERLAY ===== -->
-<div id="jb-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#06080B;overflow-y:auto">
-  <div style="position:sticky;top:0;z-index:10;background:#06080B;border-bottom:1px solid rgba(255,255,255,.08);height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,56px)">
-    <div style="display:flex;align-items:center;gap:12px">
-      <svg width="36" height="36" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
-      <div style="line-height:1">
-        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:.17em;text-transform:uppercase">JAY BONHAM</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
-      </div>
-    </div>
-    <button onclick="JB.close()" style="width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer;color:#F2F5F7;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
-  </div>
-  <div style="max-width:960px;margin:0 auto;padding:clamp(36px,5vw,56px) clamp(20px,4vw,48px) 80px">
-    <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#58E9FF;margin-bottom:clamp(28px,4vw,40px)">
-      <span style="width:22px;height:1px;background:#58E9FF"></span>Book a Strategy Call
-    </div>
-    <div id="jb-body"></div>
-  </div>
-</div>
-
 <!-- ===== NAV ===== -->
 <nav id="jb-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,48px)">
   <a href="https://jaybonham.com" id="jb-nav-logo" style="display:flex;align-items:center;gap:12px">
@@ -107,7 +81,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
     </div>
   </a>
-  <button id="jb-nav-cta" onclick="JB.open()" style="display:inline-flex;align-items:center;gap:8px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:11px 20px;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 28px rgba(75,158,255,.32)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Book a Call →</button>
+  <button id="jb-nav-cta" onclick="scrollToApply()" style="display:inline-flex;align-items:center;gap:8px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:11px 20px;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 28px rgba(75,158,255,.32)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Apply Now →</button>
 </nav>
 
 <!-- ===== HERO ===== -->
@@ -140,7 +114,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       </p>
 
       <!-- VSL player -->
-      <div class="reveal" style="position:relative;width:100%;aspect-ratio:16/9;background:#080C12;border:1px solid rgba(255,255,255,.1);overflow:hidden;cursor:pointer;margin-bottom:20px" onclick="JB.open()">
+      <div class="reveal" style="position:relative;width:100%;aspect-ratio:16/9;background:#080C12;border:1px solid rgba(255,255,255,.1);overflow:hidden;cursor:pointer;margin-bottom:20px" onclick="scrollToApply()">
         <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.05) 1px,transparent 1px);background-size:36px 36px"></div>
         <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.3" viewBox="0 0 640 360" preserveAspectRatio="none">
           <polyline points="0,290 80,255 160,272 260,195 360,218 460,148 560,168 640,98" fill="none" stroke="#4B9EFF" stroke-width="1.8" stroke-dasharray="800" stroke-dashoffset="800" style="animation:jbdraw 2s ease .5s forwards"/>
@@ -161,10 +135,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
       <!-- CTA -->
       <div class="reveal" style="display:flex;flex-direction:column;align-items:center;gap:10px">
-        <button onclick="JB.open()" style="display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:17px 36px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-          Book Your Strategy Call →
+        <button onclick="scrollToApply()" style="display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:17px 36px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+          Apply Now →
         </button>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.25)">Limited spots · Free · No commitment</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.25)">Takes 60 seconds · No commitment</span>
       </div>
 
     </div>
@@ -677,8 +651,8 @@ function showPhase(n) {
       <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#58E9FF;margin-bottom:12px">Limited Spots Available</div>
       <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,4vw,52px);line-height:.96;margin:0;max-width:18ch">Ready to trade with <span style="color:#4B9EFF">precision?</span></h3>
     </div>
-    <button onclick="JB.open()" style="flex:none;display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:18px 32px;border:none;cursor:pointer;white-space:nowrap;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.36)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-      Book a Strategy Call →
+    <button onclick="scrollToApply()" style="flex:none;display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:18px 32px;border:none;cursor:pointer;white-space:nowrap;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.36)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      Apply Now →
     </button>
   </div>
 </section>
@@ -722,9 +696,8 @@ function showPhase(n) {
   </div>
 </section>
 
-<!-- ===== BOOK YOUR CALL ===== -->
+<!-- ===== PRE-FORM CTA ===== -->
 <section style="position:relative;overflow:hidden">
-  <!-- background candid -->
   <img src="../assets/raw/ev-1.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:55% 30%;filter:contrast(1.06) saturate(.85) brightness(.6)"/>
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,#06080B 0%,rgba(6,8,11,.7) 30%,rgba(6,8,11,.8) 70%,#06080B 100%)"></div>
 <div style="position:relative;z-index:5;padding:clamp(80px,12vh,140px) clamp(18px,4vw,56px);text-align:center">
@@ -736,13 +709,13 @@ function showPhase(n) {
       We can't work<br>with <span style="color:#4B9EFF">everyone.</span>
     </h2>
     <p class="reveal" style="font-size:clamp(15px,1.5vw,18px);line-height:1.7;color:#9AA4B0;max-width:44ch;margin:0 auto 44px">
-      The Killshot Program is kept small by design. Book a strategy call — 20 minutes with Jay to see if you're the right fit. No hard sell. If it's not right for you, Jay will tell you.
+      The Killshot Program is kept deliberately small. Complete a quick application below — takes 60 seconds. If you qualify, Jay will personally review it and get you booked in for a call.
     </p>
     <div class="reveal" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-      <button onclick="JB.open()" style="display:inline-flex;align-items:center;gap:12px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:22px 48px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 16px 48px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-        Book Your Strategy Call →
+      <button onclick="scrollToApply()" style="display:inline-flex;align-items:center;gap:12px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:22px 48px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 16px 48px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        Apply Now →
       </button>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3)">Free · 20 minutes · No commitment</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3)">60 seconds · No commitment</span>
     </div>
   </div>
 </div>
@@ -785,6 +758,91 @@ function showPhase(n) {
   </div>
 </section>
 
+<!-- ===== APPLICATION FORM ===== -->
+<section id="apply-form" style="background:#06080B;padding:clamp(80px,10vw,120px) clamp(18px,4vw,56px);border-top:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:600px;margin:0 auto">
+
+    <!-- header -->
+    <div class="reveal" style="text-align:center;margin-bottom:52px">
+      <div style="display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-bottom:16px">
+        <span style="width:22px;height:1px;background:#58E9FF"></span>Apply Below<span style="width:22px;height:1px;background:#58E9FF"></span>
+      </div>
+      <h2 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(36px,5.5vw,72px);line-height:.9;letter-spacing:-.01em;margin:0 0 16px">Apply for the<br><span style="color:#4B9EFF">Killshot Program</span></h2>
+      <p style="font-size:15px;line-height:1.65;color:#7A8590;margin:0;max-width:40ch;margin:0 auto">Because Jay works directly with every client, spots are strictly limited. Serious traders only.</p>
+    </div>
+
+    <!-- form -->
+    <form id="jb-apply-form" onsubmit="submitApplication(event)" novalidate>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="jb-grid">
+        <div class="app-field">
+          <label class="app-lbl" for="app-name">Full Name</label>
+          <input id="app-name" type="text" class="app-inp" placeholder="Your full name" required>
+        </div>
+        <div class="app-field">
+          <label class="app-lbl" for="app-phone">Phone / WhatsApp</label>
+          <input id="app-phone" type="tel" class="app-inp" placeholder="+1 234 567 8900" required>
+        </div>
+      </div>
+
+      <div class="app-field">
+        <label class="app-lbl" for="app-email">Email Address</label>
+        <input id="app-email" type="email" class="app-inp" placeholder="your@email.com" required>
+      </div>
+
+      <div class="app-field">
+        <label class="app-lbl" for="app-experience">How long have you been trading?</label>
+        <select id="app-experience" class="app-sel" required>
+          <option value="">Select your experience level</option>
+          <option value="Under 1 year">Under 1 year</option>
+          <option value="1–3 years">1–3 years</option>
+          <option value="3–5 years">3–5 years</option>
+          <option value="5–10 years">5–10 years</option>
+          <option value="10+ years">10+ years</option>
+        </select>
+      </div>
+
+      <div class="app-field">
+        <label class="app-lbl" for="app-trading-type">What are you currently trading with?</label>
+        <select id="app-trading-type" class="app-sel" required>
+          <option value="">Select an option</option>
+          <option value="Personal funds">Personal funds</option>
+          <option value="Prop firm">Prop firm</option>
+          <option value="Not trading yet">Not trading yet</option>
+        </select>
+      </div>
+
+      <div class="app-field">
+        <label class="app-lbl" for="app-capital">Trading capital available</label>
+        <select id="app-capital" class="app-sel" required>
+          <option value="">Select a range</option>
+          <option value="Under $5K">Under $5K</option>
+          <option value="$5K–$25K">$5K–$25K</option>
+          <option value="$25K–$100K">$25K–$100K</option>
+          <option value="$100K–$500K">$100K–$500K</option>
+          <option value="$500K+">$500K+</option>
+        </select>
+      </div>
+
+      <div class="app-field">
+        <label class="app-lbl" for="app-blocker">What's your biggest blocker right now?</label>
+        <input id="app-blocker" type="text" class="app-inp" placeholder="e.g. consistency, risk management, no clear strategy..." required>
+      </div>
+
+      <div class="app-field" style="margin-bottom:28px">
+        <label class="app-lbl" for="app-goal">What's your goal for the next 12 months?</label>
+        <input id="app-goal" type="text" class="app-inp" placeholder="e.g. quit my job and trade full-time, double my account..." required>
+      </div>
+
+      <div id="app-error" style="display:none;padding:14px 18px;border:1px solid rgba(255,100,100,.25);background:rgba(255,100,100,.06);font-family:'IBM Plex Mono',monospace;font-size:12px;color:#FF8080;margin-bottom:20px"></div>
+
+      <button type="submit" id="app-submit" class="app-btn">Submit Application →</button>
+      <p style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.18);margin-top:14px">No commitment · Strategy call is free</p>
+
+    </form>
+  </div>
+</section>
+
 <!-- ===== FOOTER ===== -->
 <footer style="border-top:1px solid rgba(255,255,255,.06);padding:clamp(24px,3vw,36px) clamp(18px,4vw,56px)">
   <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
@@ -819,7 +877,68 @@ function toggleFaq(el) {
   if(!isOpen) item.classList.add('open');
 }
 
-// ===== BOOKING =====
+// ===== APPLICATION =====
+function scrollToApply() {
+  document.getElementById('apply-form').scrollIntoView({behavior:'smooth'});
+}
+
+function submitApplication(e) {
+  e.preventDefault();
+  var btn = document.getElementById('app-submit');
+  var errEl = document.getElementById('app-error');
+  var name = (document.getElementById('app-name').value||'').trim();
+  var email = (document.getElementById('app-email').value||'').trim();
+  var phone = (document.getElementById('app-phone').value||'').trim();
+  var experience = document.getElementById('app-experience').value;
+  var tradingType = document.getElementById('app-trading-type').value;
+  var capital = document.getElementById('app-capital').value;
+  var blocker = (document.getElementById('app-blocker').value||'').trim();
+  var goal = (document.getElementById('app-goal').value||'').trim();
+
+  errEl.style.display = 'none';
+  if (!name) { showErr('Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { showErr('Please enter a valid email address.'); return; }
+  if (!phone) { showErr('Please enter your phone number.'); return; }
+  if (!experience) { showErr('Please select your experience level.'); return; }
+  if (!tradingType) { showErr('Please select what you are currently trading with.'); return; }
+  if (!capital) { showErr('Please select your trading capital range.'); return; }
+  if (!blocker) { showErr('Please tell us your biggest blocker.'); return; }
+  if (!goal) { showErr('Please tell us your 12-month goal.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  fetch('/api/jb-apply', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      name: name, email: email, phone: phone,
+      experience_level: experience, current_trading: tradingType,
+      trading_capital: capital, biggest_blocker: blocker, goal_12_months: goal
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data.ok) {
+      window.location.href = '/jaybonham/book';
+    } else {
+      showErr(data.error || 'Something went wrong. Please try again.');
+      btn.disabled = false; btn.textContent = 'Submit Application →';
+    }
+  })
+  .catch(function(){
+    showErr('Something went wrong. Please try again.');
+    btn.disabled = false; btn.textContent = 'Submit Application →';
+  });
+
+  function showErr(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+// ===== LEGACY (unused — booking moved to /jaybonham/book) =====
 var JB=(function(){
   var S={step:1,slots:{},dates:[],yr:0,mo:0,date:null,time:null,name:'',email:'',loading:false,sloading:true,err:null};
   var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book Your Strategy Call — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth}
+body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;overflow-x:hidden}
+::selection{background:#4B9EFF;color:#06080B}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+@keyframes jbblink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes jbpulse{0%{transform:scale(1);opacity:.6}70%{transform:scale(2.2);opacity:0}100%{opacity:0}}
+@keyframes jbdraw{from{stroke-dashoffset:800}to{stroke-dashoffset:0}}
+@keyframes jbrise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes jbspin{to{transform:rotate(360deg)}}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* calendar */
+.jb-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;transition:background .12s,color .12s;border:1px solid transparent}
+.jb-day-avail{cursor:pointer;color:#F2F5F7}
+.jb-day-avail:hover{background:rgba(75,158,255,.12);color:#4B9EFF}
+.jb-day-sel{background:#4B9EFF!important;color:#030D1F!important}
+.jb-day-today{border-color:rgba(75,158,255,.4)}
+.jb-day-dim{color:#2C3340;cursor:default}
+.jb-slot{width:100%;padding:13px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;text-align:left;transition:background .12s,border-color .12s,color .12s}
+.jb-slot:hover{background:rgba(75,158,255,.1);border-color:rgba(75,158,255,.35);color:#4B9EFF}
+.jb-slot-sel{background:rgba(75,158,255,.15)!important;border-color:#4B9EFF!important;color:#4B9EFF!important}
+.jb-inp{width:100%;box-sizing:border-box;background:#06080B;border:1px solid rgba(255,255,255,.14);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:15px 18px;outline:none;transition:border-color .2s}
+.jb-inp:focus{border-color:#4B9EFF}
+.jb-btn-back{flex:0 0 auto;padding:15px 24px;background:transparent;border:1px solid rgba(255,255,255,.14);color:#7A8590;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s}
+.jb-btn-back:hover{border-color:rgba(255,255,255,.3);color:#F2F5F7}
+.jb-btn-next{flex:1;padding:15px;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s}
+.jb-btn-next:hover{box-shadow:0 8px 28px rgba(75,158,255,.35)}
+.jb-btn-next:disabled{background:rgba(75,158,255,.35);cursor:not-allowed}
+.jb-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,52px);align-items:start}
+
+@media(max-width:640px){
+  .jb-grid{grid-template-columns:1fr!important}
+  #jb-nav-cta{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,48px);transition:background .35s,border-color .35s;border-bottom:1px solid rgba(255,255,255,0)" id="jb-nav">
+  <a href="https://jaybonham.com" style="display:flex;align-items:center;gap:12px">
+    <svg width="34" height="34" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
+    <div style="line-height:1">
+      <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:.17em;text-transform:uppercase">JAY BONHAM</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+    </div>
+  </a>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px clamp(18px,4vw,56px) 60px;background:#06080B;position:relative;overflow:hidden">
+  <!-- grid bg -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.025) 1px,transparent 1px);background-size:64px 64px"></div>
+  <!-- glow -->
+  <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(75,158,255,.06) 0%,transparent 70%);pointer-events:none"></div>
+
+  <div style="position:relative;z-index:5;width:100%;max-width:900px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,5vw,72px);align-items:center" class="jb-grid">
+
+      <!-- left: congrats + video -->
+      <div>
+        <div class="reveal" style="display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(75,158,255,.22);padding:6px 14px;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">
+          <span style="width:6px;height:6px;border-radius:50%;background:#4BFF9E;flex:none;animation:jbblink 2s infinite"></span>
+          Application Approved
+        </div>
+        <h1 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(42px,6vw,80px);line-height:.88;letter-spacing:-.02em;margin:0 0 16px">
+          You're<br><span style="color:#4B9EFF">Qualified.</span>
+        </h1>
+        <p class="reveal" style="font-size:clamp(14px,1.4vw,16px);line-height:1.65;color:#9AA4B0;margin:0 0 28px">
+          Based on your answers, you're the kind of trader this program is built for. Watch the quick message from Jay below, then pick a time that works for you.
+        </p>
+
+        <!-- Jay's video placeholder -->
+        <div class="reveal" style="position:relative;width:100%;aspect-ratio:16/9;background:#080C12;border:1px solid rgba(255,255,255,.1);overflow:hidden;cursor:pointer">
+          <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.04) 1px,transparent 1px);background-size:36px 36px"></div>
+          <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.2" viewBox="0 0 480 270" preserveAspectRatio="none">
+            <polyline points="0,220 80,190 160,205 240,145 320,165 400,95 480,115" fill="none" stroke="#4BFF9E" stroke-width="1.5" stroke-dasharray="800" stroke-dashoffset="800" style="animation:jbdraw 2s ease .5s forwards"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+            <div style="position:relative">
+              <div style="position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(75,255,158,.18);animation:jbpulse 2.4s ease infinite"></div>
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(75,255,158,.1);border:1.5px solid rgba(75,255,158,.4);display:flex;align-items:center;justify-content:center">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M6 3l11 7-11 7V3z" fill="#4BFF9E"/></svg>
+              </div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#3C4650">Jay's Message — Coming Soon</div>
+          </div>
+          <div style="position:absolute;left:12px;top:12px;width:12px;height:12px;border-left:1.5px solid rgba(75,255,158,.4);border-top:1.5px solid rgba(75,255,158,.4)"></div>
+          <div style="position:absolute;right:12px;bottom:12px;width:12px;height:12px;border-right:1.5px solid rgba(75,255,158,.4);border-bottom:1.5px solid rgba(75,255,158,.4)"></div>
+        </div>
+
+        <!-- trust line -->
+        <div class="reveal" style="display:flex;align-items:center;gap:16px;margin-top:20px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L2 3.5v4c0 3 2.3 5.8 5 6.5 2.7-.7 5-3.5 5-6.5v-4L7 1z" stroke="#4BFF9E" stroke-width="1.2"/><path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#4BFF9E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            20-minute call
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L2 3.5v4c0 3 2.3 5.8 5 6.5 2.7-.7 5-3.5 5-6.5v-4L7 1z" stroke="#4BFF9E" stroke-width="1.2"/><path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#4BFF9E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            No hard sell
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L2 3.5v4c0 3 2.3 5.8 5 6.5 2.7-.7 5-3.5 5-6.5v-4L7 1z" stroke="#4BFF9E" stroke-width="1.2"/><path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#4BFF9E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Directly with Jay
+          </div>
+        </div>
+      </div>
+
+      <!-- right: booking widget -->
+      <div class="reveal" style="background:#080B0F;border:1px solid rgba(255,255,255,.08);padding:clamp(24px,3vw,36px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-bottom:20px;display:flex;align-items:center;gap:10px">
+          <span style="width:18px;height:1px;background:#58E9FF"></span>Pick Your Time
+        </div>
+        <div id="jb-body"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="border-top:1px solid rgba(255,255,255,.06);padding:clamp(24px,3vw,36px) clamp(18px,4vw,56px)">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <a href="https://jaybonham.com" style="display:flex;align-items:center;gap:10px">
+      <svg width="28" height="28" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.17em;text-transform:uppercase">Jay Bonham</span>
+    </a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650">© Jay Bonham · Precision Under Pressure</span>
+  </div>
+</footer>
+
+<script>
+// ===== SCROLL REVEAL =====
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }});
+}, {threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// ===== NAV SCROLL =====
+window.addEventListener('scroll', () => {
+  var nav = document.getElementById('jb-nav');
+  if (window.scrollY > 40) {
+    nav.style.background = 'rgba(6,8,11,.92)';
+    nav.style.borderColor = 'rgba(255,255,255,.08)';
+    nav.style.backdropFilter = 'blur(12px)';
+  } else {
+    nav.style.background = '';
+    nav.style.borderColor = 'rgba(255,255,255,0)';
+    nav.style.backdropFilter = '';
+  }
+}, {passive:true});
+
+// ===== BOOKING =====
+var JB=(function(){
+  var S={step:1,slots:{},dates:[],yr:0,mo:0,date:null,time:null,name:'',email:'',loading:false,sloading:true,err:null};
+  var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  function pad(n){return n<10?'0'+n:''+n;}
+  function el(id){return document.getElementById(id);}
+  function body(){return el('jb-body');}
+
+  function render(){
+    var b=body();if(!b)return;
+    b.innerHTML=steps()+content();
+    hooks();
+  }
+
+  function steps(){
+    var labels=['Time','Details','Confirm'];
+    var h='<div style="display:flex;align-items:center;margin-bottom:clamp(20px,3vw,32px)">';
+    labels.forEach(function(l,i){
+      var n=i+1,done=n<S.step,active=n===S.step;
+      var c=done||active?'#4B9EFF':'#2C3340';
+      var tc=active?'#F2F5F7':done?'#7A8590':'#2C3340';
+      h+='<div style="display:flex;align-items:center;gap:7px">';
+      h+='<div style="width:24px;height:24px;border-radius:50%;border:1.5px solid '+c+';display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:'+c+';">'+(done?'✓':n)+'</div>';
+      h+='<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:'+tc+'">'+l+'</span>';
+      h+='</div>';
+      if(i<2)h+='<div style="flex:1;height:1px;background:rgba(255,255,255,.07);margin:0 10px"></div>';
+    });
+    return h+'</div>';
+  }
+
+  function content(){
+    if(S.sloading)return spinner('Loading availability…');
+    if(S.err&&S.step===1)return errBox(S.err,'<button onclick="JB.reload()" class="jb-btn-next" style="flex:none;margin-top:12px;padding:12px 20px">Retry</button>');
+    if(S.step===1)return step1();
+    if(S.step===2)return step2();
+    if(S.step===3)return step3();
+    return '';
+  }
+
+  function spinner(msg){
+    return '<div style="text-align:center;padding:60px 0"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF">'+msg+'</div></div>';
+  }
+  function errBox(msg,extra){
+    return '<div style="padding:16px 18px;border:1px solid rgba(255,100,100,.25);background:rgba(255,100,100,.06);font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#FF8080;margin-bottom:0">'+msg+'</div>'+(extra||'');
+  }
+
+  function step1(){
+    return cal()+times();
+  }
+
+  function cal(){
+    var yr=S.yr,mo=S.mo;
+    var first=new Date(Date.UTC(yr,mo,1));
+    var last=new Date(Date.UTC(yr,mo+1,0));
+    var dow=first.getUTCDay();
+    var dim=last.getUTCDate();
+    var now=new Date();
+    var todayStr=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+    var h='<div style="margin-bottom:20px">';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+    h+='<button onclick="JB.prevMo()" style="width:30px;height:30px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center">‹</button>';
+    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;font-size:17px;letter-spacing:.08em;text-transform:uppercase">'+MO[mo]+' '+yr+'</div>';
+    h+='<button onclick="JB.nextMo()" style="width:30px;height:30px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center">›</button>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
+    DY.forEach(function(d){h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#3C4650;text-align:center;padding:2px 0">'+d+'</div>';});
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">';
+    for(var i=0;i<dow;i++)h+='<div class="jb-day jb-day-dim"></div>';
+    for(var d=1;d<=dim;d++){
+      var ds=yr+'-'+pad(mo+1)+'-'+pad(d);
+      var isAvail=!!S.slots[ds];
+      var isSel=S.date===ds;
+      var isToday=ds===todayStr;
+      var cls='jb-day'+(isAvail?' jb-day-avail':'  jb-day-dim')+(isSel?' jb-day-sel':'')+(isToday?' jb-day-today':'');
+      h+='<div class="'+cls+'"'+(isAvail?' onclick="JB.pickDate(\''+ds+'\')"':'')+'>'+d+'</div>';
+    }
+    h+='</div></div>';
+    return h;
+  }
+
+  function times(){
+    if(!S.date)return '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650;text-align:center;padding:20px 0">Select a date to see available times</div>';
+    var avail=S.slots[S.date]||[];
+    if(!avail.length)return '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#3C4650;text-align:center;padding:16px 0">No slots on this date.</div>';
+    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var h='<div style="margin-bottom:16px"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:10px">Available times · '+tz+'</div><div style="display:flex;flex-direction:column;gap:6px">';
+    avail.forEach(function(slot){
+      var t=new Date(slot);
+      var lbl=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:tz});
+      var isSel=S.time===slot;
+      h+='<button class="jb-slot'+(isSel?' jb-slot-sel':'')+'" onclick="JB.pickTime(\''+slot+'\')">'+lbl+'</button>';
+    });
+    h+='</div></div>';
+    if(S.time){
+      h+='<div style="display:flex;gap:10px"><button class="jb-btn-next" onclick="JB.go(2)" style="flex:1">Continue →</button></div>';
+    }
+    return h;
+  }
+
+  function step2(){
+    var h='<div style="display:flex;flex-direction:column;gap:14px">';
+    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:8px">Full Name</label><input id="jb-name" class="jb-inp" type="text" placeholder="Your full name" value="'+esc(S.name)+'"></div>';
+    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:8px">Email Address</label><input id="jb-email" class="jb-inp" type="email" placeholder="your@email.com" value="'+esc(S.email)+'"></div>';
+    if(S.err)h+=errBox(S.err);
+    h+='<div style="display:flex;gap:10px;margin-top:4px"><button class="jb-btn-back" onclick="JB.go(1)">← Back</button><button class="jb-btn-next" onclick="JB.submitDetails()">Review →</button></div>';
+    h+='</div>';
+    return h;
+  }
+
+  function step3(){
+    if(S.loading)return spinner('Booking your call…');
+    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    var t=new Date(S.time);
+    var dateStr=t.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric',year:'numeric',timeZone:tz});
+    var timeStr=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:tz});
+    var h='<div style="display:flex;flex-direction:column;gap:16px">';
+    h+='<div style="background:rgba(75,158,255,.06);border:1px solid rgba(75,158,255,.2);padding:18px 20px">';
+    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.03em;margin-bottom:4px">Strategy Call · Jay Bonham</div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#9AA4B0">'+dateStr+'</div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#4B9EFF;margin-top:3px">'+timeStr+' · '+tz+'</div>';
+    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#5C6672;margin-top:8px">'+esc(S.name)+' · '+esc(S.email)+'</div>';
+    h+='</div>';
+    if(S.err)h+=errBox(S.err);
+    h+='<div style="display:flex;gap:10px"><button class="jb-btn-back" onclick="JB.go(2)">← Back</button><button class="jb-btn-next" onclick="JB.confirm()">Confirm Booking →</button></div>';
+    h+='</div>';
+    return h;
+  }
+
+  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+  function hooks(){}
+
+  function loadSlots(){
+    S.sloading=true;S.err=null;render();
+    fetch('/api/jb-slots')
+      .then(function(r){return r.json();})
+      .then(function(data){
+        var raw=(data.data&&data.data.slots)||{};
+        S.slots=raw;
+        S.dates=Object.keys(raw).sort();
+        S.sloading=false;
+        var now=new Date();
+        if(S.dates.length){
+          var first=S.dates[0].split('-');
+          S.yr=parseInt(first[0]);S.mo=parseInt(first[1])-1;
+        } else {
+          S.yr=now.getFullYear();S.mo=now.getMonth();
+        }
+        render();
+      })
+      .catch(function(){
+        S.sloading=false;S.err='Could not load availability. Please try again.';render();
+      });
+  }
+
+  return {
+    open:function(){
+      loadSlots();
+    },
+    reload:function(){loadSlots();},
+    prevMo:function(){S.mo--;if(S.mo<0){S.mo=11;S.yr--;}render();},
+    nextMo:function(){S.mo++;if(S.mo>11){S.mo=0;S.yr++;}render();},
+    pickDate:function(ds){S.date=ds;S.time=null;render();},
+    pickTime:function(ts){S.time=ts;render();},
+    go:function(n){S.step=n;S.err=null;render();},
+    submitDetails:function(){
+      var n=(el('jb-name')||{}).value||S.name;
+      var em=(el('jb-email')||{}).value||S.email;
+      n=(n||'').trim();em=(em||'').trim();
+      if(!n){S.err='Please enter your full name.';render();return;}
+      if(!em||!em.includes('@')){S.err='Please enter a valid email address.';render();return;}
+      S.name=n;S.email=em;S.err=null;S.step=3;render();
+    },
+    confirm:function(){
+      S.loading=true;S.err=null;render();
+      var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      fetch('/api/jb-book',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:S.name,email:S.email,start:S.time,timezone:tz})
+      })
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(data.ok){window.location.href='/jaybonham/booked';}
+        else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
+      })
+      .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
+    }
+  };
+})();
+
+// Auto-load on page ready
+JB.open();
+</script>
+</body>
+</html>
