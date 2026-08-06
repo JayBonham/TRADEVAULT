@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join the Killshot Program — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth}
+body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;overflow-x:hidden}
+::selection{background:#4B9EFF;color:#06080B}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+@keyframes jbblink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes jbrise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* nav */
+#jb-nav{transition:background .35s ease,border-color .35s ease;border-bottom:1px solid rgba(255,255,255,0)}
+#jb-nav.scrolled{background:rgba(6,8,11,.92);backdrop-filter:blur(12px);border-color:rgba(255,255,255,.08)}
+
+/* cards */
+.plan-card{background:#080B0F;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;transition:border-color .25s,transform .25s}
+.plan-card:hover{border-color:rgba(75,158,255,.3);transform:translateY(-4px)}
+.plan-card.featured{border-color:rgba(75,158,255,.4);background:#09101A;position:relative}
+.plan-card.featured::before{content:'Most Popular';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:5px 16px;white-space:nowrap}
+
+.check-item{display:flex;gap:12px;font-size:14px;color:#C3CBD3;line-height:1.55;align-items:flex-start}
+.check-icon{width:16px;height:16px;flex:none;margin-top:2px}
+
+.plan-btn{display:block;width:100%;padding:16px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;text-align:center;border:none;cursor:pointer;transition:box-shadow .2s,transform .2s;text-decoration:none}
+.plan-btn:hover{box-shadow:0 10px 32px rgba(75,158,255,.38);transform:translateY(-1px)}
+.plan-btn.outline{background:transparent;border:1px solid rgba(255,255,255,.16);color:#F2F5F7}
+.plan-btn.outline:hover{border-color:rgba(75,158,255,.5);color:#4B9EFF;box-shadow:none}
+
+@media(max-width:900px){
+  .plans-grid{grid-template-columns:1fr!important}
+  .plan-card.featured{transform:none!important}
+  .plan-card.featured::before{display:none}
+}
+@media(max-width:640px){
+  #jb-nav-cta{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="jb-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,48px)">
+  <a href="https://jaybonham.com" style="display:flex;align-items:center;gap:12px">
+    <svg width="34" height="34" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
+    <div style="line-height:1">
+      <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;letter-spacing:.17em;text-transform:uppercase">JAY BONHAM</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.34em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+    </div>
+  </a>
+  <a id="jb-nav-cta" href="/apply" style="display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(255,255,255,.16);color:#F2F5F7;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='rgba(75,158,255,.5)';this.style.color='#4B9EFF'" onmouseout="this.style.borderColor='rgba(255,255,255,.16)';this.style.color='#F2F5F7'">Back to Apply</a>
+</nav>
+
+<!-- HERO -->
+<section style="padding:clamp(110px,14vw,160px) clamp(18px,4vw,56px) clamp(60px,8vw,80px);text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.025) 1px,transparent 1px);background-size:64px 64px"></div>
+  <div style="position:absolute;top:-160px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(75,158,255,.07) 0%,transparent 65%);pointer-events:none"></div>
+
+  <div style="position:relative;z-index:5;max-width:700px;margin:0 auto">
+    <div class="reveal" style="display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(75,158,255,.22);padding:6px 14px;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">
+      <span style="width:6px;height:6px;border-radius:50%;background:#4BFF9E;flex:none;animation:jbblink 2s infinite"></span>
+      Enrolment Open · Limited Spots
+    </div>
+    <h1 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(48px,8vw,100px);line-height:.88;letter-spacing:-.02em;margin:0 0 20px">
+      Choose Your<br><span style="color:#4B9EFF">Path.</span>
+    </h1>
+    <p class="reveal" style="font-size:clamp(15px,1.5vw,17px);line-height:1.7;color:#9AA4B0;margin:0 auto;max-width:48ch">
+      Three commitment levels. One system. Direct access to Jay — the same framework running inside an active hedge fund.
+    </p>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section style="padding:0 clamp(18px,4vw,56px) clamp(80px,10vw,120px)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="plans-grid reveal" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;align-items:start">
+
+      <!-- 3 MONTH -->
+      <div class="plan-card" style="padding:clamp(28px,3vw,40px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#5C6672;margin-bottom:14px">Entry</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,42px);line-height:1;letter-spacing:-.01em;margin-bottom:4px">3 Month</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:28px">Killshot Program</div>
+
+        <div style="margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,.07)">
+          <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(36px,4vw,52px);line-height:1;letter-spacing:-.02em">TBD</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:6px">One-time · No subscription</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;flex:1">
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Full Killshot trading system</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Weekly 1-on-1 reviews with Jay</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Daily trade signals</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Proprietary scanner access</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Mindset & psychology framework</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Signal groups access</div>
+          <div class="check-item" style="color:#3C4650"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#3C4650" stroke-width="1.5" stroke-linecap="round"/></svg>Extended ecosystem access</div>
+          <div class="check-item" style="color:#3C4650"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#3C4650" stroke-width="1.5" stroke-linecap="round"/></svg>LP & fund pathway</div>
+        </div>
+
+        <a href="WHOP_3M_URL" class="plan-btn outline" id="btn-3m">Get Started →</a>
+      </div>
+
+      <!-- 6 MONTH (FEATURED) -->
+      <div class="plan-card featured" style="padding:clamp(28px,3vw,40px);padding-top:clamp(40px,4vw,52px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#4B9EFF;margin-bottom:14px">Recommended</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,42px);line-height:1;letter-spacing:-.01em;margin-bottom:4px">6 Month</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:28px">Full Mentorship Package</div>
+
+        <div style="margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid rgba(75,158,255,.15)">
+          <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(36px,4vw,52px);line-height:1;letter-spacing:-.02em">TBD</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:6px">One-time · No subscription</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;flex:1">
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in 3 Month</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Extended 1-on-1 mentorship</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Full ecosystem access</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Additional product access (TBD)</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Deep mindset transformation work</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Signal groups access</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>LP & fund pathway (if you qualify)</div>
+          <div class="check-item" style="color:#3C4650"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#3C4650" stroke-width="1.5" stroke-linecap="round"/></svg>Priority access to all future products</div>
+        </div>
+
+        <a href="WHOP_6M_URL" class="plan-btn" id="btn-6m">Get Started →</a>
+      </div>
+
+      <!-- 12 MONTH -->
+      <div class="plan-card" style="padding:clamp(28px,3vw,40px)">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#5C6672;margin-bottom:14px">Full Program</div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,3.5vw,42px);line-height:1;letter-spacing:-.01em;margin-bottom:4px">12 Month</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:28px">Complete Transformation</div>
+
+        <div style="margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,.07)">
+          <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(36px,4vw,52px);line-height:1;letter-spacing:-.02em">TBD</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-top:6px">One-time · No subscription</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px;flex:1">
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in 6 Month</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Full year of direct access to Jay</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority access to all future products</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>LP & fund pathway (fast-tracked)</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Complete mindset transformation</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced Killshot Gold strategy</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Signal groups access</div>
+          <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Full ecosystem — scanners, sessions, education</div>
+        </div>
+
+        <a href="WHOP_12M_URL" class="plan-btn outline" id="btn-12m">Get Started →</a>
+      </div>
+
+    </div>
+
+    <!-- GUARANTEE / NOTE -->
+    <div class="reveal" style="margin-top:40px;padding:28px 32px;border:1px solid rgba(255,255,255,.07);background:#040608;display:flex;align-items:flex-start;gap:20px">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="flex:none;margin-top:2px"><path d="M14 2L4 7v7c0 6 4.7 11.5 10 13.5C19.3 25.5 24 20 24 14V7L14 2z" stroke="#4B9EFF" stroke-width="1.4"/><path d="M9 14l3.5 3.5L19 10" stroke="#4B9EFF" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.03em;margin-bottom:6px">This page is for strategy call graduates only</div>
+        <p style="margin:0;font-size:14px;line-height:1.65;color:#7A8590">If you haven't had a strategy call with Jay yet, <a href="/apply" style="color:#4B9EFF;text-decoration:underline;text-underline-offset:3px">apply here first</a>. Enrolment is selective — Jay reviews every application personally.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section style="padding:clamp(60px,8vw,100px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:700px;margin:0 auto">
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(32px,5vw,56px);line-height:.92;margin:0 0 44px">Common Questions</h2>
+
+    <div id="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What's the difference between the tiers?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>The 3-Month is the core Killshot Program — the full trading system, weekly coaching, daily signals, and scanner access. The 6-Month extends that with additional products, deeper mentorship, and full ecosystem access. The 12-Month is the complete transformation — a full year with Jay, fast-tracked LP pathway, and priority access to everything Jay builds going forward.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is this a recurring subscription?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>No. All three options are one-time payments. No monthly billing, no hidden renewals. You pay once, you're in for the full duration.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What happens after my program ends?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>You step into Jay's broader ecosystem — signal groups, live sessions, and the education platform. For those who qualify, there's a path toward the LP structure and the regulated fund. The relationship doesn't end when the program does.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I upgrade mid-program?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Yes — speak to Jay directly on your strategy call or via the community and he can arrange an upgrade. The cost difference between tiers is adjusted at the time of upgrade.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What platform is used for delivery?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Everything is delivered through WHOP — your course content, community access, signals, and resources are all in one place once you're enrolled.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid rgba(255,255,255,.06);padding:clamp(24px,3vw,36px) clamp(18px,4vw,56px)">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <a href="https://jaybonham.com" style="display:flex;align-items:center;gap:10px">
+      <svg width="28" height="28" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.17em;text-transform:uppercase">Jay Bonham</span>
+    </a>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650">© Jay Bonham · Precision Under Pressure</span>
+  </div>
+</footer>
+
+<style>
+.faq-item{border-bottom:1px solid rgba(255,255,255,.08)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;cursor:pointer;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(16px,2vw,22px);letter-spacing:.01em}
+.faq-q:hover{color:#4B9EFF}
+.faq-icon{flex:none;width:26px;height:26px;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:17px;color:#4B9EFF;transition:transform .3s}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:20px}
+.faq-a p{margin:0;font-size:14px;line-height:1.7;color:#9AA4B0}
+</style>
+
+<script>
+// Scroll reveal
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }});
+}, {threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// Nav scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('jb-nav').classList.toggle('scrolled', window.scrollY > 40);
+}, {passive:true});
+
+// FAQ
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>
