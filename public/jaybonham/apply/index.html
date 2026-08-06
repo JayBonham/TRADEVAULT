@@ -920,7 +920,7 @@ function submitApplication(e) {
   .then(function(r){ return r.json(); })
   .then(function(data){
     if (data.ok) {
-      window.location.href = '/jaybonham/book';
+      window.location.href = '/book';
     } else {
       showErr(data.error || 'Something went wrong. Please try again.');
       btn.disabled = false; btn.textContent = 'Submit Application →';
@@ -1161,7 +1161,7 @@ var JB=(function(){
       })
       .then(function(r){return r.json();})
       .then(function(data){
-        if(data.ok){window.location.href='/jaybonham/booked';}
+        if(data.ok){window.location.href='/booked';}
         else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
       })
       .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});

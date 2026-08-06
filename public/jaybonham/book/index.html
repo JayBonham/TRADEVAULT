@@ -351,7 +351,7 @@ var JB=(function(){
       })
       .then(function(r){return r.json();})
       .then(function(data){
-        if(data.ok){window.location.href='/jaybonham/booked';}
+        if(data.ok){window.location.href='/booked';}
         else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
       })
       .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
