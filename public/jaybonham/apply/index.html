@@ -68,6 +68,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 /* nav scroll */
 #jb-nav{transition:background .35s ease,border-color .35s ease,backdrop-filter .35s ease;border-bottom:1px solid rgba(255,255,255,0)}
 #jb-nav.scrolled{background:rgba(6,8,11,.92);backdrop-filter:blur(12px);border-color:rgba(255,255,255,.08)}
+
+/* VSL custom controls */
+#vsl-controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.88) 0%,transparent 100%);padding:10px 14px 14px;display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:10}
+#vsl-controls.vis{opacity:1;pointer-events:all}
+.vsl-cbtn{background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;flex:none;line-height:0;color:#fff}
+.vsl-cbtn:hover{opacity:.75}
+#vsl-bar{flex:1;height:3px;-webkit-appearance:none;appearance:none;cursor:pointer;border-radius:2px;outline:none;background:rgba(255,255,255,.3)}
+#vsl-bar::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;margin-top:-5px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.6)}
+#vsl-bar::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:none;cursor:pointer}
+#vsl-bar::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:inherit}
+#vsl-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;flex:none;letter-spacing:.04em;user-select:none}
 </style>
 </head>
 <body>
@@ -120,13 +131,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           style="width:100%;height:100%;object-fit:cover;display:block"
           autoplay muted playsinline preload="auto">
         </video>
-        <!-- overlay: clickable, covers full video -->
-        <div id="vsl-overlay" style="position:absolute;inset:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px">
+        <!-- overlay: tap-to-unmute, covers full video until clicked -->
+        <div id="vsl-overlay" style="position:absolute;inset:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:54px;z-index:20">
           <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 35%)"></div>
           <div id="vsl-badge" style="position:relative;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);padding:9px 18px;white-space:nowrap">
             <svg id="vsl-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
             <span id="vsl-label" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#fff">Tap to unmute</span>
           </div>
+        </div>
+        <!-- custom control bar — shown after overlay dismissed -->
+        <div id="vsl-controls">
+          <button class="vsl-cbtn" id="vsl-play-btn" title="Play / Pause">
+            <svg id="vsl-play-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" fill="#fff"/></svg>
+          </button>
+          <input type="range" id="vsl-bar" min="0" max="1000" value="0" step="1">
+          <span id="vsl-time">0:00 / 0:00</span>
+          <button class="vsl-cbtn" id="vsl-vol-btn" title="Mute / Unmute">
+            <svg id="vsl-vol-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M15 9a5 5 0 010 6M19 7a9 9 0 010 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
         </div>
       </div>
 
@@ -876,52 +898,130 @@ function toggleFaq(el) {
 
 // ===== VSL =====
 (function(){
-  var video   = document.getElementById('jb-vsl');
-  var overlay = document.getElementById('vsl-overlay');
-  var label   = document.getElementById('vsl-label');
-  var icon    = document.getElementById('vsl-icon');
+  var video    = document.getElementById('jb-vsl');
+  var overlay  = document.getElementById('vsl-overlay');
+  var label    = document.getElementById('vsl-label');
+  var icon     = document.getElementById('vsl-icon');
+  var ctrl     = document.getElementById('vsl-controls');
+  var playBtn  = document.getElementById('vsl-play-btn');
+  var playIco  = document.getElementById('vsl-play-icon');
+  var bar      = document.getElementById('vsl-bar');
+  var timeEl   = document.getElementById('vsl-time');
+  var volBtn   = document.getElementById('vsl-vol-btn');
+  var volIco   = document.getElementById('vsl-vol-icon');
+  var wrap     = document.getElementById('vsl-wrap');
   if(!video || !overlay) return;
 
-  var unmuted = false;
+  var hideTimer;
+
+  // ── helpers ────────────────────────────────────────────────
+  function fmt(s){
+    if(isNaN(s)||!isFinite(s)) return '0:00';
+    var m=Math.floor(s/60), sec=Math.floor(s%60);
+    return m+':'+(sec<10?'0':'')+sec;
+  }
+
+  function showCtrl(){
+    if(!ctrl) return;
+    ctrl.classList.add('vis');
+    clearTimeout(hideTimer);
+    if(!video.paused){
+      hideTimer = setTimeout(function(){ ctrl.classList.remove('vis'); }, 3000);
+    }
+  }
+
+  function syncPlayIcon(){
+    if(!playIco) return;
+    playIco.innerHTML = video.paused
+      ? '<path d="M5 3l14 9-14 9V3z" fill="#fff"/>'
+      : '<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" fill="#fff"/>';
+  }
+
+  function syncVolIcon(){
+    if(!volIco) return;
+    volIco.innerHTML = video.muted
+      ? '<path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>'
+      : '<path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M15 9a5 5 0 010 6M19 7a9 9 0 010 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>';
+  }
+
+  function updateBar(){
+    if(!bar || !video.duration) return;
+    var pct = video.currentTime / video.duration;
+    bar.value = Math.round(pct * 1000);
+    // fill track left of thumb with blue
+    bar.style.background = 'linear-gradient(to right, #4B9EFF '+(pct*100).toFixed(1)+'%, rgba(255,255,255,.3) '+(pct*100).toFixed(1)+'%)';
+    if(timeEl) timeEl.textContent = fmt(video.currentTime)+' / '+fmt(video.duration);
+  }
+
+  // ── controls wiring ────────────────────────────────────────
+  function initControls(){
+    if(!ctrl) return;
+
+    playBtn && playBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      video.paused ? video.play() : video.pause();
+      showCtrl();
+    });
+
+    bar && bar.addEventListener('input', function(e){
+      e.stopPropagation();
+      if(video.duration) video.currentTime = (bar.value/1000) * video.duration;
+      updateBar();
+      showCtrl();
+    });
+    bar && bar.addEventListener('click', function(e){ e.stopPropagation(); });
+
+    volBtn && volBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      video.muted = !video.muted;
+      syncVolIcon();
+      showCtrl();
+    });
+
+    video.addEventListener('timeupdate', updateBar);
+    video.addEventListener('play',  function(){ syncPlayIcon(); showCtrl(); });
+    video.addEventListener('pause', function(){ syncPlayIcon(); showCtrl(); });
+
+    wrap && wrap.addEventListener('mousemove', showCtrl);
+    wrap && wrap.addEventListener('touchstart', showCtrl, {passive:true});
+
+    syncPlayIcon();
+    syncVolIcon();
+    showCtrl();  // show briefly on start, then hide after 3s
+  }
+
+  // ── overlay: tap to unmute ──────────────────────────────────
+  function setLabel(txt){
+    if(label) label.textContent = txt;
+  }
 
   function playWithSound(){
-    unmuted = true;
     video.muted = false;
     video.currentTime = 0;
     video.play();
     overlay.style.display = 'none';
-  }
-
-  function setLabel(txt, showX){
-    if(label) label.textContent = txt;
-    // swap icon: muted speaker vs sound-on
-    if(icon) icon.innerHTML = showX
-      ? '<path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'
-      : '<path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M15 9a5 5 0 010 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
+    syncVolIcon();
+    initControls();
   }
 
   overlay.addEventListener('click', playWithSound);
 
-  // Let autoplay attribute do its job; just handle the promise result
+  // Kick off autoplay (muted); handle blocked case
   var p = video.play();
   if(p && p.then){
     p.then(function(){
-      // Autoplay worked — playing muted, show unmute badge
-      setLabel('Tap to unmute', true);
+      setLabel('Tap to unmute');
     }).catch(function(){
-      // Autoplay blocked — show tap to play
-      setLabel('Tap to play', true);
-      // On first tap: start muted, then re-show unmute badge
+      setLabel('Tap to play');
+      // First tap: start muted, then show unmute label
+      overlay.removeEventListener('click', playWithSound);
       overlay.addEventListener('click', function startMuted(){
-        overlay.removeEventListener('click', startMuted);
         video.muted = true;
         video.play().then(function(){
-          setLabel('Tap to unmute', true);
+          setLabel('Tap to unmute');
           overlay.addEventListener('click', playWithSound);
         });
       }, {once: true});
-      // Remove the playWithSound listener so startMuted runs first
-      overlay.removeEventListener('click', playWithSound);
     });
   }
 })();
