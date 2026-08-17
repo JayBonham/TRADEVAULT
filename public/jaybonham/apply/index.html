@@ -114,22 +114,18 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       </p>
 
       <!-- VSL player -->
-      <div class="reveal" id="vsl-wrap" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;margin-bottom:20px;cursor:pointer" onclick="vslUnmute()">
+      <div class="reveal" id="vsl-wrap" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;margin-bottom:20px">
         <video id="jb-vsl"
           src="https://pub-917ede3f87604762b330826b019e21b2.r2.dev/Alex%20Taylor_s%20Video%20-%20Aug%2011%2C%202026.mp4"
           style="width:100%;height:100%;object-fit:cover;display:block"
-          autoplay muted playsinline preload="metadata">
+          autoplay muted playsinline preload="auto">
         </video>
-
-        <!-- unmute overlay -->
-        <div id="vsl-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none">
-          <!-- bottom gradient so badge reads against any frame -->
-          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 40%)"></div>
-          <!-- badge -->
-          <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);padding:8px 16px;white-space:nowrap">
-            <!-- muted speaker icon -->
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff" opacity=".9"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".7"/></svg>
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#fff">Tap to unmute</span>
+        <!-- overlay: clickable, covers full video -->
+        <div id="vsl-overlay" style="position:absolute;inset:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px">
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 35%)"></div>
+          <div id="vsl-badge" style="position:relative;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);padding:9px 18px;white-space:nowrap">
+            <svg id="vsl-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="vsl-label" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#fff">Tap to unmute</span>
           </div>
         </div>
       </div>
@@ -882,41 +878,50 @@ function toggleFaq(el) {
 (function(){
   var video   = document.getElementById('jb-vsl');
   var overlay = document.getElementById('vsl-overlay');
-  var wrap    = document.getElementById('vsl-wrap');
-  if(!video) return;
+  var label   = document.getElementById('vsl-label');
+  var icon    = document.getElementById('vsl-icon');
+  if(!video || !overlay) return;
 
-  function unmute(){
-    video.muted      = false;
+  var unmuted = false;
+
+  function playWithSound(){
+    unmuted = true;
+    video.muted = false;
     video.currentTime = 0;
     video.play();
     overlay.style.display = 'none';
-    wrap.onclick = null; // disable click after unmute
   }
 
-  // Unified pointer/touch — prevents double-fire on mobile
-  wrap.addEventListener('pointerup', function(e){
-    if(overlay.style.display === 'none') return;
-    e.preventDefault();
-    unmute();
-  });
+  function setLabel(txt, showX){
+    if(label) label.textContent = txt;
+    // swap icon: muted speaker vs sound-on
+    if(icon) icon.innerHTML = showX
+      ? '<path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="2" stroke-linecap="round"/>'
+      : '<path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff"/><path d="M15 9a5 5 0 010 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
+  }
 
-  // Fallback: if autoplay was blocked, show a play+unmute prompt
-  var autoplayPromise = video.play();
-  if(autoplayPromise !== undefined){
-    autoplayPromise.catch(function(){
-      // autoplay blocked — swap badge to "Tap to play"
-      var badge = overlay.querySelector('span');
-      if(badge) badge.textContent = 'Tap to play';
-      wrap.addEventListener('pointerup', function tryPlay(e){
-        e.preventDefault();
+  overlay.addEventListener('click', playWithSound);
+
+  // Let autoplay attribute do its job; just handle the promise result
+  var p = video.play();
+  if(p && p.then){
+    p.then(function(){
+      // Autoplay worked — playing muted, show unmute badge
+      setLabel('Tap to unmute', true);
+    }).catch(function(){
+      // Autoplay blocked — show tap to play
+      setLabel('Tap to play', true);
+      // On first tap: start muted, then re-show unmute badge
+      overlay.addEventListener('click', function startMuted(){
+        overlay.removeEventListener('click', startMuted);
         video.muted = true;
         video.play().then(function(){
-          // started playing muted — now show unmute badge
-          var b = overlay.querySelector('span');
-          if(b) b.textContent = 'Tap to unmute';
-          wrap.removeEventListener('pointerup', tryPlay);
+          setLabel('Tap to unmute', true);
+          overlay.addEventListener('click', playWithSound);
         });
       }, {once: true});
+      // Remove the playWithSound listener so startMuted runs first
+      overlay.removeEventListener('click', playWithSound);
     });
   }
 })();
