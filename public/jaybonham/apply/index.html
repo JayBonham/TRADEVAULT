@@ -114,23 +114,24 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
       </p>
 
       <!-- VSL player -->
-      <div class="reveal" style="position:relative;width:100%;aspect-ratio:16/9;background:#080C12;border:1px solid rgba(255,255,255,.1);overflow:hidden;cursor:pointer;margin-bottom:20px" onclick="scrollToApply()">
-        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.05) 1px,transparent 1px);background-size:36px 36px"></div>
-        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.3" viewBox="0 0 640 360" preserveAspectRatio="none">
-          <polyline points="0,290 80,255 160,272 260,195 360,218 460,148 560,168 640,98" fill="none" stroke="#4B9EFF" stroke-width="1.8" stroke-dasharray="800" stroke-dashoffset="800" style="animation:jbdraw 2s ease .5s forwards"/>
-        </svg>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
-          <div style="position:relative">
-            <div style="position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(75,158,255,.22);animation:jbpulse 2.4s ease infinite"></div>
-            <div style="width:60px;height:60px;border-radius:50%;background:rgba(75,158,255,.12);border:1.5px solid rgba(75,158,255,.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 3l11 7-11 7V3z" fill="#4B9EFF"/></svg>
-            </div>
+      <div class="reveal" id="vsl-wrap" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;margin-bottom:20px;cursor:pointer" onclick="vslUnmute()">
+        <video id="jb-vsl"
+          src="../assets/VSL/jb-vsl.mp4"
+          style="width:100%;height:100%;object-fit:cover;display:block"
+          autoplay muted playsinline preload="metadata">
+        </video>
+
+        <!-- unmute overlay -->
+        <div id="vsl-overlay" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none">
+          <!-- bottom gradient so badge reads against any frame -->
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 40%)"></div>
+          <!-- badge -->
+          <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);padding:8px 16px;white-space:nowrap">
+            <!-- muted speaker icon -->
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex:none"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="#fff" opacity=".9"/><path d="M17 9l-4 4m4 0L13 9" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".7"/></svg>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#fff">Tap to unmute</span>
           </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#3C4650">Video Coming Soon</div>
         </div>
-        <div style="position:absolute;left:12px;top:12px;width:14px;height:14px;border-left:1.5px solid rgba(75,158,255,.5);border-top:1.5px solid rgba(75,158,255,.5)"></div>
-        <div style="position:absolute;right:12px;bottom:12px;width:14px;height:14px;border-right:1.5px solid rgba(75,158,255,.5);border-bottom:1.5px solid rgba(75,158,255,.5)"></div>
-        <div style="position:absolute;left:12px;bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#2A343E">Jay Bonham · The Killshot Program</div>
       </div>
 
       <!-- CTA -->
@@ -876,6 +877,49 @@ function toggleFaq(el) {
   document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
   if(!isOpen) item.classList.add('open');
 }
+
+// ===== VSL =====
+(function(){
+  var video   = document.getElementById('jb-vsl');
+  var overlay = document.getElementById('vsl-overlay');
+  var wrap    = document.getElementById('vsl-wrap');
+  if(!video) return;
+
+  function unmute(){
+    video.muted      = false;
+    video.currentTime = 0;
+    video.play();
+    overlay.style.display = 'none';
+    wrap.onclick = null; // disable click after unmute
+  }
+
+  // Unified pointer/touch — prevents double-fire on mobile
+  wrap.addEventListener('pointerup', function(e){
+    if(overlay.style.display === 'none') return;
+    e.preventDefault();
+    unmute();
+  });
+
+  // Fallback: if autoplay was blocked, show a play+unmute prompt
+  var autoplayPromise = video.play();
+  if(autoplayPromise !== undefined){
+    autoplayPromise.catch(function(){
+      // autoplay blocked — swap badge to "Tap to play"
+      var badge = overlay.querySelector('span');
+      if(badge) badge.textContent = 'Tap to play';
+      wrap.addEventListener('pointerup', function tryPlay(e){
+        e.preventDefault();
+        video.muted = true;
+        video.play().then(function(){
+          // started playing muted — now show unmute badge
+          var b = overlay.querySelector('span');
+          if(b) b.textContent = 'Tap to unmute';
+          wrap.removeEventListener('pointerup', tryPlay);
+        });
+      }, {once: true});
+    });
+  }
+})();
 
 // ===== APPLICATION =====
 function scrollToApply() {
