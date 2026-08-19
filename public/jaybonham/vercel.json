@@ -10,12 +10,15 @@
     "api/admin-lead.py":    { "maxDuration": 15 },
     "api/admin-send.py":    { "maxDuration": 15 }
   },
-  "rewrites": [
+  "redirects": [
     {
       "source": "/",
       "has": [{ "type": "host", "value": "admin.jaybonham.com" }],
-      "destination": "/admin/index.html"
-    },
+      "destination": "/admin",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
     {
       "source": "/:path+",
       "has": [{ "type": "host", "value": "admin.jaybonham.com" }],
