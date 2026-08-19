@@ -12,9 +12,14 @@
   },
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/",
       "has": [{ "type": "host", "value": "admin.jaybonham.com" }],
-      "destination": "/admin/:path*"
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/:path+",
+      "has": [{ "type": "host", "value": "admin.jaybonham.com" }],
+      "destination": "/admin/:path+"
     }
   ]
 }
