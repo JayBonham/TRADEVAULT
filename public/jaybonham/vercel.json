@@ -12,9 +12,9 @@
   },
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/:path*",
       "has": [{ "type": "host", "value": "admin.jaybonham.com" }],
-      "destination": "/admin/$1"
+      "destination": "/admin/:path*"
     }
   ]
 }
