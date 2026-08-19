@@ -80,6 +80,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 #vsl-bar::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:inherit}
 #vsl-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;flex:none;letter-spacing:.04em;user-select:none}
 </style>
+<!-- Meta Pixel -->
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3566618163494760&ev=PageView&noscript=1"/></noscript>
 </head>
 <body>
 
@@ -1057,18 +1060,23 @@ function submitApplication(e) {
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
+  // event_id shared with CAPI for deduplication
+  var eventId = 'lead-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
+
   fetch('/api/jb-apply', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       name: name, email: email, phone: phone,
       experience_level: experience, current_trading: tradingType,
-      trading_capital: capital, biggest_blocker: blocker, goal_12_months: goal
+      trading_capital: capital, biggest_blocker: blocker, goal_12_months: goal,
+      event_id: eventId
     })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
     if (data.ok) {
+      if(typeof fbq !== 'undefined') fbq('track', 'Lead', {}, {eventID: eventId});
       window.location.href = '/book';
     } else {
       showErr(data.error || 'Something went wrong. Please try again.');

@@ -49,6 +49,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
   #jb-nav-cta{display:none!important}
 }
 </style>
+<!-- Meta Pixel -->
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3566618163494760&ev=PageView&noscript=1"/></noscript>
 </head>
 <body>
 
@@ -344,14 +347,15 @@ var JB=(function(){
     confirm:function(){
       S.loading=true;S.err=null;render();
       var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      var eventId='sched-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
       fetch('/api/jb-book',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:S.name,email:S.email,start:S.time,timezone:tz})
+        body:JSON.stringify({name:S.name,email:S.email,start:S.time,timezone:tz,event_id:eventId})
       })
       .then(function(r){return r.json();})
       .then(function(data){
-        if(data.ok){window.location.href='/booked';}
+        if(data.ok){window.location.href='/booked?eid='+encodeURIComponent(eventId);}
         else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
       })
       .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
