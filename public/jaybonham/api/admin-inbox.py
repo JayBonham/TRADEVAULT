@@ -12,20 +12,25 @@ from urllib.parse import urlparse, parse_qs
 sys.path.insert(0, os.path.dirname(__file__))
 from _auth import verify_token
 
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+BREVO_API_KEY  = os.environ.get("BREVO_API_KEY", "")
+# Brevo Conversations uses a SEPARATE API key — generate it in:
+# Brevo → Conversations → Settings → Integrations → API
+BREVO_CONV_KEY = os.environ.get("BREVO_CONVERSATIONS_KEY", BREVO_API_KEY)
 
 
 def _brevo(method, path, body=None):
     conn = http.client.HTTPSConnection("api.brevo.com")
-    headers = {"accept": "application/json", "api-key": BREVO_API_KEY}
+    headers = {"accept": "application/json", "api-key": BREVO_CONV_KEY}
     if body:
         headers["content-type"] = "application/json"
     conn.request(method, path, body, headers)
     res = conn.getresponse()
+    raw = res.read().decode()
+    print(f"[admin-inbox] Brevo {method} {path} → {res.status}: {raw[:300]}")
     try:
-        data = json.loads(res.read().decode())
+        data = json.loads(raw)
     except Exception:
-        data = {}
+        data = {"_raw": raw[:300]}
     return res.status, data
 
 
