@@ -131,6 +131,10 @@ td.clickable{cursor:pointer}
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         Leads
       </a>
+      <a href="/inbox" class="sb-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Inbox
+      </a>
     </nav>
     <div class="sb-user">
       <span id="sb-username" style="font-family:'IBM Plex Mono',monospace;font-size:11px">—</span>
@@ -164,10 +168,14 @@ td.clickable{cursor:pointer}
     <!-- Stage tabs (list view only) -->
     <div class="tabs" id="stage-tabs">
       <button class="tab active" data-stage="" onclick="setStage(this)">All</button>
-      <button class="tab" data-stage="New Application" onclick="setStage(this)">New Application</button>
+      <button class="tab" data-stage="New Application" onclick="setStage(this)">New App</button>
       <button class="tab" data-stage="Call Booked" onclick="setStage(this)">Call Booked</button>
-      <button class="tab" data-stage="Call Completed" onclick="setStage(this)">Call Completed</button>
-      <button class="tab" data-stage="Proposal Sent" onclick="setStage(this)">Proposal Sent</button>
+      <button class="tab" data-stage="Discovery Call" onclick="setStage(this)">Discovery</button>
+      <button class="tab" data-stage="2nd Day Call" onclick="setStage(this)">2nd Call</button>
+      <button class="tab" data-stage="Business Plan" onclick="setStage(this)">Biz Plan</button>
+      <button class="tab" data-stage="Trading Plan" onclick="setStage(this)">Trading Plan</button>
+      <button class="tab" data-stage="Post Business Plan" onclick="setStage(this)">Post BP</button>
+      <button class="tab" data-stage="Funding Process" onclick="setStage(this)">Funding</button>
       <button class="tab" data-stage="Joined" onclick="setStage(this)">Joined</button>
       <button class="tab" data-stage="Lost" onclick="setStage(this)">Lost</button>
     </div>
@@ -191,14 +199,22 @@ var searchQ      = '';
 var currentView  = 'list';
 var searchTimer;
 
-var STAGES = ['New Application','Call Booked','Call Completed','Proposal Sent','Joined','Lost'];
+var STAGES = [
+  'New Application','Call Booked','Discovery Call',
+  '2nd Day Call','Business Plan','Trading Plan',
+  'Post Business Plan','Funding Process','Joined','Lost'
+];
 var STAGE_COLORS = {
-  'New Application': '#4B9EFF',
-  'Call Booked':     '#4BFF9E',
-  'Call Completed':  '#FFC84B',
-  'Proposal Sent':   '#C84BFF',
-  'Joined':          '#4BFFC8',
-  'Lost':            '#FF6464',
+  'New Application':    '#4B9EFF',
+  'Call Booked':        '#4BFF9E',
+  'Discovery Call':     '#FFC84B',
+  '2nd Day Call':       '#FFB84B',
+  'Business Plan':      '#C84BFF',
+  'Trading Plan':       '#A84BFF',
+  'Post Business Plan': '#8C4BFF',
+  'Funding Process':    '#4BFFC8',
+  'Joined':             '#4BFFAA',
+  'Lost':               '#FF6464',
 };
 
 function logout() {
@@ -215,8 +231,16 @@ function fmtShort(iso){if(!iso)return '—';var d=new Date(iso);return d.toLocal
 
 function stageBadge(stage, email) {
   var map = {
-    'New Application':'badge-new','Call Booked':'badge-booked','Call Completed':'badge-completed',
-    'Proposal Sent':'badge-proposal','Joined':'badge-joined','Lost':'badge-lost',
+    'New Application':    'badge-new',
+    'Call Booked':        'badge-booked',
+    'Discovery Call':     'badge-completed',
+    '2nd Day Call':       'badge-completed',
+    'Business Plan':      'badge-proposal',
+    'Trading Plan':       'badge-proposal',
+    'Post Business Plan': 'badge-proposal',
+    'Funding Process':    'badge-joined',
+    'Joined':             'badge-joined',
+    'Lost':               'badge-lost',
   };
   var cls = map[stage] || 'badge-other';
   return '<span class="badge '+cls+' badge-stage" title="Click to change stage" '
