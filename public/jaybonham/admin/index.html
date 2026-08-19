@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JB Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&family=Saira+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;min-height:100vh;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif}
+input{font-family:'Archivo',sans-serif}
+.card{background:#0D1117;border:1px solid rgba(255,255,255,.08);padding:40px;width:100%;max-width:380px}
+.field{margin-bottom:18px}
+label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:8px}
+input[type=text],input[type=password]{width:100%;background:#06080B;border:1px solid rgba(255,255,255,.12);color:#F2F5F7;font-size:15px;padding:13px 16px;outline:none;transition:border-color .2s}
+input:focus{border-color:#4B9EFF}
+.btn{width:100%;padding:14px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.err{color:#FF6B6B;font-size:13px;margin-top:12px;display:none}
+</style>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px">
+
+<div style="width:100%;max-width:380px">
+  <!-- Logo -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center">
+    <svg width="32" height="32" viewBox="0 0 56 56" fill="none">
+      <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+      <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:.16em;text-transform:uppercase">JAY BONHAM</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#4B9EFF;margin-top:1px">Sales Portal</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5C6672;margin-bottom:24px">Sign in to continue</div>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn" id="login-btn">Sign In →</button>
+      <div class="err" id="login-err"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Redirect if already logged in
+if(localStorage.getItem('jb_token')) {
+  window.location.replace('/leads');
+}
+
+document.getElementById('login-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var btn = document.getElementById('login-btn');
+  var err = document.getElementById('login-err');
+  var username = document.getElementById('username').value.trim();
+  var password = document.getElementById('password').value.trim();
+  err.style.display = 'none';
+  if(!username || !password) { showErr('Enter username and password.'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in...';
+
+  fetch('/api/admin-auth', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username: username, password: password})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if(data.ok) {
+      localStorage.setItem('jb_token', data.token);
+      localStorage.setItem('jb_user', data.user);
+      window.location.replace('/leads');
+    } else {
+      showErr(data.error || 'Login failed.');
+      btn.disabled = false; btn.textContent = 'Sign In →';
+    }
+  })
+  .catch(function() {
+    showErr('Network error. Try again.');
+    btn.disabled = false; btn.textContent = 'Sign In →';
+  });
+
+  function showErr(msg) { err.textContent = msg; err.style.display = 'block'; }
+});
+</script>
+</body>
+</html>
