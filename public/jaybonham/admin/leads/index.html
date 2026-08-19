@@ -11,12 +11,9 @@ html,body{margin:0;padding:0;min-height:100vh;background:#06080B;color:#F2F5F7;f
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 
-/* layout */
 .layout{display:flex;min-height:100vh}
-.sidebar{width:220px;flex:none;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;padding:0;position:sticky;top:0;height:100vh}
-.main{flex:1;padding:32px;overflow-x:auto}
-
-/* sidebar */
+.sidebar{width:220px;flex:none;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.main{flex:1;padding:28px 32px;overflow-x:auto}
 .sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
 .sb-logo-text{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
 .sb-logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4B9EFF;margin-top:1px}
@@ -27,37 +24,52 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .sb-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:#5C6672;display:flex;align-items:center;justify-content:space-between}
 .sb-user button{font-size:11px;color:#FF6B6B;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
 
-/* top bar */
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap}
-.topbar h1{margin:0;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:28px;text-transform:uppercase;letter-spacing:.02em}
-.search-wrap{position:relative;flex:1;max-width:320px}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#5C6672}
-#search{width:100%;background:#0D1117;border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-size:14px;padding:9px 12px 9px 36px;outline:none;font-family:'Archivo',sans-serif}
-#search:focus{border-color:#4B9EFF}
-#search::placeholder{color:#4A5566}
+/* topbar */
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.topbar h1{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:24px;text-transform:uppercase;letter-spacing:.06em;margin:0;flex:none}
+.search-wrap{display:flex;align-items:center;gap:8px;background:#0D1117;border:1px solid rgba(255,255,255,.08);padding:8px 14px;flex:1;max-width:300px}
+.search-wrap svg{color:#4A5566;flex:none}
+.search-wrap input{background:none;border:none;outline:none;color:#F2F5F7;font-size:13px;width:100%;font-family:'Archivo',sans-serif}
+.search-wrap input::placeholder{color:#3C4650}
+
+/* view toggle */
+.view-toggle{display:flex;gap:0;border:1px solid rgba(255,255,255,.1);overflow:hidden;flex:none;margin-left:auto}
+.vt-btn{padding:7px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#5C6672;transition:all .15s;display:flex;align-items:center;gap:7px}
+.vt-btn:hover{color:#F2F5F7;background:rgba(255,255,255,.04)}
+.vt-btn.active{background:rgba(75,158,255,.12);color:#4B9EFF;border-color:rgba(75,158,255,.3)}
+.vt-btn + .vt-btn{border-left:1px solid rgba(255,255,255,.1)}
+
+/* stats */
+.stats{display:flex;gap:0;margin-bottom:22px;border:1px solid rgba(255,255,255,.07);overflow-x:auto}
+.stat{padding:14px 22px;border-right:1px solid rgba(255,255,255,.07);flex:none}
+.stat:last-child{border-right:none}
+.stat-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:28px;letter-spacing:.02em;line-height:1}
+.stat-l{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-top:4px}
+.stat-n.blue{color:#4B9EFF}
+.stat-n.green{color:#4BFF9E}
+.stat-n.cyan{color:#4BFFC8}
 
 /* stage tabs */
-.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;border:1px solid rgba(255,255,255,.08);background:none;transition:all .15s;cursor:pointer}
-.tab:hover{color:#F2F5F7;border-color:rgba(255,255,255,.2)}
-.tab.active{color:#4B9EFF;border-color:#4B9EFF;background:rgba(75,158,255,.08)}
-
-/* stats row */
-.stats{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
-.stat{background:#0D1117;border:1px solid rgba(255,255,255,.06);padding:14px 20px;min-width:110px}
-.stat-n{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:#F2F5F7}
-.stat-l{font-size:11px;color:#5C6672;margin-top:3px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+.tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:18px;overflow-x:auto;flex-wrap:nowrap}
+.tab{padding:9px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#4A5566;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover{color:#C8D0D8}
+.tab.active{color:#4B9EFF;border-bottom-color:#4B9EFF}
 
 /* table */
 .tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:700px}
+table{width:100%;border-collapse:collapse;min-width:900px}
 thead tr{border-bottom:1px solid rgba(255,255,255,.08)}
-th{text-align:left;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4A5566;font-weight:500}
-tbody tr{border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .12s}
+th{text-align:left;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650;font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
 tbody tr:hover{background:rgba(255,255,255,.025)}
-td{padding:13px 14px;font-size:14px;color:#C8D0D8;vertical-align:middle}
-td.name{color:#F2F5F7;font-weight:500}
-.badge{display:inline-block;padding:3px 9px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+td{padding:11px 12px;font-size:13px;color:#C8D0D8;vertical-align:middle}
+td.td-name{cursor:pointer;min-width:160px}
+td.td-name .n1{color:#F2F5F7;font-weight:500;font-size:14px}
+td.td-name .n2{color:#4A5566;font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:2px}
+td.clickable{cursor:pointer}
+
+/* badges */
+.badge{display:inline-block;padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
 .badge-new{background:rgba(75,158,255,.12);color:#4B9EFF;border:1px solid rgba(75,158,255,.25)}
 .badge-booked{background:rgba(75,255,158,.1);color:#4BFF9E;border:1px solid rgba(75,255,158,.25)}
 .badge-completed{background:rgba(255,200,75,.1);color:#FFC84B;border:1px solid rgba(255,200,75,.25)}
@@ -65,9 +77,38 @@ td.name{color:#F2F5F7;font-weight:500}
 .badge-joined{background:rgba(75,255,200,.1);color:#4BFFC8;border:1px solid rgba(75,255,200,.25)}
 .badge-lost{background:rgba(255,100,100,.08);color:#FF6464;border:1px solid rgba(255,100,100,.2)}
 .badge-other{background:rgba(255,255,255,.06);color:#9AA4B0;border:1px solid rgba(255,255,255,.12)}
+.badge-stage{cursor:pointer;user-select:none;transition:opacity .15s}
+.badge-stage:hover{opacity:.75}
 
+/* truncate cell */
+.trunc{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#9AA4B0}
+
+/* empty / loading */
 .empty{text-align:center;padding:60px 20px;color:#4A5566;font-family:'IBM Plex Mono',monospace;font-size:13px}
 .loading{text-align:center;padding:60px 20px;color:#4A5566;font-size:13px}
+
+/* KANBAN */
+.kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:20px;min-height:500px;align-items:flex-start}
+.kb-col{flex:none;width:240px;background:#0A0E14;border:1px solid rgba(255,255,255,.07)}
+.kb-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between}
+.kb-head-name{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.kb-head-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A5566;background:rgba(255,255,255,.06);padding:1px 7px}
+.kb-cards{padding:10px;display:flex;flex-direction:column;gap:8px}
+.kb-card{background:#06080B;border:1px solid rgba(255,255,255,.07);padding:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.kb-card:hover{border-color:rgba(75,158,255,.3);background:rgba(75,158,255,.03)}
+.kb-card-name{font-size:14px;font-weight:500;color:#F2F5F7;margin-bottom:4px}
+.kb-card-email{font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4A5566;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kb-card-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;color:#7A8590}
+.kb-card-row svg{flex:none;opacity:.5}
+.kb-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)}
+.kb-card-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#3C4650}
+
+/* stage picker popover */
+.stage-picker{position:fixed;z-index:1000;background:#0D1117;border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:180px;overflow:hidden}
+.sp-opt{padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9AA4B0;cursor:pointer;transition:background .12s,color .12s}
+.sp-opt:hover{background:rgba(75,158,255,.1);color:#4B9EFF}
+.sp-opt.sp-active{color:#4B9EFF}
+.sp-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 0}
 </style>
 </head>
 <body>
@@ -102,16 +143,26 @@ td.name{color:#F2F5F7;font-weight:500}
     <div class="topbar">
       <h1>Leads</h1>
       <div class="search-wrap">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <input type="text" id="search" placeholder="Search name or email…" oninput="onSearch()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="search" placeholder="Search name, email…" oninput="onSearch()">
+      </div>
+      <div class="view-toggle">
+        <button class="vt-btn active" id="vt-list" onclick="setView('list')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          List
+        </button>
+        <button class="vt-btn" id="vt-kanban" onclick="setView('kanban')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="5" height="18" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="3" width="5" height="14" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="17" y="3" width="4" height="10" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+          Pipeline
+        </button>
       </div>
     </div>
 
     <!-- Stats -->
     <div class="stats" id="stats-row"></div>
 
-    <!-- Stage tabs -->
-    <div class="tabs">
+    <!-- Stage tabs (list view only) -->
+    <div class="tabs" id="stage-tabs">
       <button class="tab active" data-stage="" onclick="setStage(this)">All</button>
       <button class="tab" data-stage="New Application" onclick="setStage(this)">New Application</button>
       <button class="tab" data-stage="Call Booked" onclick="setStage(this)">Call Booked</button>
@@ -121,12 +172,12 @@ td.name{color:#F2F5F7;font-weight:500}
       <button class="tab" data-stage="Lost" onclick="setStage(this)">Lost</button>
     </div>
 
-    <!-- Table -->
-    <div class="tbl-wrap">
-      <div id="leads-out"><div class="loading">Loading leads…</div></div>
-    </div>
+    <!-- Content area -->
+    <div id="content-area"><div class="loading">Loading leads…</div></div>
   </main>
 </div>
+
+<!-- Stage picker (appended to body on demand) -->
 
 <script>
 var token = localStorage.getItem('jb_token');
@@ -134,10 +185,21 @@ var user  = localStorage.getItem('jb_user') || '';
 if(!token) window.location.replace('/');
 document.getElementById('sb-username').textContent = user;
 
-var allContacts = [];
+var allContacts  = [];
 var currentStage = '';
-var searchQ = '';
+var searchQ      = '';
+var currentView  = 'list';
 var searchTimer;
+
+var STAGES = ['New Application','Call Booked','Call Completed','Proposal Sent','Joined','Lost'];
+var STAGE_COLORS = {
+  'New Application': '#4B9EFF',
+  'Call Booked':     '#4BFF9E',
+  'Call Completed':  '#FFC84B',
+  'Proposal Sent':   '#C84BFF',
+  'Joined':          '#4BFFC8',
+  'Lost':            '#FF6464',
+};
 
 function logout() {
   localStorage.removeItem('jb_token');
@@ -145,122 +207,285 @@ function logout() {
   window.location.replace('/');
 }
 
-function stageBadge(stage) {
+/* ── helpers ── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function trunc(s,n){s=String(s||'');return s.length>n?s.slice(0,n)+'…':s}
+function fmtDate(iso){if(!iso)return '—';var d=new Date(iso);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
+function fmtShort(iso){if(!iso)return '—';var d=new Date(iso);return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+
+function stageBadge(stage, email) {
   var map = {
-    'New Application': 'badge-new',
-    'Call Booked':     'badge-booked',
-    'Call Completed':  'badge-completed',
-    'Proposal Sent':   'badge-proposal',
-    'Joined':          'badge-joined',
-    'Lost':            'badge-lost',
+    'New Application':'badge-new','Call Booked':'badge-booked','Call Completed':'badge-completed',
+    'Proposal Sent':'badge-proposal','Joined':'badge-joined','Lost':'badge-lost',
   };
   var cls = map[stage] || 'badge-other';
-  return '<span class="badge ' + cls + '">' + (stage || 'Unknown') + '</span>';
+  return '<span class="badge '+cls+' badge-stage" title="Click to change stage" '
+    +'onclick="showStagePicker(event,\''+encodeURIComponent(email||'')+'\',\''+esc(stage||'')+'\')">'+esc(stage||'Unknown')+'</span>';
 }
 
-function fmtDate(iso) {
-  if(!iso) return '—';
-  var d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+/* ── view toggle ── */
+function setView(v) {
+  currentView = v;
+  document.getElementById('vt-list').classList.toggle('active', v==='list');
+  document.getElementById('vt-kanban').classList.toggle('active', v==='kanban');
+  document.getElementById('stage-tabs').style.display = v==='list' ? '' : 'none';
+  renderAll();
 }
 
-function renderTable(contacts) {
-  if(!contacts.length) {
-    document.getElementById('leads-out').innerHTML = '<div class="empty">No leads found.</div>';
-    return;
-  }
-  var rows = contacts.map(function(c) {
-    var a = c.attributes || {};
-    var name = ((a.FIRSTNAME || '') + ' ' + (a.LASTNAME || '')).trim() || c.email;
-    var email = c.email || '';
-    var phone = a.SMS || '—';
-    var capital = a.TRADING_CAPITAL || '—';
-    var stage = c._stage || 'Unknown';
-    var date = fmtDate(c.createdAt);
-    return '<tr onclick="goLead(\'' + encodeURIComponent(email) + '\')">'
-      + '<td class="name">' + esc(name) + '</td>'
-      + '<td>' + esc(email) + '</td>'
-      + '<td>' + esc(phone) + '</td>'
-      + '<td>' + esc(capital) + '</td>'
-      + '<td>' + stageBadge(stage) + '</td>'
-      + '<td style="color:#5C6672;font-size:13px">' + date + '</td>'
-      + '</tr>';
-  }).join('');
-
-  document.getElementById('leads-out').innerHTML =
-    '<table><thead><tr>'
-    + '<th>Name</th><th>Email</th><th>Phone</th><th>Capital</th><th>Stage</th><th>Applied</th>'
-    + '</tr></thead><tbody>' + rows + '</tbody></table>';
-}
-
-function renderStats(contacts) {
-  var counts = {};
-  contacts.forEach(function(c) {
-    var s = c._stage || 'Unknown';
-    counts[s] = (counts[s] || 0) + 1;
-  });
-  var total = contacts.length;
-  var html = '<div class="stat"><div class="stat-n">' + total + '</div><div class="stat-l">Total</div></div>';
-  ['New Application','Call Booked','Call Completed','Joined'].forEach(function(s) {
-    html += '<div class="stat"><div class="stat-n">' + (counts[s] || 0) + '</div><div class="stat-l">' + s + '</div></div>';
-  });
-  document.getElementById('stats-row').innerHTML = html;
-}
-
+/* ── filter ── */
 function filtered() {
-  return allContacts.filter(function(c) {
+  return allContacts.filter(function(c){
     var stageOk = !currentStage || c._stage === currentStage;
     var a = c.attributes || {};
-    var fullName = ((a.FIRSTNAME||'') + ' ' + (a.LASTNAME||'')).toLowerCase();
+    var fullName = ((a.FIRSTNAME||'')+' '+(a.LASTNAME||'')).toLowerCase();
     var searchOk = !searchQ || fullName.includes(searchQ) || (c.email||'').toLowerCase().includes(searchQ);
     return stageOk && searchOk;
   });
 }
 
 function setStage(btn) {
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
   btn.classList.add('active');
   currentStage = btn.dataset.stage;
-  var f = filtered();
-  renderTable(f);
+  renderAll();
 }
 
 function onSearch() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(function(){
-    searchQ = (document.getElementById('search').value || '').toLowerCase().trim();
-    renderTable(filtered());
+    searchQ = (document.getElementById('search').value||'').toLowerCase().trim();
+    renderAll();
   }, 200);
 }
 
-function goLead(encodedEmail) {
-  window.location.href = '/lead?email=' + encodedEmail;
+function goLead(email) {
+  window.location.href = '/lead?email=' + encodeURIComponent(email);
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* ── render dispatcher ── */
+function renderAll() {
+  var f = filtered();
+  if(currentView==='list') renderTable(f);
+  else renderKanban(f);
+  renderStats(allContacts);
 }
 
+/* ── TABLE ── */
+function renderTable(contacts) {
+  if(!contacts.length){
+    document.getElementById('content-area').innerHTML='<div class="empty">No leads found.</div>';
+    return;
+  }
+
+  var rows = contacts.map(function(c){
+    var a = c.attributes || {};
+    var first = (a.FIRSTNAME||'').trim();
+    var last  = (a.LASTNAME||'').trim();
+    var name  = (first+' '+last).trim() || c.email;
+    var email = c.email||'';
+    var phone = a.SMS||'—';
+    var exp   = a.EXPERIENCE_LEVEL||'—';
+    var trad  = a.CURRENT_TRADING||'—';
+    var cap   = a.TRADING_CAPITAL||'—';
+    var blocker = a.BIGGEST_BLOCKER||'';
+    var goal    = a.GOAL_12_MONTHS||'';
+    var stage = c._stage||'Unknown';
+    var date  = fmtDate(c.createdAt);
+
+    return '<tr>'
+      +'<td class="td-name clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')">'
+        +'<div class="n1">'+esc(name)+'</div>'
+        +'<div class="n2">'+esc(email)+'</div>'
+      +'</td>'
+      +'<td class="clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')">'+esc(phone)+'</td>'
+      +'<td class="clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')">'+esc(exp)+'</td>'
+      +'<td class="clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')">'+esc(trad)+'</td>'
+      +'<td class="clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')"><strong style="color:#F2F5F7">'+esc(cap)+'</strong></td>'
+      +'<td class="clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')">'
+        +(blocker?'<div class="trunc" title="'+esc(blocker)+'">'+esc(trunc(blocker,40))+'</div>':'<span style="color:#3C4650">—</span>')
+      +'</td>'
+      +'<td class="clickable" onclick="goLead(\''+encodeURIComponent(email)+'\')">'
+        +(goal?'<div class="trunc" title="'+esc(goal)+'">'+esc(trunc(goal,40))+'</div>':'<span style="color:#3C4650">—</span>')
+      +'</td>'
+      +'<td>'+stageBadge(stage, email)+'</td>'
+      +'<td style="color:#5C6672;font-size:12px;font-family:\'IBM Plex Mono\',monospace;white-space:nowrap">'+esc(date)+'</td>'
+      +'</tr>';
+  }).join('');
+
+  document.getElementById('content-area').innerHTML =
+    '<div class="tbl-wrap"><table>'
+    +'<thead><tr>'
+    +'<th>Name / Email</th><th>Phone</th><th>Experience</th><th>Trading?</th>'
+    +'<th>Capital</th><th>Biggest Blocker</th><th>12-Mo Goal</th><th>Stage</th><th>Applied</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table></div>';
+}
+
+/* ── KANBAN ── */
+function renderKanban(contacts) {
+  var cols = {};
+  STAGES.forEach(function(s){ cols[s] = []; });
+  // Also bucket unknowns
+  contacts.forEach(function(c){
+    var s = c._stage||'';
+    if(cols[s]) cols[s].push(c);
+  });
+
+  var html = '<div class="kanban">';
+  STAGES.forEach(function(s){
+    var cards = cols[s] || [];
+    var color = STAGE_COLORS[s] || '#9AA4B0';
+    html += '<div class="kb-col">'
+      +'<div class="kb-head" style="border-top:2px solid '+color+'">'
+        +'<span class="kb-head-name" style="color:'+color+'">'+esc(s)+'</span>'
+        +'<span class="kb-head-count">'+cards.length+'</span>'
+      +'</div>'
+      +'<div class="kb-cards">';
+
+    if(!cards.length){
+      html += '<div style="padding:16px;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#3C4650;letter-spacing:.1em">EMPTY</div>';
+    } else {
+      cards.forEach(function(c){
+        var a = c.attributes||{};
+        var first = (a.FIRSTNAME||'').trim();
+        var last  = (a.LASTNAME||'').trim();
+        var name  = (first+' '+last).trim()||c.email;
+        var email = c.email||'';
+        var cap   = a.TRADING_CAPITAL||'';
+        var exp   = a.EXPERIENCE_LEVEL||'';
+        var trad  = a.CURRENT_TRADING||'';
+        html += '<div class="kb-card" onclick="goLead(\''+encodeURIComponent(email)+'\')">'
+          +'<div class="kb-card-name">'+esc(name)+'</div>'
+          +'<div class="kb-card-email">'+esc(email)+'</div>'
+          +(cap?'<div class="kb-card-row"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><strong style="color:#F2F5F7">'+esc(cap)+'</strong></div>':'')
+          +(exp?'<div class="kb-card-row"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'+esc(exp)+'</div>':'')
+          +(trad?'<div class="kb-card-row"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+esc(trad)+'</div>':'')
+          +'<div class="kb-card-foot">'
+            +'<span class="kb-card-date">'+esc(fmtShort(c.createdAt))+'</span>'
+            +stageBadge(s, email)
+          +'</div>'
+          +'</div>';
+      });
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  document.getElementById('content-area').innerHTML = html;
+}
+
+/* ── STATS ── */
+function renderStats(contacts) {
+  var counts = {};
+  var pipelineVal = 0;
+  STAGES.forEach(function(s){ counts[s]=0; });
+  contacts.forEach(function(c){
+    var s = c._stage||'';
+    if(counts[s]!==undefined) counts[s]++;
+    var a = c.attributes||{};
+    var capUsd = parseInt(a.TRADING_CAPITAL_USD||0, 10)||0;
+    if(s !== 'Lost') pipelineVal += capUsd;
+  });
+  var total = contacts.length;
+  var joined = counts['Joined']||0;
+  var pipeStr = pipelineVal >= 1000000
+    ? '$'+(pipelineVal/1000000).toFixed(1)+'M'
+    : pipelineVal >= 1000
+      ? '$'+(pipelineVal/1000).toFixed(0)+'K'
+      : '$'+pipelineVal;
+
+  document.getElementById('stats-row').innerHTML =
+    '<div class="stat"><div class="stat-n">'+total+'</div><div class="stat-l">Total Leads</div></div>'
+    +'<div class="stat"><div class="stat-n blue">'+(counts['New Application']||0)+'</div><div class="stat-l">Applications</div></div>'
+    +'<div class="stat"><div class="stat-n" style="color:#4BFF9E">'+(counts['Call Booked']||0)+'</div><div class="stat-l">Calls Booked</div></div>'
+    +'<div class="stat"><div class="stat-n" style="color:#FFC84B">'+(counts['Call Completed']||0)+'</div><div class="stat-l">Calls Done</div></div>'
+    +'<div class="stat"><div class="stat-n cyan">'+joined+'</div><div class="stat-l">Joined</div></div>'
+    +'<div class="stat"><div class="stat-n" style="color:#C84BFF;font-size:22px">'+pipeStr+'</div><div class="stat-l">Pipeline Capital</div></div>';
+}
+
+/* ── INLINE STAGE PICKER ── */
+function showStagePicker(e, encodedEmail, currentStageName) {
+  e.stopPropagation();
+  var existing = document.getElementById('stage-picker-el');
+  if(existing){ existing.remove(); return; }
+
+  var email = decodeURIComponent(encodedEmail);
+  var div = document.createElement('div');
+  div.id = 'stage-picker-el';
+  div.className = 'stage-picker';
+  div.innerHTML = STAGES.map(function(s){
+    return '<div class="sp-opt'+(s===currentStageName?' sp-active':'')+'" onclick="changeStage(\''+encodeURIComponent(email)+'\',\''+encodeURIComponent(s)+'\',event)">'+esc(s)+'</div>';
+  }).join('');
+
+  // Position near the click
+  var x = e.clientX;
+  var y = e.clientY + window.scrollY + 4;
+  div.style.top  = y + 'px';
+  div.style.left = x + 'px';
+  document.body.appendChild(div);
+
+  // Adjust if off-screen right
+  var rect = div.getBoundingClientRect();
+  if(rect.right > window.innerWidth - 8){
+    div.style.left = (window.innerWidth - rect.width - 8) + 'px';
+  }
+
+  // Close on outside click
+  setTimeout(function(){
+    document.addEventListener('click', function _close(ev){
+      if(!div.contains(ev.target)){
+        div.remove();
+        document.removeEventListener('click', _close);
+      }
+    });
+  }, 0);
+}
+
+function changeStage(encodedEmail, encodedStage, e) {
+  if(e) e.stopPropagation();
+  var email    = decodeURIComponent(encodedEmail);
+  var newStage = decodeURIComponent(encodedStage);
+  var picker   = document.getElementById('stage-picker-el');
+  if(picker) picker.remove();
+
+  // Optimistic update
+  var c = allContacts.find(function(x){ return x.email === email; });
+  if(c) c._stage = newStage;
+  renderAll();
+
+  fetch('/api/admin-lead', {
+    method: 'PATCH',
+    headers: {'Authorization':'Bearer '+token, 'Content-Type':'application/json'},
+    body: JSON.stringify({email: email, stage: newStage})
+  }).then(function(r){
+    if(r.status===401){ logout(); }
+  }).catch(function(err){
+    console.error('Stage change error:', err);
+  });
+}
+
+/* ── LOAD ── */
 function loadLeads() {
-  fetch('/api/admin-leads', { headers: {'Authorization': 'Bearer ' + token} })
-  .then(function(r) {
-    if(r.status === 401) { logout(); return null; }
+  fetch('/api/admin-leads', {headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){
+    if(r.status===401){logout();return null;}
     return r.json();
   })
-  .then(function(data) {
+  .then(function(data){
     if(!data) return;
+    if(!data.ok){
+      document.getElementById('content-area').innerHTML='<div class="empty">Failed to load leads.</div>';
+      return;
+    }
     allContacts = data.contacts || [];
-    renderStats(allContacts);
-    renderTable(filtered());
+    renderAll();
   })
-  .catch(function() {
-    document.getElementById('leads-out').innerHTML = '<div class="empty">Failed to load leads. Check connection.</div>';
+  .catch(function(){
+    document.getElementById('content-area').innerHTML='<div class="empty">Network error loading leads.</div>';
   });
 }
 
 loadLeads();
-// Refresh every 60 seconds
-setInterval(loadLeads, 60000);
 </script>
 </body>
 </html>

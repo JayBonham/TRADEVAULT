@@ -14,7 +14,7 @@ textarea,input,select{font-family:'Archivo',sans-serif}
 
 .layout{display:flex;min-height:100vh}
 .sidebar{width:220px;flex:none;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-.main{flex:1;padding:32px;max-width:1100px}
+.main{flex:1;padding:28px 32px;max-width:1200px}
 .sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
 .sb-logo-text{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
 .sb-logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4B9EFF;margin-top:1px}
@@ -25,54 +25,88 @@ textarea,input,select{font-family:'Archivo',sans-serif}
 .sb-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:#5C6672;display:flex;align-items:center;justify-content:space-between}
 .sb-user button{font-size:11px;color:#FF6B6B;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
 
-/* header */
-.lead-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
-.lead-name{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:32px;text-transform:uppercase;letter-spacing:.01em;margin:0 0 6px}
-.lead-email{font-size:14px;color:#9AA4B0}
-.lead-phone{font-size:14px;color:#9AA4B0;margin-top:2px}
+/* back */
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;margin-bottom:20px;transition:color .15s}
+.back-link:hover{color:#F2F5F7}
 
-/* stage select */
-.stage-wrap{display:flex;align-items:center;gap:10px}
-.stage-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5C6672}
-select#stage-sel{background:#0D1117;border:1px solid rgba(255,255,255,.12);color:#F2F5F7;font-size:13px;padding:8px 12px;outline:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em}
+/* header */
+.lead-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.07)}
+.lead-name{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:34px;text-transform:uppercase;letter-spacing:.01em;margin:0 0 8px;line-height:1}
+.lead-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px}
+.lead-meta-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#7A8590;font-family:'IBM Plex Mono',monospace}
+.lead-meta-item svg{flex:none;opacity:.6}
+
+/* stage controls */
+.stage-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stage-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566}
+select#stage-sel{background:#0D1117;border:1px solid rgba(255,255,255,.12);color:#F2F5F7;font-size:12px;padding:9px 12px;outline:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
 select#stage-sel:focus{border-color:#4B9EFF}
 .stage-saved{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4BFF9E;display:none}
 
-/* 2-col grid */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
-@media(max-width:800px){.grid{grid-template-columns:1fr}}
+/* layout grid */
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start;margin-bottom:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:20px}
+@media(max-width:1000px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.grid3,.grid2{grid-template-columns:1fr}}
 
 /* cards */
-.card{background:#0D1117;border:1px solid rgba(255,255,255,.07);padding:24px}
-.card-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.card{background:#0D1117;border:1px solid rgba(255,255,255,.07);padding:20px}
+.card-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px}
 
-/* attribute rows */
-.attr-row{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
-.attr-key{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;min-width:130px;padding-top:2px;flex:none}
-.attr-val{font-size:14px;color:#E0E6ED;line-height:1.5;word-break:break-word}
-.attr-val.long{font-size:13px;color:#C8D0D8}
+/* attr rows */
+.attr-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.attr-key{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#4A5566;min-width:120px;padding-top:2px;flex:none}
+.attr-val{font-size:13px;color:#E0E6ED;line-height:1.55;word-break:break-word}
+.attr-val.big{font-size:16px;font-weight:600;color:#F2F5F7}
+.attr-val.long{font-size:13px;color:#C8D0D8;line-height:1.6}
 
-/* comms section */
-.tab-row{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,.07)}
-.ctab{padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;border-bottom:2px solid transparent;transition:all .15s;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none}
+/* answer block */
+.ans-block{margin-bottom:14px;padding:12px;background:rgba(255,255,255,.02);border-left:2px solid rgba(75,158,255,.25)}
+.ans-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#4A5566;margin-bottom:6px}
+.ans-text{font-size:14px;color:#E0E6ED;line-height:1.6}
+
+/* lists/sequences */
+.list-pill{display:inline-block;padding:3px 9px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(75,158,255,.25);color:#4B9EFF;background:rgba(75,158,255,.07);margin:2px 2px 2px 0}
+
+/* comms */
+.tab-row{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:16px}
+.ctab{padding:8px 16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4A5566;border-bottom:2px solid transparent;transition:all .15s;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none}
 .ctab:hover{color:#F2F5F7}
 .ctab.active{color:#4B9EFF;border-bottom-color:#4B9EFF}
 
-.field{margin-bottom:14px}
-.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#5C6672;margin-bottom:7px}
-input.finp, textarea.finp {width:100%;background:#06080B;border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-size:14px;padding:11px 14px;outline:none;resize:vertical;transition:border-color .2s}
-input.finp:focus, textarea.finp:focus{border-color:#4B9EFF}
-textarea.finp{min-height:120px;line-height:1.5}
+.field{margin-bottom:13px}
+.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-bottom:6px}
+input.finp,textarea.finp{width:100%;background:#06080B;border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-size:13px;padding:10px 13px;outline:none;resize:vertical;transition:border-color .2s}
+input.finp:focus,textarea.finp:focus{border-color:#4B9EFF}
+textarea.finp{min-height:100px;line-height:1.5}
 
-.send-btn{padding:11px 24px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:none;cursor:pointer;transition:opacity .2s}
+.send-btn{padding:10px 22px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:none;cursor:pointer;transition:opacity .2s}
 .send-btn:hover{opacity:.85}
 .send-btn:disabled{opacity:.35;cursor:not-allowed}
-.send-msg{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:10px;display:none}
+.save-btn{padding:8px 16px;background:rgba(255,255,255,.06);color:#C8D0D8;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .2s}
+.save-btn:hover{background:rgba(255,255,255,.1);color:#F2F5F7}
+.send-msg{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:8px;display:none}
 .send-ok{color:#4BFF9E}
 .send-err{color:#FF6B6B}
 
-.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;margin-bottom:22px;transition:color .15s}
-.back-link:hover{color:#F2F5F7}
+/* timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative}
+.tl-item::before{content:'';position:absolute;left:14px;top:28px;bottom:0;width:1px;background:rgba(255,255,255,.06)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:29px;height:29px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.tl-dot-email{background:rgba(75,158,255,.12);border:1px solid rgba(75,158,255,.25)}
+.tl-dot-applied{background:rgba(75,255,200,.1);border:1px solid rgba(75,255,200,.25)}
+.tl-body{flex:1;padding-top:4px}
+.tl-subject{font-size:13px;color:#E0E6ED;font-weight:500}
+.tl-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4A5566;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tl-status{padding:1px 7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border-radius:0}
+.tl-opened{background:rgba(75,255,200,.1);color:#4BFFC8;border:1px solid rgba(75,255,200,.2)}
+.tl-clicked{background:rgba(75,158,255,.1);color:#4B9EFF;border:1px solid rgba(75,158,255,.2)}
+.tl-delivered{background:rgba(255,255,255,.06);color:#9AA4B0;border:1px solid rgba(255,255,255,.1)}
+.tl-bounced,.tl-spam{background:rgba(255,100,100,.08);color:#FF6464;border:1px solid rgba(255,100,100,.2)}
+.tl-sent{background:rgba(255,255,255,.04);color:#5C6672;border:1px solid rgba(255,255,255,.08)}
+.tl-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#3C4650;padding:16px 0;text-align:center;letter-spacing:.1em;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -119,44 +153,44 @@ if(!emailParam) window.location.replace('/leads');
 
 var contact = null;
 
-function logout() {
+function logout(){
   localStorage.removeItem('jb_token');
   localStorage.removeItem('jb_user');
   window.location.replace('/');
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function fmtDate(iso) {
-  if(!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(iso){if(!iso)return '—';return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}
+function fmtDateTime(iso){if(!iso)return '—';return new Date(iso).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
 
 var STAGES = ['New Application','Call Booked','Call Completed','Proposal Sent','Joined','Lost'];
 
-function stageBadgeColor(s) {
-  var map = {'New Application':'#4B9EFF','Call Booked':'#4BFF9E','Call Completed':'#FFC84B','Proposal Sent':'#C84BFF','Joined':'#4BFFC8','Lost':'#FF6464'};
-  return map[s] || '#9AA4B0';
-}
-
 function renderLead(c) {
   var a = c.attributes || {};
-  var first = a.FIRSTNAME || '';
-  var last  = a.LASTNAME  || '';
-  var name  = (first + ' ' + last).trim() || c.email;
-  var stage = (a.PIPELINE_STAGE || '').trim();
-  if(!stage) stage = 'New Application';
-  var phone = a.SMS || '';
+  var first = (a.FIRSTNAME||'').trim();
+  var last  = (a.LASTNAME||'').trim();
+  var name  = (first+' '+last).trim() || c.email;
+  var stage = (a.PIPELINE_STAGE||'New Application').trim();
+  var phone = a.SMS||'';
+  var notes = a.NOTES||'';
 
-  var stageOptions = STAGES.map(function(s) {
-    return '<option value="' + esc(s) + '"' + (s===stage?' selected':'') + '>' + esc(s) + '</option>';
+  var stageOptions = STAGES.map(function(s){
+    return '<option value="'+esc(s)+'"'+(s===stage?' selected':'')+'>'+esc(s)+'</option>';
   }).join('');
+
+  // Derive list memberships from statistics
+  var lists = [];
+  var stats = c.statistics||{};
+  var listSubs = (stats.listStats||[]);
+  listSubs.forEach(function(l){
+    if(l.listId===3) lists.push('Call Bookings (Sequence)');
+    else if(l.listId===5) lists.push('Applications (Sequence)');
+    else lists.push('List #'+l.listId);
+  });
 
   document.getElementById('main').innerHTML = `
     <a href="/leads" class="back-link">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Back to Leads
     </a>
 
@@ -164,46 +198,91 @@ function renderLead(c) {
     <div class="lead-header">
       <div>
         <h1 class="lead-name">${esc(name)}</h1>
-        <div class="lead-email">${esc(c.email)}</div>
-        ${phone ? '<div class="lead-phone">' + esc(phone) + '</div>' : ''}
-        <div style="margin-top:10px;font-size:13px;color:#5C6672;font-family:'IBM Plex Mono',monospace">Applied ${fmtDate(c.createdAt)}</div>
+        <div class="lead-meta">
+          <div class="lead-meta-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>
+            ${esc(c.email)}
+          </div>
+          ${phone ? '<div class="lead-meta-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>${esc(phone)}</div>' : ''}
+          <div class="lead-meta-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg>
+            Applied ${fmtDate(a.APPLICATION_DATE || c.createdAt)}
+          </div>
+        </div>
       </div>
       <div class="stage-wrap">
-        <span class="stage-label">Stage</span>
+        <span class="stage-label">Pipeline Stage</span>
         <select id="stage-sel" onchange="saveStage()">${stageOptions}</select>
         <span class="stage-saved" id="stage-saved">Saved ✓</span>
       </div>
     </div>
 
-    <!-- Grid -->
-    <div class="grid">
+    <!-- Row 1: Application answers (3 cols) -->
+    <div class="grid3">
 
-      <!-- Application info -->
-      <div>
-        <div class="card" style="margin-bottom:20px">
-          <div class="card-title">Application Details</div>
-          ${row('Experience Level', a.EXPERIENCE_LEVEL)}
-          ${row('Currently Trading', a.CURRENT_TRADING)}
-          ${row('Trading Capital', a.TRADING_CAPITAL)}
-          ${row('Capital (USD est.)', a.TRADING_CAPITAL_USD ? '$' + Number(a.TRADING_CAPITAL_USD).toLocaleString() : '')}
-          ${row('Application Date', fmtDate(a.APPLICATION_DATE))}
+      <!-- Contact + Capital -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>
+          Contact Info
         </div>
-        <div class="card">
-          <div class="card-title">Goals & Blockers</div>
-          ${row('Biggest Blocker', a.BIGGEST_BLOCKER, true)}
-          ${row('12-Month Goal', a.GOAL_12_MONTHS, true)}
-        </div>
+        <div class="attr-row"><div class="attr-key">Email</div><div class="attr-val"><a href="mailto:${esc(c.email)}" style="color:#4B9EFF">${esc(c.email)}</a></div></div>
+        ${phone ? '<div class="attr-row"><div class="attr-key">Phone</div><div class="attr-val"><a href="tel:'+esc(phone)+'" style="color:#4B9EFF">'+esc(phone)+'</a></div></div>' : ''}
+        ${a.TRADING_CAPITAL ? '<div class="attr-row"><div class="attr-key">Capital</div><div class="attr-val big">'+esc(a.TRADING_CAPITAL)+'</div></div>' : ''}
+        ${a.TRADING_CAPITAL_USD ? '<div class="attr-row"><div class="attr-key">Est. USD</div><div class="attr-val" style="color:#4BFFC8">$'+Number(a.TRADING_CAPITAL_USD).toLocaleString()+'</div></div>' : ''}
+        <div style="height:1px;background:rgba(255,255,255,.06);margin:12px 0"></div>
+        ${a.EXPERIENCE_LEVEL ? '<div class="attr-row"><div class="attr-key">Experience</div><div class="attr-val">'+esc(a.EXPERIENCE_LEVEL)+'</div></div>' : ''}
+        ${a.CURRENT_TRADING ? '<div class="attr-row"><div class="attr-key">Trading Now</div><div class="attr-val">'+esc(a.CURRENT_TRADING)+'</div></div>' : ''}
       </div>
 
-      <!-- Comms -->
+      <!-- Goals & Blockers -->
       <div class="card">
-        <div class="card-title">Send Message</div>
+        <div class="card-title">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Application Answers
+        </div>
+        ${a.BIGGEST_BLOCKER ? '<div class="ans-block"><div class="ans-label">Biggest Blocker</div><div class="ans-text">'+esc(a.BIGGEST_BLOCKER)+'</div></div>' : ''}
+        ${a.GOAL_12_MONTHS ? '<div class="ans-block" style="border-left-color:rgba(75,255,200,.25)"><div class="ans-label">12-Month Goal</div><div class="ans-text">'+esc(a.GOAL_12_MONTHS)+'</div></div>' : ''}
+      </div>
+
+      <!-- Sequences / Lists -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Sequences &amp; Notes
+        </div>
+        <div class="attr-key" style="margin-bottom:8px">Active Sequences</div>
+        <div style="margin-bottom:16px">
+          ${lists.length ? lists.map(function(l){return '<span class="list-pill">'+esc(l)+'</span>';}).join('') : '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#3C4650">None active</span>'}
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,.06);margin:12px 0 14px"></div>
+        <div class="field">
+          <label>Sales Notes</label>
+          <textarea class="finp" id="notes-area" style="min-height:80px" placeholder="Add notes about this lead…">${esc(notes)}</textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="save-btn" id="notes-btn" onclick="saveNotes()">Save Notes</button>
+          <span id="notes-ok" class="send-msg send-ok" style="font-size:11px">Saved ✓</span>
+          <span id="notes-err" class="send-msg send-err" style="font-size:11px"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Send message + Activity timeline -->
+    <div class="grid2">
+
+      <!-- Send -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polygon points="22 2 15 22 11 13 2 9 22 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Send Message
+        </div>
         <div class="tab-row">
           <button class="ctab active" id="tab-email" onclick="switchTab('email')">Email</button>
           <button class="ctab" id="tab-sms" onclick="switchTab('sms')">SMS</button>
         </div>
 
-        <!-- Email form -->
+        <!-- Email -->
         <div id="form-email">
           <div class="field">
             <label>Subject</label>
@@ -211,22 +290,22 @@ function renderLead(c) {
           </div>
           <div class="field">
             <label>Message</label>
-            <textarea class="finp" id="email-body" placeholder="Hi ${esc(first) || 'there'},&#10;&#10;"></textarea>
+            <textarea class="finp" id="email-body" placeholder="Hi ${esc(first)||'there'},&#10;&#10;"></textarea>
           </div>
           <button class="send-btn" id="email-btn" onclick="sendMsg('email')">Send Email →</button>
           <div class="send-msg send-ok" id="email-ok">Email sent ✓</div>
           <div class="send-msg send-err" id="email-err"></div>
         </div>
 
-        <!-- SMS form -->
+        <!-- SMS -->
         <div id="form-sms" style="display:none">
           <div class="field">
             <label>Phone</label>
             <input type="text" class="finp" id="sms-phone" value="${esc(phone)}" placeholder="+447…">
           </div>
           <div class="field">
-            <label>Message <span style="color:#5C6672;font-size:10px">(160 chars)</span></label>
-            <textarea class="finp" id="sms-body" maxlength="160" placeholder="Hi ${esc(first) || 'there'},"></textarea>
+            <label>Message <span style="color:#4A5566;font-size:10px">(160 chars max)</span></label>
+            <textarea class="finp" id="sms-body" maxlength="160" placeholder="Hi ${esc(first)||'there'},"></textarea>
           </div>
           <button class="send-btn" id="sms-btn" onclick="sendMsg('sms')">Send SMS →</button>
           <div class="send-msg send-ok" id="sms-ok">SMS sent ✓</div>
@@ -234,58 +313,84 @@ function renderLead(c) {
         </div>
       </div>
 
+      <!-- Activity timeline -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Email History
+        </div>
+        <div id="timeline-wrap"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A5566">Loading…</div></div>
+      </div>
     </div>
   `;
+
+  // Load email timeline async
+  loadTimeline(c.email);
 }
 
-function row(label, val, long) {
-  if(!val && val !== 0) return '';
-  return '<div class="attr-row"><div class="attr-key">' + esc(label) + '</div>'
-       + '<div class="attr-val' + (long?' long':'') + '">' + esc(String(val)) + '</div></div>';
-}
-
-function switchTab(tab) {
+function switchTab(tab){
   document.getElementById('tab-email').classList.toggle('active', tab==='email');
   document.getElementById('tab-sms').classList.toggle('active', tab==='sms');
   document.getElementById('form-email').style.display = tab==='email' ? '' : 'none';
-  document.getElementById('form-sms').style.display  = tab==='sms'   ? '' : 'none';
+  document.getElementById('form-sms').style.display   = tab==='sms'   ? '' : 'none';
 }
 
-function saveStage() {
+function saveStage(){
   var stage = document.getElementById('stage-sel').value;
   var saved = document.getElementById('stage-saved');
   saved.style.display = 'none';
-  fetch('/api/admin-lead', {
-    method: 'PATCH',
-    headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
-    body: JSON.stringify({email: emailParam, stage: stage})
+  fetch('/api/admin-lead',{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({email:emailParam,stage:stage})
   }).then(function(r){return r.json();}).then(function(d){
-    if(d.ok){ saved.style.display='inline'; setTimeout(function(){ saved.style.display='none'; }, 2500); }
+    if(d.ok){saved.style.display='inline';setTimeout(function(){saved.style.display='none'},2500);}
   });
 }
 
-function sendMsg(type) {
+function saveNotes(){
+  var notes = (document.getElementById('notes-area').value||'').trim();
+  var btn   = document.getElementById('notes-btn');
+  var ok    = document.getElementById('notes-ok');
+  var err   = document.getElementById('notes-err');
+  ok.style.display='none'; err.style.display='none';
+  btn.textContent='Saving…'; btn.disabled=true;
+  fetch('/api/admin-lead',{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({email:emailParam,note:notes})
+  }).then(function(r){return r.json();}).then(function(d){
+    btn.textContent='Save Notes'; btn.disabled=false;
+    if(d.ok){ok.style.display='inline';setTimeout(function(){ok.style.display='none'},2500);}
+    else{err.textContent=d.error||'Failed';err.style.display='inline';}
+  }).catch(function(){
+    btn.textContent='Save Notes'; btn.disabled=false;
+    err.textContent='Network error'; err.style.display='inline';
+  });
+}
+
+function sendMsg(type){
   var a = (contact && contact.attributes) || {};
-  var first = a.FIRSTNAME || '';
-  var last  = a.LASTNAME  || '';
-  var name  = (first + ' ' + last).trim() || emailParam;
+  var first = (a.FIRSTNAME||'').trim();
+  var last  = (a.LASTNAME||'').trim();
+  var name  = (first+' '+last).trim() || emailParam;
 
   var btn  = document.getElementById(type+'-btn');
   var okEl = document.getElementById(type+'-ok');
   var errEl= document.getElementById(type+'-err');
   okEl.style.display='none'; errEl.style.display='none';
 
-  var body = {};
+  var body={};
   if(type==='email'){
     var subject = (document.getElementById('email-subject').value||'').trim();
     var message = (document.getElementById('email-body').value||'').trim();
     if(!subject||!message){errEl.textContent='Subject and message required.';errEl.style.display='block';return;}
-    body = {type:'email', to_email:emailParam, to_name:name, subject:subject, message:message};
+    body={type:'email',to_email:emailParam,to_name:name,subject:subject,message:message};
   } else {
-    var phone = (document.getElementById('sms-phone').value||'').trim();
+    var phone   = (document.getElementById('sms-phone').value||'').trim();
     var message = (document.getElementById('sms-body').value||'').trim();
     if(!phone||!message){errEl.textContent='Phone and message required.';errEl.style.display='block';return;}
-    body = {type:'sms', to_email:emailParam, to_name:name, to_phone:phone, message:message};
+    body={type:'sms',to_email:emailParam,to_name:name,to_phone:phone,message:message};
   }
 
   btn.disabled=true; btn.textContent='Sending…';
@@ -300,8 +405,10 @@ function sendMsg(type) {
       okEl.style.display='block';
       if(type==='email') document.getElementById('email-body').value='';
       if(type==='sms')   document.getElementById('sms-body').value='';
+      // Refresh timeline after sending email
+      if(type==='email') setTimeout(function(){loadTimeline(emailParam);},2000);
     } else {
-      errEl.textContent = d.error || 'Failed to send.';
+      errEl.textContent = d.error||'Failed to send.';
       errEl.style.display='block';
     }
   }).catch(function(){
@@ -311,24 +418,70 @@ function sendMsg(type) {
   });
 }
 
+function loadTimeline(email){
+  fetch('/api/admin-emails?email='+encodeURIComponent(email),{headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){if(r.status===401){logout();return null;}return r.json();})
+  .then(function(data){
+    var wrap = document.getElementById('timeline-wrap');
+    if(!wrap) return;
+    if(!data||!data.ok){
+      wrap.innerHTML='<div class="tl-empty">Could not load history</div>';
+      return;
+    }
+    var emails = data.emails||[];
+    if(!emails.length){
+      wrap.innerHTML='<div class="tl-empty">No emails sent yet</div>';
+      return;
+    }
+
+    var statusCls = {
+      'opened':'tl-opened','clicked':'tl-clicked','delivered':'tl-delivered',
+      'bounced':'tl-bounced','spam':'tl-spam','sent':'tl-sent'
+    };
+    var statusLabel = {
+      'opened':'Opened','clicked':'Clicked','delivered':'Delivered',
+      'bounced':'Bounced','spam':'Spam','sent':'Sent'
+    };
+
+    var html = '<div class="timeline">';
+    emails.forEach(function(e){
+      var sc = statusCls[e.status]||'tl-sent';
+      var sl = statusLabel[e.status]||e.status;
+      html += '<div class="tl-item">'
+        +'<div class="tl-dot tl-dot-email">'
+          +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#4B9EFF" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="#4B9EFF" stroke-width="2"/></svg>'
+        +'</div>'
+        +'<div class="tl-body">'
+          +'<div class="tl-subject">'+esc(e.subject)+'</div>'
+          +'<div class="tl-meta">'
+            +'<span>'+esc(fmtDateTime(e.date))+'</span>'
+            +'<span class="tl-status '+sc+'">'+esc(sl)+'</span>'
+          +'</div>'
+        +'</div>'
+        +'</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  })
+  .catch(function(){
+    var wrap = document.getElementById('timeline-wrap');
+    if(wrap) wrap.innerHTML='<div class="tl-empty">Failed to load history</div>';
+  });
+}
+
 // Load contact
-fetch('/api/admin-lead?email=' + encodeURIComponent(emailParam), {
-  headers: {'Authorization': 'Bearer ' + token}
-})
-.then(function(r){
-  if(r.status===401){logout();return null;}
-  return r.json();
-})
+fetch('/api/admin-lead?email='+encodeURIComponent(emailParam),{headers:{'Authorization':'Bearer '+token}})
+.then(function(r){if(r.status===401){logout();return null;}return r.json();})
 .then(function(data){
   if(!data||!data.ok){
-    document.getElementById('main').innerHTML='<div style="padding:60px;color:#FF6B6B;font-size:14px">Contact not found.</div>';
+    document.getElementById('main').innerHTML='<a href="/leads" class="back-link">← Back</a><div style="padding:40px 0;color:#FF6B6B;font-size:14px">Contact not found.</div>';
     return;
   }
   contact = data.contact;
   renderLead(contact);
 })
 .catch(function(){
-  document.getElementById('main').innerHTML='<div style="padding:60px;color:#FF6B6B;font-size:14px">Failed to load contact.</div>';
+  document.getElementById('main').innerHTML='<a href="/leads" class="back-link">← Back</a><div style="padding:40px 0;color:#FF6B6B;font-size:14px">Failed to load contact.</div>';
 });
 </script>
 </body>
