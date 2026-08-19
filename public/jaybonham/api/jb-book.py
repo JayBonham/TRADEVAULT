@@ -70,7 +70,11 @@ class handler(BaseHTTPRequestHandler):
         try:
             payload = json.dumps({
                 "email": email,
-                "attributes": {"FIRSTNAME": name.split()[0], "LASTNAME": " ".join(name.split()[1:])},
+                "attributes": {
+                    "FIRSTNAME": name.split()[0],
+                    "LASTNAME": " ".join(name.split()[1:]),
+                    "PIPELINE_STAGE": "Call Booked",
+                },
                 "listIds": [BREVO_JB_LIST_ID],
                 "updateEnabled": True,
             }).encode()

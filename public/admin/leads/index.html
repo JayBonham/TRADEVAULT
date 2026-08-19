@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leads — JB Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&family=Saira+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;min-height:100vh;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex:none;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;padding:0;position:sticky;top:0;height:100vh}
+.main{flex:1;padding:32px;overflow-x:auto}
+
+/* sidebar */
+.sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.sb-logo-text{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.sb-logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4B9EFF;margin-top:1px}
+.sb-nav{padding:16px 0;flex:1}
+.sb-link{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:14px;color:#9AA4B0;transition:color .15s,background .15s;border-left:2px solid transparent}
+.sb-link:hover{color:#F2F5F7;background:rgba(255,255,255,.03)}
+.sb-link.active{color:#4B9EFF;border-left-color:#4B9EFF;background:rgba(75,158,255,.06)}
+.sb-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:#5C6672;display:flex;align-items:center;justify-content:space-between}
+.sb-user button{font-size:11px;color:#FF6B6B;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+.topbar h1{margin:0;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:28px;text-transform:uppercase;letter-spacing:.02em}
+.search-wrap{position:relative;flex:1;max-width:320px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#5C6672}
+#search{width:100%;background:#0D1117;border:1px solid rgba(255,255,255,.1);color:#F2F5F7;font-size:14px;padding:9px 12px 9px 36px;outline:none;font-family:'Archivo',sans-serif}
+#search:focus{border-color:#4B9EFF}
+#search::placeholder{color:#4A5566}
+
+/* stage tabs */
+.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;border:1px solid rgba(255,255,255,.08);background:none;transition:all .15s;cursor:pointer}
+.tab:hover{color:#F2F5F7;border-color:rgba(255,255,255,.2)}
+.tab.active{color:#4B9EFF;border-color:#4B9EFF;background:rgba(75,158,255,.08)}
+
+/* stats row */
+.stats{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.stat{background:#0D1117;border:1px solid rgba(255,255,255,.06);padding:14px 20px;min-width:110px}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:#F2F5F7}
+.stat-l{font-size:11px;color:#5C6672;margin-top:3px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+
+/* table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+thead tr{border-bottom:1px solid rgba(255,255,255,.08)}
+th{text-align:left;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#4A5566;font-weight:500}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+td{padding:13px 14px;font-size:14px;color:#C8D0D8;vertical-align:middle}
+td.name{color:#F2F5F7;font-weight:500}
+.badge{display:inline-block;padding:3px 9px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.badge-new{background:rgba(75,158,255,.12);color:#4B9EFF;border:1px solid rgba(75,158,255,.25)}
+.badge-booked{background:rgba(75,255,158,.1);color:#4BFF9E;border:1px solid rgba(75,255,158,.25)}
+.badge-completed{background:rgba(255,200,75,.1);color:#FFC84B;border:1px solid rgba(255,200,75,.25)}
+.badge-proposal{background:rgba(200,75,255,.1);color:#C84BFF;border:1px solid rgba(200,75,255,.25)}
+.badge-joined{background:rgba(75,255,200,.1);color:#4BFFC8;border:1px solid rgba(75,255,200,.25)}
+.badge-lost{background:rgba(255,100,100,.08);color:#FF6464;border:1px solid rgba(255,100,100,.2)}
+.badge-other{background:rgba(255,255,255,.06);color:#9AA4B0;border:1px solid rgba(255,255,255,.12)}
+
+.empty{text-align:center;padding:60px 20px;color:#4A5566;font-family:'IBM Plex Mono',monospace;font-size:13px}
+.loading{text-align:center;padding:60px 20px;color:#4A5566;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
+        <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+        <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <div class="sb-logo-text">Jay Bonham</div>
+        <div class="sb-logo-sub">Sales Portal</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <a href="/leads" class="sb-link active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Leads
+      </a>
+    </nav>
+    <div class="sb-user">
+      <span id="sb-username" style="font-family:'IBM Plex Mono',monospace;font-size:11px">—</span>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <h1>Leads</h1>
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="search" placeholder="Search name or email…" oninput="onSearch()">
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats" id="stats-row"></div>
+
+    <!-- Stage tabs -->
+    <div class="tabs">
+      <button class="tab active" data-stage="" onclick="setStage(this)">All</button>
+      <button class="tab" data-stage="New Application" onclick="setStage(this)">New Application</button>
+      <button class="tab" data-stage="Call Booked" onclick="setStage(this)">Call Booked</button>
+      <button class="tab" data-stage="Call Completed" onclick="setStage(this)">Call Completed</button>
+      <button class="tab" data-stage="Proposal Sent" onclick="setStage(this)">Proposal Sent</button>
+      <button class="tab" data-stage="Joined" onclick="setStage(this)">Joined</button>
+      <button class="tab" data-stage="Lost" onclick="setStage(this)">Lost</button>
+    </div>
+
+    <!-- Table -->
+    <div class="tbl-wrap">
+      <div id="leads-out"><div class="loading">Loading leads…</div></div>
+    </div>
+  </main>
+</div>
+
+<script>
+var token = localStorage.getItem('jb_token');
+var user  = localStorage.getItem('jb_user') || '';
+if(!token) window.location.replace('/');
+document.getElementById('sb-username').textContent = user;
+
+var allContacts = [];
+var currentStage = '';
+var searchQ = '';
+var searchTimer;
+
+function logout() {
+  localStorage.removeItem('jb_token');
+  localStorage.removeItem('jb_user');
+  window.location.replace('/');
+}
+
+function stageBadge(stage) {
+  var map = {
+    'New Application': 'badge-new',
+    'Call Booked':     'badge-booked',
+    'Call Completed':  'badge-completed',
+    'Proposal Sent':   'badge-proposal',
+    'Joined':          'badge-joined',
+    'Lost':            'badge-lost',
+  };
+  var cls = map[stage] || 'badge-other';
+  return '<span class="badge ' + cls + '">' + (stage || 'Unknown') + '</span>';
+}
+
+function fmtDate(iso) {
+  if(!iso) return '—';
+  var d = new Date(iso);
+  return d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+}
+
+function renderTable(contacts) {
+  if(!contacts.length) {
+    document.getElementById('leads-out').innerHTML = '<div class="empty">No leads found.</div>';
+    return;
+  }
+  var rows = contacts.map(function(c) {
+    var a = c.attributes || {};
+    var name = ((a.FIRSTNAME || '') + ' ' + (a.LASTNAME || '')).trim() || c.email;
+    var email = c.email || '';
+    var phone = a.SMS || '—';
+    var capital = a.TRADING_CAPITAL || '—';
+    var stage = c._stage || 'Unknown';
+    var date = fmtDate(c.createdAt);
+    return '<tr onclick="goLead(\'' + encodeURIComponent(email) + '\')">'
+      + '<td class="name">' + esc(name) + '</td>'
+      + '<td>' + esc(email) + '</td>'
+      + '<td>' + esc(phone) + '</td>'
+      + '<td>' + esc(capital) + '</td>'
+      + '<td>' + stageBadge(stage) + '</td>'
+      + '<td style="color:#5C6672;font-size:13px">' + date + '</td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('leads-out').innerHTML =
+    '<table><thead><tr>'
+    + '<th>Name</th><th>Email</th><th>Phone</th><th>Capital</th><th>Stage</th><th>Applied</th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function renderStats(contacts) {
+  var counts = {};
+  contacts.forEach(function(c) {
+    var s = c._stage || 'Unknown';
+    counts[s] = (counts[s] || 0) + 1;
+  });
+  var total = contacts.length;
+  var html = '<div class="stat"><div class="stat-n">' + total + '</div><div class="stat-l">Total</div></div>';
+  ['New Application','Call Booked','Call Completed','Joined'].forEach(function(s) {
+    html += '<div class="stat"><div class="stat-n">' + (counts[s] || 0) + '</div><div class="stat-l">' + s + '</div></div>';
+  });
+  document.getElementById('stats-row').innerHTML = html;
+}
+
+function filtered() {
+  return allContacts.filter(function(c) {
+    var stageOk = !currentStage || c._stage === currentStage;
+    var a = c.attributes || {};
+    var fullName = ((a.FIRSTNAME||'') + ' ' + (a.LASTNAME||'')).toLowerCase();
+    var searchOk = !searchQ || fullName.includes(searchQ) || (c.email||'').toLowerCase().includes(searchQ);
+    return stageOk && searchOk;
+  });
+}
+
+function setStage(btn) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  currentStage = btn.dataset.stage;
+  var f = filtered();
+  renderTable(f);
+}
+
+function onSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(function(){
+    searchQ = (document.getElementById('search').value || '').toLowerCase().trim();
+    renderTable(filtered());
+  }, 200);
+}
+
+function goLead(encodedEmail) {
+  window.location.href = '/lead?email=' + encodedEmail;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadLeads() {
+  fetch('/api/admin-leads', { headers: {'Authorization': 'Bearer ' + token} })
+  .then(function(r) {
+    if(r.status === 401) { logout(); return null; }
+    return r.json();
+  })
+  .then(function(data) {
+    if(!data) return;
+    allContacts = data.contacts || [];
+    renderStats(allContacts);
+    renderTable(filtered());
+  })
+  .catch(function() {
+    document.getElementById('leads-out').innerHTML = '<div class="empty">Failed to load leads. Check connection.</div>';
+  });
+}
+
+loadLeads();
+// Refresh every 60 seconds
+setInterval(loadLeads, 60000);
+</script>
+</body>
+</html>

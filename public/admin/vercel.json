@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "functions": {
+    "api/admin-auth.py":  { "maxDuration": 10 },
+    "api/admin-leads.py": { "maxDuration": 15 },
+    "api/admin-lead.py":  { "maxDuration": 15 },
+    "api/admin-send.py":  { "maxDuration": 15 }
+  }
+}

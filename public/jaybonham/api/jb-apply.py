@@ -69,6 +69,7 @@ class handler(BaseHTTPRequestHandler):
                 "BIGGEST_BLOCKER":     blocker,
                 "GOAL_12_MONTHS":      goal,
                 "APPLICATION_DATE":    app_date,
+                "PIPELINE_STAGE":      "New Application",
             },
             "listIds": [BREVO_JB_APPLY_LIST_ID],
             "updateEnabled": True,
