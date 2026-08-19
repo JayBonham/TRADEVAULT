@@ -1,6 +1,6 @@
 """
-GET  /api/admin-inbox           → list conversations from Brevo Team Inbox
-GET  /api/admin-inbox?id=...    → single conversation with full messages
+GET  /api/admin-inbox            → list conversations from Brevo Team Inbox
+GET  /api/admin-inbox?id=...     → single conversation with full messages
 """
 import http.client
 import json
