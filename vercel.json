@@ -19,7 +19,7 @@
     "api/jb-book.py": {
       "maxDuration": 15
     },
-    "api/whop-webhook.py": {
+    "api/whop-hook.py": {
       "maxDuration": 15
     }
   },
