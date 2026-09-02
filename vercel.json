@@ -18,6 +18,9 @@
     },
     "api/jb-book.py": {
       "maxDuration": 15
+    },
+    "api/whop-webhook.py": {
+      "maxDuration": 15
     }
   },
   "redirects": [
