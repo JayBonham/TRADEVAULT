@@ -793,75 +793,27 @@ function showPhase(n) {
       <p style="font-size:15px;line-height:1.65;color:#7A8590;margin:0;max-width:40ch;margin:0 auto">Because Jay works directly with every client, spots are strictly limited. Serious traders only.</p>
     </div>
 
-    <!-- form -->
-    <form id="jb-apply-form" onsubmit="submitApplication(event)" novalidate>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="jb-grid">
-        <div class="app-field">
-          <label class="app-lbl" for="app-name">Full Name</label>
-          <input id="app-name" type="text" class="app-inp" placeholder="Your full name" required>
-        </div>
-        <div class="app-field">
-          <label class="app-lbl" for="app-phone">Phone / WhatsApp</label>
-          <input id="app-phone" type="tel" class="app-inp" placeholder="+1 234 567 8900" required>
-        </div>
-      </div>
-
-      <div class="app-field">
-        <label class="app-lbl" for="app-email">Email Address</label>
-        <input id="app-email" type="email" class="app-inp" placeholder="your@email.com" required>
-      </div>
-
-      <div class="app-field">
-        <label class="app-lbl" for="app-experience">How long have you been trading?</label>
-        <select id="app-experience" class="app-sel" required>
-          <option value="">Select your experience level</option>
-          <option value="Under 1 year">Under 1 year</option>
-          <option value="1–3 years">1–3 years</option>
-          <option value="3–5 years">3–5 years</option>
-          <option value="5–10 years">5–10 years</option>
-          <option value="10+ years">10+ years</option>
-        </select>
-      </div>
-
-      <div class="app-field">
-        <label class="app-lbl" for="app-trading-type">What are you currently trading with?</label>
-        <select id="app-trading-type" class="app-sel" required>
-          <option value="">Select an option</option>
-          <option value="Personal funds">Personal funds</option>
-          <option value="Prop firm">Prop firm</option>
-          <option value="Not trading yet">Not trading yet</option>
-        </select>
-      </div>
-
-      <div class="app-field">
-        <label class="app-lbl" for="app-capital">Trading capital available</label>
-        <select id="app-capital" class="app-sel" required>
-          <option value="">Select a range</option>
-          <option value="Under $5K">Under $5K</option>
-          <option value="$5K–$25K">$5K–$25K</option>
-          <option value="$25K–$100K">$25K–$100K</option>
-          <option value="$100K–$500K">$100K–$500K</option>
-          <option value="$500K+">$500K+</option>
-        </select>
-      </div>
-
-      <div class="app-field">
-        <label class="app-lbl" for="app-blocker">What's your biggest blocker right now?</label>
-        <input id="app-blocker" type="text" class="app-inp" placeholder="e.g. consistency, risk management, no clear strategy..." required>
-      </div>
-
-      <div class="app-field" style="margin-bottom:28px">
-        <label class="app-lbl" for="app-goal">What's your goal for the next 12 months?</label>
-        <input id="app-goal" type="text" class="app-inp" placeholder="e.g. quit my job and trade full-time, double my account..." required>
-      </div>
-
-      <div id="app-error" style="display:none;padding:14px 18px;border:1px solid rgba(255,100,100,.25);background:rgba(255,100,100,.06);font-family:'IBM Plex Mono',monospace;font-size:12px;color:#FF8080;margin-bottom:20px"></div>
-
-      <button type="submit" id="app-submit" class="app-btn">Submit Application →</button>
-      <p style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.18);margin-top:14px">No commitment · Strategy call is free</p>
-
-    </form>
+    <!-- GHL Application Form -->
+    <iframe
+      src="https://api.leadconnectorhq.com/widget/form/XxPj5Eq6Xfqr187Dmsev"
+      style="width:100%;height:1207px;border:none;border-radius:8px"
+      id="inline-XxPj5Eq6Xfqr187Dmsev"
+      data-layout="{'id':'INLINE'}"
+      data-trigger-type="alwaysShow"
+      data-trigger-value=""
+      data-activation-type="alwaysActivated"
+      data-activation-value=""
+      data-deactivation-type="neverDeactivate"
+      data-deactivation-value=""
+      data-form-name="Killshot Application"
+      data-height="1207"
+      data-layout-iframe-id="inline-XxPj5Eq6Xfqr187Dmsev"
+      data-form-id="XxPj5Eq6Xfqr187Dmsev"
+      data-cookie-consent="true"
+      data-cookie-consent-provider="auto"
+      title="Killshot Application">
+    </iframe>
+    <script src="https://link.msgsndr.com/js/form_embed.js"></script>
   </div>
 </section>
 
@@ -1034,66 +986,23 @@ function scrollToApply() {
   document.getElementById('apply-form').scrollIntoView({behavior:'smooth'});
 }
 
-function submitApplication(e) {
-  e.preventDefault();
-  var btn = document.getElementById('app-submit');
-  var errEl = document.getElementById('app-error');
-  var name = (document.getElementById('app-name').value||'').trim();
-  var email = (document.getElementById('app-email').value||'').trim();
-  var phone = (document.getElementById('app-phone').value||'').trim();
-  var experience = document.getElementById('app-experience').value;
-  var tradingType = document.getElementById('app-trading-type').value;
-  var capital = document.getElementById('app-capital').value;
-  var blocker = (document.getElementById('app-blocker').value||'').trim();
-  var goal = (document.getElementById('app-goal').value||'').trim();
-
-  errEl.style.display = 'none';
-  if (!name) { showErr('Please enter your full name.'); return; }
-  if (!email || !email.includes('@')) { showErr('Please enter a valid email address.'); return; }
-  if (!phone) { showErr('Please enter your phone number.'); return; }
-  if (!experience) { showErr('Please select your experience level.'); return; }
-  if (!tradingType) { showErr('Please select what you are currently trading with.'); return; }
-  if (!capital) { showErr('Please select your trading capital range.'); return; }
-  if (!blocker) { showErr('Please tell us your biggest blocker.'); return; }
-  if (!goal) { showErr('Please tell us your 12-month goal.'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
-  // event_id shared with CAPI for deduplication
-  var eventId = 'lead-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
-
-  fetch('/api/jb-apply', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      name: name, email: email, phone: phone,
-      experience_level: experience, current_trading: tradingType,
-      trading_capital: capital, biggest_blocker: blocker, goal_12_months: goal,
-      event_id: eventId
-    })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if (data.ok) {
-      if(typeof fbq !== 'undefined') fbq('track', 'Lead', {}, {eventID: eventId});
-      window.location.href = '/book';
-    } else {
-      showErr(data.error || 'Something went wrong. Please try again.');
-      btn.disabled = false; btn.textContent = 'Submit Application →';
+// GHL postMessage — cache applicant data to sessionStorage so /book can pre-fill
+window.addEventListener('message', function(e) {
+  try {
+    var d = e.data;
+    if (!d) return;
+    // GHL fires various message shapes on form submit — try to catch any that carry contact data
+    var contact = d.contact || d.data || d.payload || d;
+    var firstName = contact.firstName || contact.first_name || '';
+    var lastName  = contact.lastName  || contact.last_name  || '';
+    var email     = contact.email     || '';
+    var phone     = contact.phone     || contact.phone_raw  || '';
+    if (email || firstName) {
+      sessionStorage.setItem('jb_applicant', JSON.stringify({firstName:firstName,lastName:lastName,email:email,phone:phone}));
     }
-  })
-  .catch(function(){
-    showErr('Something went wrong. Please try again.');
-    btn.disabled = false; btn.textContent = 'Submit Application →';
-  });
+  } catch(err) {}
+});
 
-  function showErr(msg) {
-    errEl.textContent = msg;
-    errEl.style.display = 'block';
-    errEl.scrollIntoView({behavior:'smooth', block:'nearest'});
-  }
-}
 
 // ===== LEGACY (unused — booking moved to /jaybonham/book) =====
 var JB=(function(){

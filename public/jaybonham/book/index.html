@@ -130,7 +130,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-bottom:20px;display:flex;align-items:center;gap:10px">
           <span style="width:18px;height:1px;background:#58E9FF"></span>Pick Your Time
         </div>
-        <div id="jb-body"></div>
+        <iframe id="ghl-booking"
+          style="width:100%;border:none;overflow:hidden;min-height:700px"
+          scrolling="no"
+          allow="payment">
+        </iframe>
       </div>
 
     </div>
@@ -169,202 +173,35 @@ window.addEventListener('scroll', () => {
   }
 }, {passive:true});
 
-// ===== BOOKING =====
-var JB=(function(){
-  var S={step:1,slots:{},dates:[],yr:0,mo:0,date:null,time:null,name:'',email:'',loading:false,sloading:true,err:null};
-  var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var DY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+// ===== GHL BOOKING PRE-FILL =====
+(function() {
+  var p = new URLSearchParams(window.location.search);
+  var firstName = p.get('firstName') || p.get('fname') || '';
+  var lastName  = p.get('lastName')  || p.get('lname') || '';
+  var email     = p.get('email') || '';
+  var phone     = p.get('phone') || '';
 
-  function pad(n){return n<10?'0'+n:''+n;}
-  function el(id){return document.getElementById(id);}
-  function body(){return el('jb-body');}
-
-  function render(){
-    var b=body();if(!b)return;
-    b.innerHTML=steps()+content();
-    hooks();
+  // Fallback: sessionStorage (set by apply page if GHL fires postMessage)
+  if (!firstName && !email) {
+    try {
+      var ss = JSON.parse(sessionStorage.getItem('jb_applicant') || '{}');
+      firstName = ss.firstName || '';
+      lastName  = ss.lastName  || '';
+      email     = ss.email     || '';
+      phone     = ss.phone     || '';
+    } catch(e) {}
   }
 
-  function steps(){
-    var labels=['Time','Details','Confirm'];
-    var h='<div style="display:flex;align-items:center;margin-bottom:clamp(20px,3vw,32px)">';
-    labels.forEach(function(l,i){
-      var n=i+1,done=n<S.step,active=n===S.step;
-      var c=done||active?'#4B9EFF':'#2C3340';
-      var tc=active?'#F2F5F7':done?'#7A8590':'#2C3340';
-      h+='<div style="display:flex;align-items:center;gap:7px">';
-      h+='<div style="width:24px;height:24px;border-radius:50%;border:1.5px solid '+c+';display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:'+c+';">'+(done?'✓':n)+'</div>';
-      h+='<span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:'+tc+'">'+l+'</span>';
-      h+='</div>';
-      if(i<2)h+='<div style="flex:1;height:1px;background:rgba(255,255,255,.07);margin:0 10px"></div>';
-    });
-    return h+'</div>';
-  }
+  var base = 'https://api.leadconnectorhq.com/widget/booking/rI0zblov6V60MSYxu2xE';
+  var qs = [];
+  if (firstName) qs.push('firstName=' + encodeURIComponent(firstName));
+  if (lastName)  qs.push('lastName='  + encodeURIComponent(lastName));
+  if (email)     qs.push('email='     + encodeURIComponent(email));
+  if (phone)     qs.push('phone='     + encodeURIComponent(phone));
 
-  function content(){
-    if(S.sloading)return spinner('Loading availability…');
-    if(S.err&&S.step===1)return errBox(S.err,'<button onclick="JB.reload()" class="jb-btn-next" style="flex:none;margin-top:12px;padding:12px 20px">Retry</button>');
-    if(S.step===1)return step1();
-    if(S.step===2)return step2();
-    if(S.step===3)return step3();
-    return '';
-  }
-
-  function spinner(msg){
-    return '<div style="text-align:center;padding:60px 0"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF">'+msg+'</div></div>';
-  }
-  function errBox(msg,extra){
-    return '<div style="padding:16px 18px;border:1px solid rgba(255,100,100,.25);background:rgba(255,100,100,.06);font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#FF8080;margin-bottom:0">'+msg+'</div>'+(extra||'');
-  }
-
-  function step1(){
-    return cal()+times();
-  }
-
-  function cal(){
-    var yr=S.yr,mo=S.mo;
-    var first=new Date(Date.UTC(yr,mo,1));
-    var last=new Date(Date.UTC(yr,mo+1,0));
-    var dow=first.getUTCDay();
-    var dim=last.getUTCDate();
-    var now=new Date();
-    var todayStr=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
-    var h='<div style="margin-bottom:20px">';
-    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
-    h+='<button onclick="JB.prevMo()" style="width:30px;height:30px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center">‹</button>';
-    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;font-size:17px;letter-spacing:.08em;text-transform:uppercase">'+MO[mo]+' '+yr+'</div>';
-    h+='<button onclick="JB.nextMo()" style="width:30px;height:30px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#F2F5F7;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center">›</button>';
-    h+='</div>';
-    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
-    DY.forEach(function(d){h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#3C4650;text-align:center;padding:2px 0">'+d+'</div>';});
-    h+='</div>';
-    h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">';
-    for(var i=0;i<dow;i++)h+='<div class="jb-day jb-day-dim"></div>';
-    for(var d=1;d<=dim;d++){
-      var ds=yr+'-'+pad(mo+1)+'-'+pad(d);
-      var isAvail=!!S.slots[ds];
-      var isSel=S.date===ds;
-      var isToday=ds===todayStr;
-      var cls='jb-day'+(isAvail?' jb-day-avail':'  jb-day-dim')+(isSel?' jb-day-sel':'')+(isToday?' jb-day-today':'');
-      h+='<div class="'+cls+'"'+(isAvail?' onclick="JB.pickDate(\''+ds+'\')"':'')+'>'+d+'</div>';
-    }
-    h+='</div></div>';
-    return h;
-  }
-
-  function times(){
-    if(!S.date)return '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650;text-align:center;padding:20px 0">Select a date to see available times</div>';
-    var avail=S.slots[S.date]||[];
-    if(!avail.length)return '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#3C4650;text-align:center;padding:16px 0">No slots on this date.</div>';
-    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-    var h='<div style="margin-bottom:16px"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:10px">Available times · '+tz+'</div><div style="display:flex;flex-direction:column;gap:6px">';
-    avail.forEach(function(slot){
-      var t=new Date(slot);
-      var lbl=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:tz});
-      var isSel=S.time===slot;
-      h+='<button class="jb-slot'+(isSel?' jb-slot-sel':'')+'" onclick="JB.pickTime(\''+slot+'\')">'+lbl+'</button>';
-    });
-    h+='</div></div>';
-    if(S.time){
-      h+='<div style="display:flex;gap:10px"><button class="jb-btn-next" onclick="JB.go(2)" style="flex:1">Continue →</button></div>';
-    }
-    return h;
-  }
-
-  function step2(){
-    var h='<div style="display:flex;flex-direction:column;gap:14px">';
-    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:8px">Full Name</label><input id="jb-name" class="jb-inp" type="text" placeholder="Your full name" value="'+esc(S.name)+'"></div>';
-    h+='<div><label style="display:block;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5C6672;margin-bottom:8px">Email Address</label><input id="jb-email" class="jb-inp" type="email" placeholder="your@email.com" value="'+esc(S.email)+'"></div>';
-    if(S.err)h+=errBox(S.err);
-    h+='<div style="display:flex;gap:10px;margin-top:4px"><button class="jb-btn-back" onclick="JB.go(1)">← Back</button><button class="jb-btn-next" onclick="JB.submitDetails()">Review →</button></div>';
-    h+='</div>';
-    return h;
-  }
-
-  function step3(){
-    if(S.loading)return spinner('Booking your call…');
-    var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-    var t=new Date(S.time);
-    var dateStr=t.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric',year:'numeric',timeZone:tz});
-    var timeStr=t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:tz});
-    var h='<div style="display:flex;flex-direction:column;gap:16px">';
-    h+='<div style="background:rgba(75,158,255,.06);border:1px solid rgba(75,158,255,.2);padding:18px 20px">';
-    h+='<div style="font-family:\'Saira Condensed\',sans-serif;font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.03em;margin-bottom:4px">Strategy Call · Jay Bonham</div>';
-    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#9AA4B0">'+dateStr+'</div>';
-    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#4B9EFF;margin-top:3px">'+timeStr+' · '+tz+'</div>';
-    h+='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#5C6672;margin-top:8px">'+esc(S.name)+' · '+esc(S.email)+'</div>';
-    h+='</div>';
-    if(S.err)h+=errBox(S.err);
-    h+='<div style="display:flex;gap:10px"><button class="jb-btn-back" onclick="JB.go(2)">← Back</button><button class="jb-btn-next" onclick="JB.confirm()">Confirm Booking →</button></div>';
-    h+='</div>';
-    return h;
-  }
-
-  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-  function hooks(){}
-
-  function loadSlots(){
-    S.sloading=true;S.err=null;render();
-    fetch('/api/jb-slots')
-      .then(function(r){return r.json();})
-      .then(function(data){
-        var raw=(data.data&&data.data.slots)||{};
-        S.slots=raw;
-        S.dates=Object.keys(raw).sort();
-        S.sloading=false;
-        var now=new Date();
-        if(S.dates.length){
-          var first=S.dates[0].split('-');
-          S.yr=parseInt(first[0]);S.mo=parseInt(first[1])-1;
-        } else {
-          S.yr=now.getFullYear();S.mo=now.getMonth();
-        }
-        render();
-      })
-      .catch(function(){
-        S.sloading=false;S.err='Could not load availability. Please try again.';render();
-      });
-  }
-
-  return {
-    open:function(){
-      loadSlots();
-    },
-    reload:function(){loadSlots();},
-    prevMo:function(){S.mo--;if(S.mo<0){S.mo=11;S.yr--;}render();},
-    nextMo:function(){S.mo++;if(S.mo>11){S.mo=0;S.yr++;}render();},
-    pickDate:function(ds){S.date=ds;S.time=null;render();},
-    pickTime:function(ts){S.time=ts;render();},
-    go:function(n){S.step=n;S.err=null;render();},
-    submitDetails:function(){
-      var n=(el('jb-name')||{}).value||S.name;
-      var em=(el('jb-email')||{}).value||S.email;
-      n=(n||'').trim();em=(em||'').trim();
-      if(!n){S.err='Please enter your full name.';render();return;}
-      if(!em||!em.includes('@')){S.err='Please enter a valid email address.';render();return;}
-      S.name=n;S.email=em;S.err=null;S.step=3;render();
-    },
-    confirm:function(){
-      S.loading=true;S.err=null;render();
-      var tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-      var eventId='sched-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
-      fetch('/api/jb-book',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:S.name,email:S.email,start:S.time,timezone:tz,event_id:eventId})
-      })
-      .then(function(r){return r.json();})
-      .then(function(data){
-        if(data.ok){window.location.href='/booked?eid='+encodeURIComponent(eventId);}
-        else{S.loading=false;S.err='Booking failed: '+(data.error||'Please try again.');render();}
-      })
-      .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
-    }
-  };
+  document.getElementById('ghl-booking').src = base + (qs.length ? '?' + qs.join('&') : '');
 })();
-
-// Auto-load on page ready
-JB.open();
 </script>
+<script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 </body>
 </html>
