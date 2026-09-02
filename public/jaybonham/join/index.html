@@ -110,7 +110,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <div class="check-item" style="color:#3C4650"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#3C4650" stroke-width="1.5" stroke-linecap="round"/></svg>LP & fund pathway</div>
         </div>
 
-        <a href="https://whop.com/sniper-academy-603f/sniper-basic-ed/" target="_blank" class="plan-btn outline" id="btn-standard">Get Started →</a>
+        <button onclick="openCheckout('standard')" class="plan-btn outline" id="btn-standard">Get Started →</button>
       </div>
 
       <!-- ACCELERATOR (FEATURED) -->
@@ -135,7 +135,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <div class="check-item" style="color:#3C4650"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#3C4650" stroke-width="1.5" stroke-linecap="round"/></svg>Priority access to all future products</div>
         </div>
 
-        <a href="https://whop.com/sniper-academy-603f/sniper-accelerator/" target="_blank" class="plan-btn" id="btn-accelerator">Get Started →</a>
+        <button onclick="openCheckout('accelerator')" class="plan-btn" id="btn-accelerator">Get Started →</button>
       </div>
 
       <!-- ELITE -->
@@ -160,7 +160,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
           <div class="check-item"><svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#4B9EFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Full ecosystem — scanners, sessions, education</div>
         </div>
 
-        <a href="https://whop.com/sniper-academy-603f/sniper-elite-72/" target="_blank" class="plan-btn outline" id="btn-elite">Get Started →</a>
+        <button onclick="openCheckout('elite')" class="plan-btn outline" id="btn-elite">Get Started →</button>
       </div>
 
     </div>
@@ -247,6 +247,60 @@ function toggleFaq(el) {
   document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
   if(!isOpen) item.classList.add('open');
 }
+
+// ── CHECKOUT MODAL ──────────────────────────────────────────────────────────
+const PLANS = {
+  standard:    { name: 'Standard',    price: '$999',   url: 'https://whop.com/sniper-academy-603f/sniper-basic-ed/' },
+  accelerator: { name: 'Accelerator', price: '$5,999', url: 'https://whop.com/sniper-academy-603f/sniper-accelerator/' },
+  elite:       { name: 'Elite',       price: '$9,999', url: 'https://whop.com/sniper-academy-603f/sniper-elite-72/' }
+};
+
+function openCheckout(planKey) {
+  const plan = PLANS[planKey];
+  if (!plan) return;
+  const modal = document.getElementById('checkout-modal');
+  const iframe = document.getElementById('checkout-iframe');
+  const label  = document.getElementById('checkout-label');
+  label.textContent = plan.name + ' — ' + plan.price;
+  iframe.src = plan.url;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+function closeCheckout() {
+  const modal = document.getElementById('checkout-modal');
+  const iframe = document.getElementById('checkout-iframe');
+  modal.classList.remove('open');
+  setTimeout(() => {
+    modal.style.display = 'none';
+    iframe.src = '';
+    document.body.style.overflow = '';
+  }, 300);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCheckout(); });
 </script>
+
+<!-- ── CHECKOUT MODAL ── -->
+<div id="checkout-modal" style="display:none;position:fixed;inset:0;z-index:500;align-items:center;justify-content:center;background:rgba(3,5,8,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .3s ease">
+  <div style="position:relative;width:100%;max-width:520px;max-height:90vh;margin:16px;display:flex;flex-direction:column;background:#06080B;border:1px solid rgba(255,255,255,.1)">
+    <!-- modal header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.07);flex:none">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="22" height="22" viewBox="0 0 56 56" fill="none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="checkout-label" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9AA4B0"></span>
+      </div>
+      <button onclick="closeCheckout()" style="width:32px;height:32px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9AA4B0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='rgba(255,255,255,.3)';this.style.color='#F2F5F7'" onmouseout="this.style.borderColor='rgba(255,255,255,.1)';this.style.color='#9AA4B0'">×</button>
+    </div>
+    <!-- iframe -->
+    <iframe id="checkout-iframe" src="" allow="payment" style="flex:1;min-height:500px;border:none;width:100%;background:#06080B" scrolling="yes"></iframe>
+  </div>
+</div>
+
+<style>
+#checkout-modal.open { opacity: 1 !important; }
+</style>
+
 </body>
 </html>
