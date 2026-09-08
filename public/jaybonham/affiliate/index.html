@@ -62,6 +62,9 @@ input{font-family:inherit}
 .form-ok{background:rgba(75,255,158,.08);border:1px solid rgba(75,255,158,.2);color:#4BFF9E;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
 .form-login-link{text-align:center;margin-top:20px;font-size:13px;color:#4A5566}
 .form-login-link a{color:#4B9EFF}
+.payout-opt{display:flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;color:#9AA4B0;background:#0D1117;border:1px solid rgba(255,255,255,.08);padding:9px 16px;cursor:pointer;transition:border-color .15s;flex:1;justify-content:center}
+.payout-opt:has(input:checked){border-color:rgba(75,158,255,.4);color:#4B9EFF}
+.payout-opt input[type=radio]{accent-color:#4B9EFF}
 
 .divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:0 0 60px}
 </style>
@@ -142,22 +145,52 @@ input{font-family:inherit}
     </div>
     <div class="field"><label>Password</label><input type="password" id="f-pass" placeholder="Min 8 characters" autocomplete="new-password"></div>
     <div class="field"><label>Confirm Password</label><input type="password" id="f-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
+
+    <div class="field">
+      <label>Payout Method</label>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <label class="payout-opt" id="opt-paypal">
+          <input type="radio" name="payout_method" value="paypal" checked> PayPal
+        </label>
+        <label class="payout-opt" id="opt-crypto">
+          <input type="radio" name="payout_method" value="crypto"> Crypto (USDT TRC20)
+        </label>
+      </div>
+      <div id="payout-paypal-wrap">
+        <input type="email" id="f-paypal" placeholder="PayPal email address" autocomplete="off">
+      </div>
+      <div id="payout-crypto-wrap" style="display:none">
+        <input type="text" id="f-crypto" placeholder="USDT TRC20 wallet address" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
     <button class="btn-primary" id="btn-register">Create Account</button>
     <div class="form-login-link">Already have an account? <a href="/affiliate/login">Sign in →</a></div>
   </div>
 </div>
 
 <script>
+// Toggle payout fields
+document.querySelectorAll('input[name="payout_method"]').forEach(function(r) {
+  r.addEventListener('change', function() {
+    document.getElementById('payout-paypal-wrap').style.display = this.value === 'paypal' ? 'block' : 'none';
+    document.getElementById('payout-crypto-wrap').style.display = this.value === 'crypto' ? 'block' : 'none';
+  });
+});
+
 document.getElementById('btn-register').addEventListener('click', function() {
-  var name  = document.getElementById('f-name').value.trim();
-  var email = document.getElementById('f-email').value.trim();
-  var phone = document.getElementById('f-phone').value.trim();
-  var code  = document.getElementById('f-code').value.trim();
-  var pass  = document.getElementById('f-pass').value;
-  var pass2 = document.getElementById('f-pass2').value;
-  var err   = document.getElementById('err');
-  var ok    = document.getElementById('ok');
-  var btn   = document.getElementById('btn-register');
+  var name   = document.getElementById('f-name').value.trim();
+  var email  = document.getElementById('f-email').value.trim();
+  var phone  = document.getElementById('f-phone').value.trim();
+  var code   = document.getElementById('f-code').value.trim();
+  var pass   = document.getElementById('f-pass').value;
+  var pass2  = document.getElementById('f-pass2').value;
+  var method = document.querySelector('input[name="payout_method"]:checked').value;
+  var paypal = document.getElementById('f-paypal').value.trim();
+  var crypto = document.getElementById('f-crypto').value.trim();
+  var err    = document.getElementById('err');
+  var ok     = document.getElementById('ok');
+  var btn    = document.getElementById('btn-register');
 
   err.style.display = 'none';
   ok.style.display  = 'none';
@@ -165,6 +198,10 @@ document.getElementById('btn-register').addEventListener('click', function() {
   if (!name || !email || !pass) { err.textContent = 'Name, email and password are required.'; err.style.display='block'; return; }
   if (pass !== pass2)           { err.textContent = 'Passwords do not match.'; err.style.display='block'; return; }
   if (pass.length < 8)         { err.textContent = 'Password must be at least 8 characters.'; err.style.display='block'; return; }
+  if (method === 'paypal' && !paypal) { err.textContent = 'Please enter your PayPal email.'; err.style.display='block'; return; }
+  if (method === 'crypto' && !crypto) { err.textContent = 'Please enter your USDT TRC20 wallet address.'; err.style.display='block'; return; }
+
+  var payoutInfo = method === 'paypal' ? 'paypal:' + paypal : 'usdt-trc20:' + crypto;
 
   btn.disabled = true;
   btn.textContent = 'Creating account...';
@@ -172,7 +209,7 @@ document.getElementById('btn-register').addEventListener('click', function() {
   fetch('/api/aff?action=register', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name:name, email:email, phone:phone, password:pass, code:code || undefined})
+    body: JSON.stringify({name:name, email:email, phone:phone, password:pass, code:code || undefined, payout_info:payoutInfo})
   })
   .then(function(r) { return r.json(); })
   .then(function(d) {

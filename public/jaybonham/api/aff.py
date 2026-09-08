@@ -92,7 +92,8 @@ class handler(BaseHTTPRequestHandler):
             email    = (body.get("email") or "").strip().lower()
             phone    = (body.get("phone") or "").strip()
             password = (body.get("password") or "").strip()
-            code_req = (body.get("code") or "").strip().lower()
+            code_req    = (body.get("code") or "").strip().lower()
+            payout_info = (body.get("payout_info") or "").strip()
 
             if not name or not email or not password:
                 return self._json(400, {"error": "name, email and password are required"})
@@ -110,9 +111,9 @@ class handler(BaseHTTPRequestHandler):
             cur  = conn.cursor()
             try:
                 cur.execute("""
-                    INSERT INTO jb_affiliates (name, email, phone, code, password_hash, password_salt)
-                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id, code
-                """, (name, email, phone or None, code, password_hash, password_salt))
+                    INSERT INTO jb_affiliates (name, email, phone, code, password_hash, password_salt, payout_info)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id, code
+                """, (name, email, phone or None, code, password_hash, password_salt, payout_info or None))
                 row = cur.fetchone()
                 conn.commit()
                 # Auto-login after register
@@ -129,9 +130,9 @@ class handler(BaseHTTPRequestHandler):
                     code = generate_code()
                     try:
                         cur.execute("""
-                            INSERT INTO jb_affiliates (name, email, phone, code, password_hash, password_salt)
-                            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id, code
-                        """, (name, email, phone or None, code, password_hash, password_salt))
+                            INSERT INTO jb_affiliates (name, email, phone, code, password_hash, password_salt, payout_info)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id, code
+                        """, (name, email, phone or None, code, password_hash, password_salt, payout_info or None))
                         row = cur.fetchone()
                         conn.commit()
                         token  = sign_session(row[0])
