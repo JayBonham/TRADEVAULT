@@ -194,10 +194,12 @@ window.addEventListener('scroll', () => {
 
   var base = 'https://api.leadconnectorhq.com/widget/booking/rI0zblov6V60MSYxu2xE';
   var qs = [];
-  if (firstName) qs.push('firstName=' + encodeURIComponent(firstName));
-  if (lastName)  qs.push('lastName='  + encodeURIComponent(lastName));
-  if (email)     qs.push('email='     + encodeURIComponent(email));
-  if (phone)     qs.push('phone='     + encodeURIComponent(phone));
+  // Send both camelCase and underscore versions — GHL booking widget is inconsistent
+  if (firstName) { qs.push('firstName=' + encodeURIComponent(firstName)); qs.push('first_name=' + encodeURIComponent(firstName)); }
+  if (lastName)  { qs.push('lastName='  + encodeURIComponent(lastName));  qs.push('last_name='  + encodeURIComponent(lastName)); }
+  if (email)     qs.push('email=' + encodeURIComponent(email));
+  if (phone)     { qs.push('phone=' + encodeURIComponent(phone)); qs.push('phone_number=' + encodeURIComponent(phone)); }
+  if (firstName && lastName) qs.push('name=' + encodeURIComponent((firstName + ' ' + lastName).trim()));
 
   document.getElementById('ghl-booking').src = base + (qs.length ? '?' + qs.join('&') : '');
 })();
