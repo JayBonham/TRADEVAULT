@@ -204,13 +204,27 @@ window.addEventListener('scroll', () => {
 </script>
 <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 <script>
-// Affiliate ref tracking
+// Affiliate ref tracking + optin fire (GHL redirects here after form submit with email in URL)
 (function() {
   function getCookie(n) { var m = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)'); return m ? m.pop() : ''; }
   function setCookie(n, v, days) { var exp = new Date(Date.now() + days * 864e5).toUTCString(); document.cookie = n + '=' + v + '; path=/; SameSite=Lax; expires=' + exp; }
-  var ref = new URLSearchParams(window.location.search).get('ref');
+  var p   = new URLSearchParams(window.location.search);
+  var ref = p.get('ref');
   if (ref && /^[a-z0-9_]{2,30}$/i.test(ref)) { setCookie('jb_ref', ref, 30); }
   window._jbGetCookie = getCookie;
+
+  // GHL redirects to /book?firstName=...&email=... after form submit — fire optin here
+  var email     = p.get('email') || '';
+  var firstName = p.get('firstName') || p.get('fname') || '';
+  var lastName  = p.get('lastName')  || p.get('lname') || '';
+  var affRef    = getCookie('jb_ref');
+  if (affRef && email) {
+    fetch('/api/aff?action=event', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({type: 'optin', email: email, ref_code: affRef, name: (firstName + ' ' + lastName).trim()})
+    }).catch(function(){});
+  }
 })();
 
 // GHL booking confirmed — fire call_booked affiliate event
