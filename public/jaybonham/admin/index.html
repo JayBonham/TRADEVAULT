@@ -56,7 +56,7 @@ input:focus{border-color:#4B9EFF}
 <script>
 // Redirect if already logged in
 if(localStorage.getItem('jb_token')) {
-  window.location.replace('/leads');
+  window.location.replace('/admin/leads');
 }
 
 document.getElementById('login-form').addEventListener('submit', function(e) {
@@ -79,7 +79,7 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
     if(data.ok) {
       localStorage.setItem('jb_token', data.token);
       localStorage.setItem('jb_user', data.user);
-      window.location.replace('/leads');
+      window.location.replace('/admin/leads');
     } else {
       showErr(data.error || 'Login failed.');
       btn.disabled = false; btn.textContent = 'Sign In →';

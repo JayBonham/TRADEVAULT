@@ -228,20 +228,14 @@ td{padding:11px 12px;font-size:13px;color:#C8D0D8;vertical-align:middle}
 </div>
 
 <script>
-var TOKEN = null;
+var TOKEN = localStorage.getItem('jb_token');
 var AFFILIATES = [];
 
-// Auth check
-function getToken() {
-  var m = document.cookie.match(/(?:^|;\s*)jb_admin_token=([^;]+)/);
-  return m ? m[1] : null;
-}
-
-TOKEN = getToken();
 if (!TOKEN) { window.location.href = '/admin'; }
 
 document.getElementById('btn-logout').addEventListener('click', function() {
-  document.cookie = 'jb_admin_token=; Max-Age=0; Path=/';
+  localStorage.removeItem('jb_token');
+  localStorage.removeItem('jb_user');
   window.location.href = '/admin';
 });
 
@@ -451,6 +445,10 @@ function handlePayout(affId, action) {
   })
   .catch(function() { btns.forEach(function(b) { b.disabled = false; }); alert('Network error.'); });
 }
+
+// Set sidebar user
+var sbUser = document.getElementById('sb-user-email');
+if (sbUser) sbUser.textContent = localStorage.getItem('jb_user') || 'Admin';
 
 load();
 </script>
