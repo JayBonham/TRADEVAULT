@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affiliate Login — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit}
+
+.wrap{width:100%;max-width:400px}
+.logo{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:20px;letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:36px}
+.logo span{color:#4B9EFF}
+.box{background:#0A0E14;border:1px solid rgba(255,255,255,.08);padding:36px}
+.box-title{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px}
+.box-sub{font-size:13px;color:#4A5566;margin:0 0 28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-bottom:7px}
+.field input{width:100%;background:#0D1117;border:1px solid rgba(255,255,255,.08);padding:11px 14px;color:#F2F5F7;font-size:14px;outline:none;transition:border-color .15s}
+.field input:focus{border-color:rgba(75,158,255,.4)}
+.field input::placeholder{color:#3C4650}
+.btn{width:100%;padding:14px;background:#4B9EFF;color:#06080B;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.1em;text-transform:uppercase;margin-top:8px;transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.err{background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);color:#FF6464;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+.link-row{text-align:center;margin-top:20px;font-size:13px;color:#4A5566}
+.link-row a{color:#4B9EFF}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">Jay<span>B</span> Affiliates</div>
+  <div class="box">
+    <div class="box-title">Sign in</div>
+    <div class="box-sub">Access your affiliate dashboard</div>
+    <div class="err" id="err"></div>
+    <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="field"><label>Password</label><input type="password" id="f-pass" placeholder="Your password" autocomplete="current-password"></div>
+    <button class="btn" id="btn">Sign In</button>
+    <div class="link-row">Don't have an account? <a href="/affiliate">Join →</a></div>
+  </div>
+</div>
+<script>
+function doLogin() {
+  var email = document.getElementById('f-email').value.trim();
+  var pass  = document.getElementById('f-pass').value;
+  var err   = document.getElementById('err');
+  var btn   = document.getElementById('btn');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Email and password are required.'; err.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  fetch('/api/aff-login', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email: email, password: pass}),
+    credentials: 'same-origin'
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      window.location.href = '/affiliate/dashboard';
+    } else {
+      err.textContent = d.error || 'Invalid email or password.';
+      err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  })
+  .catch(function() {
+    err.textContent = 'Network error. Please try again.';
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign In';
+  });
+}
+document.getElementById('btn').addEventListener('click', doLogin);
+document.getElementById('f-pass').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

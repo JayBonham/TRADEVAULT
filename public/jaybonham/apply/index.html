@@ -986,7 +986,20 @@ function scrollToApply() {
   document.getElementById('apply-form').scrollIntoView({behavior:'smooth'});
 }
 
+// Affiliate ref tracking — set cookie + fire click event if ?ref= present
+(function() {
+  function getCookie(n) { var m = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)'); return m ? m.pop() : ''; }
+  function setCookie(n, v, days) { var exp = new Date(Date.now() + days * 864e5).toUTCString(); document.cookie = n + '=' + v + '; path=/; SameSite=Lax; expires=' + exp; }
+  var ref = new URLSearchParams(window.location.search).get('ref');
+  if (ref && /^[a-z0-9_]{2,30}$/i.test(ref)) {
+    setCookie('jb_ref', ref, 30);
+    fetch('/api/aff-click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
+  }
+  window._jbGetCookie = getCookie;
+})();
+
 // GHL postMessage — cache applicant data to sessionStorage so /book can pre-fill
+// Also fires affiliate optin event
 window.addEventListener('message', function(e) {
   try {
     var d = e.data;
@@ -999,6 +1012,13 @@ window.addEventListener('message', function(e) {
     var phone     = contact.phone     || contact.phone_raw  || '';
     if (email || firstName) {
       sessionStorage.setItem('jb_applicant', JSON.stringify({firstName:firstName,lastName:lastName,email:email,phone:phone}));
+      // Affiliate optin tracking
+      var ref = window._jbGetCookie ? window._jbGetCookie('jb_ref') : '';
+      if (ref && email) {
+        fetch('/api/aff-event', {method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({type:'optin', email:email, ref_code:ref, name:(firstName+' '+lastName).trim()})
+        }).catch(function(){});
+      }
     }
   } catch(err) {}
 });

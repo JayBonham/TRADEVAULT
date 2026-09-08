@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affiliate Dashboard — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html,body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);flex-shrink:0;display:flex;flex-direction:column;padding:20px 0}
+.sidebar-logo{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:.1em;text-transform:uppercase;padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:16px}
+.sidebar-logo span{color:#4B9EFF}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:#4A5566;transition:color .15s;cursor:pointer}
+.nav-item:hover{color:#F2F5F7}
+.nav-item.active{color:#4B9EFF;background:rgba(75,158,255,.06);border-left:2px solid #4B9EFF;padding-left:18px}
+.nav-icon{width:16px;text-align:center;font-size:13px;flex-shrink:0}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,.06)}
+.nav-user{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4A5566;letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-logout{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#4A5566;margin-top:8px;transition:color .15s;cursor:pointer}
+.btn-logout:hover{color:#FF6464}
+
+.main{flex:1;overflow-y:auto}
+.main-header{display:flex;align-items:center;justify-content:space-between;padding:24px 32px;border-bottom:1px solid rgba(255,255,255,.06)}
+.page-title{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.06em}
+.main-body{padding:28px 32px}
+
+/* States */
+.loading-state{display:flex;align-items:center;justify-content:center;min-height:200px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#4A5566;letter-spacing:.1em}
+.err-state{background:rgba(255,100,100,.06);border:1px solid rgba(255,100,100,.15);color:#FF6464;padding:16px 20px;font-size:13px;margin-bottom:24px;display:none}
+
+/* Ref link */
+.ref-block{background:#0A0E14;border:1px solid rgba(75,158,255,.2);padding:20px 24px;margin-bottom:28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.ref-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;flex-shrink:0}
+.ref-url{font-family:'IBM Plex Mono',monospace;font-size:13px;color:#4B9EFF;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-copy{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(75,158,255,.3);color:#4B9EFF;padding:7px 14px;transition:all .15s;flex-shrink:0}
+.btn-copy:hover{background:rgba(75,158,255,.1)}
+.btn-copy.copied{color:#4BFF9E;border-color:rgba(75,255,158,.3)}
+.qr{width:64px;height:64px;border:1px solid rgba(255,255,255,.08);flex-shrink:0}
+
+/* Stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.tiles-earn{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
+@media(max-width:700px){.tiles{grid-template-columns:repeat(2,1fr)}.tiles-earn{grid-template-columns:1fr 1fr}}
+.tile{background:#0A0E14;border:1px solid rgba(255,255,255,.07);padding:20px}
+.tile-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#4A5566;margin-bottom:8px}
+.tile-val{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:34px;line-height:1}
+.tile-earn .tile-val{color:#4BFF9E;font-size:30px}
+.tile-earn.muted .tile-val{color:#9AA4B0}
+
+/* Commission breakdown */
+.comm-box{background:#0A0E14;border:1px solid rgba(255,255,255,.07);padding:20px 24px;margin-bottom:28px}
+.comm-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;margin-bottom:14px}
+.comm-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.comm-row:last-child{border-bottom:none}
+.comm-plan{font-size:13px;color:#9AA4B0}
+.comm-right{display:flex;align-items:center;gap:16px}
+.comm-pct{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4BFF9E}
+.comm-earn{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:18px;color:#4B9EFF}
+
+/* Payout CTA */
+.payout-bar{background:rgba(75,255,158,.06);border:1px solid rgba(75,255,158,.2);padding:16px 24px;margin-bottom:28px;display:none;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.payout-info{font-size:13px;color:#9AA4B0}
+.payout-info strong{color:#4BFF9E}
+.btn-payout{padding:10px 24px;background:#4BFF9E;color:#06080B;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;flex-shrink:0;transition:opacity .15s}
+.btn-payout:hover{opacity:.88}
+.btn-payout:disabled{opacity:.4;cursor:not-allowed}
+.payout-pending{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#F5A623;letter-spacing:.08em}
+
+/* Share blocks */
+.share-section{margin-bottom:28px}
+.share-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;margin-bottom:14px}
+.share-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:600px){.share-cards{grid-template-columns:1fr}}
+.share-card{background:#0A0E14;border:1px solid rgba(255,255,255,.07);padding:18px}
+.share-card-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#4A5566;margin-bottom:10px}
+.share-card-text{font-size:12px;color:#9AA4B0;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.btn-copy-msg{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.2);padding:5px 12px;margin-top:12px;transition:all .15s}
+.btn-copy-msg:hover{background:rgba(75,158,255,.08)}
+.btn-copy-msg.copied{color:#4BFF9E;border-color:rgba(75,255,158,.2)}
+
+/* Events table */
+.events-section{margin-bottom:40px}
+.events-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.events-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566}
+.table-wrap{overflow-x:auto;border:1px solid rgba(255,255,255,.07)}
+table{width:100%;border-collapse:collapse}
+th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}
+td{font-size:12px;color:#9AA4B0;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:1px}
+.badge-optin{background:rgba(75,158,255,.12);color:#4B9EFF;border:1px solid rgba(75,158,255,.2)}
+.badge-call{background:rgba(245,166,35,.12);color:#F5A623;border:1px solid rgba(245,166,35,.2)}
+.badge-purchase{background:rgba(75,255,158,.12);color:#4BFF9E;border:1px solid rgba(75,255,158,.2)}
+.badge-pending{background:rgba(245,166,35,.1);color:#F5A623;border:1px solid rgba(245,166,35,.15)}
+.badge-paid{background:rgba(75,255,158,.1);color:#4BFF9E;border:1px solid rgba(75,255,158,.15)}
+.empty-row td{text-align:center;color:#3C4650;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;padding:28px}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">Jay<span>B</span></div>
+    <div class="nav-item active"><span class="nav-icon">◈</span>Dashboard</div>
+    <div class="sidebar-bottom">
+      <div class="nav-user" id="nav-email">Loading...</div>
+      <div class="btn-logout" id="btn-logout">← Sign Out</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="main-header">
+      <div class="page-title">Affiliate Dashboard</div>
+    </div>
+    <div class="main-body">
+      <div class="err-state" id="err-state"></div>
+      <div class="loading-state" id="loading">LOADING...</div>
+      <div id="content" style="display:none">
+
+        <!-- Ref link -->
+        <div class="ref-block">
+          <span class="ref-label">Your Link</span>
+          <span class="ref-url" id="ref-url"></span>
+          <button class="btn-copy" id="btn-copy">Copy</button>
+          <img class="qr" id="qr-img" alt="QR">
+        </div>
+
+        <!-- Stat tiles -->
+        <div class="tiles">
+          <div class="tile"><div class="tile-label">Clicks</div><div class="tile-val" id="t-clicks">0</div></div>
+          <div class="tile"><div class="tile-label">Opt-ins</div><div class="tile-val" id="t-optins">0</div></div>
+          <div class="tile"><div class="tile-label">Calls</div><div class="tile-val" id="t-calls">0</div></div>
+          <div class="tile"><div class="tile-label">Sales</div><div class="tile-val" id="t-sales">0</div></div>
+        </div>
+        <div class="tiles-earn">
+          <div class="tile tile-earn"><div class="tile-label">Pending Earnings</div><div class="tile-val" id="t-pending">$0</div></div>
+          <div class="tile tile-earn muted"><div class="tile-label">Total Paid Out</div><div class="tile-val" id="t-paid">$0</div></div>
+        </div>
+
+        <!-- Commission breakdown -->
+        <div class="comm-box">
+          <div class="comm-title">Your commission breakdown</div>
+          <div class="comm-row"><span class="comm-plan">Sniper Standard ($999)</span><span class="comm-right"><span class="comm-pct" id="comm-pct-1">15%</span><span class="comm-earn" id="comm-earn-1">~$150</span></span></div>
+          <div class="comm-row"><span class="comm-plan">Sniper Accelerator ($5,999)</span><span class="comm-right"><span class="comm-pct" id="comm-pct-2">15%</span><span class="comm-earn" id="comm-earn-2">~$900</span></span></div>
+          <div class="comm-row"><span class="comm-plan">Sniper Elite ($9,999)</span><span class="comm-right"><span class="comm-pct" id="comm-pct-3">15%</span><span class="comm-earn" id="comm-earn-3">~$1,500</span></span></div>
+        </div>
+
+        <!-- Payout CTA -->
+        <div class="payout-bar" id="payout-bar">
+          <div class="payout-info">You have <strong id="payout-amount">$0</strong> available to withdraw</div>
+          <button class="btn-payout" id="btn-payout">Request Payout</button>
+        </div>
+        <div id="payout-requested-msg" style="display:none;margin-bottom:28px">
+          <span class="payout-pending">⏳ Payout requested — awaiting admin approval</span>
+        </div>
+
+        <!-- Share copy blocks -->
+        <div class="share-section">
+          <div class="share-title">Share messages</div>
+          <div class="share-cards">
+            <div class="share-card">
+              <div class="share-card-label">Instagram Caption</div>
+              <div class="share-card-text" id="msg-ig"></div>
+              <button class="btn-copy-msg" data-target="msg-ig">Copy</button>
+            </div>
+            <div class="share-card">
+              <div class="share-card-label">Direct Message</div>
+              <div class="share-card-text" id="msg-dm"></div>
+              <button class="btn-copy-msg" data-target="msg-dm">Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events table -->
+        <div class="events-section">
+          <div class="events-header">
+            <div class="events-title">Recent activity</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th><th>Type</th><th>Email</th><th>Plan</th><th>Commission</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="events-body">
+                <tr class="empty-row"><td colspan="6">NO ACTIVITY YET</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div>
+  </div>
+</div>
+
+<script>
+var DATA = null;
+
+function fmt(n, prefix) {
+  if (n === null || n === undefined) return prefix ? prefix + '0' : '0';
+  var num = parseFloat(n);
+  return (prefix || '') + num.toFixed(2).replace(/\.00$/, '');
+}
+function fmtDate(s) {
+  if (!s) return '—';
+  var d = new Date(s);
+  return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'2-digit'}) + ' ' +
+         d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+}
+function escape(s) {
+  if (!s) return '—';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function render(d) {
+  DATA = d;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  var code = d.code || '';
+  var refUrl = 'https://jaybonham.com?ref=' + code;
+  document.getElementById('nav-email').textContent = d.email || '';
+  document.getElementById('ref-url').textContent = refUrl;
+  document.getElementById('qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=' + encodeURIComponent(refUrl) + '&color=4B9EFF&bgcolor=06080B&margin=4';
+
+  document.getElementById('t-clicks').textContent = d.stats.clicks || 0;
+  document.getElementById('t-optins').textContent = d.stats.optins || 0;
+  document.getElementById('t-calls').textContent  = d.stats.calls  || 0;
+  document.getElementById('t-sales').textContent  = d.stats.purchases || 0;
+  document.getElementById('t-pending').textContent = '$' + fmt(d.stats.pending_usd);
+  document.getElementById('t-paid').textContent    = '$' + fmt(d.stats.paid_usd);
+
+  var pct = d.commission_pct || 15;
+  document.getElementById('comm-pct-1').textContent = pct + '%';
+  document.getElementById('comm-pct-2').textContent = pct + '%';
+  document.getElementById('comm-pct-3').textContent = pct + '%';
+  document.getElementById('comm-earn-1').textContent = '~$' + Math.round(999  * pct / 100);
+  document.getElementById('comm-earn-2').textContent = '~$' + Math.round(5999 * pct / 100);
+  document.getElementById('comm-earn-3').textContent = '~$' + Math.round(9999 * pct / 100);
+
+  var payable = parseFloat(d.stats.payable_now_usd) || 0;
+  var payBar   = document.getElementById('payout-bar');
+  var payReqMsg = document.getElementById('payout-requested-msg');
+  if (d.payout_status === 'requested') {
+    payBar.style.display = 'none';
+    payReqMsg.style.display = 'block';
+  } else if (payable > 0 && d.payout_status === 'none') {
+    document.getElementById('payout-amount').textContent = '$' + fmt(payable);
+    payBar.style.display = 'flex';
+  }
+
+  var igMsg = 'I\'ve been training with Sniper Academy and it completely changed my approach to the markets. If you\'re serious about actually learning to trade — not just watching YouTube — this is it. Apply here:\n\n' + refUrl + '\n\n#trading #forex #snipers';
+  var dmMsg = 'Hey! I wanted to share something that\'s been genuinely helping me. I joined Sniper Academy with Jay Bonham and the results have been real. If you want to check it out, use my link so we can both benefit:\n\n' + refUrl + '\n\nLet me know if you have questions 🙌';
+  document.getElementById('msg-ig').textContent = igMsg;
+  document.getElementById('msg-dm').textContent = dmMsg;
+
+  var tbody = document.getElementById('events-body');
+  var events = d.events || [];
+  if (!events.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">NO ACTIVITY YET</td></tr>';
+  } else {
+    tbody.innerHTML = events.map(function(ev) {
+      var typeBadge = ev.event_type === 'optin' ? '<span class="badge badge-optin">Opt-in</span>'
+                    : ev.event_type === 'call_booked' ? '<span class="badge badge-call">Call</span>'
+                    : '<span class="badge badge-purchase">Purchase</span>';
+      var statusBadge = ev.commission_status === 'paid' ? '<span class="badge badge-paid">Paid</span>'
+                       : '<span class="badge badge-pending">Pending</span>';
+      return '<tr>' +
+        '<td class="mono">' + fmtDate(ev.created_at) + '</td>' +
+        '<td>' + typeBadge + '</td>' +
+        '<td class="mono" style="color:#F2F5F7">' + escape(ev.visitor_email) + '</td>' +
+        '<td class="mono">' + escape(ev.plan) + '</td>' +
+        '<td class="mono" style="color:#4BFF9E">' + (ev.commission_usd ? '$' + fmt(ev.commission_usd) : '—') + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+}
+
+// Fetch data
+fetch('/api/aff-me', {credentials: 'same-origin'})
+  .then(function(r) {
+    if (r.status === 401) { window.location.href = '/affiliate/login'; return null; }
+    return r.json();
+  })
+  .then(function(d) {
+    if (!d) return;
+    if (d.ok) { render(d); }
+    else {
+      document.getElementById('loading').style.display = 'none';
+      var e = document.getElementById('err-state');
+      e.textContent = d.error || 'Failed to load dashboard.';
+      e.style.display = 'block';
+    }
+  })
+  .catch(function() {
+    document.getElementById('loading').style.display = 'none';
+    var e = document.getElementById('err-state');
+    e.textContent = 'Network error. Please refresh.';
+    e.style.display = 'block';
+  });
+
+// Copy ref link
+document.getElementById('btn-copy').addEventListener('click', function() {
+  var btn = this;
+  if (!DATA) return;
+  var url = 'https://jaybonham.com?ref=' + DATA.code;
+  navigator.clipboard.writeText(url).then(function() {
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+});
+
+// Copy share messages
+document.querySelectorAll('.btn-copy-msg').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var target = document.getElementById(this.dataset.target);
+    navigator.clipboard.writeText(target.textContent).then(function() {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+});
+
+// Payout
+document.getElementById('btn-payout').addEventListener('click', function() {
+  var btn = this;
+  btn.disabled = true; btn.textContent = 'Requesting...';
+  fetch('/api/aff-payout', {method:'POST', credentials:'same-origin'})
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        document.getElementById('payout-bar').style.display = 'none';
+        document.getElementById('payout-requested-msg').style.display = 'block';
+      } else {
+        btn.disabled = false; btn.textContent = 'Request Payout';
+        alert(d.error || 'Could not request payout.');
+      }
+    });
+});
+
+// Logout
+document.getElementById('btn-logout').addEventListener('click', function() {
+  fetch('/api/aff-login', {method:'DELETE', credentials:'same-origin'})
+    .finally(function() { window.location.href = '/affiliate/login'; });
+});
+</script>
+</body>
+</html>

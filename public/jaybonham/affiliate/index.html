@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affiliate Programme — Jay Bonham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html,body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit}
+
+.nav{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-logo{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:20px;letter-spacing:.1em;text-transform:uppercase}
+.nav-logo span{color:#4B9EFF}
+.nav-login{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#4A5566;transition:color .15s}
+.nav-login:hover{color:#F2F5F7}
+
+.hero{text-align:center;padding:80px 24px 60px;max-width:760px;margin:0 auto}
+.hero-badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:6px 16px;margin-bottom:28px}
+.hero h1{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(42px,7vw,72px);text-transform:uppercase;letter-spacing:.04em;line-height:.95;margin:0 0 24px}
+.hero h1 span{color:#4B9EFF}
+.hero p{font-size:17px;line-height:1.65;color:#9AA4B0;margin:0}
+
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:860px;margin:60px auto;padding:0 24px}
+@media(max-width:640px){.tiers{grid-template-columns:1fr}}
+.tier{background:#0A0E14;border:1px solid rgba(255,255,255,.07);padding:24px;text-align:center}
+.tier-name{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;margin-bottom:10px}
+.tier-price{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:32px;margin-bottom:4px}
+.tier-comm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4BFF9E;letter-spacing:.1em}
+.tier-arrow{color:#4A5566;font-size:18px;margin:10px 0}
+.tier-earn{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:26px;color:#4B9EFF}
+
+.how{max-width:860px;margin:0 auto;padding:0 24px 80px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+@media(max-width:640px){.how{grid-template-columns:1fr}}
+.how-step{padding:28px 20px}
+.how-num{width:40px;height:40px;border:1px solid rgba(75,158,255,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#4B9EFF;margin:0 auto 16px}
+.how h3{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px}
+.how p{font-size:13px;color:#6C7885;line-height:1.6;margin:0}
+
+.section-title{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;margin-bottom:48px}
+
+.form-wrap{max-width:480px;margin:0 auto;padding:0 24px 80px}
+.form-box{background:#0A0E14;border:1px solid rgba(255,255,255,.08);padding:36px}
+.form-title{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px}
+.form-sub{font-size:13px;color:#4A5566;margin:0 0 28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-bottom:7px}
+.field input{width:100%;background:#0D1117;border:1px solid rgba(255,255,255,.08);padding:11px 14px;color:#F2F5F7;font-size:14px;outline:none;transition:border-color .15s;font-family:'Archivo',sans-serif}
+.field input:focus{border-color:rgba(75,158,255,.4)}
+.field input::placeholder{color:#3C4650}
+.field-hint{font-size:11px;color:#3C4650;margin-top:5px;font-family:'IBM Plex Mono',monospace}
+.btn-primary{width:100%;padding:14px;background:#4B9EFF;color:#06080B;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.1em;text-transform:uppercase;margin-top:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.form-err{background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);color:#FF6464;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+.form-ok{background:rgba(75,255,158,.08);border:1px solid rgba(75,255,158,.2);color:#4BFF9E;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+.form-login-link{text-align:center;margin-top:20px;font-size:13px;color:#4A5566}
+.form-login-link a{color:#4B9EFF}
+
+.divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:0 0 60px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Jay<span>B</span> Affiliates</div>
+  <a href="/affiliate/login" class="nav-login">Already registered → Login</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">Partner Programme</div>
+  <h1>Earn <span>big</span> referring traders</h1>
+  <p>Share your unique link. Every time someone joins Sniper Academy through your link, you earn a commission. No cap. No expiry.</p>
+</section>
+
+<div class="section-title">What you earn per sale</div>
+<div class="tiers">
+  <div class="tier">
+    <div class="tier-name">Standard</div>
+    <div class="tier-price">$999</div>
+    <div class="tier-arrow">↓</div>
+    <div class="tier-comm">15% commission</div>
+    <div class="tier-earn">~$150</div>
+  </div>
+  <div class="tier">
+    <div class="tier-name">Accelerator</div>
+    <div class="tier-price">$5,999</div>
+    <div class="tier-arrow">↓</div>
+    <div class="tier-comm">15% commission</div>
+    <div class="tier-earn">~$900</div>
+  </div>
+  <div class="tier">
+    <div class="tier-name">Elite</div>
+    <div class="tier-price">$9,999</div>
+    <div class="tier-arrow">↓</div>
+    <div class="tier-comm">15% commission</div>
+    <div class="tier-earn">~$1,500</div>
+  </div>
+</div>
+
+<div class="section-title">How it works</div>
+<div class="how">
+  <div class="how-step">
+    <div class="how-num">1</div>
+    <h3>Register</h3>
+    <p>Create your free affiliate account and get your unique tracking link in seconds.</p>
+  </div>
+  <div class="how-step">
+    <div class="how-num">2</div>
+    <h3>Share</h3>
+    <p>Post your link on social, DM it, or add it to your content. Every click is tracked for 30 days.</p>
+  </div>
+  <div class="how-step">
+    <div class="how-num">3</div>
+    <h3>Earn</h3>
+    <p>When your referral purchases, your commission is locked in. Request a payout once you hit the threshold.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section-title">Create your account</div>
+<div class="form-wrap">
+  <div class="form-box">
+    <div class="form-title">Join the programme</div>
+    <div class="form-sub">Free to join. Instant access to your dashboard.</div>
+    <div class="form-err" id="err"></div>
+    <div class="form-ok" id="ok"></div>
+    <div class="field"><label>Full Name</label><input type="text" id="f-name" placeholder="Your name" autocomplete="name"></div>
+    <div class="field"><label>Email</label><input type="email" id="f-email" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="field"><label>Phone (optional)</label><input type="tel" id="f-phone" placeholder="+1 555 000 0000" autocomplete="tel"></div>
+    <div class="field">
+      <label>Custom Link Code (optional)</label>
+      <input type="text" id="f-code" placeholder="e.g. mike (leave blank for auto)" autocomplete="off" spellcheck="false">
+      <div class="field-hint">3–20 chars, lowercase letters/numbers/underscores. Auto-generated if blank.</div>
+    </div>
+    <div class="field"><label>Password</label><input type="password" id="f-pass" placeholder="Min 8 characters" autocomplete="new-password"></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="f-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
+    <button class="btn-primary" id="btn-register">Create Account</button>
+    <div class="form-login-link">Already have an account? <a href="/affiliate/login">Sign in →</a></div>
+  </div>
+</div>
+
+<script>
+document.getElementById('btn-register').addEventListener('click', function() {
+  var name  = document.getElementById('f-name').value.trim();
+  var email = document.getElementById('f-email').value.trim();
+  var phone = document.getElementById('f-phone').value.trim();
+  var code  = document.getElementById('f-code').value.trim();
+  var pass  = document.getElementById('f-pass').value;
+  var pass2 = document.getElementById('f-pass2').value;
+  var err   = document.getElementById('err');
+  var ok    = document.getElementById('ok');
+  var btn   = document.getElementById('btn-register');
+
+  err.style.display = 'none';
+  ok.style.display  = 'none';
+
+  if (!name || !email || !pass) { err.textContent = 'Name, email and password are required.'; err.style.display='block'; return; }
+  if (pass !== pass2)           { err.textContent = 'Passwords do not match.'; err.style.display='block'; return; }
+  if (pass.length < 8)         { err.textContent = 'Password must be at least 8 characters.'; err.style.display='block'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  fetch('/api/aff-register', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name:name, email:email, phone:phone, password:pass, code:code || undefined})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      ok.textContent = 'Account created! Your code: ' + d.code + '. Redirecting to dashboard...';
+      ok.style.display = 'block';
+      setTimeout(function() { window.location.href = '/affiliate/dashboard'; }, 1500);
+    } else {
+      err.textContent = d.error || 'Registration failed. Please try again.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+  })
+  .catch(function() {
+    err.textContent = 'Network error. Please try again.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+  });
+});
+</script>
+</body>
+</html>

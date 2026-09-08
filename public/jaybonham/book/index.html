@@ -203,5 +203,40 @@ window.addEventListener('scroll', () => {
 })();
 </script>
 <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
+<script>
+// Affiliate ref tracking
+(function() {
+  function getCookie(n) { var m = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)'); return m ? m.pop() : ''; }
+  function setCookie(n, v, days) { var exp = new Date(Date.now() + days * 864e5).toUTCString(); document.cookie = n + '=' + v + '; path=/; SameSite=Lax; expires=' + exp; }
+  var ref = new URLSearchParams(window.location.search).get('ref');
+  if (ref && /^[a-z0-9_]{2,30}$/i.test(ref)) { setCookie('jb_ref', ref, 30); }
+  window._jbGetCookie = getCookie;
+})();
+
+// GHL booking confirmed — fire call_booked affiliate event
+window.addEventListener('message', function(e) {
+  try {
+    var d = e.data;
+    if (!d) return;
+    var isBooked = (
+      d.type === 'appointmentBooked' || d.event === 'appointmentBooked' ||
+      d.action === 'appointment_booked' ||
+      (d.type === 'booking' && d.status === 'success')
+    );
+    if (!isBooked) return;
+    var contact = d.contact || d.data || d.payload || d;
+    var email = contact.email || '';
+    if (!email) {
+      try { email = JSON.parse(sessionStorage.getItem('jb_applicant') || '{}').email || ''; } catch(x) {}
+    }
+    var ref = window._jbGetCookie ? window._jbGetCookie('jb_ref') : '';
+    if (ref) {
+      fetch('/api/aff-event', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({type:'call_booked', email:email, ref_code:ref})
+      }).catch(function(){});
+    }
+  } catch(err) {}
+});
+</script>
 </body>
 </html>

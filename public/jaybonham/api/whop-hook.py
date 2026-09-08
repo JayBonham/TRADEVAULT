@@ -71,6 +71,7 @@ class handler(BaseHTTPRequestHandler):
             tags  = PLAN_TAGS.get(slug, ["purchased"])
 
             self._ghl_upsert(email, first, last, phone, tags)
+            self._record_affiliate_purchase(email, slug, None)
             self._json(200, {"ok": True, "email": email, "tags": tags})
 
         except Exception as e:
@@ -111,6 +112,64 @@ class handler(BaseHTTPRequestHandler):
             conn3 = http.client.HTTPSConnection("rest.gohighlevel.com")
             conn3.request("POST", "/v1/contacts/", json.dumps(payload), headers)
             conn3.getresponse().read()
+
+    def _record_affiliate_purchase(self, email, slug, amount_usd_override):
+        """Attribute a Whop purchase to an affiliate if we have prior tracking events."""
+        if not email:
+            return
+        try:
+            import psycopg2
+            db_url = os.environ.get("DATABASE_URL", "")
+            if not db_url:
+                return
+            PLAN_AMOUNTS = {
+                "sniper-basic-ed":    999.0,
+                "sniper-accelerator": 5999.0,
+                "sniper-elite-72":    9999.0,
+            }
+            amount_usd = amount_usd_override or PLAN_AMOUNTS.get(slug, 0)
+
+            conn = psycopg2.connect(db_url)
+            cur  = conn.cursor()
+
+            # Idempotency: skip if purchased event already exists for this email
+            cur.execute(
+                "SELECT id FROM jb_aff_events WHERE visitor_email = %s AND event_type = 'purchased' LIMIT 1",
+                (email,)
+            )
+            if cur.fetchone():
+                cur.close(); conn.close()
+                return
+
+            # Find affiliate from most recent optin or call_booked event
+            cur.execute("""
+                SELECT e.affiliate_id, a.commission_pct
+                FROM jb_aff_events e
+                JOIN jb_affiliates a ON a.id = e.affiliate_id
+                WHERE e.visitor_email = %s
+                  AND e.event_type IN ('optin', 'call_booked')
+                  AND a.status = 'active'
+                ORDER BY e.created_at DESC LIMIT 1
+            """, (email,))
+            row = cur.fetchone()
+            if not row:
+                cur.close(); conn.close()
+                return
+
+            aff_id, commission_pct = row
+            commission = round(float(amount_usd) * commission_pct / 100, 2)
+
+            cur.execute("""
+                INSERT INTO jb_aff_events
+                  (affiliate_id, event_type, visitor_email, plan, amount_usd, commission_usd, commission_status)
+                VALUES (%s, 'purchased', %s, %s, %s, %s, 'pending')
+            """, (aff_id, email, slug, amount_usd, commission))
+            conn.commit()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            import sys
+            print("AFF_PURCHASE_ERR:", e, file=sys.stderr)
 
     def _json(self, status, body):
         payload = json.dumps(body).encode()

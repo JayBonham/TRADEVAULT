@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affiliates — JB Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&family=Saira+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;min-height:100vh;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select{font-family:inherit}
+
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex:none;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.main{flex:1;padding:28px 32px;overflow-x:auto}
+.sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.sb-logo-text{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.sb-logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4B9EFF;margin-top:1px}
+.sb-nav{padding:16px 0;flex:1}
+.sb-link{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:14px;color:#9AA4B0;transition:color .15s,background .15s;border-left:2px solid transparent}
+.sb-link:hover{color:#F2F5F7;background:rgba(255,255,255,.03)}
+.sb-link.active{color:#4B9EFF;border-left-color:#4B9EFF;background:rgba(75,158,255,.06)}
+.sb-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:#5C6672;display:flex;align-items:center;justify-content:space-between}
+.sb-user button{font-size:11px;color:#FF6B6B;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+
+/* topbar */
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.topbar h1{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:24px;text-transform:uppercase;letter-spacing:.06em;margin:0;flex:none}
+
+/* stats strip */
+.stats{display:flex;gap:0;margin-bottom:22px;border:1px solid rgba(255,255,255,.07);overflow-x:auto}
+.stat{padding:14px 22px;border-right:1px solid rgba(255,255,255,.07);flex:none}
+.stat:last-child{border-right:none}
+.stat-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:26px;letter-spacing:.02em;line-height:1}
+.stat-l{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-top:4px}
+.stat-n.blue{color:#4B9EFF}
+.stat-n.green{color:#4BFF9E}
+.stat-n.yellow{color:#F5A623}
+
+/* table */
+.tbl-wrap{overflow-x:auto;margin-bottom:36px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr{border-bottom:1px solid rgba(255,255,255,.08)}
+th{text-align:left;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650;font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+td{padding:11px 12px;font-size:13px;color:#C8D0D8;vertical-align:middle}
+.td-name{min-width:160px}
+.td-name .n1{color:#F2F5F7;font-weight:500;font-size:14px}
+.td-name .n2{color:#4A5566;font-size:11px;font-family:'IBM Plex Mono',monospace;margin-top:2px}
+
+/* badges */
+.badge{display:inline-block;padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.badge-active{background:rgba(75,255,158,.1);color:#4BFF9E;border:1px solid rgba(75,255,158,.25)}
+.badge-suspended{background:rgba(255,100,100,.08);color:#FF6464;border:1px solid rgba(255,100,100,.2)}
+.badge-requested{background:rgba(245,166,35,.1);color:#F5A623;border:1px solid rgba(245,166,35,.2)}
+.badge-paid-out{background:rgba(75,255,200,.1);color:#4BFFC8;border:1px solid rgba(75,255,200,.2)}
+.badge-optin{background:rgba(75,158,255,.12);color:#4B9EFF;border:1px solid rgba(75,158,255,.2)}
+.badge-call{background:rgba(245,166,35,.12);color:#F5A623;border:1px solid rgba(245,166,35,.2)}
+.badge-purchase{background:rgba(75,255,158,.12);color:#4BFF9E;border:1px solid rgba(75,255,158,.2)}
+.badge-commission-pending{background:rgba(245,166,35,.1);color:#F5A623;border:1px solid rgba(245,166,35,.15)}
+.badge-commission-paid{background:rgba(75,255,158,.1);color:#4BFF9E;border:1px solid rgba(75,255,158,.15)}
+
+/* actions */
+.btn-sm{padding:5px 12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);color:#9AA4B0;transition:all .15s}
+.btn-sm:hover{border-color:rgba(75,158,255,.3);color:#4B9EFF;background:rgba(75,158,255,.06)}
+.btn-events{margin-left:6px}
+.btn-events.open{color:#F5A623;border-color:rgba(245,166,35,.3)}
+
+/* expand row */
+.events-row{display:none}
+.events-row.open{display:table-row}
+.events-inner{background:#080B10;padding:16px;border-top:1px solid rgba(255,255,255,.04)}
+.events-sub-tbl{width:100%;border-collapse:collapse;min-width:640px}
+.events-sub-tbl th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#3C4650;padding:7px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+.events-sub-tbl td{font-size:12px;color:#9AA4B0;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.03)}
+.events-sub-tbl tr:last-child td{border-bottom:none}
+.events-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#3C4650;padding:16px 10px;letter-spacing:.1em}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+
+/* edit popover */
+.edit-modal{position:fixed;z-index:100;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center}
+.edit-modal.open{display:flex}
+.edit-box{background:#0D1117;border:1px solid rgba(255,255,255,.12);padding:28px;width:360px;max-width:95vw}
+.edit-title{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 20px}
+.edit-field{margin-bottom:14px}
+.edit-field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-bottom:6px}
+.edit-field input,.edit-field select{width:100%;background:#06080B;border:1px solid rgba(255,255,255,.08);padding:9px 12px;color:#F2F5F7;font-size:13px;outline:none}
+.edit-field input:focus,.edit-field select:focus{border-color:rgba(75,158,255,.4)}
+.edit-field select option{background:#0D1117}
+.edit-actions{display:flex;gap:8px;margin-top:20px}
+.btn-save{flex:1;padding:11px;background:#4B9EFF;color:#06080B;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:opacity .15s}
+.btn-save:hover{opacity:.88}
+.btn-cancel{flex:0 0 auto;padding:11px 20px;border:1px solid rgba(255,255,255,.1);color:#9AA4B0;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;transition:all .15s}
+.btn-cancel:hover{color:#F2F5F7}
+
+/* Payout queue */
+.payout-section{margin-bottom:40px}
+.section-heading{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.payout-card{background:#0A0E14;border:1px solid rgba(245,166,35,.15);padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.payout-card-name{flex:1}
+.payout-card-name .n1{font-size:14px;color:#F2F5F7;font-weight:500}
+.payout-card-name .n2{font-size:11px;font-family:'IBM Plex Mono',monospace;color:#4A5566;margin-top:2px}
+.payout-card-amt{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;color:#F5A623}
+.payout-card-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4A5566}
+.payout-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-approve{padding:8px 18px;background:#4BFF9E;color:#06080B;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;transition:opacity .15s}
+.btn-approve:hover{opacity:.85}
+.btn-reject{padding:8px 18px;border:1px solid rgba(255,100,100,.3);color:#FF6464;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;transition:all .15s}
+.btn-reject:hover{background:rgba(255,100,100,.08)}
+.payout-info{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A5566}
+
+/* empty / loading */
+.empty{text-align:center;padding:60px 20px;color:#4A5566;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em}
+.loading{text-align:center;padding:60px 20px;color:#4A5566;font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em}
+.err-banner{background:rgba(255,100,100,.06);border:1px solid rgba(255,100,100,.15);color:#FF6464;padding:12px 16px;font-size:13px;margin-bottom:20px;display:none}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
+        <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+        <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <div class="sb-logo-text">Jay Bonham</div>
+        <div class="sb-logo-sub">Sales Portal</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <a href="/admin/leads" class="sb-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Leads
+      </a>
+      <a href="/admin/affiliates" class="sb-link active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Affiliates
+      </a>
+    </nav>
+    <div class="sb-user">
+      <span id="sb-user-email">Admin</span>
+      <button id="btn-logout">LOG OUT</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <h1>Affiliates</h1>
+    </div>
+
+    <div class="err-banner" id="err-banner"></div>
+
+    <!-- Stats strip -->
+    <div class="stats" id="stats-strip">
+      <div class="stat"><div class="stat-n" id="s-total">—</div><div class="stat-l">Total Affiliates</div></div>
+      <div class="stat"><div class="stat-n blue" id="s-clicks">—</div><div class="stat-l">Total Clicks</div></div>
+      <div class="stat"><div class="stat-n" id="s-optins">—</div><div class="stat-l">Opt-ins</div></div>
+      <div class="stat"><div class="stat-n" id="s-calls">—</div><div class="stat-l">Calls</div></div>
+      <div class="stat"><div class="stat-n green" id="s-sales">—</div><div class="stat-l">Sales</div></div>
+      <div class="stat"><div class="stat-n yellow" id="s-owed">—</div><div class="stat-l">Commission Owed</div></div>
+    </div>
+
+    <!-- Payout queue -->
+    <div class="payout-section" id="payout-section" style="display:none">
+      <div class="section-heading">Payout Requests</div>
+      <div id="payout-list"></div>
+    </div>
+
+    <!-- Affiliates table -->
+    <div class="section-heading">All Affiliates</div>
+    <div class="tbl-wrap">
+      <div class="loading" id="tbl-loading">LOADING...</div>
+      <table id="aff-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Affiliate</th>
+            <th>Code</th>
+            <th>Clicks</th>
+            <th>Opt-ins</th>
+            <th>Calls</th>
+            <th>Sales</th>
+            <th>Pending $</th>
+            <th>Commission</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="aff-tbody"></tbody>
+      </table>
+      <div class="empty" id="aff-empty" style="display:none">NO AFFILIATES YET</div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- Edit modal -->
+<div class="edit-modal" id="edit-modal">
+  <div class="edit-box">
+    <div class="edit-title" id="edit-title">Edit Affiliate</div>
+    <input type="hidden" id="edit-id">
+    <div class="edit-field">
+      <label>Commission %</label>
+      <input type="number" id="edit-comm" min="0" max="100" step="1">
+    </div>
+    <div class="edit-field">
+      <label>Status</label>
+      <select id="edit-status">
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
+      </select>
+    </div>
+    <div class="edit-field">
+      <label>Payout Info (PayPal email / bank note)</label>
+      <input type="text" id="edit-payout-info" placeholder="e.g. paypal@example.com">
+    </div>
+    <div class="edit-actions">
+      <button class="btn-cancel" id="edit-cancel">Cancel</button>
+      <button class="btn-save" id="edit-save">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var TOKEN = null;
+var AFFILIATES = [];
+
+// Auth check
+function getToken() {
+  var m = document.cookie.match(/(?:^|;\s*)jb_admin_token=([^;]+)/);
+  return m ? m[1] : null;
+}
+
+TOKEN = getToken();
+if (!TOKEN) { window.location.href = '/admin'; }
+
+document.getElementById('btn-logout').addEventListener('click', function() {
+  document.cookie = 'jb_admin_token=; Max-Age=0; Path=/';
+  window.location.href = '/admin';
+});
+
+function esc(s) {
+  if (!s) return '—';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  return '$' + parseFloat(n).toFixed(2).replace(/\.00$/,'');
+}
+function fmtDate(s) {
+  if (!s) return '—';
+  var d = new Date(s);
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+}
+
+function renderEventsBadge(type) {
+  if (type === 'optin')      return '<span class="badge badge-optin">Opt-in</span>';
+  if (type === 'call_booked') return '<span class="badge badge-call">Call</span>';
+  if (type === 'purchased')   return '<span class="badge badge-purchase">Sale</span>';
+  return '<span class="badge">' + esc(type) + '</span>';
+}
+
+function toggleEvents(affId) {
+  var row = document.getElementById('ev-row-' + affId);
+  var btn = document.getElementById('ev-btn-' + affId);
+  if (!row) return;
+  var isOpen = row.classList.contains('open');
+  row.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.textContent = isOpen ? 'Events ▾' : 'Events ▴';
+}
+
+function renderAffiliate(a) {
+  var statusBadge = a.status === 'active'
+    ? '<span class="badge badge-active">Active</span>'
+    : '<span class="badge badge-suspended">Suspended</span>';
+  var eventsHtml = '';
+  if (a.events && a.events.length) {
+    eventsHtml = '<table class="events-sub-tbl"><thead><tr><th>Date</th><th>Type</th><th>Email</th><th>Plan</th><th>Commission</th><th>Status</th></tr></thead><tbody>' +
+      a.events.map(function(ev) {
+        var cBadge = ev.commission_status === 'paid'
+          ? '<span class="badge badge-commission-paid">Paid</span>'
+          : '<span class="badge badge-commission-pending">Pending</span>';
+        return '<tr>' +
+          '<td class="mono">' + fmtDate(ev.created_at) + '</td>' +
+          '<td>' + renderEventsBadge(ev.event_type) + '</td>' +
+          '<td class="mono">' + esc(ev.visitor_email) + '</td>' +
+          '<td class="mono">' + esc(ev.plan) + '</td>' +
+          '<td class="mono" style="color:#4BFF9E">' + (ev.commission_usd ? fmt(ev.commission_usd) : '—') + '</td>' +
+          '<td>' + cBadge + '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table>';
+  } else {
+    eventsHtml = '<div class="events-empty">NO EVENTS YET</div>';
+  }
+
+  return '<tr>' +
+    '<td class="td-name"><div class="n1">' + esc(a.name) + '</div><div class="n2">' + esc(a.email) + '</div></td>' +
+    '<td class="mono" style="color:#4B9EFF">' + esc(a.code) + '</td>' +
+    '<td>' + (a.total_clicks || 0) + '</td>' +
+    '<td>' + (a.stats_optins || 0) + '</td>' +
+    '<td>' + (a.stats_calls || 0) + '</td>' +
+    '<td style="color:#4BFF9E">' + (a.stats_purchases || 0) + '</td>' +
+    '<td style="color:#F5A623">' + fmt(a.stats_pending_usd) + '</td>' +
+    '<td class="mono">' + (a.commission_pct || 15) + '%</td>' +
+    '<td>' + statusBadge + '</td>' +
+    '<td style="white-space:nowrap">' +
+      '<button class="btn-sm" onclick="openEdit(' + a.id + ')">Edit</button>' +
+      '<button class="btn-sm btn-events" id="ev-btn-' + a.id + '" onclick="toggleEvents(' + a.id + ')">Events ▾</button>' +
+    '</td>' +
+  '</tr>' +
+  '<tr class="events-row" id="ev-row-' + a.id + '"><td colspan="10" style="padding:0"><div class="events-inner">' + eventsHtml + '</div></td></tr>';
+}
+
+function renderPayouts(affiliates) {
+  var requested = affiliates.filter(function(a) { return a.payout_status === 'requested'; });
+  var section = document.getElementById('payout-section');
+  var list    = document.getElementById('payout-list');
+  if (!requested.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = requested.map(function(a) {
+    return '<div class="payout-card" id="payout-card-' + a.id + '">' +
+      '<div class="payout-card-name"><div class="n1">' + esc(a.name) + '</div><div class="n2">' + esc(a.email) + (a.payout_info ? ' · ' + esc(a.payout_info) : '') + '</div></div>' +
+      '<div><div class="payout-card-amt">' + fmt(a.payout_requested_amt) + '</div><div class="payout-card-date">Requested ' + fmtDate(a.payout_requested_at) + '</div></div>' +
+      '<div class="payout-actions">' +
+        '<button class="btn-approve" onclick="handlePayout(' + a.id + ', \'approve\')">Approve</button>' +
+        '<button class="btn-reject" onclick="handlePayout(' + a.id + ', \'reject\')">Reject</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function load() {
+  fetch('/api/aff-admin', {
+    headers: {'Authorization': 'Bearer ' + TOKEN}
+  })
+  .then(function(r) {
+    if (r.status === 401 || r.status === 403) { window.location.href = '/admin'; return null; }
+    return r.json();
+  })
+  .then(function(d) {
+    if (!d) return;
+    document.getElementById('tbl-loading').style.display = 'none';
+    if (d.error) {
+      var b = document.getElementById('err-banner');
+      b.textContent = d.error; b.style.display = 'block'; return;
+    }
+
+    AFFILIATES = d.affiliates || [];
+    var totals  = d.totals || {};
+
+    // Stats strip
+    document.getElementById('s-total').textContent  = AFFILIATES.length;
+    document.getElementById('s-clicks').textContent = totals.clicks || 0;
+    document.getElementById('s-optins').textContent = totals.optins || 0;
+    document.getElementById('s-calls').textContent  = totals.calls  || 0;
+    document.getElementById('s-sales').textContent  = totals.purchases || 0;
+    document.getElementById('s-owed').textContent   = '$' + (parseFloat(totals.pending_usd) || 0).toFixed(0);
+
+    // Payout queue
+    renderPayouts(AFFILIATES);
+
+    // Table
+    if (!AFFILIATES.length) {
+      document.getElementById('aff-empty').style.display = 'block';
+    } else {
+      var tbl = document.getElementById('aff-table');
+      tbl.style.display = 'table';
+      document.getElementById('aff-tbody').innerHTML = AFFILIATES.map(renderAffiliate).join('');
+    }
+  })
+  .catch(function(err) {
+    document.getElementById('tbl-loading').style.display = 'none';
+    var b = document.getElementById('err-banner');
+    b.textContent = 'Network error loading affiliates.'; b.style.display = 'block';
+  });
+}
+
+// Edit modal
+function openEdit(affId) {
+  var a = AFFILIATES.find(function(x) { return x.id === affId; });
+  if (!a) return;
+  document.getElementById('edit-id').value          = affId;
+  document.getElementById('edit-title').textContent = 'Edit: ' + a.name;
+  document.getElementById('edit-comm').value        = a.commission_pct || 15;
+  document.getElementById('edit-status').value      = a.status || 'active';
+  document.getElementById('edit-payout-info').value = a.payout_info || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+document.getElementById('edit-cancel').addEventListener('click', function() {
+  document.getElementById('edit-modal').classList.remove('open');
+});
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+document.getElementById('edit-save').addEventListener('click', function() {
+  var id   = document.getElementById('edit-id').value;
+  var btn  = this;
+  var data = {
+    commission_pct: parseInt(document.getElementById('edit-comm').value),
+    status:         document.getElementById('edit-status').value,
+    payout_info:    document.getElementById('edit-payout-info').value.trim()
+  };
+  btn.disabled = true; btn.textContent = 'Saving...';
+  fetch('/api/aff-admin', {
+    method: 'PATCH',
+    headers: {'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json'},
+    body: JSON.stringify({id: parseInt(id), ...data})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      document.getElementById('edit-modal').classList.remove('open');
+      load(); // reload table
+    } else {
+      alert(d.error || 'Save failed.');
+    }
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  })
+  .catch(function() { btn.disabled = false; btn.textContent = 'Save Changes'; alert('Network error.'); });
+});
+
+// Payout approve/reject
+function handlePayout(affId, action) {
+  var card = document.getElementById('payout-card-' + affId);
+  var btns = card ? card.querySelectorAll('button') : [];
+  btns.forEach(function(b) { b.disabled = true; });
+  fetch('/api/aff-payout', {
+    method: 'PATCH',
+    headers: {'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json'},
+    body: JSON.stringify({affiliate_id: affId, action: action})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok) {
+      if (card) {
+        card.style.transition = 'opacity .3s';
+        card.style.opacity = '0';
+        setTimeout(function() { card.remove(); load(); }, 300);
+      }
+    } else {
+      btns.forEach(function(b) { b.disabled = false; });
+      alert(d.error || 'Action failed.');
+    }
+  })
+  .catch(function() { btns.forEach(function(b) { b.disabled = false; }); alert('Network error.'); });
+}
+
+load();
+</script>
+</body>
+</html>

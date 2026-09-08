@@ -1090,5 +1090,17 @@ var JB=(function(){
   };
 })();
 </script>
+<script>
+// Affiliate ref tracking — set jb_ref cookie + fire click counter
+(function() {
+  function getCookie(n) { var m = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)'); return m ? m.pop() : ''; }
+  function setCookie(n, v, days) { var exp = new Date(Date.now() + days * 864e5).toUTCString(); document.cookie = n + '=' + v + '; path=/; SameSite=Lax; expires=' + exp; }
+  var ref = new URLSearchParams(window.location.search).get('ref');
+  if (ref && /^[a-z0-9_]{2,30}$/i.test(ref)) {
+    setCookie('jb_ref', ref, 30);
+    fetch('/api/aff-click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
+  }
+})();
+</script>
 </body>
 </html>
