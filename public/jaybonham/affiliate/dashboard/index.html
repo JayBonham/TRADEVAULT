@@ -290,7 +290,7 @@ function render(d) {
 }
 
 // Fetch data
-fetch('/api/aff-me', {credentials: 'same-origin'})
+fetch('/api/aff?action=me', {credentials: 'same-origin'})
   .then(function(r) {
     if (r.status === 401) { window.location.href = '/affiliate/login'; return null; }
     return r.json();
@@ -338,7 +338,7 @@ document.querySelectorAll('.btn-copy-msg').forEach(function(btn) {
 document.getElementById('btn-payout').addEventListener('click', function() {
   var btn = this;
   btn.disabled = true; btn.textContent = 'Requesting...';
-  fetch('/api/aff-payout', {method:'POST', credentials:'same-origin'})
+  fetch('/api/aff?action=payout', {method:'POST', credentials:'same-origin'})
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.ok) {
@@ -353,7 +353,7 @@ document.getElementById('btn-payout').addEventListener('click', function() {
 
 // Logout
 document.getElementById('btn-logout').addEventListener('click', function() {
-  fetch('/api/aff-login', {method:'DELETE', credentials:'same-origin'})
+  fetch('/api/aff?action=login', {method:'DELETE', credentials:'same-origin'})
     .finally(function() { window.location.href = '/affiliate/login'; });
 });
 </script>

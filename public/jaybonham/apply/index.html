@@ -993,7 +993,7 @@ function scrollToApply() {
   var ref = new URLSearchParams(window.location.search).get('ref');
   if (ref && /^[a-z0-9_]{2,30}$/i.test(ref)) {
     setCookie('jb_ref', ref, 30);
-    fetch('/api/aff-click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
+    fetch('/api/aff?action=click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
   }
   window._jbGetCookie = getCookie;
 })();
@@ -1015,7 +1015,7 @@ window.addEventListener('message', function(e) {
       // Affiliate optin tracking
       var ref = window._jbGetCookie ? window._jbGetCookie('jb_ref') : '';
       if (ref && email) {
-        fetch('/api/aff-event', {method:'POST', headers:{'Content-Type':'application/json'},
+        fetch('/api/aff?action=event', {method:'POST', headers:{'Content-Type':'application/json'},
           body:JSON.stringify({type:'optin', email:email, ref_code:ref, name:(firstName+' '+lastName).trim()})
         }).catch(function(){});
       }

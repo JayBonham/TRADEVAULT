@@ -169,7 +169,7 @@ document.getElementById('btn-register').addEventListener('click', function() {
   btn.disabled = true;
   btn.textContent = 'Creating account...';
 
-  fetch('/api/aff-register', {
+  fetch('/api/aff?action=register', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({name:name, email:email, phone:phone, password:pass, code:code || undefined})

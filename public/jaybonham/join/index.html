@@ -309,7 +309,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCheckou
   var ref = new URLSearchParams(window.location.search).get('ref');
   if (ref && /^[a-z0-9_]{2,30}$/i.test(ref)) {
     setCookie('jb_ref', ref, 30);
-    fetch('/api/aff-click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
+    fetch('/api/aff?action=click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
   }
 })();
 </script>

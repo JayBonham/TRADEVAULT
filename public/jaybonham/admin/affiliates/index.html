@@ -337,7 +337,7 @@ function renderPayouts(affiliates) {
 }
 
 function load() {
-  fetch('/api/aff-admin', {
+  fetch('/api/aff?action=admin', {
     headers: {'Authorization': 'Bearer ' + TOKEN}
   })
   .then(function(r) {
@@ -408,7 +408,7 @@ document.getElementById('edit-save').addEventListener('click', function() {
     payout_info:    document.getElementById('edit-payout-info').value.trim()
   };
   btn.disabled = true; btn.textContent = 'Saving...';
-  fetch('/api/aff-admin', {
+  fetch('/api/aff?action=admin', {
     method: 'PATCH',
     headers: {'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json'},
     body: JSON.stringify({id: parseInt(id), ...data})
@@ -431,7 +431,7 @@ function handlePayout(affId, action) {
   var card = document.getElementById('payout-card-' + affId);
   var btns = card ? card.querySelectorAll('button') : [];
   btns.forEach(function(b) { b.disabled = true; });
-  fetch('/api/aff-payout', {
+  fetch('/api/aff?action=payout', {
     method: 'PATCH',
     headers: {'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json'},
     body: JSON.stringify({affiliate_id: affId, action: action})

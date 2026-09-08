@@ -231,7 +231,7 @@ window.addEventListener('message', function(e) {
     }
     var ref = window._jbGetCookie ? window._jbGetCookie('jb_ref') : '';
     if (ref) {
-      fetch('/api/aff-event', {method:'POST', headers:{'Content-Type':'application/json'},
+      fetch('/api/aff?action=event', {method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({type:'call_booked', email:email, ref_code:ref})
       }).catch(function(){});
     }
