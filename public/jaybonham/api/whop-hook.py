@@ -87,49 +87,54 @@ class handler(BaseHTTPRequestHandler):
             print("GHL_UPSERT: no GHL_API_KEY set", file=sys.stderr)
             return {"error": "no api key"}
 
+        # GHL API v2
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + GHL_API_KEY,
+            "Version": "2021-07-28",
         }
-        payload = {
-            "locationId": GHL_LOCATION,
-            "email": email,
-            "firstName": first,
-            "lastName": last,
-            "tags": tags,
-        }
-        if phone:
-            payload["phone"] = phone
+        host = "services.leadconnectorhq.com"
 
         try:
-            # Search for existing contact
-            conn = http.client.HTTPSConnection("rest.gohighlevel.com")
+            import urllib.parse
+            # Search for existing contact by email
+            conn = http.client.HTTPSConnection(host)
             conn.request(
                 "GET",
-                "/v1/contacts/search?email=" + email + "&locationId=" + GHL_LOCATION,
+                "/contacts/?locationId=" + GHL_LOCATION + "&query=" + urllib.parse.quote(email),
                 headers=headers,
             )
-            res   = conn.getresponse()
-            body  = res.read()
-            data  = json.loads(body)
+            res  = conn.getresponse()
+            body = res.read()
+            data = json.loads(body)
             contacts = data.get("contacts", [])
             print("GHL_SEARCH:", res.status, len(contacts), "contacts", file=sys.stderr)
 
+            payload = {
+                "locationId": GHL_LOCATION,
+                "email": email,
+                "firstName": first,
+                "lastName": last,
+                "tags": tags,
+            }
+            if phone:
+                payload["phone"] = phone
+
             if contacts:
                 cid = contacts[0]["id"]
-                conn2 = http.client.HTTPSConnection("rest.gohighlevel.com")
-                conn2.request("PUT", "/v1/contacts/" + cid, json.dumps(payload), headers)
+                conn2 = http.client.HTTPSConnection(host)
+                conn2.request("PUT", "/contacts/" + cid, json.dumps(payload), headers)
                 res2  = conn2.getresponse()
                 body2 = res2.read()
-                print("GHL_UPDATE:", res2.status, body2[:200], file=sys.stderr)
-                return {"status": res2.status, "body": body2.decode()[:200]}
+                print("GHL_UPDATE:", res2.status, body2[:300], file=sys.stderr)
+                return {"status": res2.status, "body": body2.decode()[:300]}
             else:
-                conn3 = http.client.HTTPSConnection("rest.gohighlevel.com")
-                conn3.request("POST", "/v1/contacts/", json.dumps(payload), headers)
+                conn3 = http.client.HTTPSConnection(host)
+                conn3.request("POST", "/contacts/", json.dumps(payload), headers)
                 res3  = conn3.getresponse()
                 body3 = res3.read()
-                print("GHL_CREATE:", res3.status, body3[:200], file=sys.stderr)
-                return {"status": res3.status, "body": body3.decode()[:200]}
+                print("GHL_CREATE:", res3.status, body3[:300], file=sys.stderr)
+                return {"status": res3.status, "body": body3.decode()[:300]}
         except Exception as e:
             print("GHL_UPSERT_ERR:", e, file=sys.stderr)
             return {"error": str(e)}
