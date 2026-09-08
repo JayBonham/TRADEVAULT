@@ -48,18 +48,22 @@ class handler(BaseHTTPRequestHandler):
             import sys
             print("WHOP EVENT:", event_type, json.dumps(event)[:500], file=sys.stderr)
 
-            if event_type not in ("payment.succeeded", "membership.went_valid"):
+            if event_type not in ("payment.succeeded", "membership.went_valid",
+                                   "membership.activated", "member.created"):
                 self._json(200, {"ok": True, "skipped": event_type})
                 return
 
             data  = event.get("data", {})
+            # membership.activated nests user under data.user; member.created may use data directly
             user  = data.get("user") or data.get("customer") or {}
-            plan  = data.get("plan") or {}
+            plan  = data.get("plan") or data.get("product") or {}
 
             email = (user.get("email") or data.get("email") or "").strip().lower()
-            name  = (user.get("name") or user.get("username") or "").strip()
+            name  = (user.get("name") or user.get("username") or
+                     user.get("display_name") or "").strip()
             phone = (user.get("phone_number") or "").strip()
-            slug  = (plan.get("slug") or data.get("plan_id") or "").strip()
+            slug  = (plan.get("slug") or plan.get("id") or
+                     data.get("plan_id") or data.get("product_slug") or "").strip()
 
             if not email:
                 self._json(400, {"error": "no email in payload"})
