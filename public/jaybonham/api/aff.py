@@ -291,11 +291,20 @@ class handler(BaseHTTPRequestHandler):
     # ------------------------------------------------------------------
     def _event(self):
         try:
-            body       = self._body()
-            event_type = (body.get("type") or "").strip().lower()
+            body = self._body()
+
+            # GHL sends custom field data as top-level keys with label names,
+            # not via our configured custom-data mappings. Read defensively:
+            # 1. type: from body, OR from URL query param (?type=call_booked)
+            # 2. ref_code: from body["ref_code"] OR body["jb_ref"] (GHL custom field label)
+            # 3. email: from body["email"] (standard GHL contact field, always present)
+            qs = parse_qs(urlparse(self.path).query)
+            type_from_qs = (qs.get("type") or [""])[0].strip().lower()
+
+            event_type = (body.get("type") or type_from_qs or "").strip().lower()
             email      = (body.get("email") or "").strip().lower()
-            ref_code   = (body.get("ref_code") or "").strip().lower()
-            name       = (body.get("name") or "").strip()
+            ref_code   = (body.get("ref_code") or body.get("jb_ref") or "").strip().lower()
+            name       = (body.get("name") or body.get("full_name") or "").strip()
 
             if event_type not in VALID_EVENT_TYPES or not ref_code:
                 return self._json(200, {"ok": True, "skipped": "no_ref",
