@@ -74,14 +74,19 @@ class handler(BaseHTTPRequestHandler):
             last  = parts[1] if len(parts) > 1 else ""
             tags  = PLAN_TAGS.get(slug, ["purchased"])
 
-            self._ghl_upsert(email, first, last, phone, tags)
+            ghl_result = self._ghl_upsert(email, first, last, phone, tags)
             self._record_affiliate_purchase(email, slug, None)
-            self._json(200, {"ok": True, "email": email, "tags": tags})
+            self._json(200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result})
 
         except Exception as e:
             self._json(500, {"error": str(e)})
 
     def _ghl_upsert(self, email, first, last, phone, tags):
+        import sys
+        if not GHL_API_KEY:
+            print("GHL_UPSERT: no GHL_API_KEY set", file=sys.stderr)
+            return {"error": "no api key"}
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + GHL_API_KEY,
@@ -96,26 +101,38 @@ class handler(BaseHTTPRequestHandler):
         if phone:
             payload["phone"] = phone
 
-        # Search for existing contact
-        conn = http.client.HTTPSConnection("rest.gohighlevel.com")
-        conn.request(
-            "GET",
-            "/v1/contacts/search?email=" + email + "&locationId=" + GHL_LOCATION,
-            headers=headers,
-        )
-        res  = conn.getresponse()
-        data = json.loads(res.read())
-        contacts = data.get("contacts", [])
+        try:
+            # Search for existing contact
+            conn = http.client.HTTPSConnection("rest.gohighlevel.com")
+            conn.request(
+                "GET",
+                "/v1/contacts/search?email=" + email + "&locationId=" + GHL_LOCATION,
+                headers=headers,
+            )
+            res   = conn.getresponse()
+            body  = res.read()
+            data  = json.loads(body)
+            contacts = data.get("contacts", [])
+            print("GHL_SEARCH:", res.status, len(contacts), "contacts", file=sys.stderr)
 
-        if contacts:
-            cid = contacts[0]["id"]
-            conn2 = http.client.HTTPSConnection("rest.gohighlevel.com")
-            conn2.request("PUT", "/v1/contacts/" + cid, json.dumps(payload), headers)
-            conn2.getresponse().read()
-        else:
-            conn3 = http.client.HTTPSConnection("rest.gohighlevel.com")
-            conn3.request("POST", "/v1/contacts/", json.dumps(payload), headers)
-            conn3.getresponse().read()
+            if contacts:
+                cid = contacts[0]["id"]
+                conn2 = http.client.HTTPSConnection("rest.gohighlevel.com")
+                conn2.request("PUT", "/v1/contacts/" + cid, json.dumps(payload), headers)
+                res2  = conn2.getresponse()
+                body2 = res2.read()
+                print("GHL_UPDATE:", res2.status, body2[:200], file=sys.stderr)
+                return {"status": res2.status, "body": body2.decode()[:200]}
+            else:
+                conn3 = http.client.HTTPSConnection("rest.gohighlevel.com")
+                conn3.request("POST", "/v1/contacts/", json.dumps(payload), headers)
+                res3  = conn3.getresponse()
+                body3 = res3.read()
+                print("GHL_CREATE:", res3.status, body3[:200], file=sys.stderr)
+                return {"status": res3.status, "body": body3.decode()[:200]}
+        except Exception as e:
+            print("GHL_UPSERT_ERR:", e, file=sys.stderr)
+            return {"error": str(e)}
 
     def _record_affiliate_purchase(self, email, slug, amount_usd_override):
         """Attribute a Whop purchase to an affiliate if we have prior tracking events."""
