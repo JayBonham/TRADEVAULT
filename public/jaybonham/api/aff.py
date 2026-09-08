@@ -298,7 +298,9 @@ class handler(BaseHTTPRequestHandler):
             name       = (body.get("name") or "").strip()
 
             if event_type not in VALID_EVENT_TYPES or not ref_code:
-                return self._json(200, {"ok": True, "skipped": True})
+                return self._json(200, {"ok": True, "skipped": "no_ref",
+                                        "received": {"type": event_type, "ref_code": ref_code,
+                                                     "email": email, "keys": list(body.keys())}})
 
             conn = get_conn()
             cur  = conn.cursor()
@@ -309,7 +311,7 @@ class handler(BaseHTTPRequestHandler):
             row = cur.fetchone()
             if not row:
                 cur.close(); conn.close()
-                return self._json(200, {"ok": True, "skipped": True})
+                return self._json(200, {"ok": True, "skipped": "no_affiliate", "ref_code": ref_code})
 
             aff_id = row[0]
             if email:
