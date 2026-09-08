@@ -987,6 +987,7 @@ function scrollToApply() {
 }
 
 // Affiliate ref tracking — set cookie + fire click event if ?ref= present
+// Also injects ref into GHL hidden field so GHL automation webhook can read it
 (function() {
   function getCookie(n) { var m = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)'); return m ? m.pop() : ''; }
   function setCookie(n, v, days) { var exp = new Date(Date.now() + days * 864e5).toUTCString(); document.cookie = n + '=' + v + '; path=/; SameSite=Lax; expires=' + exp; }
@@ -996,6 +997,17 @@ function scrollToApply() {
     fetch('/api/aff?action=click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
   }
   window._jbGetCookie = getCookie;
+
+  // Pass jb_ref to GHL hidden field via iframe src URL param
+  // GHL supports pre-filling fields via ?fieldname=value in the embed URL
+  var refVal = getCookie('jb_ref');
+  if (refVal) {
+    var iframe = document.getElementById('inline-XxPj5Eq6Xfqr187Dmsev');
+    if (iframe) {
+      var base = 'https://api.leadconnectorhq.com/widget/form/XxPj5Eq6Xfqr187Dmsev';
+      iframe.src = base + '?jb_ref=' + encodeURIComponent(refVal);
+    }
+  }
 })();
 
 // GHL postMessage — cache applicant data to sessionStorage so /book can pre-fill
