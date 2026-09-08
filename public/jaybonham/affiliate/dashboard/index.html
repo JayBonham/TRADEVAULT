@@ -268,10 +268,25 @@ function render(d) {
 
   var tbody = document.getElementById('events-body');
   var events = d.events || [];
-  if (!events.length) {
+
+  // De-duplicate by email: show only the highest funnel stage per person
+  // optin → call_booked → purchased (each supersedes the previous)
+  var RANK = {optin: 1, call_booked: 2, purchased: 3};
+  var byEmail = {};
+  events.forEach(function(ev) {
+    var key = ev.visitor_email || ('noemail_' + ev.id);
+    if (!byEmail[key] || (RANK[ev.event_type] || 0) > (RANK[byEmail[key].event_type] || 0)) {
+      byEmail[key] = ev;
+    }
+  });
+  var displayEvents = Object.values(byEmail).sort(function(a, b) {
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  if (!displayEvents.length) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="6">NO ACTIVITY YET</td></tr>';
   } else {
-    tbody.innerHTML = events.map(function(ev) {
+    tbody.innerHTML = displayEvents.map(function(ev) {
       var typeBadge = ev.event_type === 'optin' ? '<span class="badge badge-optin">Opt-in</span>'
                     : ev.event_type === 'call_booked' ? '<span class="badge badge-call">Call</span>'
                     : '<span class="badge badge-purchase">Purchase</span>';
