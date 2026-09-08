@@ -1000,25 +1000,40 @@ function scrollToApply() {
 
 // GHL postMessage — cache applicant data to sessionStorage so /book can pre-fill
 // Also fires affiliate optin event
+var _affOptinFired = false;
 window.addEventListener('message', function(e) {
   try {
     var d = e.data;
     if (!d) return;
-    // GHL fires various message shapes on form submit — try to catch any that carry contact data
-    var contact = d.contact || d.data || d.payload || d;
-    var firstName = contact.firstName || contact.first_name || '';
+
+    // Detect form submission — GHL fires various shapes
+    var isSubmit = (
+      d.type === 'form_submitted' || d.type === 'FORM_SUBMITTED' ||
+      d.event === 'form_submitted' || d.event === 'form-submitted' ||
+      d.action === 'form_submitted' ||
+      (typeof d.formId !== 'undefined') ||
+      (typeof d.form_id !== 'undefined')
+    );
+
+    // Extract contact data from all known GHL message shapes
+    var contact = d.contact || (d.data && d.data.contact) || d.data || d.payload || d.formData || d;
+    var firstName = contact.firstName || contact.first_name || contact.name || '';
     var lastName  = contact.lastName  || contact.last_name  || '';
-    var email     = contact.email     || '';
-    var phone     = contact.phone     || contact.phone_raw  || '';
+    var email     = contact.email     || d.email || '';
+    var phone     = contact.phone     || contact.phone_raw  || d.phone || '';
+
+    // Cache to sessionStorage if we got useful data
     if (email || firstName) {
       sessionStorage.setItem('jb_applicant', JSON.stringify({firstName:firstName,lastName:lastName,email:email,phone:phone}));
-      // Affiliate optin tracking
-      var ref = window._jbGetCookie ? window._jbGetCookie('jb_ref') : '';
-      if (ref && email) {
-        fetch('/api/aff?action=event', {method:'POST', headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({type:'optin', email:email, ref_code:ref, name:(firstName+' '+lastName).trim()})
-        }).catch(function(){});
-      }
+    }
+
+    // Fire affiliate optin — on explicit submit event OR on first message with email
+    var ref = window._jbGetCookie ? window._jbGetCookie('jb_ref') : '';
+    if (ref && !_affOptinFired && (isSubmit || email)) {
+      _affOptinFired = true; // fire once per page load
+      fetch('/api/aff?action=event', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({type:'optin', email:email || 'unknown', ref_code:ref, name:(firstName+' '+lastName).trim()})
+      }).catch(function(){});
     }
   } catch(err) {}
 });

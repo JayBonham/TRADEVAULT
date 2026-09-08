@@ -230,7 +230,7 @@ function render(d) {
   document.getElementById('content').style.display = 'block';
 
   var code = d.code || '';
-  var refUrl = 'https://jaybonham.com?ref=' + code;
+  var refUrl = 'https://jaybonham.com/apply?ref=' + code;
   document.getElementById('nav-email').textContent = d.email || '';
   document.getElementById('ref-url').textContent = refUrl;
   document.getElementById('qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=' + encodeURIComponent(refUrl) + '&color=4B9EFF&bgcolor=06080B&margin=4';
@@ -316,7 +316,7 @@ fetch('/api/aff?action=me', {credentials: 'same-origin'})
 document.getElementById('btn-copy').addEventListener('click', function() {
   var btn = this;
   if (!DATA) return;
-  var url = 'https://jaybonham.com?ref=' + DATA.code;
+  var url = 'https://jaybonham.com/apply?ref=' + DATA.code;
   navigator.clipboard.writeText(url).then(function() {
     btn.textContent = 'Copied!'; btn.classList.add('copied');
     setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
