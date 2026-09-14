@@ -39,15 +39,15 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .optin-btn:hover{box-shadow:0 12px 36px rgba(75,158,255,.4);transform:translateY(-1px)}
 
 /* ── 3-D BOOK ── */
-.book-scene{perspective:1100px;perspective-origin:52% 45%;display:flex;justify-content:center;align-items:center;padding:40px 20px 60px}
+.book-scene{perspective:1100px;perspective-origin:52% 45%;display:flex;justify-content:center;align-items:center;padding:20px 0 40px}
 .book-3d{
   position:relative;
-  width:250px;
-  height:348px;
+  width:320px;
+  height:448px;
   transform-style:preserve-3d;
   transform:rotateY(-28deg) rotateX(4deg);
   animation:bookfloat 6s ease-in-out infinite;
-  filter:drop-shadow(0 50px 60px rgba(0,0,0,.7)) drop-shadow(0 8px 20px rgba(75,158,255,.14));
+  filter:drop-shadow(0 50px 70px rgba(0,0,0,.75)) drop-shadow(0 10px 24px rgba(75,158,255,.16));
 }
 /* front cover */
 .book-front{
@@ -60,7 +60,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 /* right pages edge */
 .book-pages{
-  position:absolute;top:1px;right:0;width:24px;height:calc(100% - 2px);
+  position:absolute;top:1px;right:0;width:28px;height:calc(100% - 2px);
   transform-origin:left center;
   transform:rotateY(90deg) translateZ(0);
   background:repeating-linear-gradient(
@@ -74,7 +74,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 }
 /* spine */
 .book-spine{
-  position:absolute;top:0;left:0;width:24px;height:100%;
+  position:absolute;top:0;left:0;width:28px;height:100%;
   transform-origin:right center;
   transform:rotateY(-90deg);
   background:linear-gradient(to right,#020407 0%,#07101C 60%,#0B1828 100%);
@@ -104,6 +104,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .stat-cell{padding:clamp(20px,3vw,30px) clamp(14px,2.5vw,28px);border-right:1px solid rgba(255,255,255,.07)}
 .stat-cell:last-child{border-right:none}
 
+@media(max-width:1080px){
+  #hero-grid{grid-template-columns:1fr 400px!important}
+}
 @media(max-width:920px){
   #hero-grid{grid-template-columns:1fr!important}
   .book-scene{padding:0 20px 24px}
@@ -163,7 +166,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
         Hedge Fund Manager · KNF Regulated · $20M+ AUM
       </div>
 
-      <div id="hero-grid" style="display:grid;grid-template-columns:1fr 440px;gap:clamp(40px,6vw,80px);align-items:center">
+      <div id="hero-grid" style="display:grid;grid-template-columns:1fr 500px;gap:clamp(32px,5vw,64px);align-items:center">
 
         <!-- LEFT: copy + form -->
         <div>
@@ -232,34 +235,34 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
                 <div style="position:relative;z-index:1;padding:24px 22px;height:100%;display:flex;flex-direction:column">
 
                   <!-- top row -->
-                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
                     <div style="display:flex;align-items:baseline;gap:3px">
-                      <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;color:#F2F5F7">J</span><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;color:#4B9EFF">B</span>
+                      <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;color:#F2F5F7">J</span><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:22px;color:#4B9EFF">B</span>
                     </div>
-                    <div style="border:1px solid rgba(75,158,255,.32);padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:6.5px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">FREE</div>
+                    <div style="border:1px solid rgba(75,158,255,.32);padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">FREE</div>
                   </div>
 
                   <!-- headline block -->
                   <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
-                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.88;text-transform:uppercase;color:#F2F5F7">5 RULES</div>
-                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.88;text-transform:uppercase;color:#F2F5F7">TO TRADE</div>
-                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.88;text-transform:uppercase;color:#4B9EFF;margin-bottom:18px">LIKE A SNIPER</div>
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:.86;text-transform:uppercase;color:#F2F5F7">5 RULES</div>
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:.86;text-transform:uppercase;color:#F2F5F7">TO TRADE</div>
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:.86;text-transform:uppercase;color:#4B9EFF;margin-bottom:22px">LIKE A SNIPER</div>
 
-                    <div style="height:1px;background:rgba(75,158,255,.22);margin-bottom:14px"></div>
+                    <div style="height:1px;background:rgba(75,158,255,.22);margin-bottom:16px"></div>
 
-                    <div style="display:flex;flex-direction:column;gap:6px">
-                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">01</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Precision Over Frequency</span></div>
-                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">02</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Define Your Risk First</span></div>
-                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">03</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Size Correctly or Don't Trade</span></div>
-                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">04</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Losses Are Data, Not Disasters</span></div>
-                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">05</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Your Edge Is In Your Execution</span></div>
+                    <div style="display:flex;flex-direction:column;gap:9px">
+                      <div style="display:flex;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#4B9EFF;flex:none;width:18px">01</span><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.45)">Precision Over Frequency</span></div>
+                      <div style="display:flex;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#4B9EFF;flex:none;width:18px">02</span><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.45)">Define Your Risk First</span></div>
+                      <div style="display:flex;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#4B9EFF;flex:none;width:18px">03</span><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.45)">Size Correctly or Don't Trade</span></div>
+                      <div style="display:flex;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#4B9EFF;flex:none;width:18px">04</span><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.45)">Losses Are Data, Not Disasters</span></div>
+                      <div style="display:flex;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#4B9EFF;flex:none;width:18px">05</span><span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:rgba(255,255,255,.45)">Your Edge Is In Your Execution</span></div>
                     </div>
                   </div>
 
                   <!-- author footer -->
-                  <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:12px;margin-top:10px">
-                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#F2F5F7">JAY BONHAM</div>
-                    <div style="font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-top:2px">Precision Under Pressure</div>
+                  <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:14px;margin-top:12px">
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#F2F5F7">JAY BONHAM</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-top:3px">Precision Under Pressure</div>
                   </div>
                 </div>
               </div>
