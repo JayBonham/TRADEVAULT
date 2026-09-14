@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Trading Playbook — Jay Bonham</title>
+<meta name="description" content="5 Rules to Trade Like a Sniper — free PDF playbook from hedge fund manager Jay Bonham. Download now.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' letter-spacing='-2'%3E%3Ctspan fill='%23F2F5F7'%3EJ%3C/tspan%3E%3Ctspan fill='%234B9EFF'%3EB%3C/tspan%3E%3C/text%3E%3Cpolyline points='13,45 22,41 30,44 44,33' fill='none' stroke='%234B9EFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<!-- Meta Pixel -->
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth}
+body{margin:0;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;overflow-x:hidden}
+::selection{background:#4B9EFF;color:#06080B}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+@keyframes jbmarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes jbblink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes bookfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes jbrise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ── NAV ── */
+#jb-nav{transition:background .35s,border-color .35s;border-bottom:1px solid transparent}
+#jb-nav.scrolled{background:rgba(6,8,11,.92);backdrop-filter:blur(14px);border-color:rgba(255,255,255,.08)}
+
+/* ── FORM ── */
+.optin-box{background:rgba(75,158,255,.04);border:1px solid rgba(75,158,255,.18);padding:28px 24px}
+.optin-input{width:100%;background:#06080B;border:1px solid rgba(255,255,255,.13);color:#F2F5F7;font-family:'Archivo',sans-serif;font-size:15px;padding:14px 16px;outline:none;transition:border-color .2s;display:block;margin-bottom:10px}
+.optin-input:focus{border-color:#4B9EFF}
+.optin-btn{width:100%;padding:16px;background:#4B9EFF;color:#030D1F;border:none;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:box-shadow .2s,transform .15s}
+.optin-btn:hover{box-shadow:0 12px 36px rgba(75,158,255,.4);transform:translateY(-1px)}
+
+/* ── 3-D BOOK ── */
+.book-scene{perspective:1100px;perspective-origin:52% 45%;display:flex;justify-content:center;align-items:center;padding:40px 20px 60px}
+.book-3d{
+  position:relative;
+  width:250px;
+  height:348px;
+  transform-style:preserve-3d;
+  transform:rotateY(-28deg) rotateX(4deg);
+  animation:bookfloat 6s ease-in-out infinite;
+  filter:drop-shadow(0 50px 60px rgba(0,0,0,.7)) drop-shadow(0 8px 20px rgba(75,158,255,.14));
+}
+/* front cover */
+.book-front{
+  position:absolute;inset:0;
+  background:linear-gradient(155deg,#0D1828 0%,#06080B 70%);
+  border:1px solid rgba(75,158,255,.26);
+  overflow:hidden;
+  transform:translateZ(12px);
+  backface-visibility:hidden;
+}
+/* right pages edge */
+.book-pages{
+  position:absolute;top:1px;right:0;width:24px;height:calc(100% - 2px);
+  transform-origin:left center;
+  transform:rotateY(90deg) translateZ(0);
+  background:repeating-linear-gradient(
+    to bottom,
+    #e9e3d9 0px,#e9e3d9 1.5px,
+    #d5ccbf 1.5px,#d5ccbf 2.5px,
+    #e9e3d9 2.5px,#e9e3d9 4px
+  );
+  border-top:1px solid #c8bfb2;
+  border-bottom:1px solid #c8bfb2;
+}
+/* spine */
+.book-spine{
+  position:absolute;top:0;left:0;width:24px;height:100%;
+  transform-origin:right center;
+  transform:rotateY(-90deg);
+  background:linear-gradient(to right,#020407 0%,#07101C 60%,#0B1828 100%);
+  border-right:1px solid rgba(75,158,255,.1);
+  display:flex;align-items:center;justify-content:center;
+}
+.book-spine-text{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  transform:rotate(180deg);
+  font-family:'Saira Condensed',sans-serif;
+  font-weight:800;
+  font-size:9px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:rgba(75,158,255,.4);
+  white-space:nowrap;
+}
+
+/* ── RULE LIST ── */
+.rule-row{display:flex;gap:20px;align-items:flex-start;padding:28px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.rule-row:last-child{border-bottom:none}
+.rule-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:48px;line-height:1;color:rgba(75,158,255,.13);flex:none;width:52px;text-align:right;margin-top:-4px}
+
+/* ── STAT STRIP ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.07);background:#080B0F}
+.stat-cell{padding:clamp(20px,3vw,30px) clamp(14px,2.5vw,28px);border-right:1px solid rgba(255,255,255,.07)}
+.stat-cell:last-child{border-right:none}
+
+@media(max-width:920px){
+  #hero-grid{grid-template-columns:1fr!important}
+  .book-scene{padding:0 20px 24px}
+  .book-3d{transform:rotateY(-18deg) rotateX(2deg)}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .stat-cell{border-bottom:1px solid rgba(255,255,255,.07)}
+  #bio-grid{grid-template-columns:1fr!important}
+  #jb-nav-cta{display:none!important}
+}
+@media(max-width:580px){
+  .rule-n{font-size:34px;width:38px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .book-3d{width:210px;height:292px}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .book-3d{animation:none}
+  @keyframes jbmarquee{from{transform:none}to{transform:none}}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav id="jb-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:68px;padding:0 clamp(18px,4vw,56px)">
+  <a href="https://jaybonham.com" style="display:flex;align-items:center;gap:11px">
+    <svg width="32" height="32" viewBox="0 0 56 56" fill="none" style="flex:none">
+      <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+      <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/>
+    </svg>
+    <div style="line-height:1">
+      <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:.17em;text-transform:uppercase">JAY BONHAM</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.28em;color:#58E9FF;text-transform:uppercase;margin-top:3px">Precision Under Pressure</div>
+    </div>
+  </a>
+  <button id="jb-nav-cta" onclick="scrollToForm()" style="display:inline-flex;align-items:center;gap:8px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:10px 18px;transition:opacity .2s" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Download Free →</button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section style="position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden">
+
+  <!-- background photo — same as VSL -->
+  <img src="../assets/raw/ev-3.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:72% 28%;filter:contrast(1.08) saturate(.75)" aria-hidden="true">
+  <!-- overlays -->
+  <div style="position:absolute;inset:0;background:rgba(6,8,11,.82)"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,#06080B 0%,transparent 14%,transparent 80%,#06080B 100%)"></div>
+  <!-- grid -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.03) 1px,transparent 1px);background-size:60px 60px"></div>
+
+  <div style="position:relative;z-index:5;width:100%;padding:90px clamp(18px,4vw,56px) 48px">
+    <div style="max-width:1160px;margin:0 auto">
+
+      <!-- trust pill -->
+      <div class="reveal" style="display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(75,158,255,.22);padding:6px 14px;margin-bottom:32px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">
+        <span style="width:6px;height:6px;border-radius:50%;background:#4B9EFF;flex:none;animation:jbblink 2.2s infinite"></span>
+        Hedge Fund Manager · KNF Regulated · $20M+ AUM
+      </div>
+
+      <div id="hero-grid" style="display:grid;grid-template-columns:1fr 440px;gap:clamp(40px,6vw,80px);align-items:center">
+
+        <!-- LEFT: copy + form -->
+        <div>
+          <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+            <span style="width:26px;height:1px;background:rgba(88,233,255,.5)"></span>Free Download
+          </div>
+
+          <h1 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(52px,7.5vw,96px);line-height:.86;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance">
+            5 RULES TO<br>TRADE LIKE<br><span style="color:#4B9EFF">A SNIPER</span>
+          </h1>
+
+          <p class="reveal" style="font-size:clamp(14px,1.4vw,16px);line-height:1.68;color:#9AA4B0;margin:0 0 32px;max-width:44ch">
+            The non-negotiable principles behind Jay's hedge fund trading system — free. No fluff, no theory. Just the rules applied to every single trade at $20M+ AUM.
+          </p>
+
+          <!-- FORM -->
+          <div id="optin-form" class="reveal optin-box">
+            <!--
+            ══════════════════════════════════════
+            PASTE GHL EMBED CODE HERE
+            Replace this entire comment + the
+            placeholder inputs below with your
+            GHL iframe or form embed snippet
+            ══════════════════════════════════════
+            -->
+            <input class="optin-input" type="text" placeholder="First name">
+            <input class="optin-input" type="email" placeholder="Email address">
+            <button class="optin-btn">Send Me The Free PDF →</button>
+            <p style="margin:12px 0 0;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,.2);text-transform:uppercase;text-align:center">No spam · Unsubscribe anytime</p>
+          </div>
+
+          <div class="reveal" style="margin-top:13px;display:flex;align-items:center;gap:9px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#2E3A46;text-transform:uppercase">
+            <svg width="11" height="11" viewBox="0 0 20 20" fill="none"><path d="M10 2l1.9 5.8H18l-4.9 3.6 1.9 5.8L10 13.6l-5 3.6 1.9-5.8L2 8.8h6.1L10 2z" stroke="#4B9EFF" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            After download, you'll be taken to our free strategy session
+          </div>
+        </div>
+
+        <!-- RIGHT: 3D BOOK MOCKUP -->
+        <div class="reveal">
+          <div class="book-scene">
+            <div class="book-3d">
+
+              <!-- SPINE (left face) -->
+              <div class="book-spine">
+                <span class="book-spine-text">JAY BONHAM · 5 RULES</span>
+              </div>
+
+              <!-- PAGES (right face) -->
+              <div class="book-pages"></div>
+
+              <!-- FRONT COVER -->
+              <div class="book-front">
+                <!-- inner grid -->
+                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.04) 1px,transparent 1px);background-size:24px 24px"></div>
+                <!-- diagonal accent -->
+                <div style="position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 120px 120px 0;border-color:transparent rgba(75,158,255,.06) transparent transparent"></div>
+                <!-- corner marks -->
+                <div style="position:absolute;top:10px;left:10px;width:11px;height:11px;border-left:1.5px solid rgba(75,158,255,.4);border-top:1.5px solid rgba(75,158,255,.4)"></div>
+                <div style="position:absolute;top:10px;right:10px;width:11px;height:11px;border-right:1.5px solid rgba(75,158,255,.4);border-top:1.5px solid rgba(75,158,255,.4)"></div>
+                <div style="position:absolute;bottom:10px;left:10px;width:11px;height:11px;border-left:1.5px solid rgba(75,158,255,.4);border-bottom:1.5px solid rgba(75,158,255,.4)"></div>
+                <div style="position:absolute;bottom:10px;right:10px;width:11px;height:11px;border-right:1.5px solid rgba(75,158,255,.4);border-bottom:1.5px solid rgba(75,158,255,.4)"></div>
+                <!-- ghost 5 -->
+                <div style="position:absolute;right:-12px;top:6px;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:200px;line-height:1;color:rgba(75,158,255,.05);pointer-events:none;user-select:none">5</div>
+
+                <!-- content -->
+                <div style="position:relative;z-index:1;padding:24px 22px;height:100%;display:flex;flex-direction:column">
+
+                  <!-- top row -->
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                    <div style="display:flex;align-items:baseline;gap:3px">
+                      <span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;color:#F2F5F7">J</span><span style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:17px;color:#4B9EFF">B</span>
+                    </div>
+                    <div style="border:1px solid rgba(75,158,255,.32);padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:6.5px;letter-spacing:.18em;text-transform:uppercase;color:#58E9FF">FREE</div>
+                  </div>
+
+                  <!-- headline block -->
+                  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.88;text-transform:uppercase;color:#F2F5F7">5 RULES</div>
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.88;text-transform:uppercase;color:#F2F5F7">TO TRADE</div>
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:36px;line-height:.88;text-transform:uppercase;color:#4B9EFF;margin-bottom:18px">LIKE A SNIPER</div>
+
+                    <div style="height:1px;background:rgba(75,158,255,.22);margin-bottom:14px"></div>
+
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">01</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Precision Over Frequency</span></div>
+                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">02</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Define Your Risk First</span></div>
+                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">03</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Size Correctly or Don't Trade</span></div>
+                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">04</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Losses Are Data, Not Disasters</span></div>
+                      <div style="display:flex;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:#4B9EFF;flex:none;width:14px">05</span><span style="font-family:'IBM Plex Mono',monospace;font-size:6.5px;color:rgba(255,255,255,.42)">Your Edge Is In Your Execution</span></div>
+                    </div>
+                  </div>
+
+                  <!-- author footer -->
+                  <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:12px;margin-top:10px">
+                    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#F2F5F7">JAY BONHAM</div>
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:6px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-top:2px">Precision Under Pressure</div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /book-3d -->
+          </div><!-- /book-scene -->
+        </div>
+
+      </div><!-- /hero-grid -->
+
+      <!-- scroll hint -->
+      <div style="display:flex;justify-content:center;padding-top:clamp(28px,5vh,52px)">
+        <button onclick="document.getElementById('learn').scrollIntoView({behavior:'smooth'})" style="display:flex;flex-direction:column;align-items:center;gap:7px;opacity:.28;transition:opacity .2s;background:none;border:none;cursor:pointer" onmouseover="this.style.opacity='.6'" onmouseout="this.style.opacity='.28'">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:#F2F5F7">Scroll</span>
+          <svg width="14" height="9" viewBox="0 0 14 9" fill="none"><path d="M1 1l6 6 6-6" stroke="#F2F5F7" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MARQUEE ===== -->
+<div style="border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);overflow:hidden;background:#040608">
+  <div style="display:flex;width:max-content;animation:jbmarquee 30s linear infinite;padding:13px 0" aria-hidden="true">
+    <div style="display:flex;align-items:center;gap:30px;padding-right:30px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.08em;color:#1E2830">
+      <span>5 Rules</span><span style="color:#4B9EFF">/</span><span>Precision</span><span style="color:#4B9EFF">/</span><span>Risk Management</span><span style="color:#4B9EFF">/</span><span>Discipline</span><span style="color:#4B9EFF">/</span><span>Execution</span><span style="color:#4B9EFF">/</span><span>Mindset</span><span style="color:#4B9EFF">/</span><span>Consistency</span><span style="color:#4B9EFF">/</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:30px;padding-right:30px;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.08em;color:#1E2830">
+      <span>5 Rules</span><span style="color:#4B9EFF">/</span><span>Precision</span><span style="color:#4B9EFF">/</span><span>Risk Management</span><span style="color:#4B9EFF">/</span><span>Discipline</span><span style="color:#4B9EFF">/</span><span>Execution</span><span style="color:#4B9EFF">/</span><span>Mindset</span><span style="color:#4B9EFF">/</span><span>Consistency</span><span style="color:#4B9EFF">/</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WHAT YOU'LL LEARN ===== -->
+<section id="learn" style="padding:clamp(80px,12vh,130px) clamp(18px,4vw,56px)">
+  <div style="max-width:940px;margin:0 auto">
+    <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <span style="width:30px;height:1px;background:rgba(88,233,255,.5)"></span>What You'll Learn
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(38px,6vw,72px);line-height:.9;letter-spacing:-.01em;margin:0 0 52px;text-wrap:balance">
+      Inside the<br><span style="color:#4B9EFF">5-Rule Playbook</span>
+    </h2>
+
+    <div class="reveal">
+      <div class="rule-row">
+        <div class="rule-n">01</div>
+        <div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.8vw,30px);line-height:.95;margin:0 0 8px">Precision Over Frequency</h3>
+          <p style="font-size:14px;line-height:1.7;color:#7A8590;margin:0">A sniper doesn't fire at noise. Learn why fewer, higher-conviction trades destroy the performance of high-frequency approaches — and how to build the patience most traders never develop.</p>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-n">02</div>
+        <div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.8vw,30px);line-height:.95;margin:0 0 8px">Define Your Risk First</h3>
+          <p style="font-size:14px;line-height:1.7;color:#7A8590;margin:0">The difference between a professional and a gambler: the professional knows exactly where they're wrong before they enter. This rule ends the habit of "hoping it comes back."</p>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-n">03</div>
+        <div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.8vw,30px);line-height:.95;margin:0 0 8px">Size Correctly or Don't Trade</h3>
+          <p style="font-size:14px;line-height:1.7;color:#7A8590;margin:0">Position sizing is the most underrated skill in trading. One wrong size on an otherwise good trade sets you back weeks. Learn the exact framework Jay uses across all his accounts.</p>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-n">04</div>
+        <div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.8vw,30px);line-height:.95;margin:0 0 8px">Losses Are Data, Not Disasters</h3>
+          <p style="font-size:14px;line-height:1.7;color:#7A8590;margin:0">Every professional loses. What separates them is what happens after. This rule covers the exact mental reset protocol that stops revenge trading — the single biggest account-killer in retail.</p>
+        </div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-n" style="color:rgba(75,158,255,.28)">05</div>
+        <div>
+          <h3 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.8vw,30px);line-height:.95;margin:0 0 8px;color:#4B9EFF">Your Edge Is In Your Execution</h3>
+          <p style="font-size:14px;line-height:1.7;color:#7A8590;margin:0">The strategy isn't the problem. Inconsistent execution is. Rule 05 covers what professional-grade execution actually looks like — and the daily process that protects your edge every session.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:52px;display:flex;flex-direction:column;align-items:center;gap:14px">
+      <button onclick="scrollToForm()" style="display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:16px 44px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 36px rgba(75,158,255,.38)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Get The Free PDF →</button>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.18)">Free · Instant access · No credit card</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STAT STRIP ===== -->
+<div class="stat-grid">
+  <div class="stat-cell reveal">
+    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(28px,4vw,46px);line-height:1;color:#4B9EFF">$20M+</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650;margin-top:5px">AUM Managed</div>
+  </div>
+  <div class="stat-cell reveal">
+    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(28px,4vw,46px);line-height:1;color:#4B9EFF">500+</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650;margin-top:5px">Mentorship Clients</div>
+  </div>
+  <div class="stat-cell reveal">
+    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(28px,4vw,46px);line-height:1;color:#4B9EFF">10K+</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650;margin-top:5px">Traders in Network</div>
+  </div>
+  <div class="stat-cell reveal">
+    <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(28px,4vw,46px);line-height:1;color:#4B9EFF">KNF</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#3C4650;margin-top:5px">Regulated Fund</div>
+  </div>
+</div>
+
+<!-- ===== ABOUT JAY ===== -->
+<section style="padding:clamp(80px,12vh,130px) clamp(18px,4vw,56px);background:#06080B">
+  <div style="max-width:1100px;margin:0 auto">
+    <div id="bio-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,80px);align-items:center">
+
+      <!-- PHOTO — real asset from site -->
+      <div class="reveal" style="position:relative;overflow:hidden">
+        <img src="../assets/raw/headshot-cover.png" alt="Jay Bonham" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:30% 15%;display:block;filter:grayscale(.12) contrast(1.06)">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(6,8,11,.95) 100%)"></div>
+        <div style="position:absolute;top:16px;left:16px;width:18px;height:18px;border-left:2px solid rgba(75,158,255,.5);border-top:2px solid rgba(75,158,255,.5)"></div>
+        <div style="position:absolute;top:16px;right:16px;width:18px;height:18px;border-right:2px solid rgba(75,158,255,.5);border-top:2px solid rgba(75,158,255,.5)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:24px">
+          <div style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:22px;letter-spacing:.04em">Jay Bonham</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:#58E9FF;margin-top:4px">Hedge Fund Manager</div>
+        </div>
+      </div>
+
+      <!-- COPY -->
+      <div class="reveal">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px;display:flex;align-items:center;gap:12px">
+          <span style="width:26px;height:1px;background:rgba(88,233,255,.5)"></span>About Jay
+        </div>
+        <h2 style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(30px,4.5vw,54px);line-height:.9;margin:0 0 22px;text-wrap:balance">
+          He doesn't teach theory.<br><span style="color:#4B9EFF">He runs the playbook.</span>
+        </h2>
+        <p style="font-size:15px;line-height:1.72;color:#9AA4B0;margin:0 0 18px">
+          Jay Bonham is a KNF-regulated hedge fund manager based in Warsaw, managing $20M+ in assets. He's a Liquidity Provider, has personally mentored 500+ traders, and built a trading network of over 10,000 members.
+        </p>
+        <p style="font-size:15px;line-height:1.72;color:#9AA4B0;margin:0 0 32px">
+          These 5 rules aren't motivational content. They're the exact principles applied to every managed account — condensed into a free playbook so you have zero excuses.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:36px">
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="color:#4B9EFF;flex:none;margin-top:2px">→</span><span style="font-size:14px;color:#C3CBD3">Hedge Fund Manager · $20M+ AUM actively managed</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="color:#4B9EFF;flex:none;margin-top:2px">→</span><span style="font-size:14px;color:#C3CBD3">KNF Regulated Fund · Institutional-grade compliance</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="color:#4B9EFF;flex:none;margin-top:2px">→</span><span style="font-size:14px;color:#C3CBD3">3 proprietary market scanners built and running live</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="color:#4B9EFF;flex:none;margin-top:2px">→</span><span style="font-size:14px;color:#C3CBD3">500+ personal mentorship clients since 2019</span></div>
+        </div>
+        <button onclick="scrollToForm()" style="display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:14px 30px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 10px 32px rgba(75,158,255,.36)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Get The Free PDF →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CINEMATIC BREAK (ev-5.jpg) ===== -->
+<section style="position:relative;min-height:clamp(320px,45vh,520px);display:flex;align-items:center;overflow:hidden">
+  <img src="../assets/raw/ev-5.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:60% 35%;filter:contrast(1.06) brightness(.86)" aria-hidden="true">
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,8,11,.94) 0%,rgba(6,8,11,.45) 55%,rgba(6,8,11,.15) 100%)"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(0deg,#06080B 0%,transparent 30%)"></div>
+  <div style="position:relative;z-index:5;width:100%;max-width:1100px;margin:0 auto;padding:0 clamp(18px,4vw,56px)">
+    <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#58E9FF;margin-bottom:18px;display:flex;align-items:center;gap:12px">
+      <span style="width:24px;height:1px;background:#58E9FF"></span>The Philosophy
+    </div>
+    <blockquote class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(28px,5vw,64px);line-height:.93;margin:0 0 16px;max-width:22ch;text-wrap:balance">
+      "Markets don't care how you feel. Your job is to<br><span style="color:#4B9EFF">show up the same every day."</span>
+    </blockquote>
+    <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#3C4650">— Jay Bonham</div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section style="padding:clamp(80px,12vh,120px) clamp(18px,4vw,56px);background:linear-gradient(180deg,#06080B 0%,#07101A 100%);border-top:1px solid rgba(75,158,255,.1);text-align:center">
+  <div style="max-width:720px;margin:0 auto">
+    <div class="reveal" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#58E9FF;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:12px">
+      <span style="width:26px;height:1px;background:rgba(88,233,255,.5)"></span>Ready?<span style="width:26px;height:1px;background:rgba(88,233,255,.5)"></span>
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(42px,7vw,82px);line-height:.88;margin:0 0 18px;text-wrap:balance">
+      Stop Guessing.<br><span style="color:#4B9EFF">Start Trading Right.</span>
+    </h2>
+    <p class="reveal" style="font-size:15px;line-height:1.68;color:#9AA4B0;margin:0 auto 36px;max-width:46ch">
+      Download the free playbook and get the 5 rules Jay applies to every trade across his hedge fund, LP desk, and mentorship program.
+    </p>
+    <div class="reveal" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+      <button onclick="scrollToForm()" style="display:inline-flex;align-items:center;gap:10px;background:#4B9EFF;color:#030D1F;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:18px 52px;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 14px 40px rgba(75,158,255,.42)'" onmouseout="this.style.transform='';this.style.boxShadow=''">Get The Free PDF →</button>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.18)">Free · 10 seconds · No spam</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer style="padding:clamp(22px,4vh,36px) clamp(18px,4vw,56px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#2E3A46">© 2024 Jay Bonham Trading Ltd</span>
+  <div style="display:flex;gap:22px">
+    <a href="/privacy" style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#2E3A46;transition:color .2s" onmouseover="this.style.color='#5C6672'" onmouseout="this.style.color='#2E3A46'">Privacy</a>
+    <a href="/terms" style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#2E3A46;transition:color .2s" onmouseover="this.style.color='#5C6672'" onmouseout="this.style.color='#2E3A46'">Terms</a>
+    <a href="/risk" style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#2E3A46;transition:color .2s" onmouseover="this.style.color='#5C6672'" onmouseout="this.style.color='#2E3A46'">Risk</a>
+    <a href="/apply" style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#4B9EFF;transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">Apply →</a>
+  </div>
+</footer>
+
+<script>
+function scrollToForm(){
+  document.getElementById('optin-form').scrollIntoView({behavior:'smooth',block:'center'});
+}
+// reveal on scroll
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}})
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+// flush above-fold on load
+setTimeout(()=>{
+  document.querySelectorAll('.reveal:not(.in)').forEach(el=>{
+    if(el.getBoundingClientRect().top<window.innerHeight*.95)el.classList.add('in');
+  });
+},60);
+// nav scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('jb-nav').classList.toggle('scrolled',scrollY>50);
+},{passive:true});
+</script>
+
+</body>
+</html>
