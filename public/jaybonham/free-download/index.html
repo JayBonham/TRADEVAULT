@@ -487,26 +487,7 @@ setTimeout(()=>{
 window.addEventListener('scroll',()=>{
   document.getElementById('jb-nav').classList.toggle('scrolled',scrollY>50);
 },{passive:true});
-// ── GHL form submit → fire Meta pixel Lead event (browser-side) ──────────
-var _jbLeadFired=false;
-window.addEventListener('message',function(e){
-  if(_jbLeadFired)return;
-  try{
-    var d=typeof e.data==='string'?JSON.parse(e.data):e.data;
-    var isSubmit=(
-      d.type==='formSubmitted'||d.type==='form_submitted'||
-      d.event==='formSubmit'||d.event==='form_submit'||
-      d.action==='form_submitted'||
-      (d.type==='gtm.formSubmit')||
-      (d.eventType==='formSubmitted')||
-      (d.type==='lcFormSubmitted')
-    );
-    if(isSubmit){
-      _jbLeadFired=true;
-      if(typeof fbq==='function'){fbq('track','Lead',{content_name:'PDF Download - 5 Rules'});}
-    }
-  }catch(ex){}
-});
+
 </script>
 
 </body>

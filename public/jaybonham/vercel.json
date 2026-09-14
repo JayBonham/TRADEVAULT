@@ -12,8 +12,7 @@
     "api/admin-lead.py":     { "maxDuration": 15 },
     "api/admin-send.py":     { "maxDuration": 15 },
     "api/admin-emails.py":   { "maxDuration": 15 },
-    "api/admin-inbox.py":    { "maxDuration": 15 },
-    "api/meta-capi.py":      { "maxDuration": 15 }
+    "api/admin-inbox.py":    { "maxDuration": 15 }
   },
   "redirects": [
     {
