@@ -33,14 +33,9 @@
   ],
   "rewrites": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "start.thetradevault.co" }],
-      "destination": "/tradevault/index.html"
-    },
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "start.thetradevault.co" }],
-      "destination": "/tradevault/:path*"
+      "destination": "/tradevault/$1"
     },
     {
       "source": "/api/:path*",
