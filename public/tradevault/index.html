@@ -339,10 +339,11 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
   .curric-top{flex-direction:column;align-items:flex-start}
 }
 @media(max-width:640px){
-  /* hero */
-  .hero-panels{grid-template-columns:1fr}
-  .hp:nth-child(2),.hp:nth-child(3),.hp:nth-child(4){display:none}
-  #hero{min-height:90vh}
+  /* hero — 2×2 grid on mobile */
+  .hero-panels{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
+  .hp:nth-child(2),.hp:nth-child(3),.hp:nth-child(4){display:block}
+  .hp-name{display:block;font-size:9px;letter-spacing:.14em;padding:6px 10px 7px}
+  #hero{min-height:100vh}
   .hero-h1{font-size:clamp(54px,14vw,80px)}
   .hero-p{font-size:14px;max-width:36ch}
   .hero-ctas .btn-p,.hero-ctas .btn-o{width:100%;justify-content:center;padding:15px 20px}
@@ -750,7 +751,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
       <!-- VIDEO LESSONS -->
       <div class="ct reveal">
         <div class="ct-img">
-          <img src="assets/jay-charts.jpg" alt="Educator teaching at trading desk">
+          <img src="assets/jay-charts.jpg" alt="Educator teaching at trading desk" loading="lazy">
           <div class="ct-img-overlay"></div>
           <!-- play badge -->
           <div style="position:absolute;bottom:16px;left:16px;display:flex;align-items:center;gap:10px;background:rgba(6,10,18,.8);backdrop-filter:blur(8px);border:1px solid rgba(75,158,255,.2);padding:7px 14px">
@@ -790,7 +791,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
       <!-- LIVE SESSIONS -->
       <div class="ct reveal d2">
         <div class="ct-img">
-          <img src="assets/jay-training.jpg" alt="Live trading session with Killshot signals" style="object-position:80% 0%">
+          <img src="assets/jay-training.jpg" alt="Live trading session with Killshot signals" loading="lazy" style="object-position:80% 0%">
           <div class="ct-img-overlay"></div>
           <div style="position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:7px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);padding:5px 12px">
             <span style="width:6px;height:6px;border-radius:50%;background:#EF4444;animation:blink 1.4s infinite;flex:none"></span>
@@ -862,17 +863,17 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
       </button>
       <div class="tslider-vp">
         <div class="tslider-track" id="ttrack">
-          <div class="tthumb" onclick="lbOpen(0)"><img src="assets/t1.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(1)"><img src="assets/t2.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(2)"><img src="assets/t3.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(3)"><img src="assets/t4.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(4)"><img src="assets/t5.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(5)"><img src="assets/t6.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(6)"><img src="assets/t7.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(7)"><img src="assets/t8.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(8)"><img src="assets/t9.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(9)"><img src="assets/t10.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(10)"><img src="assets/t11.jpg" alt=""><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(0)"><img src="assets/t1.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(1)"><img src="assets/t2.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(2)"><img src="assets/t3.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(3)"><img src="assets/t4.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(4)"><img src="assets/t5.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(5)"><img src="assets/t6.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(6)"><img src="assets/t7.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(7)"><img src="assets/t8.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(8)"><img src="assets/t9.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(9)"><img src="assets/t10.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="tthumb" onclick="lbOpen(10)"><img src="assets/t11.jpg" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
         </div>
       </div>
       <button class="tslider-btn tslider-next" id="tbtnNext" onclick="tSlide(1)">
