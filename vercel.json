@@ -33,6 +33,16 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "start\\.thetradevault\\.co" }],
+      "destination": "/tradevault/index.html"
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "start\\.thetradevault\\.co" }],
+      "destination": "/tradevault/:path*"
+    },
+    {
       "source": "/api/:path*",
       "has": [{ "type": "host", "value": "jaybonham.com" }],
       "destination": "/api/:path*"
