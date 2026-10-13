@@ -551,71 +551,8 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
     <div class="scan-grid">
       <!-- KILLSHOT -->
       <div class="scard ks reveal">
-        <div class="scan-mock">
-          <div class="scan-sweep"></div>
-          <div class="sm-bar">
-            <span class="sm-dot" style="background:#ef4444"></span>
-            <span class="sm-dot" style="background:#f59e0b"></span>
-            <span class="sm-dot" style="background:#22c55e"></span>
-            <span class="sm-title">Killshot · US30 · M5</span>
-            <span class="sm-live"><span class="sm-blink"></span>LIVE</span>
-          </div>
-          <!-- candlestick chart -->
-          <div class="sm-body" style="padding:10px 10px 0">
-            <svg class="chart-svg" viewBox="0 0 260 110" preserveAspectRatio="none">
-              <!-- POC line -->
-              <line x1="0" y1="62" x2="260" y2="62" class="poc-line"/>
-              <!-- EMA 50 -->
-              <polyline class="ema50" points="0,90 22,85 44,78 66,72 88,68 110,65 132,62 154,58 176,55 198,52 220,50 242,48 260,47"/>
-              <!-- EMA 20 -->
-              <polyline class="ema20" points="0,82 22,76 44,68 66,62 88,57 110,53 132,50 154,47 176,45 198,43 220,41 242,39 260,38"/>
-              <!-- candles -->
-              <!-- red candles -->
-              <rect x="4"  y="78" width="7" height="14" fill="#EF4444" rx="1"/>
-              <line x1="7.5"  y1="74" x2="7.5"  y2="96" stroke="#EF4444" stroke-width="1"/>
-              <rect x="15" y="74" width="7" height="11" fill="#EF4444" rx="1"/>
-              <line x1="18.5" y1="70" x2="18.5" y2="89" stroke="#EF4444" stroke-width="1"/>
-              <!-- green candles -->
-              <rect x="26" y="68" width="7" height="10" fill="#22C55E" rx="1"/>
-              <line x1="29.5" y1="64" x2="29.5" y2="82" stroke="#22C55E" stroke-width="1"/>
-              <rect x="37" y="64" width="7" height="8" fill="#22C55E" rx="1"/>
-              <line x1="40.5" y1="60" x2="40.5" y2="76" stroke="#22C55E" stroke-width="1"/>
-              <rect x="48" y="70" width="7" height="12" fill="#EF4444" rx="1"/>
-              <line x1="51.5" y1="66" x2="51.5" y2="86" stroke="#EF4444" stroke-width="1"/>
-              <rect x="59" y="60" width="7" height="9" fill="#22C55E" rx="1"/>
-              <line x1="62.5" y1="56" x2="62.5" y2="73" stroke="#22C55E" stroke-width="1"/>
-              <rect x="70" y="55" width="7" height="10" fill="#22C55E" rx="1"/>
-              <line x1="73.5" y1="51" x2="73.5" y2="69" stroke="#22C55E" stroke-width="1"/>
-              <rect x="81" y="52" width="7" height="14" fill="#EF4444" rx="1"/>
-              <line x1="84.5" y1="48" x2="84.5" y2="70" stroke="#EF4444" stroke-width="1"/>
-              <rect x="92" y="46" width="7" height="9" fill="#22C55E" rx="1"/>
-              <line x1="95.5" y1="42" x2="95.5" y2="59" stroke="#22C55E" stroke-width="1"/>
-              <rect x="103" y="40" width="7" height="10" fill="#22C55E" rx="1"/>
-              <line x1="106.5" y1="36" x2="106.5" y2="54" stroke="#22C55E" stroke-width="1"/>
-              <rect x="114" y="38" width="7" height="12" fill="#EF4444" rx="1"/>
-              <line x1="117.5" y1="34" x2="117.5" y2="54" stroke="#EF4444" stroke-width="1"/>
-              <rect x="125" y="32" width="7" height="8" fill="#22C55E" rx="1"/>
-              <line x1="128.5" y1="28" x2="128.5" y2="44" stroke="#22C55E" stroke-width="1"/>
-              <!-- signal star marker at latest upswing -->
-              <polygon class="sig-star" points="128.5,20 130,24.5 134.5,24.5 131,27 132.5,32 128.5,29.5 124.5,32 126,27 122.5,24.5 127,24.5" opacity=".9"/>
-              <!-- more candles post-signal -->
-              <rect x="136" y="27" width="7" height="10" fill="#22C55E" rx="1"/>
-              <line x1="139.5" y1="23" x2="139.5" y2="41" stroke="#22C55E" stroke-width="1"/>
-              <rect x="147" y="22" width="7" height="8" fill="#22C55E" rx="1"/>
-              <line x1="150.5" y1="18" x2="150.5" y2="34" stroke="#22C55E" stroke-width="1"/>
-              <rect x="158" y="20" width="7" height="9" fill="#22C55E" rx="1"/>
-              <line x1="161.5" y1="16" x2="161.5" y2="33" stroke="#22C55E" stroke-width="1"/>
-            </svg>
-          </div>
-          <div class="sm-indicators">
-            <div class="sm-ind"><div class="sm-ind-l">EMA 20</div><div class="sm-ind-v blue">44,231</div></div>
-            <div class="sm-ind"><div class="sm-ind-l">EMA 50</div><div class="sm-ind-v blue">44,108</div></div>
-            <div class="sm-ind"><div class="sm-ind-l">POC</div><div class="sm-ind-v green">44,180</div></div>
-          </div>
-          <div class="sm-signal">
-            <span class="sm-signal-l">★ ★ ★ &nbsp;Signal detected</span>
-            <span class="sm-badge">BUY</span>
-          </div>
+        <div class="scan-mock" style="padding:0;background:#070D14">
+          <img src="assets/killshot-graphic.jpg" alt="Killshot Scanner interface" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block">
         </div>
         <div class="scard-body">
           <div class="scard-n">01 / 03</div>
