@@ -134,11 +134,14 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 #scanners{background:var(--bg1);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
 .scan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.06)}
 .scard{background:var(--bg2);display:flex;flex-direction:column;position:relative;overflow:hidden}
-/* Killshot floating laptop */
-.scard.ks{overflow:visible}
-.scard.ks .scan-mock{overflow:visible;border-bottom:none;background:linear-gradient(180deg,#070D14 0%,#0B1422 100%);padding:24px 16px 0;display:flex;align-items:flex-end;min-height:140px;position:relative;z-index:3}
-.scard.ks .scan-mock img{width:100%;height:auto;display:block;margin-bottom:-72px;filter:drop-shadow(0 20px 48px rgba(0,0,0,.85))}
-.scard.ks .scard-body{padding-top:84px;position:relative;z-index:2;background:var(--bg2)}
+/* Floating laptop — all scanner cards */
+.scard.ks,.scard.ss,.scard.sp{overflow:visible}
+.scard.ks .scan-mock,.scard.ss .scan-mock,.scard.sp .scan-mock{overflow:visible;border-bottom:none;padding:24px 16px 0;display:flex;align-items:flex-end;min-height:140px;position:relative;z-index:3}
+.scard.ks .scan-mock{background:linear-gradient(180deg,#070D14 0%,#0B1422 100%)}
+.scard.ss .scan-mock{background:linear-gradient(180deg,#0D0818 0%,#100C22 100%)}
+.scard.sp .scan-mock{background:linear-gradient(180deg,#070D14 0%,#0B1422 100%)}
+.scard.ks .scan-mock img,.scard.ss .scan-mock img,.scard.sp .scan-mock img{width:100%;height:auto;display:block;margin-bottom:-72px;filter:drop-shadow(0 20px 48px rgba(0,0,0,.85))}
+.scard.ks .scard-body,.scard.ss .scard-body,.scard.sp .scard-body{padding-top:84px;position:relative;z-index:2;background:var(--bg2)}
 /* top accent */
 .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .ks::before{background:linear-gradient(90deg,#2F6EE8,#38E8FF)}
@@ -570,48 +573,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
       <!-- SMARTSHOT -->
       <div class="scard ss reveal d1">
         <div class="scan-mock">
-          <div class="scan-sweep" style="animation-duration:4s;animation-delay:.8s"></div>
-          <div class="sm-bar">
-            <span class="sm-dot" style="background:#ef4444"></span>
-            <span class="sm-dot" style="background:#f59e0b"></span>
-            <span class="sm-dot" style="background:#22c55e"></span>
-            <span class="sm-title">Smartshot · GOLD · H4/M15</span>
-            <span class="sm-live"><span class="sm-blink"></span>LIVE</span>
-          </div>
-          <div class="sm-body" style="padding:10px 10px 0">
-            <svg class="chart-svg" viewBox="0 0 260 110" preserveAspectRatio="none">
-              <!-- supply zone -->
-              <rect class="sup-zone" x="0" y="10" width="260" height="22"/>
-              <text x="4" y="19" fill="#EF4444" font-family="monospace" font-size="7" opacity=".7">SUPPLY ZONE</text>
-              <!-- demand zone -->
-              <rect class="dem-zone" x="0" y="76" width="260" height="22"/>
-              <text x="4" y="85" fill="#2F6EE8" font-family="monospace" font-size="7" opacity=".7">DEMAND ZONE / OB</text>
-              <!-- structure levels -->
-              <line x1="0" y1="34" x2="180" y2="34" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-dasharray="5 3"/>
-              <text x="184" y="37" fill="rgba(255,255,255,.35)" font-family="monospace" font-size="7">HH</text>
-              <line x1="0" y1="55" x2="140" y2="55" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="5 3"/>
-              <text x="144" y="58" fill="rgba(255,255,255,.25)" font-family="monospace" font-size="7">HL</text>
-              <!-- BOS arrow -->
-              <text x="160" y="46" fill="#2F6EE8" font-family="monospace" font-size="8" font-weight="bold">BOS ↑</text>
-              <!-- price action coming up from OB -->
-              <polyline fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2" points="0,96 30,90 60,82 80,78 100,76 120,78 140,72 160,60 180,50 200,40 220,34 240,28 260,24"/>
-              <!-- current entry zone highlight -->
-              <rect x="195" y="78" width="65" height="22" fill="rgba(47,110,232,.2)" rx="1"/>
-              <text x="198" y="87" fill="#4B9EFF" font-family="monospace" font-size="7">A+ ENTRY ZONE</text>
-              <!-- entry arrow -->
-              <line x1="228" y1="78" x2="228" y2="55" stroke="var(--cyan)" stroke-width="1.2"/>
-              <polygon points="228,52 225,58 231,58" fill="var(--cyan)"/>
-            </svg>
-          </div>
-          <div class="sm-indicators">
-            <div class="sm-ind"><div class="sm-ind-l">Structure</div><div class="sm-ind-v green">BULLISH</div></div>
-            <div class="sm-ind"><div class="sm-ind-l">Setup</div><div class="sm-ind-v blue">A+</div></div>
-            <div class="sm-ind"><div class="sm-ind-l">R:R</div><div class="sm-ind-v green">1:3.2</div></div>
-          </div>
-          <div class="sm-signal">
-            <span class="sm-signal-l">OB confirmed · Order flow ↑</span>
-            <span class="sm-badge">LONG</span>
-          </div>
+          <img src="assets/smartshot-graphic.png" alt="Smartshot Scanner interface" loading="lazy">
         </div>
         <div class="scard-body">
           <div class="scard-n">02 / 03</div>
@@ -624,50 +586,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
       <!-- SPECTRUM -->
       <div class="scard sp reveal d2">
         <div class="scan-mock">
-          <div class="scan-sweep" style="animation-duration:3.6s;animation-delay:1.5s"></div>
-          <div class="sm-bar">
-            <span class="sm-dot" style="background:#ef4444"></span>
-            <span class="sm-dot" style="background:#f59e0b"></span>
-            <span class="sm-dot" style="background:#22c55e"></span>
-            <span class="sm-title">Spectrum · US30 · London</span>
-            <span class="sm-live"><span class="sm-blink"></span>LIVE</span>
-          </div>
-          <div class="sm-body" style="padding:10px 10px 0">
-            <svg class="chart-svg" viewBox="0 0 260 110" preserveAspectRatio="none">
-              <!-- session opening range -->
-              <rect x="0" y="38" width="260" height="30" fill="rgba(56,232,255,.05)" rx="0"/>
-              <line x1="0" y1="38" x2="260" y2="38" stroke="rgba(56,232,255,.3)" stroke-width="1" stroke-dasharray="6 3"/>
-              <line x1="0" y1="68" x2="260" y2="68" stroke="rgba(56,232,255,.3)" stroke-width="1" stroke-dasharray="6 3"/>
-              <text x="4" y="47" fill="rgba(56,232,255,.5)" font-family="monospace" font-size="7">IB HIGH</text>
-              <text x="4" y="77" fill="rgba(56,232,255,.5)" font-family="monospace" font-size="7">IB LOW</text>
-              <!-- volume profile bars on right -->
-              <rect x="238" y="30" width="18" height="6" fill="rgba(47,110,232,.3)" rx="1"/>
-              <rect x="235" y="40" width="21" height="6" fill="rgba(47,110,232,.5)" rx="1"/>
-              <rect x="230" y="50" width="26" height="6" fill="rgba(47,110,232,.8)" rx="1"/>
-              <rect x="232" y="60" width="24" height="6" fill="rgba(47,110,232,.5)" rx="1"/>
-              <rect x="236" y="70" width="20" height="6" fill="rgba(47,110,232,.3)" rx="1"/>
-              <text x="218" y="56" fill="rgba(56,232,255,.5)" font-family="monospace" font-size="7">VPOC</text>
-              <!-- VWAP line -->
-              <polyline fill="none" stroke="rgba(139,92,246,.6)" stroke-width="1.2" stroke-dasharray="4 2" points="0,65 40,62 80,58 120,54 160,50 200,47 240,44 260,43"/>
-              <text x="200" y="42" fill="rgba(139,92,246,.6)" font-family="monospace" font-size="7">VWAP</text>
-              <!-- price breaking above IB -->
-              <polyline fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.3" points="0,72 30,68 60,64 90,60 120,56 150,50 180,44 200,40 220,36 240,32 260,28"/>
-              <!-- liquidity inducement sweep zone -->
-              <rect x="80" y="22" width="80" height="14" fill="rgba(239,68,68,.08)" rx="1"/>
-              <text x="83" y="31" fill="rgba(239,68,68,.5)" font-family="monospace" font-size="7">LIQ. SWEEP ZONE</text>
-              <!-- breakout arrow -->
-              <polygon points="200,30 196,38 204,38" fill="var(--cyan)" opacity=".8"/>
-            </svg>
-          </div>
-          <div class="sm-indicators">
-            <div class="sm-ind"><div class="sm-ind-l">Session</div><div class="sm-ind-v blue">LONDON</div></div>
-            <div class="sm-ind"><div class="sm-ind-l">Auction</div><div class="sm-ind-v green">BULLISH</div></div>
-            <div class="sm-ind"><div class="sm-ind-l">VPOC</div><div class="sm-ind-v blue">44,248</div></div>
-          </div>
-          <div class="sm-signal">
-            <span class="sm-signal-l">IB break confirmed · Volume ↑</span>
-            <span class="sm-badge">LONG</span>
-          </div>
+          <img src="assets/killshot-graphic.png" alt="Spectrum Scanner interface" loading="lazy">
         </div>
         <div class="scard-body">
           <div class="scard-n">03 / 03</div>
