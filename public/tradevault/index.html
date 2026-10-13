@@ -87,7 +87,7 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .hd{width:6px;height:6px;border-radius:50%;background:var(--gold);position:relative}
 .hd::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--gold);animation:pulse 2.2s ease-out infinite}
 .hero-h1{font-family:var(--H);font-weight:900;font-size:clamp(72px,11vw,140px);text-transform:uppercase;line-height:.84;margin-bottom:22px;animation:rise .9s .2s cubic-bezier(.22,1,.36,1) both}
-.hero-h1 em{font-style:normal;color:var(--blue2)}
+.hero-h1 em{font-style:normal;color:var(--gold)}
 .hero-p{color:var(--fg2);font-size:16px;line-height:1.7;max-width:48ch;margin-bottom:36px;animation:rise .9s .38s cubic-bezier(.22,1,.36,1) both}
 .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:rise .9s .52s cubic-bezier(.22,1,.36,1) both}
 .hero-ctas .btn-p{padding:16px 36px;font-size:14px}
@@ -104,7 +104,7 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .trust-inner{display:grid;grid-template-columns:repeat(4,1fr)}
 .ti{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:clamp(36px,4.5vw,56px) clamp(16px,2.5vw,32px);border-right:1px solid var(--bd)}
 .ti:last-child{border-right:none}
-.ti-n{font-family:var(--H);font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.6vw,40px);letter-spacing:.02em;color:var(--fg);line-height:1}
+.ti-n{font-family:var(--H);font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.6vw,40px);letter-spacing:.02em;color:var(--gold);line-height:1}
 .ti-l{font-family:var(--B);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg3)}
 
 
@@ -116,6 +116,15 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .edu-photo img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.22,1,.36,1)}
 .edu-card:hover .edu-photo img{transform:scale(1.05)}
 .edu-photo-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,var(--bg1) 100%)}
+/* Jay — featured founder card, full-width horizontal */
+@media(min-width:961px){
+  .edu-card:first-child{grid-column:1/-1;flex-direction:row;min-height:420px}
+  .edu-card:first-child .edu-photo{width:46%;height:auto;align-self:stretch;flex:none}
+  .edu-card:first-child .edu-photo img{height:100%;object-position:65% 18%}
+  .edu-card:first-child .edu-photo-overlay{background:linear-gradient(to right,transparent 55%,var(--bg1) 100%)}
+  .edu-card:first-child .edu-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 56px}
+  .edu-card:first-child .edu-name{font-size:clamp(52px,6vw,88px)}
+}
 /* Tyler special: transparent bg needs dark gradient */
 .edu-card.tyler .edu-photo{background:linear-gradient(160deg,#0A1020 0%,#111D33 100%)}
 .edu-card.tyler .edu-photo img{object-fit:contain;object-position:center bottom;padding-top:20px}
@@ -124,20 +133,20 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .edu-body{padding:24px 28px 32px}
 .edu-scanner{display:inline-flex;align-items:center;gap:6px;background:rgba(47,110,232,.1);border:1px solid rgba(47,110,232,.25);padding:3px 12px;font-family:var(--M);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue2);margin-bottom:14px}
 .edu-name{font-family:var(--H);font-weight:900;font-size:clamp(36px,4vw,52px);text-transform:uppercase;line-height:.9;margin-bottom:8px}
-.edu-role{font-family:var(--M);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.edu-role{font-family:var(--B);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;opacity:.8}
 .edu-bio{font-size:14px;color:var(--fg2);line-height:1.65;max-width:46ch;margin-bottom:16px}
 .edu-tags{display:flex;flex-wrap:wrap;gap:6px}
 .tag{background:rgba(255,255,255,.04);border:1px solid var(--bd);padding:4px 10px;font-family:var(--M);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
 
 /* ── SCANNERS with UI mockups ── */
-#scanners{background:var(--bg1);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
-.scan-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:2px;background:rgba(255,255,255,.06)}
+#scanners{background:var(--bg1);border-top:3px solid var(--gold);border-bottom:1px solid var(--bd)}
+.scan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.06)}
 .scard{background:var(--bg2);display:flex;flex-direction:column;position:relative;overflow:hidden}
 /* Floating laptop — all scanner cards */
 .scard.ks,.scard.ss,.scard.sp{overflow:visible}
 .scard.ks .scan-mock,.scard.ss .scan-mock,.scard.sp .scan-mock{overflow:visible;border-bottom:none;padding:24px 16px 0;display:flex;align-items:flex-end;min-height:140px;position:relative;z-index:3}
 .scard.ks .scan-mock{background:linear-gradient(180deg,#070D14 0%,#0B1422 100%)}
-.scard.ss .scan-mock{background:linear-gradient(180deg,#0D0818 0%,#100C22 100%)}
+.scard.ss .scan-mock{background:linear-gradient(180deg,#1C1030 0%,#160D28 100%)}
 .scard.sp .scan-mock{background:linear-gradient(180deg,#070D14 0%,#0B1422 100%)}
 .scard.ks .scan-mock img,.scard.ss .scan-mock img,.scard.sp .scan-mock img{width:100%;height:auto;display:block;margin-bottom:-72px;filter:drop-shadow(0 20px 48px rgba(0,0,0,.85))}
 .scard.ks .scard-body,.scard.ss .scard-body,.scard.sp .scard-body{padding-top:84px;position:relative;z-index:2;background:var(--bg2)}
@@ -245,7 +254,7 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 #pricing{background:var(--bg);border-top:1px solid var(--bd)}
 .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px}
 .pcard{background:var(--bg1);border:1px solid var(--bd);overflow:hidden;display:flex;flex-direction:column}
-.pcard.feat{border-color:var(--bd2);box-shadow:0 0 0 1px rgba(47,110,232,.1),0 32px 80px rgba(0,0,0,.5)}
+.pcard.feat{border-color:rgba(201,150,46,.5);box-shadow:0 0 0 1px rgba(201,150,46,.08),0 32px 80px rgba(0,0,0,.5)}
 .pt{padding:36px 36px 26px;border-bottom:1px solid var(--bd)}
 .pbl{font-family:var(--M);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
 .pbl.b1{color:var(--blue2)}.pbl.b2{color:var(--gold)}
