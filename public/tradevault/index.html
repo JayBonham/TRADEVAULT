@@ -136,9 +136,9 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .scard{background:var(--bg2);display:flex;flex-direction:column;position:relative;overflow:hidden}
 /* Killshot floating laptop */
 .scard.ks{overflow:visible}
-.scard.ks .scan-mock{overflow:visible;border-bottom:none;background:transparent;height:180px}
-.scard.ks .scan-mock img{position:absolute;width:115%;left:-7.5%;bottom:-70px;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(0,0,0,.6))}
-.scard.ks .scard-body{padding-top:84px;position:relative;z-index:1;background:var(--bg2)}
+.scard.ks .scan-mock{overflow:visible;border-bottom:none;background:linear-gradient(180deg,#070D14 0%,#0B1422 100%);padding:24px 16px 0;display:flex;align-items:flex-end;min-height:140px}
+.scard.ks .scan-mock img{width:100%;height:auto;display:block;margin-bottom:-72px;filter:drop-shadow(0 20px 48px rgba(0,0,0,.85))}
+.scard.ks .scard-body{padding-top:84px;position:relative;z-index:2;background:var(--bg2)}
 /* top accent */
 .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .ks::before{background:linear-gradient(90deg,#2F6EE8,#38E8FF)}
