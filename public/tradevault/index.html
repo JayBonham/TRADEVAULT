@@ -42,7 +42,7 @@ img{display:block;max-width:100%}
 .sec{padding-block:96px}
 .lbl{display:inline-flex;align-items:center;gap:8px;font-family:var(--B);font-size:9px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
 .lbl::before{content:'';width:20px;height:1.5px;background:var(--gold);opacity:.6}
-h2.H{font-family:var(--H);font-weight:800;font-size:clamp(40px,5.5vw,66px);text-transform:uppercase;line-height:.92;margin-bottom:16px}
+h2.H{font-family:var(--H);font-weight:800;font-size:clamp(44px,6.5vw,80px);text-transform:uppercase;line-height:.9;margin-bottom:16px}
 .sub{color:var(--fg2);font-size:15px;line-height:1.7;max-width:52ch}
 .btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;font-family:var(--B);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:14px 28px;transition:background .2s,transform .2s,box-shadow .2s;cursor:pointer;border:none}
 .btn-p:hover{background:var(--blue2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(47,110,232,.38)}
@@ -55,7 +55,7 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .nl{display:flex;align-items:center;gap:12px}
 .n1{font-family:var(--H);font-weight:800;font-size:18px;letter-spacing:.16em;text-transform:uppercase}
 .n2{font-family:var(--M);font-size:8px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin-top:3px}
-.nav-links{display:flex;gap:30px;font-family:var(--M);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.nav-links{display:flex;gap:30px;font-family:var(--B);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
 .nav-links a{color:var(--fg2);transition:color .2s}
 .nav-links a:hover{color:var(--fg)}
 .mb{display:none;width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--fg);cursor:pointer;align-items:center;justify-content:center}
@@ -102,11 +102,10 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 /* ── TRUST BAR ── */
 .trust{border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);background:var(--bg1)}
 .trust-inner{display:grid;grid-template-columns:repeat(4,1fr)}
-.ti{display:flex;align-items:center;gap:14px;padding:clamp(20px,2.5vw,30px) clamp(16px,2.5vw,32px);border-right:1px solid var(--bd)}
+.ti{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:clamp(36px,4.5vw,56px) clamp(16px,2.5vw,32px);border-right:1px solid var(--bd)}
 .ti:last-child{border-right:none}
-.ti-ico{width:36px;height:36px;flex:none;color:var(--blue2)}
-.ti-n{font-family:var(--H);font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.03em}
-.ti-l{font-family:var(--M);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);margin-top:3px}
+.ti-n{font-family:var(--H);font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.6vw,40px);letter-spacing:.02em;color:var(--fg);line-height:1}
+.ti-l{font-family:var(--B);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg3)}
 
 
 /* ── EDUCATORS 2x2 ── */
@@ -132,7 +131,7 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 
 /* ── SCANNERS with UI mockups ── */
 #scanners{background:var(--bg1);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
-.scan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.06)}
+.scan-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:2px;background:rgba(255,255,255,.06)}
 .scard{background:var(--bg2);display:flex;flex-direction:column;position:relative;overflow:hidden}
 /* Floating laptop — all scanner cards */
 .scard.ks,.scard.ss,.scard.sp{overflow:visible}
@@ -235,10 +234,9 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 
 /* ── LIVE FEATURES ── */
 #live{background:var(--bg1);border-top:1px solid var(--bd)}
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--bd)}
-.feat{padding:36px 30px;border-right:1px solid var(--bd)}
-.feat:last-child{border-right:none}
-.feat-ico{width:48px;height:48px;background:rgba(47,110,232,.1);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.06)}
+.feat{padding:48px 36px;background:var(--bg1)}
+.feat-num{font-family:var(--H);font-size:80px;font-weight:900;color:rgba(255,255,255,.06);line-height:1;margin-bottom:12px;letter-spacing:-.01em}
 .feat-t{font-family:var(--H);font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:10px}
 .feat-d{font-size:14px;color:var(--fg2);line-height:1.65}
 .feat-badge{display:inline-block;margin-top:14px;background:rgba(201,150,46,.1);border:1px solid rgba(201,150,46,.25);padding:3px 10px;font-family:var(--M);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
@@ -275,9 +273,9 @@ nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-colo
 .fi.open .fa{display:block}
 
 /* ── CTA ── */
-.cta-box{position:relative;overflow:hidden;background:var(--bg2);border:1px solid var(--bd2);padding:clamp(56px,8vw,96px) clamp(36px,5vw,80px);text-align:center}
-.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 700px 400px at 50% -20%,rgba(47,110,232,.1) 0%,transparent 60%);pointer-events:none}
-.cta-box h2{font-family:var(--H);font-weight:900;font-size:clamp(48px,7vw,88px);text-transform:uppercase;line-height:.88;margin-bottom:16px}
+.cta-box{position:relative;overflow:hidden;padding:clamp(80px,11vw,136px) clamp(36px,5vw,80px);text-align:center}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 900px 600px at 50% 50%,rgba(47,110,232,.06) 0%,transparent 65%);pointer-events:none}
+.cta-box h2{font-family:var(--H);font-weight:900;font-size:clamp(64px,10vw,126px);text-transform:uppercase;line-height:.86;margin-bottom:20px}
 .cta-box p{color:var(--fg2);max-width:46ch;margin:0 auto 36px;font-size:15px;line-height:1.7}
 .cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .cta-btns .btn-p,.cta-btns .btn-o{padding:16px 36px;font-size:14px}
@@ -337,8 +335,6 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
   .ct:last-child{border-bottom:none}
   .ct-img{height:200px}
   .feat-grid{grid-template-columns:1fr}
-  .feat{border-right:none;border-bottom:1px solid var(--bd)}
-  .feat:last-child{border-bottom:none}
   .price-grid{grid-template-columns:1fr}
   .proof-grid{grid-template-columns:1fr}
   .foot-top{flex-direction:column}
@@ -445,8 +441,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
   <!-- content -->
   <div class="hero-content">
     <div class="hero-pad"></div>
-    <div class="hero-tag"><div class="hd"></div>4 educators · 3 scanners · Live daily</div>
-    <h1 class="hero-h1">Trade<br>with <em>rules.</em></h1>
+<h1 class="hero-h1">Trade<br>with <em>rules.</em></h1>
     <p class="hero-p">Four world-class educators. Three proprietary scanners. Video training, PDF guides and a complete curriculum — all under one roof. No noise. No guesswork. Just methodology.</p>
     <div class="hero-ctas">
       <a href="#pricing" class="btn-p">Join the Vault →</a>
@@ -460,20 +455,16 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <div class="trust">
   <div class="trust-inner W">
     <div class="ti reveal">
-      <svg class="ti-ico" width="36" height="36" viewBox="0 0 32 32" fill="none"><path d="M16 3L4 8v8c0 7 5.3 13.5 12 15.5C22.7 29.5 28 23 28 16V8L16 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 16l3.5 3.5L21 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div><div class="ti-n">KNF Regulated</div><div class="ti-l">Institutional-grade compliance</div></div>
+      <div class="ti-n">KNF Regulated</div><div class="ti-l">Institutional-grade compliance</div>
     </div>
     <div class="ti reveal d1">
-      <svg class="ti-ico" width="36" height="36" viewBox="0 0 32 32" fill="none"><polyline points="4,20 10,14 16,18 22,10 28,6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="24,6 28,6 28,10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div><div class="ti-n">500+ Clients</div><div class="ti-l">Personal mentorship delivered</div></div>
+      <div class="ti-n">500+ Clients</div><div class="ti-l">Personal mentorship delivered</div>
     </div>
     <div class="ti reveal d2">
-      <svg class="ti-ico" width="36" height="36" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="10" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M6 26c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <div><div class="ti-n">100k+ Traders</div><div class="ti-l">Across the global community</div></div>
+      <div class="ti-n">100k+ Traders</div><div class="ti-l">Across the global community</div>
     </div>
     <div class="ti reveal d3">
-      <svg class="ti-ico" width="36" height="36" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="11" height="11" stroke="currentColor" stroke-width="1.5"/><rect x="17" y="4" width="11" height="11" stroke="currentColor" stroke-width="1.5" opacity=".4"/><rect x="4" y="17" width="11" height="11" stroke="currentColor" stroke-width="1.5" opacity=".4"/><rect x="17" y="17" width="11" height="11" stroke="currentColor" stroke-width="1.5" opacity=".25"/></svg>
-      <div><div class="ti-n">110+ Lessons</div><div class="ti-l">Video + PDF across 18 modules</div></div>
+      <div class="ti-n">110+ Lessons</div><div class="ti-l">Video + PDF across 18 modules</div>
     </div>
   </div>
 </div>
@@ -483,7 +474,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <section class="sec" id="educators">
   <div class="W">
     <div class="reveal">
-      <div class="lbl">The team</div>
+
       <h2 class="H">Learn from<br>the best.</h2>
       <p class="sub">Every educator in The Trade Vault trades live. You learn from people who do it — not people who used to.</p>
     </div>
@@ -552,8 +543,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <section class="sec" id="scanners">
   <div class="W">
     <div style="margin-bottom:48px" class="reveal">
-      <div class="lbl">The edge</div>
-      <h2 class="H">Three scanners.<br>One vault.</h2>
+      <h2 class="H" style="font-size:clamp(56px,9vw,116px);line-height:.88;margin-bottom:20px">Three scanners.<br>One vault.</h2>
       <p class="sub">Purpose-built tools the educators use live every day — automating setup identification so you focus entirely on execution.</p>
     </div>
     <div class="scan-grid">
@@ -601,7 +591,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <section class="sec" id="content-types">
   <div class="W">
     <div style="margin-bottom:0" class="reveal">
-      <div class="lbl">What's inside</div>
+
       <h2 class="H">Video training.<br>PDF playbooks.<br>Live sessions.</h2>
       <p class="sub">This isn't just videos — every module comes with written guides, playbooks and live educator sessions so you can apply what you learn immediately.</p>
     </div>
@@ -670,7 +660,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
   <div class="W">
     <div class="curric-top reveal">
       <div>
-        <div class="lbl">The curriculum</div>
+
         <h2 class="H">18 modules.<br>Video & written.</h2>
         <p class="sub" style="margin-top:10px">From your first pip to Wyckoff and scanner bootcamps — a structured progression, not a random video dump.</p>
       </div>
@@ -711,7 +701,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <section class="sec" id="proof">
   <div class="W">
     <div style="margin-bottom:0" class="reveal">
-      <div class="lbl">Real results</div>
+
       <h2 class="H">What traders<br>are saying.</h2>
       <p class="sub">Real messages. Real people. No manufactured testimonials — these are actual conversations from inside the community.</p>
     </div>
@@ -753,14 +743,14 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <section class="sec" id="live">
   <div class="W">
     <div style="margin-bottom:48px" class="reveal">
-      <div class="lbl">Live &amp; active</div>
+
       <h2 class="H">More than<br>a course.</h2>
       <p class="sub">The Vault is an active trading environment. You learn alongside people who are executing, reviewing, and improving every single day.</p>
     </div>
     <div class="feat-grid reveal">
-      <div class="feat"><div class="feat-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B9EFF" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="feat-t">Daily Live Sessions</div><p class="feat-d">Your educators trade live, every session. Pre-market prep, live execution, post-session review. Not recordings from last month — real decisions, real markets, right now.</p></div>
-      <div class="feat"><div class="feat-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B9EFF" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="feat-t">Copy Trading Systems</div><p class="feat-d">Elite members get access to automated copy trading systems. Follow verified setups from your chosen educator with defined risk on every position.</p><span class="feat-badge">Elite only</span></div>
-      <div class="feat"><div class="feat-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B9EFF" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="feat-t">Community Access</div><p class="feat-d">A members' community built for people doing the work. Active discussion, trade sharing, accountability and direct access to your educators — not a ghost town.</p></div>
+      <div class="feat"><div class="feat-num">01</div><div class="feat-t">Daily Live Sessions</div><p class="feat-d">Your educators trade live, every session. Pre-market prep, live execution, post-session review. Not recordings from last month — real decisions, real markets, right now.</p></div>
+      <div class="feat"><div class="feat-num">02</div><div class="feat-t">Copy Trading Systems</div><p class="feat-d">Elite members get access to automated copy trading systems. Follow verified setups from your chosen educator with defined risk on every position.</p><span class="feat-badge">Elite only</span></div>
+      <div class="feat"><div class="feat-num">03</div><div class="feat-t">Community Access</div><p class="feat-d">A members' community built for people doing the work. Active discussion, trade sharing, accountability and direct access to your educators — not a ghost town.</p></div>
     </div>
   </div>
 </section>
@@ -769,7 +759,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <section class="sec" id="pricing">
   <div class="W">
     <div style="margin-bottom:48px" class="reveal">
-      <div class="lbl">Pricing</div>
+
       <h2 class="H">Pick your<br>path in.</h2>
       <p class="sub">Start with one educator and scale up — or go all-in from day one. Either way you're building on rules, not guesswork.</p>
     </div>
@@ -791,7 +781,7 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
 <!-- FAQ -->
 <section class="sec" id="faq" style="background:var(--bg1);border-top:1px solid var(--bd)">
   <div class="W">
-    <div style="margin-bottom:44px" class="reveal"><div class="lbl">FAQ</div><h2 class="H">Questions.</h2></div>
+    <div style="margin-bottom:44px" class="reveal"><h2 class="H">Questions.</h2></div>
     <div class="faq reveal">
       <div class="fi" onclick="toggleF(this)"><div class="fq">Is this a signals service? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">No. The Trade Vault is an education platform and active trading community. Elite members get access to signals and copy trading systems — but the goal is for you to understand every trade, not just follow one.</div></div>
       <div class="fi" onclick="toggleF(this)"><div class="fq">What markets does it cover? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">The primary focus is US30 (Dow Jones), Nasdaq (NQ/NAS100), and Gold (XAU/USD). Andrew's Spectrum scanner also covers the Emini ES (S&P 500 futures).</div></div>
