@@ -7,7 +7,7 @@ CAL_API_KEY = os.environ.get("CAL_API_KEY", "")
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 BREVO_JB_LIST_ID = int(os.environ.get("BREVO_JB_LIST_ID", "0"))
 SLACK_WEBHOOK_JB = os.environ.get("SLACK_WEBHOOK_JB", "")
-EVENT_TYPE_ID = 6066137
+EVENT_TYPE_ID = 6066137  # killshot strategy call
 
 
 class handler(BaseHTTPRequestHandler):
