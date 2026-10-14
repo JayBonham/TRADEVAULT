@@ -16,6 +16,9 @@ class handler(BaseHTTPRequestHandler):
         self._cors(200)
 
     def do_POST(self):
+        if "mode=ghl" in (self.path or ""):
+            self._handle_ghl()
+            return
         try:
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length))
@@ -57,6 +60,54 @@ class handler(BaseHTTPRequestHandler):
             else:
                 self._json(res.status, {"error": "Booking failed", "detail": data})
 
+        except Exception as e:
+            self._json(500, {"error": str(e)})
+
+    def _handle_ghl(self):
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            body = json.loads(self.rfile.read(length)) if length else {}
+
+            first = body.get("first_name") or body.get("firstName") or ""
+            last = body.get("last_name") or body.get("lastName") or ""
+            name = (first + " " + last).strip() or body.get("name") or "Unknown"
+            email = body.get("email") or "—"
+            phone = body.get("phone") or "—"
+            appt = body.get("appointment") or {}
+            start = appt.get("startTime") or body.get("start_time") or "—"
+
+            experience = body.get("trading_experience") or "—"
+            current    = body.get("current_trading") or "—"
+            capital    = body.get("trading_capital") or "—"
+            issue      = body.get("biggest_issue") or "—"
+            goal       = body.get("12month_goal") or "—"
+
+            if SLACK_WEBHOOK_JB:
+                lines = [
+                    "*📅 New strategy call booked*",
+                    f"*Name:* {name}",
+                    f"*Email:* {email}",
+                    f"*Phone:* {phone}",
+                    f"*Time:* {start}",
+                    "",
+                    "*— Application Answers —*",
+                    f"*Trading experience:* {experience}",
+                    f"*Currently trading:* {current}",
+                    f"*Capital available:* {capital}",
+                    f"*Biggest issue:* {issue}",
+                    f"*12-month goal:* {goal}",
+                ]
+                payload = json.dumps({"text": "\n".join(lines)}).encode()
+                conn = http.client.HTTPSConnection("hooks.slack.com")
+                conn.request(
+                    "POST",
+                    SLACK_WEBHOOK_JB.replace("https://hooks.slack.com", ""),
+                    payload,
+                    {"Content-Type": "application/json"},
+                )
+                conn.getresponse()
+
+            self._json(200, {"ok": True})
         except Exception as e:
             self._json(500, {"error": str(e)})
 

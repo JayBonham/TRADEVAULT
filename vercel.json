@@ -41,6 +41,16 @@
       "destination": "/tradevault/$1"
     },
     {
+      "source": "/api/ghl-slack",
+      "has": [{ "type": "host", "value": "jaybonham.com" }],
+      "destination": "/api/jb-book?mode=ghl"
+    },
+    {
+      "source": "/api/ghl-slack",
+      "has": [{ "type": "host", "value": "www.jaybonham.com" }],
+      "destination": "/api/jb-book?mode=ghl"
+    },
+    {
       "source": "/api/:path*",
       "has": [{ "type": "host", "value": "jaybonham.com" }],
       "destination": "/api/:path*"
