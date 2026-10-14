@@ -8,6 +8,7 @@ CAL_API_KEY             = os.environ.get("CAL_API_KEY", "")
 BREVO_API_KEY           = os.environ.get("BREVO_API_KEY", "")
 BREVO_JB_LIST_ID        = int(os.environ.get("BREVO_JB_LIST_ID", "3"))
 BREVO_JB_APPLY_LIST_ID  = int(os.environ.get("BREVO_JB_APPLY_LIST_ID", "5"))
+SLACK_WEBHOOK_JB        = os.environ.get("SLACK_WEBHOOK_JB", "")
 EVENT_TYPE_ID           = 6066137
 META_PIXEL_ID           = "3566618163494760"
 META_CAPI_TOKEN         = os.environ.get("META_CAPI_TOKEN", "")
@@ -23,7 +24,16 @@ class handler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length))
+        except Exception as e:
+            self._json(400, {"error": str(e)})
+            return
 
+        # GHL booking notification — has questionnaire fields, no cal.com fields
+        if "trading_capital" in body or "biggest_issue" in body or "12month_goal" in body:
+            self._handle_ghl(body)
+            return
+
+        try:
             name     = body.get("name", "").strip()
             email    = body.get("email", "").strip()
             start    = body.get("start", "").strip()
@@ -65,6 +75,45 @@ class handler(BaseHTTPRequestHandler):
 
         except Exception as e:
             self._json(500, {"error": str(e)})
+
+    def _handle_ghl(self, body):
+        try:
+            name  = body.get("Name") or body.get("name") or "Unknown"
+            email = body.get("email") or "—"
+            phone = body.get("phone") or "—"
+            experience = body.get("trading_experience") or "—"
+            current    = body.get("current_trading") or "—"
+            capital    = body.get("trading_capital") or "—"
+            issue      = body.get("biggest_issue") or "—"
+            goal       = body.get("12month_goal") or "—"
+            lines = [
+                "*📅 New strategy call booked*",
+                f"*Name:* {name}",
+                f"*Email:* {email}",
+                f"*Phone:* {phone}",
+                "",
+                "*— Application Answers —*",
+                f"*Trading experience:* {experience}",
+                f"*Currently trading:* {current}",
+                f"*Capital available:* {capital}",
+                f"*Biggest issue:* {issue}",
+                f"*12-month goal:* {goal}",
+            ]
+            self._notify_slack("\n".join(lines))
+            self._json(200, {"ok": True})
+        except Exception as e:
+            self._json(500, {"error": str(e)})
+
+    def _notify_slack(self, text):
+        if not SLACK_WEBHOOK_JB:
+            return
+        try:
+            payload = json.dumps({"text": text}).encode()
+            conn = http.client.HTTPSConnection("hooks.slack.com")
+            conn.request("POST", SLACK_WEBHOOK_JB.replace("https://hooks.slack.com", ""), payload, {"Content-Type": "application/json"})
+            conn.getresponse()
+        except Exception:
+            pass
 
     def _add_to_brevo(self, name, email):
         try:
