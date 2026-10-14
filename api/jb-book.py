@@ -16,13 +16,18 @@ class handler(BaseHTTPRequestHandler):
         self._cors(200)
 
     def do_POST(self):
-        if self.headers.get("x-ghl-notify") == "1":
-            self._handle_ghl()
-            return
         try:
             length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(length))
+            body = json.loads(self.rfile.read(length)) if length else {}
+        except Exception:
+            body = {}
 
+        # GHL sends first_name; cal.com booking callers send start
+        if "first_name" in body or "firstName" in body:
+            self._handle_ghl(body)
+            return
+
+        try:
             name = body.get("name", "").strip()
             email = body.get("email", "").strip()
             start = body.get("start", "").strip()
@@ -63,11 +68,8 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             self._json(500, {"error": str(e)})
 
-    def _handle_ghl(self):
+    def _handle_ghl(self, body):
         try:
-            length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(length)) if length else {}
-
             first = body.get("first_name") or body.get("firstName") or ""
             last = body.get("last_name") or body.get("lastName") or ""
             name = (first + " " + last).strip() or body.get("name") or "Unknown"
