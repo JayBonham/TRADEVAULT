@@ -22,9 +22,6 @@
     "api/whop-hook.py": {
       "maxDuration": 15
     },
-    "api/ghl-slack.py": {
-      "maxDuration": 10
-    }
   },
   "redirects": [
     {
