@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler
 CAL_API_KEY = os.environ.get("CAL_API_KEY", "")
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 BREVO_JB_LIST_ID = int(os.environ.get("BREVO_JB_LIST_ID", "0"))
+SLACK_WEBHOOK_JB = os.environ.get("SLACK_WEBHOOK_JB", "")
 EVENT_TYPE_ID = 6066137
 
 
@@ -51,12 +52,27 @@ class handler(BaseHTTPRequestHandler):
 
             if res.status in (200, 201):
                 self._add_to_brevo(name, email)
+                self._notify_slack(name, email, start, tz)
                 self._json(200, {"ok": True, "booking": data.get("data", {})})
             else:
                 self._json(res.status, {"error": "Booking failed", "detail": data})
 
         except Exception as e:
             self._json(500, {"error": str(e)})
+
+    def _notify_slack(self, name, email, start, tz):
+        if not SLACK_WEBHOOK_JB:
+            return
+        try:
+            msg = f"*📅 New strategy call booked*\n*Name:* {name}\n*Email:* {email}\n*Time:* {start}\n*Timezone:* {tz}"
+            payload = json.dumps({"text": msg}).encode()
+            conn = http.client.HTTPSConnection("hooks.slack.com")
+            conn.request("POST", SLACK_WEBHOOK_JB.replace("https://hooks.slack.com", ""), payload, {
+                "Content-Type": "application/json",
+            })
+            conn.getresponse()
+        except Exception:
+            pass  # don't fail the booking if Slack is down
 
     def _add_to_brevo(self, name, email):
         try:
