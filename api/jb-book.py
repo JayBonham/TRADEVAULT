@@ -22,8 +22,8 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             body = {}
 
-        # GHL callers never send 'start'; cal.com booking callers always do
-        if "start" not in body:
+        # GHL callers send questionnaire fields; cal.com callers never do
+        if "trading_capital" in body or "biggest_issue" in body or "12month_goal" in body:
             self._handle_ghl(body)
             return
 
