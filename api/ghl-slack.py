@@ -24,12 +24,12 @@ class handler(BaseHTTPRequestHandler):
             appt = body.get("appointment") or {}
             start = appt.get("startTime") or appt.get("start_time") or body.get("start_time") or "—"
 
-            # Questionnaire fields — mapped via GHL Custom Data key-value pairs
+            # Questionnaire fields — keys match GHL Custom Data mapping
             experience     = body.get("trading_experience") or "—"
+            current        = body.get("current_trading") or "—"
             capital        = body.get("trading_capital") or "—"
-            biggest_issue  = body.get("biggest_challenge") or "—"
-            goal           = body.get("main_goal") or "—"
-            heard          = body.get("heard_from") or "—"
+            biggest_issue  = body.get("biggest_issue") or "—"
+            goal           = body.get("12month_goal") or "—"
 
             if SLACK_WEBHOOK_JB:
                 lines = [
@@ -41,10 +41,10 @@ class handler(BaseHTTPRequestHandler):
                     "",
                     "*— Application Answers —*",
                     f"*Trading experience:* {experience}",
+                    f"*Currently trading:* {current}",
                     f"*Capital available:* {capital}",
-                    f"*Biggest challenge:* {biggest_issue}",
-                    f"*Main goal:* {goal}",
-                    f"*How they heard:* {heard}",
+                    f"*Biggest issue:* {biggest_issue}",
+                    f"*12-month goal:* {goal}",
                 ]
                 payload = json.dumps({"text": "\n".join(lines)}).encode()
                 conn = http.client.HTTPSConnection("hooks.slack.com")
