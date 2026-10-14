@@ -16,7 +16,7 @@ class handler(BaseHTTPRequestHandler):
         self._cors(200)
 
     def do_POST(self):
-        if "mode=ghl" in (self.path or ""):
+        if self.headers.get("x-ghl-notify") == "1":
             self._handle_ghl()
             return
         try:
