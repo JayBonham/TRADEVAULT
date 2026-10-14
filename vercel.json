@@ -21,7 +21,7 @@
     },
     "api/whop-hook.py": {
       "maxDuration": 15
-    },
+    }
   },
   "redirects": [
     {
