@@ -22,10 +22,9 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             body = {}
 
-        # GHL callers send questionnaire fields; cal.com callers never do
-        if "trading_capital" in body or "biggest_issue" in body or "12month_goal" in body:
-            self._handle_ghl(body)
-            return
+        # DEBUG: return body so we can see exactly what GHL sends
+        self._json(200, {"debug_body": body, "debug_keys": list(body.keys())})
+        return
 
         try:
             name = body.get("name", "").strip()
