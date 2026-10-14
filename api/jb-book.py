@@ -22,8 +22,8 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             body = {}
 
-        # GHL sends first_name; cal.com booking callers send start
-        if "first_name" in body or "firstName" in body:
+        # GHL callers never send 'start'; cal.com booking callers always do
+        if "start" not in body:
             self._handle_ghl(body)
             return
 
@@ -72,7 +72,7 @@ class handler(BaseHTTPRequestHandler):
         try:
             first = body.get("first_name") or body.get("firstName") or ""
             last = body.get("last_name") or body.get("lastName") or ""
-            name = (first + " " + last).strip() or body.get("name") or "Unknown"
+            name = (first + " " + last).strip() or body.get("Name") or body.get("name") or "Unknown"
             email = body.get("email") or "—"
             phone = body.get("phone") or "—"
             appt = body.get("appointment") or {}
