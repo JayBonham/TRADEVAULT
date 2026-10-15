@@ -28,9 +28,10 @@ class handler(BaseHTTPRequestHandler):
             self._json(400, {"error": str(e)})
             return
 
-        # TEMP DEBUG — remove after seeing payload
-        self._json(200, {"keys": list(body.keys()), "body": body})
-        return
+        # GHL always sends first_name in standard contact data
+        if "first_name" in body:
+            self._handle_ghl(body)
+            return
 
         try:
             name     = body.get("name", "").strip()
@@ -77,14 +78,15 @@ class handler(BaseHTTPRequestHandler):
 
     def _handle_ghl(self, body):
         try:
-            name  = body.get("Name") or body.get("name") or "Unknown"
+            name  = body.get("full_name") or f"{body.get('first_name','')} {body.get('last_name','')}".strip() or "Unknown"
             email = body.get("email") or "—"
             phone = body.get("phone") or "—"
-            experience = body.get("trading_experience") or "—"
-            current    = body.get("current_trading") or "—"
-            capital    = body.get("trading_capital") or "—"
-            issue      = body.get("biggest_issue") or "—"
-            goal       = body.get("12month_goal") or "—"
+            experience = body.get("Length of time you've been trading") or "—"
+            current    = body.get("What are you currently trading with?") or "—"
+            cap_raw = body.get("Trading capital available") or body.get("Checkbox 2msq") or "—"
+            capital = cap_raw[0] if isinstance(cap_raw, list) else cap_raw
+            issue      = body.get("Whats your biggest issue right now?...") or body.get("What's your biggest issue right now?...") or "—"
+            goal       = body.get("What's the 12 month goal?") or body.get("What's your goal for the next 12 months?") or "—"
             lines = [
                 "*📅 New strategy call booked*",
                 f"*Name:* {name}",
