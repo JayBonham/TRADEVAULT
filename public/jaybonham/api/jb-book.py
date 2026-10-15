@@ -28,8 +28,8 @@ class handler(BaseHTTPRequestHandler):
             self._json(400, {"error": str(e)})
             return
 
-        # GHL booking notification — has questionnaire fields, no cal.com fields
-        if "trading_capital" in body or "biggest_issue" in body or "12month_goal" in body:
+        # GHL sends capital-N "Name" key; cal.com booking callers never do
+        if "Name" in body:
             self._handle_ghl(body)
             return
 
