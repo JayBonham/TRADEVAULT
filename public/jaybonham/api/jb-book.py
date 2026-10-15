@@ -28,10 +28,9 @@ class handler(BaseHTTPRequestHandler):
             self._json(400, {"error": str(e)})
             return
 
-        # GHL sends capital-N "Name" key; cal.com booking callers never do
-        if "Name" in body:
-            self._handle_ghl(body)
-            return
+        # TEMP DEBUG — remove after seeing payload
+        self._json(200, {"keys": list(body.keys()), "body": body})
+        return
 
         try:
             name     = body.get("name", "").strip()
