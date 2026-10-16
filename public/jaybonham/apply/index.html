@@ -79,6 +79,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 #vsl-bar::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:none;cursor:pointer}
 #vsl-bar::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:inherit}
 #vsl-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;flex:none;letter-spacing:.04em;user-select:none}
+@media(max-width:600px){.jb-vid-grid{grid-template-columns:1fr!important}.jb-vid-footer{flex-wrap:wrap;gap:8px}}
 
 /* ── TESTIMONIAL SCREENSHOT SLIDER ── */
 .jb-tslider-wrap{position:relative;margin-top:40px;padding:0 52px}
@@ -834,7 +835,7 @@ function showPhase(n) {
     </div>
 
     <!-- 2x2 grid -->
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+    <div class="jb-vid-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
 
       <!-- Jeremy Daniel -->
       <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
@@ -843,7 +844,7 @@ function showPhase(n) {
           controls playsinline preload="metadata"
           style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
         ></video>
-        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
+        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
           <div>
             <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Jeremy Daniel</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
@@ -859,7 +860,7 @@ function showPhase(n) {
           controls playsinline preload="metadata"
           style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
         ></video>
-        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
+        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
           <div>
             <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Rees Roberts</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
@@ -875,7 +876,7 @@ function showPhase(n) {
           controls playsinline preload="metadata"
           style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
         ></video>
-        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
+        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
           <div>
             <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Hifzah Mahmood</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
@@ -891,7 +892,7 @@ function showPhase(n) {
           controls playsinline preload="metadata"
           style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
         ></video>
-        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
+        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
           <div>
             <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Gary Brunskill</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>

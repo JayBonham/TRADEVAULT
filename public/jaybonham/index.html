@@ -26,6 +26,7 @@
   @keyframes jbrise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   @keyframes jbspin{to{transform:rotate(360deg)}}
   @keyframes jbspinr{to{transform:rotate(-360deg)}}
+  @media(max-width:600px){.jb-vid-grid{grid-template-columns:1fr!important}.jb-vid-footer{flex-wrap:wrap;gap:8px}}
 </style>
 </helmet>
 <div id="top" style="position:relative;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif;overflow-x:hidden;min-height:100vh">
@@ -505,7 +506,7 @@
       </div>
 
       <!-- testimonial videos: 2x2 -->
-      <div style=”display:grid;grid-template-columns:repeat(2,1fr);gap:16px”>
+      <div class=”jb-vid-grid” style=”display:grid;grid-template-columns:repeat(2,1fr);gap:16px”>
 
         <!-- Jeremy Daniel -->
         <div data-reveal style=”opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;background:#0B0E13;border:1px solid rgba(255,255,255,.08)”>
