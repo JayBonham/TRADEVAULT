@@ -482,70 +482,43 @@
         </div>
         <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;max-width:40ch;margin:0;font-size:15px;line-height:1.7;color:#9AA4B0">Real students, real screens, real conversations. <span style="color:#6B7682">Every tile below is a slot — drop in verified video, DM screenshots, result shots and quotes.</span></p>
       </div>
-      <!-- proof wall: featured row -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
-        <!-- big video testimonial -->
-        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;position:relative;overflow:hidden;min-height:clamp(340px,42vw,440px);background:#0B0E13;cursor:pointer" style-hover="">
-          <img src="assets/raw/ev-18.jpg" alt="Jay on stage with a student" style="width:100%;height:100%;position:absolute;inset:0;object-fit:cover;filter:contrast(1.06) brightness(.82)"/>
-          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.1) 30%,rgba(6,8,11,.92) 100%)"></div>
-          <div style="position:absolute;left:24px;top:24px;display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:#06080B;background:#4B9EFF;padding:6px 11px">▶ Video · Student story</div>
-          <div style="position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M7 4l11 7-11 7V4z" fill="#F2F5F7"/></svg></div>
-          <div style="position:absolute;left:24px;bottom:22px;right:24px">
-            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(22px,2.4vw,30px);line-height:1.05;margin-bottom:6px">“I stopped gambling and started executing.”</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#9AA4B0">[ Name · Mentorship Circle · replace with real clip ]</div>
-          </div>
-        </div>
-        <!-- right stack -->
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <!-- DM screenshot slot -->
-          <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .06s,transform .7s ease .06s;flex:1;border:1px dashed rgba(255,255,255,.2);background:#06080B;padding:24px;display:flex;flex-direction:column;min-height:170px">
-            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:auto">
-              <span style="align-self:flex-start;max-width:80%;background:#11161E;color:#8C97A2;font-size:12px;padding:9px 13px;border-radius:12px 12px 12px 3px">Started the week down, followed the plan…</span>
-              <span style="align-self:flex-end;max-width:80%;background:rgba(75,158,255,.16);color:#CDEBE0;font-size:12px;padding:9px 13px;border-radius:12px 12px 3px 12px">That's the loop working. Keep going.</span>
+      <!-- testimonial videos: 2-col, stacks on mobile -->
+      <div style=”display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px”>
+
+        <!-- Jeremy Daniel -->
+        <div data-reveal style=”opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;background:#0B0E13;border:1px solid rgba(255,255,255,.08)”>
+          <video
+            src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4”
+            controls playsinline preload=”none”
+            style=”width:100%;display:block;background:#000;max-height:480px;object-fit:cover”
+          ></video>
+          <div style=”padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)”>
+            <div>
+              <div style=”font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7”>Jeremy Daniel</div>
+              <div style=”font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px”>Sniper Academy · Student</div>
             </div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672;margin-top:16px">DM / message screenshot slot</div>
-          </div>
-          <!-- result screenshot slot -->
-          <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .12s,transform .7s ease .12s;flex:1;border:1px dashed rgba(255,255,255,.2);background:#06080B;padding:24px;display:flex;flex-direction:column;justify-content:space-between;min-height:170px;overflow:hidden">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#7A8590">Verified result</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#4B9EFF">+ %</span></div>
-            <svg viewBox="0 0 200 60" preserveAspectRatio="none" style="width:100%;height:54px;opacity:.6"><polyline points="0,50 30,46 60,48 90,34 120,38 150,22 200,8" fill="none" stroke="#4B9EFF" stroke-width="2"/></svg>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#5C6672">Verified result screenshot</div>
+            <div style=”font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0”>Verified</div>
           </div>
         </div>
-      </div>
-      <!-- proof wall: lower row -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:14px">
-        <!-- event clip -->
-        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;position:relative;overflow:hidden;min-height:240px;background:#0B0E13;cursor:pointer">
-          <img src="assets/raw/ev-11.jpg" alt="On stage at a live event" style="width:100%;height:100%;position:absolute;inset:0;object-fit:cover;filter:contrast(1.05) brightness(.82)"/>
-          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.05) 40%,rgba(6,8,11,.9) 100%)"></div>
-          <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 22 22" fill="none"><path d="M7 4l11 7-11 7V4z" fill="#F2F5F7"/></svg></div>
-          <div style="position:absolute;left:20px;bottom:18px;right:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:5px">Event clip</div><div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:19px;line-height:1.05">Live from the stage</div></div>
+
+        <!-- Rees Roberts -->
+        <div data-reveal style=”opacity:0;transform:translateY(18px);transition:opacity .7s ease .08s,transform .7s ease .08s;background:#0B0E13;border:1px solid rgba(255,255,255,.08)”>
+          <video
+            src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4”
+            controls playsinline preload=”none”
+            style=”width:100%;display:block;background:#000;max-height:480px;object-fit:cover”
+          ></video>
+          <div style=”padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)”>
+            <div>
+              <div style=”font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7”>Rees Roberts</div>
+              <div style=”font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px”>Sniper Academy · Student</div>
+            </div>
+            <div style=”font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0”>Verified</div>
+          </div>
         </div>
-        <!-- student quote -->
-        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .07s,transform .7s ease .07s;background:#06080B;border:1px solid rgba(255,255,255,.1);padding:26px;display:flex;flex-direction:column;min-height:240px">
-          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" style="margin-bottom:auto"><path d="M6 20c0-7 4-11 10-12M19 20c0-7 4-11 10-12" stroke="#4B9EFF" stroke-width="1.5"/><path d="M6 20h7v8H6zM19 20h7v8h-7z" stroke="#4B9EFF" stroke-width="1.5"/></svg>
-          <p style="font-family:'Saira Condensed',sans-serif;font-weight:600;text-transform:uppercase;font-size:clamp(18px,1.7vw,22px);line-height:1.14;margin:18px 0 14px">“He taught me to follow a plan instead of my emotions. First green month in a year.”</p>
-          <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#11161E;border:1px solid rgba(255,255,255,.12)"></div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#5C6672">[ Name · photo ]</div></div>
-        </div>
-        <!-- second video testimonial -->
-        <div data-reveal style="opacity:0;transform:translateY(18px);transition:opacity .7s ease .14s,transform .7s ease .14s;position:relative;overflow:hidden;min-height:240px;background:#0B0E13;cursor:pointer">
-          <img src="assets/raw/b3-h4.jpg" alt="Jay with a student" style="width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:50% 30%;filter:contrast(1.04) brightness(.84)"/>
-          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.05) 40%,rgba(6,8,11,.9) 100%)"></div>
-          <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 22 22" fill="none"><path d="M7 4l11 7-11 7V4z" fill="#F2F5F7"/></svg></div>
-          <div style="position:absolute;left:20px;bottom:18px;right:20px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#4B9EFF;margin-bottom:5px">Photo with student</div><div style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:19px;line-height:1.05">Jay + a member</div></div>
-        </div>
+
       </div>
-      <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;margin-top:30px;display:flex;flex-wrap:wrap;gap:9px;align-items:center">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7A8590;margin-right:4px">Assets needed:</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Video testimonial</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">DM screenshot</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Verified result screenshot</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Student quote</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Event clip</span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:#9AA4B0;border:1px solid rgba(255,255,255,.16);padding:7px 12px">Photo with student</span>
-      </div>
-      <p style="margin:18px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;letter-spacing:0.04em;color:#5A646F">Results disclaimer: any results or screenshots shown are individual and not typical. Trading involves substantial risk of loss and is not suitable for everyone; past performance does not guarantee future results. Only verified material will be used — no fabricated or guaranteed returns.</p>
+      <p style=”margin:24px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;letter-spacing:0.04em;color:#5A646F”>Results disclaimer: individual results shown are not typical. Markets involve substantial risk of loss and are not suitable for everyone; past performance does not guarantee future results.</p>
     </div>
   </section>
 

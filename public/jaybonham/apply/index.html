@@ -79,6 +79,34 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 #vsl-bar::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;border:none;cursor:pointer}
 #vsl-bar::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:inherit}
 #vsl-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;flex:none;letter-spacing:.04em;user-select:none}
+
+/* ── TESTIMONIAL SCREENSHOT SLIDER ── */
+.jb-tslider-wrap{position:relative;margin-top:40px;padding:0 52px}
+.jb-tslider-vp{overflow:hidden}
+.jb-tslider-track{display:flex;gap:8px;transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.jb-tthumb{position:relative;overflow:hidden;cursor:pointer;flex:0 0 calc(25% - 6px);aspect-ratio:1;background:#0B0E13;border:1px solid rgba(255,255,255,.08)}
+.jb-tthumb img{width:100%;height:100%;object-fit:cover;object-position:center 8%;display:block;transition:transform .4s ease,filter .3s}
+.jb-tthumb:hover img{transform:scale(1.04);filter:brightness(.75)}
+.jb-tthumb-zoom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;background:rgba(6,8,11,.35)}
+.jb-tthumb:hover .jb-tthumb-zoom{opacity:1}
+.jb-tthumb-zoom svg{color:rgba(255,255,255,.9)}
+.jb-tslider-btn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:#4B9EFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#030D1F;z-index:5;transition:background .2s,box-shadow .2s}
+.jb-tslider-btn:hover{background:#6DB3FF;box-shadow:0 4px 20px rgba(75,158,255,.45)}
+.jb-tslider-btn:disabled{opacity:.28;cursor:default;pointer-events:none}
+.jb-tslider-prev{left:0}.jb-tslider-next{right:0}
+@media(max-width:960px){.jb-tthumb{flex:0 0 calc(33.333% - 5.33px)}}
+@media(max-width:640px){.jb-tthumb{flex:0 0 calc(50% - 4px)}.jb-tslider-wrap{padding:0 50px}}
+/* lightbox */
+.jb-lb{position:fixed;inset:0;z-index:9000;background:rgba(4,7,14,.94);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px)}
+.jb-lb.open{opacity:1;pointer-events:all}
+.jb-lb-img-wrap{position:relative;max-height:90vh;max-width:min(480px,90vw);display:flex;align-items:center}
+.jb-lb img{max-height:90vh;max-width:100%;object-fit:contain;display:block}
+.jb-lb-close{position:fixed;top:24px;right:24px;width:44px;height:44px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:9001;transition:background .2s}
+.jb-lb-close:hover{background:rgba(255,255,255,.16)}
+.jb-lb-arr{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:9001;transition:background .2s}
+.jb-lb-arr:hover{background:rgba(75,158,255,.25);border-color:#4B9EFF}
+.jb-lb-prev{left:20px}.jb-lb-next{right:20px}
+.jb-lb-counter{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.4);z-index:9001}
 </style>
 <!-- Meta Pixel -->
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
@@ -775,6 +803,86 @@ function showPhase(n) {
   </div>
 </section>
 
+<!-- ===== TESTIMONIALS ===== -->
+<section style="padding:clamp(70px,10vh,120px) clamp(18px,4vw,56px);background:#06080B;border-top:1px solid rgba(255,255,255,.08)">
+  <div style="max-width:1080px;margin:0 auto">
+    <div class="reveal" style="display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:16px">
+      <span style="width:36px;height:1px;background:rgba(88,233,255,.5)"></span>Real people. Real results.
+    </div>
+    <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(34px,5vw,64px);line-height:.92;letter-spacing:-.01em;margin:0 0 48px">Hear it from<br><span style="color:#4B9EFF">them directly.</span></h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+
+      <!-- Jeremy Daniel -->
+      <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
+        <video
+          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4"
+          controls playsinline preload="none"
+          style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
+        ></video>
+        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
+          <div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Jeremy Daniel</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+        </div>
+      </div>
+
+      <!-- Rees Roberts -->
+      <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
+        <video
+          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4"
+          controls playsinline preload="none"
+          style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
+        ></video>
+        <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
+          <div>
+            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Rees Roberts</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+        </div>
+      </div>
+
+    </div>
+    <!-- Screenshot carousel -->
+    <div class="jb-tslider-wrap reveal" style="margin-top:56px">
+      <button class="jb-tslider-btn jb-tslider-prev" id="jbTbtnPrev" onclick="jbTSlide(-1)" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="jb-tslider-vp">
+        <div class="jb-tslider-track" id="jbTtrack">
+          <div class="jb-tthumb" onclick="jbLbOpen(0)"><img src="https://start.thetradevault.co/assets/t1.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(1)"><img src="https://start.thetradevault.co/assets/t2.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(2)"><img src="https://start.thetradevault.co/assets/t3.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 002 2h3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(3)"><img src="https://start.thetradevault.co/assets/t4.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(4)"><img src="https://start.thetradevault.co/assets/t5.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(5)"><img src="https://start.thetradevault.co/assets/t6.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(6)"><img src="https://start.thetradevault.co/assets/t7.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(7)"><img src="https://start.thetradevault.co/assets/t8.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(8)"><img src="https://start.thetradevault.co/assets/t9.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(9)"><img src="https://start.thetradevault.co/assets/t10.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" onclick="jbLbOpen(10)"><img src="https://start.thetradevault.co/assets/t11.webp" alt="" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+        </div>
+      </div>
+      <button class="jb-tslider-btn jb-tslider-next" id="jbTbtnNext" onclick="jbTSlide(1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+    <!-- Lightbox -->
+    <div class="jb-lb" id="jbLb" onclick="jbLbClose(event)">
+      <button class="jb-lb-close" onclick="jbLbClose()"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      <button class="jb-lb-arr jb-lb-prev" onclick="jbLbNav(-1,event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="jb-lb-img-wrap"><img id="jbLbImg" src="" alt=""></div>
+      <button class="jb-lb-arr jb-lb-next" onclick="jbLbNav(1,event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+      <div class="jb-lb-counter" id="jbLbCtr"></div>
+    </div>
+
+    <p style="margin:32px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.7;letter-spacing:.04em;color:#3C4650">Results disclaimer: individual results shown are not typical. Markets involve substantial risk of loss and are not suitable for everyone; past performance does not guarantee future results.</p>
+  </div>
+</section>
+
 <!-- ===== APPLICATION FORM ===== -->
 <section id="apply-form" style="background:#06080B;padding:clamp(80px,10vw,120px) clamp(18px,4vw,56px);border-top:1px solid rgba(255,255,255,.08)">
   <div style="max-width:600px;margin:0 auto">
@@ -1278,6 +1386,28 @@ var JB=(function(){
     }
   };
 })();
+
+// ── Screenshot slider ──
+let jbTIdx=0;
+function jbTSlide(dir){
+  const track=document.getElementById('jbTtrack');
+  if(!track)return;
+  const perView=window.innerWidth<=640?2:window.innerWidth<=960?3:4;
+  const tMax=track.children.length-perView;
+  jbTIdx=Math.max(0,Math.min(jbTIdx+dir,tMax));
+  const w=track.children[0].offsetWidth+8;
+  track.style.transform='translateX(-'+(jbTIdx*w)+'px)';
+  document.getElementById('jbTbtnPrev').disabled=jbTIdx===0;
+  document.getElementById('jbTbtnNext').disabled=jbTIdx>=tMax;
+}
+
+// ── Screenshot lightbox ──
+const jbLbSrcs=['https://start.thetradevault.co/assets/t1.webp','https://start.thetradevault.co/assets/t2.webp','https://start.thetradevault.co/assets/t3.webp','https://start.thetradevault.co/assets/t4.webp','https://start.thetradevault.co/assets/t5.webp','https://start.thetradevault.co/assets/t6.webp','https://start.thetradevault.co/assets/t7.webp','https://start.thetradevault.co/assets/t8.webp','https://start.thetradevault.co/assets/t9.webp','https://start.thetradevault.co/assets/t10.webp','https://start.thetradevault.co/assets/t11.webp'];
+let jbLbIdx=0;
+function jbLbOpen(i){jbLbIdx=i;document.getElementById('jbLbImg').src=jbLbSrcs[i];document.getElementById('jbLb').classList.add('open');document.getElementById('jbLbCtr').textContent=(i+1)+' / '+jbLbSrcs.length;document.body.style.overflow='hidden'}
+function jbLbClose(e){if(e&&e.target!==document.getElementById('jbLb')&&!e.target.classList.contains('jb-lb-close'))return;document.getElementById('jbLb').classList.remove('open');document.body.style.overflow=''}
+function jbLbNav(dir,e){if(e)e.stopPropagation();jbLbIdx=(jbLbIdx+dir+jbLbSrcs.length)%jbLbSrcs.length;document.getElementById('jbLbImg').src=jbLbSrcs[jbLbIdx];document.getElementById('jbLbCtr').textContent=(jbLbIdx+1)+' / '+jbLbSrcs.length}
+document.addEventListener('keydown',function(e){var lb=document.getElementById('jbLb');if(!lb||!lb.classList.contains('open'))return;if(e.key==='Escape'){lb.classList.remove('open');document.body.style.overflow='';}if(e.key==='ArrowRight')jbLbNav(1);if(e.key==='ArrowLeft')jbLbNav(-1)});
 </script>
 </body>
 </html>
