@@ -80,6 +80,23 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 #vsl-bar::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:inherit}
 #vsl-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;flex:none;letter-spacing:.04em;user-select:none}
 @media(max-width:600px){.jb-vid-grid{grid-template-columns:1fr!important}.jb-vid-footer{flex-wrap:wrap;gap:8px}}
+/* Testimonial section */
+.jb-feat{display:flex;flex-wrap:wrap;border:1px solid rgba(255,255,255,.08);margin-bottom:16px;overflow:hidden}
+.jb-feat-vpane{flex:1 1 340px;background:#000;min-height:340px}
+.jb-feat-vpane video{width:100%;height:100%;display:block;object-fit:cover;min-height:340px}
+.jb-feat-tpane{flex:1 1 340px;background:#0B0E13;padding:clamp(28px,4vw,52px);display:flex;flex-direction:column;justify-content:center}
+.jb-feat-ey{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:#4B9EFF;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.jb-feat-ey-line{width:20px;height:1px;background:#4B9EFF;flex-shrink:0}
+.jb-feat-q{font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(20px,2.2vw,28px);line-height:1.15;color:#F2F5F7;margin:0 0 28px;letter-spacing:.01em}
+.jb-feat-attr{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px}
+.jb-feat-nm{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7}
+.jb-feat-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px}
+.jb-feat-badge,.jb-vid-badge{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0}
+.jb-vid-card{background:#0B0E13;border:1px solid rgba(255,255,255,.08)}
+.jb-vid-card video{width:100%;display:block;background:#000;max-height:480px;object-fit:cover}
+.jb-vid-footer{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)}
+.jb-vid-nm{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7}
+.jb-vid-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px}
 
 /* ── TESTIMONIAL SCREENSHOT SLIDER ── */
 .jb-tslider-wrap{position:relative;margin-top:40px;padding:0 52px}
@@ -813,23 +830,16 @@ function showPhase(n) {
     <h2 class="reveal" style="font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(34px,5vw,64px);line-height:.92;letter-spacing:-.01em;margin:0 0 48px">Hear it from<br><span style="color:#4B9EFF">them directly.</span></h2>
 
     <!-- Ash Barks — featured case study -->
-    <div class="reveal" style="display:flex;flex-wrap:wrap;border:1px solid rgba(255,255,255,.08);margin-bottom:16px;overflow:hidden">
-      <div style="flex:1 1 340px;background:#000;min-height:340px">
-        <video
-          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25a37cd7225ed3792d94a.mp4"
-          controls playsinline preload="metadata" muted
-          style="width:100%;height:100%;display:block;object-fit:cover;min-height:340px"
-        ></video>
+    <div class="jb-feat reveal">
+      <div class="jb-feat-vpane">
+        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25a37cd7225ed3792d94a.mp4" controls playsinline preload="metadata" muted></video>
       </div>
-      <div style="flex:1 1 340px;background:#0B0E13;padding:clamp(28px,4vw,52px);display:flex;flex-direction:column;justify-content:center">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:#4B9EFF;margin-bottom:22px;display:flex;align-items:center;gap:10px"><span style="width:20px;height:1px;background:#4B9EFF;flex-shrink:0"></span>Student Case Study</div>
-        <blockquote style="font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(20px,2.2vw,28px);line-height:1.15;color:#F2F5F7;margin:0 0 28px;letter-spacing:.01em">"I was blowing an account every month. Frustrated. Never following my own rules.<br><br>Jay showed me exactly what I was doing wrong — technically and in my head. The accountability and mindset shift happened fast. I genuinely wouldn't have got there without him."</blockquote>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
-          <div>
-            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Ash Barks</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+      <div class="jb-feat-tpane">
+        <div class="jb-feat-ey"><span class="jb-feat-ey-line"></span>Student Case Study</div>
+        <blockquote class="jb-feat-q">"I was blowing an account every month. Frustrated. Never following my own rules.<br><br>Jay showed me exactly what I was doing wrong — technically and in my head. The accountability and mindset shift happened fast. I genuinely wouldn't have got there without him."</blockquote>
+        <div class="jb-feat-attr">
+          <div><div class="jb-feat-nm">Ash Barks</div><div class="jb-feat-sub">Sniper Academy · Student</div></div>
+          <div class="jb-feat-badge">Verified</div>
         </div>
       </div>
     </div>
@@ -838,66 +848,38 @@ function showPhase(n) {
     <div class="jb-vid-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
 
       <!-- Jeremy Daniel -->
-      <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
-        <video
-          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4"
-          controls playsinline preload="metadata" muted
-          style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
-        ></video>
-        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
-          <div>
-            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Jeremy Daniel</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+      <div class="jb-vid-card reveal">
+        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="jb-vid-footer">
+          <div><div class="jb-vid-nm">Jeremy Daniel</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
+          <div class="jb-vid-badge">Verified</div>
         </div>
       </div>
 
       <!-- Rees Roberts -->
-      <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
-        <video
-          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4"
-          controls playsinline preload="metadata" muted
-          style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
-        ></video>
-        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
-          <div>
-            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Rees Roberts</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+      <div class="jb-vid-card reveal">
+        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="jb-vid-footer">
+          <div><div class="jb-vid-nm">Rees Roberts</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
+          <div class="jb-vid-badge">Verified</div>
         </div>
       </div>
 
       <!-- Hifzah Mahmood -->
-      <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
-        <video
-          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e25b21f84366801790.mp4"
-          controls playsinline preload="metadata" muted
-          style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
-        ></video>
-        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
-          <div>
-            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Hifzah Mahmood</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+      <div class="jb-vid-card reveal">
+        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e25b21f84366801790.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="jb-vid-footer">
+          <div><div class="jb-vid-nm">Hifzah Mahmood</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
+          <div class="jb-vid-badge">Verified</div>
         </div>
       </div>
 
       <!-- Gary Brunskill -->
-      <div class="reveal" style="background:#0B0E13;border:1px solid rgba(255,255,255,.08)">
-        <video
-          src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e2b3c1e3eb19286def.mp4"
-          controls playsinline preload="metadata" muted
-          style="width:100%;display:block;background:#000;max-height:480px;object-fit:cover"
-        ></video>
-        <div class="jb-vid-footer" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.06)">
-          <div>
-            <div style="font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.04em;color:#F2F5F7">Gary Brunskill</div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px">Sniper Academy · Student</div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#4B9EFF;border:1px solid rgba(75,158,255,.3);padding:5px 10px;flex-shrink:0">Verified</div>
+      <div class="jb-vid-card reveal">
+        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e2b3c1e3eb19286def.mp4" controls playsinline preload="metadata" muted></video>
+        <div class="jb-vid-footer">
+          <div><div class="jb-vid-nm">Gary Brunskill</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
+          <div class="jb-vid-badge">Verified</div>
         </div>
       </div>
 
