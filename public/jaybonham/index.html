@@ -42,57 +42,10 @@
   .jb-vid-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px}
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
   .reveal.in{opacity:1;transform:none}
+  x-dc{display:block}
 </style>
 </head>
 <body>
-<!-- Testimonials template — lives outside x-dc so DC framework never processes it.
-     componentDidMount clones this into #testimonials-mount. -->
-<template id="tpl-results">
-  <div class="jb-feat reveal">
-    <div class="jb-feat-vpane">
-      <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25a37cd7225ed3792d94a.mp4" controls playsinline preload="metadata" muted></video>
-    </div>
-    <div class="jb-feat-tpane">
-      <div class="jb-feat-ey"><span class="jb-feat-ey-line"></span>Student Case Study</div>
-      <blockquote class="jb-feat-q">"I was blowing an account every month. Frustrated. Never following my own rules.<br><br>Jay showed me exactly what I was doing wrong — technically and in my head. The accountability and mindset shift happened fast. I genuinely wouldn't have got there without him."</blockquote>
-      <div class="jb-feat-attr">
-        <div><div class="jb-feat-nm">Ash Barks</div><div class="jb-feat-sub">Sniper Academy · Student</div></div>
-        <div class="jb-feat-badge">Verified</div>
-      </div>
-    </div>
-  </div>
-  <div class="jb-vid-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
-    <div class="jb-vid-card reveal">
-      <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4" controls playsinline preload="metadata" muted></video>
-      <div class="jb-vid-footer">
-        <div><div class="jb-vid-nm">Jeremy Daniel</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
-        <div class="jb-vid-badge">Verified</div>
-      </div>
-    </div>
-    <div class="jb-vid-card reveal">
-      <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4" controls playsinline preload="metadata" muted></video>
-      <div class="jb-vid-footer">
-        <div><div class="jb-vid-nm">Rees Roberts</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
-        <div class="jb-vid-badge">Verified</div>
-      </div>
-    </div>
-    <div class="jb-vid-card reveal">
-      <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e25b21f84366801790.mp4" controls playsinline preload="metadata" muted></video>
-      <div class="jb-vid-footer">
-        <div><div class="jb-vid-nm">Hifzah Mahmood</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
-        <div class="jb-vid-badge">Verified</div>
-      </div>
-    </div>
-    <div class="jb-vid-card reveal">
-      <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e2b3c1e3eb19286def.mp4" controls playsinline preload="metadata" muted></video>
-      <div class="jb-vid-footer">
-        <div><div class="jb-vid-nm">Gary Brunskill</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
-        <div class="jb-vid-badge">Verified</div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <x-dc>
 <helmet>
 <title>Jay Bonham | Sniper Academy</title>
@@ -539,24 +492,68 @@
     </div>
   </section>
 
-  <!-- ===== RESULTS ===== -->
-  <section id="results" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">
-    <div style="max-width:1280px;margin:0 auto">
-      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:48px">
-        <div>
-          <div data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px">
-            <span>05</span><span style="width:40px;height:1px;background:rgba(88,233,255,.5)"></span><span style="color:#5C6672">Proof</span>
-          </div>
-          <h2 data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5.2vw,72px);line-height:0.96;letter-spacing:-0.01em;margin:0">From inside<br>the room.</h2>
-        </div>
-        <p data-reveal style="opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;max-width:40ch;margin:0;font-size:15px;line-height:1.7;color:#9AA4B0">Real students, real screens, real conversations. <span style="color:#6B7682">Every tile below is a slot — drop in verified video, DM screenshots, result shots and quotes.</span></p>
-      </div>
-      <!-- injected by componentDidMount from #tpl-results — keeps DC framework from mangling HTML -->
-      <div id=”testimonials-mount”></div>
-      <p style=”margin:24px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;letter-spacing:0.04em;color:#5A646F”>Results disclaimer: individual results shown are not typical. Markets involve substantial risk of loss and are not suitable for everyone; past performance does not guarantee future results.</p>
-    </div>
-  </section>
+</x-dc>
 
+<!-- ===== RESULTS — plain HTML outside x-dc so CSS classes apply correctly ===== -->
+<section id=”results” style=”position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px);background:#080B0F;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)”>
+  <div style=”max-width:1280px;margin:0 auto”>
+    <div style=”display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:48px”>
+      <div>
+        <div data-reveal style=”opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.24em;text-transform:uppercase;color:#58E9FF;margin-bottom:26px”>
+          <span>05</span><span style=”width:40px;height:1px;background:rgba(88,233,255,.5)”></span><span style=”color:#5C6672”>Proof</span>
+        </div>
+        <h2 data-reveal style=”opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,5.2vw,72px);line-height:0.96;letter-spacing:-0.01em;margin:0”>From inside<br>the room.</h2>
+      </div>
+      <p data-reveal style=”opacity:0;transform:translateY(16px);transition:opacity .7s ease .1s,transform .7s ease .1s;max-width:40ch;margin:0;font-size:15px;line-height:1.7;color:#9AA4B0”>Real students, real screens, real conversations.</p>
+    </div>
+    <div class=”jb-feat reveal”>
+      <div class=”jb-feat-vpane”>
+        <video src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25a37cd7225ed3792d94a.mp4” controls playsinline preload=”metadata” muted></video>
+      </div>
+      <div class=”jb-feat-tpane”>
+        <div class=”jb-feat-ey”><span class=”jb-feat-ey-line”></span>Student Case Study</div>
+        <blockquote class=”jb-feat-q”>”I was blowing an account every month. Frustrated. Never following my own rules.<br><br>Jay showed me exactly what I was doing wrong — technically and in my head. The accountability and mindset shift happened fast. I genuinely wouldn't have got there without him.”</blockquote>
+        <div class=”jb-feat-attr”>
+          <div><div class=”jb-feat-nm”>Ash Barks</div><div class=”jb-feat-sub”>Sniper Academy · Student</div></div>
+          <div class=”jb-feat-badge”>Verified</div>
+        </div>
+      </div>
+    </div>
+    <div class=”jb-vid-grid” style=”display:grid;grid-template-columns:repeat(2,1fr);gap:16px”>
+      <div class=”jb-vid-card reveal”>
+        <video src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4” controls playsinline preload=”metadata” muted></video>
+        <div class=”jb-vid-footer”>
+          <div><div class=”jb-vid-nm”>Jeremy Daniel</div><div class=”jb-vid-sub”>Sniper Academy · Student</div></div>
+          <div class=”jb-vid-badge”>Verified</div>
+        </div>
+      </div>
+      <div class=”jb-vid-card reveal”>
+        <video src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4” controls playsinline preload=”metadata” muted></video>
+        <div class=”jb-vid-footer”>
+          <div><div class=”jb-vid-nm”>Rees Roberts</div><div class=”jb-vid-sub”>Sniper Academy · Student</div></div>
+          <div class=”jb-vid-badge”>Verified</div>
+        </div>
+      </div>
+      <div class=”jb-vid-card reveal”>
+        <video src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e25b21f84366801790.mp4” controls playsinline preload=”metadata” muted></video>
+        <div class=”jb-vid-footer”>
+          <div><div class=”jb-vid-nm”>Hifzah Mahmood</div><div class=”jb-vid-sub”>Sniper Academy · Student</div></div>
+          <div class=”jb-vid-badge”>Verified</div>
+        </div>
+      </div>
+      <div class=”jb-vid-card reveal”>
+        <video src=”https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e2b3c1e3eb19286def.mp4” controls playsinline preload=”metadata” muted></video>
+        <div class=”jb-vid-footer”>
+          <div><div class=”jb-vid-nm”>Gary Brunskill</div><div class=”jb-vid-sub”>Sniper Academy · Student</div></div>
+          <div class=”jb-vid-badge”>Verified</div>
+        </div>
+      </div>
+    </div>
+    <p style=”margin:24px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;letter-spacing:0.04em;color:#5A646F”>Results disclaimer: individual results shown are not typical. Markets involve substantial risk of loss and are not suitable for everyone; past performance does not guarantee future results.</p>
+  </div>
+</section>
+
+<x-dc>
   <!-- ===== SPEAKING ===== -->
   <section id="speaking" style="position:relative;padding:clamp(80px,12vh,150px) clamp(18px,4vw,56px)">
     <div style="max-width:1280px;margin:0 auto">
@@ -807,8 +804,11 @@ class Component extends DCLogic {
       document.querySelectorAll('[data-reveal]').forEach(el => { el.style.opacity='1'; el.style.transform='none'; });
     }, 800);
 
-    // Testimonials are injected by the external MutationObserver script (after </x-dc>)
-    // so DC framework's async re-render cannot wipe them.
+    // Reveal testimonial cards in #results (plain HTML outside x-dc)
+    const ro = new IntersectionObserver((es) => {
+      es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }});
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('#results .reveal').forEach(el => ro.observe(el));
 
     const co = new IntersectionObserver((es)=>{
       es.forEach(e=>{ if(e.isIntersecting){ this.count(e.target); co.unobserve(e.target); } });
@@ -1143,30 +1143,6 @@ var JB=(function(){
       .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
     }
   };
-})();
-</script>
-<script>
-// Inject testimonials from #tpl-results template into #testimonials-mount.
-// Lives outside x-dc so DC framework never processes the HTML.
-// MutationObserver re-injects after DC framework's async updateHtml wipes it.
-(function() {
-  var count = 0;
-  function inject() {
-    var mount = document.getElementById('testimonials-mount');
-    var tpl = document.getElementById('tpl-results');
-    if (!mount || !tpl || mount.children.length > 0) return;
-    mount.appendChild(tpl.content.cloneNode(true));
-    count++;
-    var ro = new IntersectionObserver(function(es) {
-      es.forEach(function(e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
-      });
-    }, {threshold: 0.12, rootMargin: '0px 0px -8% 0px'});
-    mount.querySelectorAll('.reveal').forEach(function(el) { ro.observe(el); });
-    if (count >= 2) mo.disconnect();
-  }
-  var mo = new MutationObserver(inject);
-  mo.observe(document.body, {childList: true, subtree: true});
 })();
 </script>
 <script>
