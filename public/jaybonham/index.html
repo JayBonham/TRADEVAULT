@@ -807,16 +807,8 @@ class Component extends DCLogic {
       document.querySelectorAll('[data-reveal]').forEach(el => { el.style.opacity='1'; el.style.transform='none'; });
     }, 800);
 
-    // Inject testimonials from template — bypasses DC framework HTML processing entirely
-    const tpl = document.getElementById('tpl-results');
-    const mount = document.getElementById('testimonials-mount');
-    if (tpl && mount) {
-      mount.appendChild(tpl.content.cloneNode(true));
-      const ro = new IntersectionObserver((es) => {
-        es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }});
-      }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
-      mount.querySelectorAll('.reveal').forEach(el => ro.observe(el));
-    }
+    // Testimonials are injected by the external MutationObserver script (after </x-dc>)
+    // so DC framework's async re-render cannot wipe them.
 
     const co = new IntersectionObserver((es)=>{
       es.forEach(e=>{ if(e.isIntersecting){ this.count(e.target); co.unobserve(e.target); } });
@@ -1151,6 +1143,30 @@ var JB=(function(){
       .catch(function(){S.loading=false;S.err='Something went wrong. Please try again.';render();});
     }
   };
+})();
+</script>
+<script>
+// Inject testimonials from #tpl-results template into #testimonials-mount.
+// Lives outside x-dc so DC framework never processes the HTML.
+// MutationObserver re-injects after DC framework's async updateHtml wipes it.
+(function() {
+  var count = 0;
+  function inject() {
+    var mount = document.getElementById('testimonials-mount');
+    var tpl = document.getElementById('tpl-results');
+    if (!mount || !tpl || mount.children.length > 0) return;
+    mount.appendChild(tpl.content.cloneNode(true));
+    count++;
+    var ro = new IntersectionObserver(function(es) {
+      es.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
+      });
+    }, {threshold: 0.12, rootMargin: '0px 0px -8% 0px'});
+    mount.querySelectorAll('.reveal').forEach(function(el) { ro.observe(el); });
+    if (count >= 2) mo.disconnect();
+  }
+  var mo = new MutationObserver(inject);
+  mo.observe(document.body, {childList: true, subtree: true});
 })();
 </script>
 <script>
