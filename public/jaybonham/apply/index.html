@@ -833,7 +833,7 @@ function showPhase(n) {
     <!-- Ash Barks — featured case study -->
     <div class="jb-feat reveal">
       <div class="jb-feat-vpane">
-        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25a37cd7225ed3792d94a.mp4" controls playsinline preload="metadata" muted></video>
+        <video src="/assets/testimonials/ash.mp4" poster="/assets/testimonials/ash.jpg" controls playsinline preload="none"></video>
       </div>
       <div class="jb-feat-tpane">
         <div class="jb-feat-ey"><span class="jb-feat-ey-line"></span>Student Case Study</div>
@@ -850,7 +850,7 @@ function showPhase(n) {
 
       <!-- Jeremy Daniel -->
       <div class="jb-vid-card reveal">
-        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4" controls playsinline preload="metadata" muted></video>
+        <video src="/assets/testimonials/jeremy.mp4" poster="/assets/testimonials/jeremy.jpg" controls playsinline preload="none"></video>
         <div class="jb-vid-footer">
           <div><div class="jb-vid-nm">Jeremy Daniel</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
           <div class="jb-vid-badge">Verified</div>
@@ -859,7 +859,7 @@ function showPhase(n) {
 
       <!-- Rees Roberts -->
       <div class="jb-vid-card reveal">
-        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4" controls playsinline preload="metadata" muted></video>
+        <video src="/assets/testimonials/rees.mp4" poster="/assets/testimonials/rees.jpg" controls playsinline preload="none"></video>
         <div class="jb-vid-footer">
           <div><div class="jb-vid-nm">Rees Roberts</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
           <div class="jb-vid-badge">Verified</div>
@@ -868,7 +868,7 @@ function showPhase(n) {
 
       <!-- Hifzah Mahmood -->
       <div class="jb-vid-card reveal">
-        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e25b21f84366801790.mp4" controls playsinline preload="metadata" muted></video>
+        <video src="/assets/testimonials/hifzah.mp4" poster="/assets/testimonials/hifzah.jpg" controls playsinline preload="none"></video>
         <div class="jb-vid-footer">
           <div><div class="jb-vid-nm">Hifzah Mahmood</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
           <div class="jb-vid-badge">Verified</div>
@@ -877,7 +877,7 @@ function showPhase(n) {
 
       <!-- Gary Brunskill -->
       <div class="jb-vid-card reveal">
-        <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e2b3c1e3eb19286def.mp4" controls playsinline preload="metadata" muted></video>
+        <video src="/assets/testimonials/gary.mp4" poster="/assets/testimonials/gary.jpg" controls playsinline preload="none"></video>
         <div class="jb-vid-footer">
           <div><div class="jb-vid-nm">Gary Brunskill</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
           <div class="jb-vid-badge">Verified</div>
@@ -1448,13 +1448,8 @@ function jbLbClose(e){if(e&&e.target!==document.getElementById('jbLb')&&!e.targe
 function jbLbNav(dir,e){if(e)e.stopPropagation();jbLbIdx=(jbLbIdx+dir+jbLbSrcs.length)%jbLbSrcs.length;document.getElementById('jbLbImg').src=jbLbSrcs[jbLbIdx];document.getElementById('jbLbCtr').textContent=(jbLbIdx+1)+' / '+jbLbSrcs.length}
 document.addEventListener('keydown',function(e){var lb=document.getElementById('jbLb');if(!lb||!lb.classList.contains('open'))return;if(e.key==='Escape'){lb.classList.remove('open');document.body.style.overflow='';}if(e.key==='ArrowRight')jbLbNav(1);if(e.key==='ArrowLeft')jbLbNav(-1)});
 
-// Force video first-frame thumbnails (CDN doesn't expose frame via metadata alone)
-document.querySelectorAll('section video').forEach(function(v){
-  v.muted=true;
-  function showFrame(){v.play().then(function(){v.pause();v.currentTime=0;}).catch(function(){});}
-  if(v.readyState>=1)showFrame();
-  else v.addEventListener('loadedmetadata',showFrame,{once:true});
-});
+// Testimonials: one plays at a time (posters handle thumbnails now)
+document.addEventListener('play',function(e){var t=e.target;if(t.tagName!=='VIDEO'||t.id==='jb-vsl')return;document.querySelectorAll('video').forEach(function(o){if(o!==t&&!o.paused)o.pause();});},true);
 </script>
 </body>
 </html>

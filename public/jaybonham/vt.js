@@ -38,9 +38,12 @@
   }
 
   function keyOf(v) {
+    if (v.id === 'jb-vsl' || v.hasAttribute('data-vt-key')) return v.getAttribute('data-vt-key') || 'vsl';
     var src = v.currentSrc || v.getAttribute('src') || (v.querySelector('source') || {}).src || '';
     var file = src.split('?')[0].split('#')[0].split('/').pop().replace(/\.mp4$/i, '');
-    return CDN[file] || file || null;
+    try { file = decodeURIComponent(file); } catch (e) {}
+    if (/Aug 11, 2026/.test(file)) return 'vsl';
+    return CDN[file] || file.replace(/[^A-Za-z0-9_\-.]+/g, '-').slice(0, 80) || null;
   }
 
   var state = {};      // key -> {imp, play, max, sent:{}}
@@ -71,18 +74,24 @@
   addEventListener('load', scan);
   setInterval(scan, 2000);
 
-  document.addEventListener('play', function (e) {
-    if (e.target.tagName !== 'VIDEO') return;
-    var k = keyOf(e.target); if (!k) return;
+  // A "play" only counts once the video is actually running WITH SOUND.
+  // Muted autoplay (apply VSL) and the muted play/pause thumbnail trick are ignored.
+  function heard(v) {
+    if (v.paused || v.muted || v.volume === 0) return;
+    var k = keyOf(v); if (!k) return;
     var s = st(k);
     if (!s.imp) { s.imp = 1; send('impression', k, null); }
     if (!s.play) { s.play = 1; send('play', k, 0); }
-  }, true);
+  }
+  ['play', 'playing', 'volumechange'].forEach(function (t) {
+    document.addEventListener(t, function (e) { if (e.target.tagName === 'VIDEO') heard(e.target); }, true);
+  });
 
   function progress(v) {
-    if (!v.duration || !isFinite(v.duration)) return;
+    if (!v.duration || !isFinite(v.duration) || v.muted) return;
     var k = keyOf(v); if (!k) return;
     var s = st(k);
+    if (!s.play) return;
     var p = Math.min(100, (v.currentTime / v.duration) * 100);
     if (p > s.max) s.max = p;
     for (var m = 10; m <= 100; m += 10) {
@@ -93,7 +102,7 @@
   document.addEventListener('ended', function (e) {
     if (e.target.tagName !== 'VIDEO') return;
     var k = keyOf(e.target); if (!k) return;
-    var s = st(k); s.max = 100; progress(e.target);
+    var s = st(k); if (!s.play || e.target.muted) return; s.max = 100; progress(e.target);
   }, true);
 
   // CTA clicks — any link/button to /apply (or marked data-vt-cta). Records how far into the most-watched video they were.
