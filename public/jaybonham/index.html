@@ -42,6 +42,33 @@
   .jb-vid-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5C6672;margin-top:3px}
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
   .reveal.in{opacity:1;transform:none}
+/* ── TESTIMONIAL SCREENSHOT SLIDER ── */
+.jb-tslider-wrap{position:relative;padding:0 52px}
+.jb-tslider-vp{overflow:hidden}
+.jb-tslider-track{display:flex;gap:8px;transition:transform .45s cubic-bezier(.22,1,.36,1)}
+.jb-tthumb{position:relative;overflow:hidden;cursor:pointer;flex:0 0 calc(25% - 6px);aspect-ratio:1;background:#0B0E13;border:1px solid rgba(255,255,255,.08)}
+.jb-tthumb img{width:100%;height:100%;object-fit:cover;object-position:center 8%;display:block;transition:transform .4s ease,filter .3s}
+.jb-tthumb:hover img{transform:scale(1.04);filter:brightness(.75)}
+.jb-tthumb-zoom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;background:rgba(6,8,11,.35)}
+.jb-tthumb:hover .jb-tthumb-zoom{opacity:1}
+.jb-tthumb-zoom svg{color:rgba(255,255,255,.9)}
+.jb-tslider-btn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:#4B9EFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#030D1F;z-index:5;transition:background .2s,box-shadow .2s}
+.jb-tslider-btn:hover{background:#6DB3FF;box-shadow:0 4px 20px rgba(75,158,255,.45)}
+.jb-tslider-btn:disabled{opacity:.28;cursor:default;pointer-events:none}
+.jb-tslider-prev{left:0}.jb-tslider-next{right:0}
+@media(max-width:960px){.jb-tthumb{flex:0 0 calc(33.333% - 5.33px)}}
+@media(max-width:640px){.jb-tthumb{flex:0 0 calc(50% - 4px)}.jb-tslider-wrap{padding:0 50px}}
+/* lightbox */
+.jb-lb{position:fixed;inset:0;z-index:9000;background:rgba(4,7,14,.94);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px)}
+.jb-lb.open{opacity:1;pointer-events:all}
+.jb-lb-img-wrap{position:relative;max-height:90vh;max-width:min(480px,90vw);display:flex;align-items:center}
+.jb-lb img{max-height:90vh;max-width:100%;object-fit:contain;display:block}
+.jb-lb-close{position:fixed;top:24px;right:24px;width:44px;height:44px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:9001;transition:background .2s}
+.jb-lb-close:hover{background:rgba(255,255,255,.16)}
+.jb-lb-arr{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:9001;transition:background .2s}
+.jb-lb-arr:hover{background:rgba(75,158,255,.25);border-color:#4B9EFF}
+.jb-lb-prev{left:20px}.jb-lb-next{right:20px}
+.jb-lb-counter{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.4);z-index:9001}
 </style>
 </head>
 <body>
@@ -506,7 +533,7 @@
       <!-- Ash Barks — featured case study -->
       <div class="jb-feat reveal">
         <div class="jb-feat-vpane">
-          <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25a37cd7225ed3792d94a.mp4" controls playsinline preload="metadata" muted></video>
+          <video src="/assets/testimonials/ash.mp4" poster="/assets/testimonials/ash.jpg" controls playsinline preload="none"></video>
         </div>
         <div class="jb-feat-tpane">
           <div class="jb-feat-ey"><span class="jb-feat-ey-line"></span>Student Case Study</div>
@@ -526,7 +553,7 @@
 
         <!-- Jeremy Daniel -->
         <div class="jb-vid-card reveal">
-          <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad2517b3cacdd91176dcda3.mp4" controls playsinline preload="metadata" muted></video>
+          <video src="/assets/testimonials/jeremy.mp4" poster="/assets/testimonials/jeremy.jpg" controls playsinline preload="none"></video>
           <div class="jb-vid-footer">
             <div><div class="jb-vid-nm">Jeremy Daniel</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
             <div class="jb-vid-badge">Verified</div>
@@ -535,7 +562,7 @@
 
         <!-- Rees Roberts -->
         <div class="jb-vid-card reveal">
-          <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad25188989628c77a2417c6.mp4" controls playsinline preload="metadata" muted></video>
+          <video src="/assets/testimonials/rees.mp4" poster="/assets/testimonials/rees.jpg" controls playsinline preload="none"></video>
           <div class="jb-vid-footer">
             <div><div class="jb-vid-nm">Rees Roberts</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
             <div class="jb-vid-badge">Verified</div>
@@ -544,7 +571,7 @@
 
         <!-- Hifzah Mahmood -->
         <div class="jb-vid-card reveal">
-          <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e25b21f84366801790.mp4" controls playsinline preload="metadata" muted></video>
+          <video src="/assets/testimonials/hifzah.mp4" poster="/assets/testimonials/hifzah.jpg" controls playsinline preload="none"></video>
           <div class="jb-vid-footer">
             <div><div class="jb-vid-nm">Hifzah Mahmood</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
             <div class="jb-vid-badge">Verified</div>
@@ -553,13 +580,33 @@
 
         <!-- Gary Brunskill -->
         <div class="jb-vid-card reveal">
-          <video src="https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6ad257e2b3c1e3eb19286def.mp4" controls playsinline preload="metadata" muted></video>
+          <video src="/assets/testimonials/gary.mp4" poster="/assets/testimonials/gary.jpg" controls playsinline preload="none"></video>
           <div class="jb-vid-footer">
             <div><div class="jb-vid-nm">Gary Brunskill</div><div class="jb-vid-sub">Sniper Academy · Student</div></div>
             <div class="jb-vid-badge">Verified</div>
           </div>
         </div>
 
+      </div>
+      <!-- screenshot carousel -->
+      <div class="jb-tslider-wrap reveal" style="margin-top:16px">
+        <button class="jb-tslider-btn jb-tslider-prev" data-tslide="-1" aria-label="Previous" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="jb-tslider-vp">
+          <div class="jb-tslider-track" id="jbTtrack">
+          <div class="jb-tthumb" data-lb="0"><img src="https://start.thetradevault.co/assets/t1.webp" alt="Student result screenshot 1" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="1"><img src="https://start.thetradevault.co/assets/t2.webp" alt="Student result screenshot 2" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="2"><img src="https://start.thetradevault.co/assets/t3.webp" alt="Student result screenshot 3" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="3"><img src="https://start.thetradevault.co/assets/t4.webp" alt="Student result screenshot 4" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="4"><img src="https://start.thetradevault.co/assets/t5.webp" alt="Student result screenshot 5" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="5"><img src="https://start.thetradevault.co/assets/t6.webp" alt="Student result screenshot 6" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="6"><img src="https://start.thetradevault.co/assets/t7.webp" alt="Student result screenshot 7" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="7"><img src="https://start.thetradevault.co/assets/t8.webp" alt="Student result screenshot 8" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="8"><img src="https://start.thetradevault.co/assets/t9.webp" alt="Student result screenshot 9" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="9"><img src="https://start.thetradevault.co/assets/t10.webp" alt="Student result screenshot 10" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <div class="jb-tthumb" data-lb="10"><img src="https://start.thetradevault.co/assets/t11.webp" alt="Student result screenshot 11" loading="lazy"><div class="jb-tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          </div>
+        </div>
+        <button class="jb-tslider-btn jb-tslider-next" data-tslide="1" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
       </div>
       <p style="margin:24px 0 0;max-width:80ch;font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.7;letter-spacing:0.04em;color:#5A646F">Results disclaimer: individual results shown are not typical. Markets involve substantial risk of loss and are not suitable for everyone; past performance does not guarantee future results.</p>
     </div>
@@ -821,14 +868,6 @@ class Component extends DCLogic {
       es.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }});
     }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
     document.querySelectorAll('#results .reveal').forEach(el => ro.observe(el));
-
-    // Force video first-frame thumbnails (CDN doesn't expose frame via metadata alone)
-    document.querySelectorAll('#results video').forEach(v => {
-      v.muted = true;
-      const showFrame = () => { v.play().then(()=>{ v.pause(); v.currentTime=0; }).catch(()=>{}); };
-      if (v.readyState >= 1) showFrame();
-      else v.addEventListener('loadedmetadata', showFrame, {once:true});
-    });
 
     const co = new IntersectionObserver((es)=>{
       es.forEach(e=>{ if(e.isIntersecting){ this.count(e.target); co.unobserve(e.target); } });
@@ -1175,6 +1214,50 @@ var JB=(function(){
     setCookie('jb_ref', ref, 30);
     fetch('/api/aff?action=click', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:ref})}).catch(function(){});
   }
+})();
+</script>
+<!-- screenshot lightbox (outside x-dc so re-renders can't touch it) -->
+<div class="jb-lb" id="jbLb">
+  <button class="jb-lb-close" data-lbx aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <button class="jb-lb-arr jb-lb-prev" data-lbnav="-1" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <div class="jb-lb-img-wrap"><img id="jbLbImg" src="" alt=""></div>
+  <button class="jb-lb-arr jb-lb-next" data-lbnav="1" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+  <div class="jb-lb-counter" id="jbLbCtr"></div>
+</div>
+<script>
+// Screenshot slider + lightbox — delegated on document so x-dc re-renders can't detach handlers
+(function(){
+  var N=11, idx=0, lbIdx=0;
+  function src(i){return 'https://start.thetradevault.co/assets/t'+(i+1)+'.webp'}
+  function perView(){return innerWidth<=640?2:innerWidth<=960?3:4}
+  function slide(dir){
+    var t=document.getElementById('jbTtrack'); if(!t||!t.children.length)return;
+    var max=Math.max(0,t.children.length-perView());
+    idx=Math.max(0,Math.min(idx+dir,max));
+    t.style.transform='translateX(-'+(idx*(t.children[0].offsetWidth+8))+'px)';
+    var w=t.closest('.jb-tslider-wrap');
+    w.querySelector('[data-tslide="-1"]').disabled=idx===0;
+    w.querySelector('[data-tslide="1"]').disabled=idx>=max;
+  }
+  function show(i){lbIdx=(i+N)%N;document.getElementById('jbLbImg').src=src(lbIdx);document.getElementById('jbLbCtr').textContent=(lbIdx+1)+' / '+N}
+  function open(i){show(i);document.getElementById('jbLb').classList.add('open');document.body.style.overflow='hidden'}
+  function close(){document.getElementById('jbLb').classList.remove('open');document.body.style.overflow=''}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-tslide]'); if(b){slide(+b.dataset.tslide);return}
+    var th=e.target.closest('[data-lb]'); if(th){open(+th.dataset.lb);return}
+    var nv=e.target.closest('[data-lbnav]'); if(nv){show(lbIdx+(+nv.dataset.lbnav));return}
+    if(e.target.closest('[data-lbx]')||e.target.id==='jbLb')close();
+  });
+  document.addEventListener('keydown',function(e){
+    if(!document.getElementById('jbLb').classList.contains('open'))return;
+    if(e.key==='Escape')close(); if(e.key==='ArrowRight')show(lbIdx+1); if(e.key==='ArrowLeft')show(lbIdx-1);
+  });
+  addEventListener('resize',function(){idx=0;slide(0)});
+  // only one testimonial video plays at a time
+  document.addEventListener('play',function(e){
+    if(e.target.tagName!=='VIDEO')return;
+    document.querySelectorAll('#results video').forEach(function(v){if(v!==e.target)v.pause()});
+  },true);
 })();
 </script>
 </body>
