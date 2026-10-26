@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Videos — JB Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;500;600;700&family=Saira+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;min-height:100vh;background:#06080B;color:#F2F5F7;font-family:'Archivo',sans-serif}
+a{color:inherit;text-decoration:none}
+button,select{font-family:inherit;cursor:pointer}
+button{border:none;background:none}
+
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex:none;background:#0A0E14;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.main{flex:1;min-width:0;padding:28px 32px 60px}
+.sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.sb-logo-text{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase}
+.sb-logo-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4B9EFF;margin-top:1px}
+.sb-nav{padding:16px 0;flex:1}
+.sb-link{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:14px;color:#9AA4B0;transition:color .15s,background .15s;border-left:2px solid transparent}
+.sb-link:hover{color:#F2F5F7;background:rgba(255,255,255,.03)}
+.sb-link.active{color:#4B9EFF;border-left-color:#4B9EFF;background:rgba(75,158,255,.06)}
+.sb-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:#5C6672;display:flex;align-items:center;justify-content:space-between}
+.sb-user button{font-size:11px;color:#FF6B6B;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase}
+
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.topbar h1{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:24px;text-transform:uppercase;letter-spacing:.06em;margin:0}
+.topbar .sp{flex:1}
+.sel{background:#0A0E14;border:1px solid rgba(255,255,255,.1);color:#C8D0D8;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;padding:8px 10px;outline:none}
+.btn-sm{padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,.1);color:#9AA4B0;transition:all .15s}
+.btn-sm:hover{border-color:rgba(75,158,255,.3);color:#4B9EFF;background:rgba(75,158,255,.06)}
+
+.stats{display:flex;margin-bottom:28px;border:1px solid rgba(255,255,255,.07);overflow-x:auto}
+.stat{padding:14px 22px;border-right:1px solid rgba(255,255,255,.07);flex:none}
+.stat:last-child{border-right:none}
+.stat-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:26px;line-height:1}
+.stat-l{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#4A5566;margin-top:4px}
+.blue{color:#4B9EFF}.green{color:#4BFF9E}.yellow{color:#F5A623}
+
+.section-h{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#4A5566;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;gap:12px}
+
+/* library */
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px;margin-bottom:40px}
+.vcard{background:#0A0E14;border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-width:0}
+.vcard video{width:100%;aspect-ratio:16/9;background:#000;display:block}
+.vbody{padding:16px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.vhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.vtitle{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:19px;text-transform:uppercase;letter-spacing:.04em;line-height:1}
+.vmeta{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:#5C6672;margin-top:5px}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border:1px solid rgba(75,158,255,.25);color:#4B9EFF;margin:0 4px 4px 0;white-space:nowrap}
+.copy{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5C6672;border:1px solid rgba(255,255,255,.08);padding:5px 8px;flex:none}
+.copy:hover{color:#4B9EFF;border-color:rgba(75,158,255,.3)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.06)}
+.kpi{padding:10px 12px;border-right:1px solid rgba(255,255,255,.06)}
+.kpi:last-child{border-right:none}
+.kpi-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:20px;line-height:1}
+.kpi-l{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#4A5566;margin-top:4px}
+.curve-l{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#4A5566;margin-bottom:8px;display:flex;justify-content:space-between}
+.curve{display:flex;align-items:flex-end;gap:4px;height:74px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative}
+.bar-f{width:100%;background:linear-gradient(180deg,#4B9EFF,#2563B8);min-height:2px;transition:height .4s}
+.bar-x{font-family:'IBM Plex Mono',monospace;font-size:8px;color:#3C4650;margin-top:4px}
+.bar:hover .bar-tip{opacity:1}
+.bar-tip{position:absolute;bottom:calc(100% + 2px);font-family:'IBM Plex Mono',monospace;font-size:9px;color:#C8D0D8;background:#06080B;border:1px solid rgba(255,255,255,.1);padding:2px 5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.nodata{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:#3C4650;padding:24px 0;text-align:center}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;margin-bottom:40px}
+table{width:100%;border-collapse:collapse;min-width:720px}
+thead tr{border-bottom:1px solid rgba(255,255,255,.08)}
+th{text-align:left;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#3C4650;font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04)}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+td{padding:11px 12px;font-size:13px;color:#C8D0D8;vertical-align:middle}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+.dim{color:#4A5566}
+.chip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;margin:0 4px 3px 0;background:rgba(75,158,255,.08);border:1px solid rgba(75,158,255,.18);color:#9CC7FF;white-space:nowrap}
+.yes{color:#4BFF9E;font-family:'IBM Plex Mono',monospace;font-size:11px}
+
+.err-banner{background:rgba(255,100,100,.06);border:1px solid rgba(255,100,100,.15);color:#FF6464;padding:12px 16px;font-size:13px;margin-bottom:20px;display:none}
+.help{background:#0A0E14;border:1px solid rgba(255,255,255,.06);padding:14px 16px;font-size:12.5px;line-height:1.6;color:#9AA4B0;margin-bottom:28px}
+.help code{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#C8D0D8;background:#06080B;padding:1px 5px}
+
+@media(max-width:860px){
+  .layout{flex-direction:column}
+  .sidebar{width:auto;height:auto;position:static;flex-direction:row;align-items:center}
+  .sb-nav{display:flex;padding:0;overflow-x:auto}
+  .sb-logo,.sb-user{border:none}
+  .main{padding:20px 16px 48px}
+  .lib{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
+        <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+        <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <div class="sb-logo-text">Jay Bonham</div>
+        <div class="sb-logo-sub">Sales Portal</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <a href="/admin/leads" class="sb-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Leads
+      </a>
+      <a href="/admin/inbox" class="sb-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Inbox
+      </a>
+      <a href="/admin/affiliates" class="sb-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Affiliates
+      </a>
+      <a href="/admin/videos" class="sb-link active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="15" height="14" rx="1" stroke="currentColor" stroke-width="1.8"/><path d="M17 10l5-3v10l-5-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Videos
+      </a>
+    </nav>
+    <div class="sb-user">
+      <span id="sb-username" style="font-family:'IBM Plex Mono',monospace;font-size:11px">—</span>
+      <button id="btn-logout">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h1>Videos</h1>
+      <div class="sp"></div>
+      <select class="sel" id="days">
+        <option value="1">Last 24 hours</option>
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="365">Last 12 months</option>
+      </select>
+      <button class="btn-sm" id="refresh">Refresh</button>
+    </div>
+
+    <div class="err-banner" id="err"></div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="s-sessions">–</div><div class="stat-l">Visitors</div></div>
+      <div class="stat"><div class="stat-n blue" id="s-plays">–</div><div class="stat-l">Video plays</div></div>
+      <div class="stat"><div class="stat-n" id="s-avg">–</div><div class="stat-l">Avg % watched</div></div>
+      <div class="stat"><div class="stat-n green" id="s-cta">–</div><div class="stat-l">CTA clicks</div></div>
+      <div class="stat"><div class="stat-n yellow" id="s-ctarate">–</div><div class="stat-l">CTA rate · watchers</div></div>
+    </div>
+
+    <div class="section-h"><span>Video library</span><span id="lib-count"></span></div>
+    <div class="lib" id="lib"></div>
+
+    <div class="section-h"><span>Pages</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Page</th><th>Visitors</th><th>Played a video</th><th>CTA clicks</th><th>CTA rate</th><th>CTA rate · watchers</th><th>CTA rate · non-watchers</th></tr></thead>
+        <tbody id="pages-body"><tr><td colspan="7" class="dim mono">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="section-h"><span>Recent viewers</span><span>Most recent first</span></div>
+    <div class="help">Viewers show as <b>anonymous</b> unless they arrive with their email in the link. In GHL, set the PDF form redirect to <code>https://jaybonham.com/beforeyougo?email={{contact.email}}</code> — every view after that is tied to the lead, on every page, for that browser.</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>When</th><th>Who</th><th>Page</th><th>Watched</th><th>Clicked CTA</th></tr></thead>
+        <tbody id="recent-body"><tr><td colspan="5" class="dim mono">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+var TOKEN = localStorage.getItem('jb_token');
+if (!TOKEN) location.replace('/admin');
+document.getElementById('sb-username').textContent = localStorage.getItem('jb_user') || 'Admin';
+function logout(){ localStorage.removeItem('jb_token'); localStorage.removeItem('jb_user'); location.replace('/admin'); }
+document.getElementById('btn-logout').addEventListener('click', logout);
+
+// Every video we host. key = file name used by the tracker.
+var LIBRARY = [
+  {key:'beforeyougo', title:'Before You Go', who:'Jay · post-PDF transition', src:'/assets/beforeyougo.mp4', poster:'/assets/beforeyougo-poster.jpg', len:'1:44', pages:['/beforeyougo']},
+  {key:'ash',    title:'Ash Barks',      who:'Student case study', src:'/assets/testimonials/ash.mp4',    poster:'/assets/testimonials/ash.jpg',    len:'1:03', pages:['/','/apply']},
+  {key:'jeremy', title:'Jeremy Daniel',  who:'Student testimonial', src:'/assets/testimonials/jeremy.mp4', poster:'/assets/testimonials/jeremy.jpg', len:'2:59', pages:['/','/apply']},
+  {key:'rees',   title:'Rees Roberts',   who:'Student testimonial', src:'/assets/testimonials/rees.mp4',   poster:'/assets/testimonials/rees.jpg',   len:'1:23', pages:['/','/apply']},
+  {key:'hifzah', title:'Hifzah Mahmood', who:'Student testimonial', src:'/assets/testimonials/hifzah.mp4', poster:'/assets/testimonials/hifzah.jpg', len:'2:12', pages:['/','/apply']},
+  {key:'gary',   title:'Gary Brunskill', who:'Student testimonial', src:'/assets/testimonials/gary.mp4',   poster:'/assets/testimonials/gary.jpg',   len:'1:03', pages:['/','/apply']}
+];
+var TITLES = {}; LIBRARY.forEach(function(v){ TITLES[v.key] = v.title; });
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function pct(a, b){ return b ? Math.round(100 * a / b) + '%' : '–'; }
+function n(v){ return v == null ? '–' : v; }
+function ago(iso){
+  var s = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  return Math.floor(s / 86400) + 'd ago';
+}
+
+function renderLibrary(stats){
+  var by = {}; (stats || []).forEach(function(v){ by[v.video] = v; });
+  document.getElementById('lib-count').textContent = LIBRARY.length + ' videos hosted';
+  document.getElementById('lib').innerHTML = LIBRARY.map(function(v){
+    var s = by[v.key];
+    var url = 'https://jaybonham.com' + v.src;
+    var curve;
+    if (s && s.plays) {
+      curve = '<div class="curve">' + [10,20,30,40,50,60,70,80,90,100].map(function(m){
+        var r = s.reached[String(m)] || 0, h = Math.round(100 * r / s.plays);
+        return '<div class="bar"><div class="bar-tip">' + h + '% · ' + r + ' of ' + s.plays + '</div><div class="bar-f" style="height:' + Math.max(h, 2) + '%"></div><div class="bar-x">' + m + '</div></div>';
+      }).join('') + '</div>';
+    } else {
+      curve = '<div class="nodata">No plays in this range yet</div>';
+    }
+    return '<div class="vcard">'
+      + '<video src="' + esc(v.src) + '" poster="' + esc(v.poster) + '" controls playsinline preload="none"></video>'
+      + '<div class="vbody">'
+      +   '<div class="vhead"><div><div class="vtitle">' + esc(v.title) + '</div><div class="vmeta">' + esc(v.who) + ' · ' + esc(v.len) + '</div></div>'
+      +   '<button class="copy" data-copy="' + esc(url) + '">Copy link</button></div>'
+      +   '<div>' + v.pages.map(function(p){ return '<a class="tag" href="https://jaybonham.com' + esc(p) + '" target="_blank" rel="noopener">' + esc(p === '/' ? 'Homepage' : p) + '</a>'; }).join('') + '</div>'
+      +   '<div class="kpis">'
+      +     '<div class="kpi"><div class="kpi-n">' + n(s && s.impressions) + '</div><div class="kpi-l">Seen</div></div>'
+      +     '<div class="kpi"><div class="kpi-n blue">' + n(s && s.plays) + '</div><div class="kpi-l">Plays · ' + (s && s.play_rate != null ? s.play_rate + '%' : '–') + '</div></div>'
+      +     '<div class="kpi"><div class="kpi-n">' + (s && s.avg_watched != null ? s.avg_watched + '%' : '–') + '</div><div class="kpi-l">Avg watched</div></div>'
+      +     '<div class="kpi"><div class="kpi-n green">' + n(s && s.cta_after_play) + '</div><div class="kpi-l">CTA' + (s && s.avg_pct_at_cta != null ? ' · at ' + s.avg_pct_at_cta + '%' : '') + '</div></div>'
+      +   '</div>'
+      +   '<div><div class="curve-l"><span>Still watching at…</span><span>% of plays</span></div>' + curve + '</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function renderPages(pages){
+  var tb = document.getElementById('pages-body');
+  if (!pages.length){ tb.innerHTML = '<tr><td colspan="7" class="dim mono">No visits tracked in this range yet.</td></tr>'; return; }
+  tb.innerHTML = pages.map(function(p){
+    var non = p.views - p.played_any, ctaNon = p.cta - p.cta_after_play;
+    return '<tr><td class="mono">' + esc(p.page === '/' ? '/ (homepage)' : p.page) + '</td>'
+      + '<td>' + p.views + '</td>'
+      + '<td>' + p.played_any + ' <span class="dim">(' + pct(p.played_any, p.views) + ')</span></td>'
+      + '<td>' + p.cta + '</td>'
+      + '<td>' + pct(p.cta, p.views) + '</td>'
+      + '<td class="green">' + pct(p.cta_after_play, p.played_any) + '</td>'
+      + '<td class="dim">' + pct(ctaNon, non) + '</td></tr>';
+  }).join('');
+}
+
+function renderRecent(rows){
+  var tb = document.getElementById('recent-body');
+  if (!rows.length){ tb.innerHTML = '<tr><td colspan="5" class="dim mono">Nobody yet — views will appear here as they happen.</td></tr>'; return; }
+  tb.innerHTML = rows.map(function(r){
+    var w = Object.keys(r.watched || {});
+    return '<tr><td class="mono dim" title="' + esc(r.when) + '">' + ago(r.when) + '</td>'
+      + '<td>' + (r.email ? esc(r.email) : '<span class="dim">anonymous</span>') + '</td>'
+      + '<td class="mono">' + esc(r.page === '/' ? 'homepage' : r.page) + '</td>'
+      + '<td>' + (w.length ? w.map(function(k){ return '<span class="chip">' + esc(TITLES[k] || k) + ' · ' + r.watched[k] + '%</span>'; }).join('') : '<span class="dim mono">didn\'t play</span>') + '</td>'
+      + '<td>' + (r.cta ? '<span class="yes">✓ yes' + (r.cta_pct != null ? ' · at ' + r.cta_pct + '%' : '') + '</span>' : '<span class="dim">–</span>') + '</td></tr>';
+  }).join('');
+}
+
+function load(){
+  var err = document.getElementById('err'); err.style.display = 'none';
+  var days = document.getElementById('days').value;
+  fetch('/api/vt?days=' + days, {headers: {'Authorization': 'Bearer ' + TOKEN}})
+    .then(function(r){ if (r.status === 401){ logout(); return null; } return r.json(); })
+    .then(function(d){
+      if (!d) return;
+      if (!d.ok){ err.textContent = d.error || 'Could not load stats.'; err.style.display = 'block'; renderLibrary([]); return; }
+      var plays = 0, wsum = 0, cta = 0, watchers = 0, ctaW = 0;
+      d.videos.forEach(function(v){ plays += v.plays; wsum += (v.avg_watched || 0) * v.plays; });
+      d.pages.forEach(function(p){ cta += p.cta; watchers += p.played_any; ctaW += p.cta_after_play; });
+      document.getElementById('s-sessions').textContent = d.sessions;
+      document.getElementById('s-plays').textContent = plays;
+      document.getElementById('s-avg').textContent = plays ? Math.round(wsum / plays) + '%' : '–';
+      document.getElementById('s-cta').textContent = cta;
+      document.getElementById('s-ctarate').textContent = pct(ctaW, watchers);
+      renderLibrary(d.videos); renderPages(d.pages); renderRecent(d.recent);
+    })
+    .catch(function(){ err.textContent = 'Network error loading stats.'; err.style.display = 'block'; renderLibrary([]); });
+}
+
+document.getElementById('days').addEventListener('change', load);
+document.getElementById('refresh').addEventListener('click', load);
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-copy]'); if (!b) return;
+  var t = b.getAttribute('data-copy');
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ b.textContent = 'Copied ✓'; setTimeout(function(){ b.textContent = 'Copy link'; }, 1500); }).catch(function(){ prompt('Copy link:', t); });
+});
+// only one video at a time
+document.addEventListener('play', function(e){ if (e.target.tagName !== 'VIDEO') return; document.querySelectorAll('video').forEach(function(v){ if (v !== e.target) v.pause(); }); }, true);
+
+renderLibrary([]);
+load();
+</script>
+</body>
+</html>

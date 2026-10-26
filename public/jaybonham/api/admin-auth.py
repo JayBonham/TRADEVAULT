@@ -8,9 +8,9 @@ from http.server import BaseHTTPRequestHandler
 
 JWT_SECRET = os.environ.get("ADMIN_JWT_SECRET", "changeme-set-in-vercel")
 
-# Credentials stored as env vars: ADMIN_USER_1 / ADMIN_PASS_1, ADMIN_USER_2 / ADMIN_PASS_2
+# Credentials stored as env vars: ADMIN_USER_1 / ADMIN_PASS_1 … ADMIN_USER_6 / ADMIN_PASS_6
 USERS = {}
-for i in (1, 2, 3):
+for i in range(1, 7):
     u = os.environ.get(f"ADMIN_USER_{i}", "")
     p = os.environ.get(f"ADMIN_PASS_{i}", "")
     if u and p:
