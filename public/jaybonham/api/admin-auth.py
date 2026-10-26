@@ -14,7 +14,24 @@ for i in range(1, 7):
     u = os.environ.get(f"ADMIN_USER_{i}", "")
     p = os.environ.get(f"ADMIN_PASS_{i}", "")
     if u and p:
-        USERS[u] = p  # stored as plaintext in env var (Vercel encrypts at rest)
+        USERS[u.strip()] = p.strip()  # stored as plaintext in env var (Vercel encrypts at rest)
+
+# Built-in accounts: PBKDF2-SHA256 (salt, hash), 600k iterations. No plaintext in the repo.
+HASHED_USERS = {
+    "Admin": ("de0778fb5c3215935b3040ab666bb680",
+              "53a9ea63aa01fc185c49be490e5513b12ac02ab8de8df184bacda62c023eee27"),
+}
+
+
+def _check(username, password):
+    stored = USERS.get(username)
+    if stored and hmac.compare_digest(stored, password):
+        return True
+    h = HASHED_USERS.get(username)
+    if h:
+        calc = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(h[0]), 600000).hex()
+        return hmac.compare_digest(calc, h[1])
+    return False
 
 
 def _make_token(user):
@@ -41,8 +58,7 @@ class handler(BaseHTTPRequestHandler):
         username = (body.get("username") or "").strip()
         password = (body.get("password") or "").strip()
 
-        stored = USERS.get(username)
-        if not stored or stored != password:
+        if not _check(username, password):
             self._json(401, {"ok": False, "error": "Invalid credentials"})
             return
 
