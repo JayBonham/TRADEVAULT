@@ -1,8 +1,8 @@
-"""Webinar registration.
+"""Live workshop registration (pages live at /workshop).
 POST {name, email, phone, session (ISO UTC start), page, ref, utm_*}
  1. Saves a backup row in Postgres (jb_webinar_regs) so no signup is ever lost.
  2. Upserts the contact in GHL and ADDS tags (never replaces existing tags):
-      webinar-registered, webinar-YYYY-MM-DD
+      workshop-registered, workshop-YYYY-MM-DD
  3. Forwards the payload to a GHL inbound webhook if GHL_WEBINAR_WEBHOOK is set.
 """
 import http.client
@@ -62,19 +62,19 @@ class handler(BaseHTTPRequestHandler):
             local_day = session.astimezone(ZoneInfo("America/New_York"))
         except Exception:
             local_day = session - timedelta(hours=5)
-        session_tag = "webinar-" + local_day.strftime("%Y-%m-%d")
+        session_tag = "workshop-" + local_day.strftime("%Y-%m-%d")
         first, _, last = name.partition(" ")
         utm = {k: _clip(b.get(k), 120) for k in ("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid")}
         ref = _clip(b.get("ref"), 300)
 
         saved = self._save(name, email, phone, session, utm, ref)
-        ghl = self._ghl(first, last, email, phone, ["webinar-registered", session_tag])
+        ghl = self._ghl(first, last, email, phone, ["workshop-registered", session_tag])
         hook = self._webhook({
             "first_name": first, "last_name": last, "full_name": name,
             "email": email, "phone": phone,
-            "webinar_start_utc": session.isoformat(),
-            "webinar_tag": session_tag,
-            "source": "jaybonham.com/webinar", "referrer": ref, **utm,
+            "workshop_start_utc": session.isoformat(),
+            "workshop_tag": session_tag,
+            "source": "jaybonham.com/workshop", "referrer": ref, **utm,
         })
         log("WEBINAR_REG", email, "db" if saved else "-", "ghl" if ghl else "-", "hook" if hook else "-")
 
@@ -121,7 +121,7 @@ class handler(BaseHTTPRequestHandler):
         }
         try:
             body = {"locationId": GHL_LOCATION, "firstName": first, "email": email,
-                    "phone": phone, "source": "Webinar registration"}
+                    "phone": phone, "source": "Workshop registration"}
             if last:
                 body["lastName"] = last
             c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=8)

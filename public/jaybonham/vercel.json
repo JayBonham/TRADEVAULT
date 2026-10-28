@@ -55,6 +55,16 @@
       ],
       "destination": "/admin",
       "permanent": false
+    },
+    {
+      "source": "/webinar",
+      "destination": "/workshop",
+      "permanent": false
+    },
+    {
+      "source": "/webinar/:path*",
+      "destination": "/workshop/:path*",
+      "permanent": false
     }
   ],
   "rewrites": [

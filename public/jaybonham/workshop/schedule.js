@@ -1,5 +1,5 @@
 /* =================================================================
-   WEBINAR SCHEDULE — single source of truth for /webinar pages.
+   WEBINAR SCHEDULE — single source of truth for /workshop pages.
    Runs weekly. Shows the next session on/after firstDate; a session
    counts as "current" until liveWindowMin after it starts.
    ================================================================= */
@@ -10,7 +10,7 @@ var WEBINAR = {
   tz: 'America/New_York', tzLabel: 'ET',
   durationMin: 60,
   liveWindowMin: 75,
-  title: 'The Secrets of a Hedge Fund Trader — Live with Jay Bonham'
+  title: 'Live Workshop: The Secrets of a Hedge Fund Trader — Jay Bonham'
 };
 
 window.JBW = (function () {
@@ -53,19 +53,19 @@ window.JBW = (function () {
   }
 
   var z = function (dt) { return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-  var details = 'Free live training with Jay Bonham. Your join link is in your email and texts.\n\nhttps://jaybonham.com/webinar';
+  var details = 'Free live workshop with Jay Bonham. Your join link is in your email and texts.\n\nhttps://jaybonham.com/workshop';
   var gcal = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(WEBINAR.title) +
              '&dates=' + z(start) + '/' + z(end) + '&details=' + encodeURIComponent(details) + '&location=' + encodeURIComponent('Online — link in your email');
 
   function ics() {
-    var body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Jay Bonham//Webinar//EN', 'BEGIN:VEVENT',
+    var body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Jay Bonham//Workshop//EN', 'BEGIN:VEVENT',
       'UID:' + z(start) + '@jaybonham.com', 'DTSTAMP:' + z(new Date()), 'DTSTART:' + z(start), 'DTEND:' + z(end),
       'SUMMARY:' + WEBINAR.title, 'DESCRIPTION:' + details.replace(/\n/g, '\\n'), 'LOCATION:Online — link in your email',
-      'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Jay Bonham live training starts in 15 minutes', 'END:VALARM',
+      'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Jay Bonham live workshop starts in 15 minutes', 'END:VALARM',
       'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' }));
-    a.download = 'jay-bonham-live-training.ics';
+    a.download = 'jay-bonham-live-workshop.ics';
     document.body.appendChild(a); a.click(); a.remove();
   }
 
