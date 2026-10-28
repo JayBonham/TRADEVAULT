@@ -101,6 +101,13 @@ class handler(BaseHTTPRequestHandler):
                 f"*12-month goal:* {goal}",
             ]
             self._notify_slack("\n".join(lines))
+
+            # Tell Meta a call was booked (fills "Appointments scheduled" in Ads Manager).
+            # GHL widget bookings never fire the browser pixel, so this server event is the only signal.
+            if "@" in email:
+                cal = body.get("calendar") if isinstance(body.get("calendar"), dict) else {}
+                appt_id = cal.get("appointmentId") or cal.get("id") or body.get("appointment_id") or ""
+                self._send_capi("Schedule", email, name, "ghl-appt-" + str(appt_id or email), phone if phone != "—" else "")
             self._json(200, {"ok": True})
         except Exception as e:
             self._json(500, {"error": str(e)})
@@ -160,7 +167,7 @@ class handler(BaseHTTPRequestHandler):
     def _sha256(self, value):
         return hashlib.sha256(value.lower().strip().encode()).hexdigest() if value else None
 
-    def _send_capi(self, event_name, email, name, event_id):
+    def _send_capi(self, event_name, email, name, event_id, phone=""):
         if not META_CAPI_TOKEN:
             return
         try:
@@ -171,6 +178,8 @@ class handler(BaseHTTPRequestHandler):
             em = self._sha256(email); em and user_data.__setitem__("em", [em])
             fn = self._sha256(first); fn and user_data.__setitem__("fn", [fn])
             ln = self._sha256(last);  ln and user_data.__setitem__("ln", [ln])
+            ph_clean = "".join(c for c in (phone or "") if c.isdigit())
+            ph = self._sha256(ph_clean); ph and user_data.__setitem__("ph", [ph])
             event = {
                 "event_name": event_name,
                 "event_time": int(time.time()),
