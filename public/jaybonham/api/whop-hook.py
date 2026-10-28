@@ -116,13 +116,16 @@ class handler(BaseHTTPRequestHandler):
                 plan = {}
             if not isinstance(prod, dict):
                 prod = {}
-            name  = (user.get("name") or user.get("username") or data.get("name") or "").strip()
+            bill  = data.get("billing_address") or {}
+            if not isinstance(bill, dict):
+                bill = {}
+            name  = (user.get("name") or bill.get("name") or user.get("username") or data.get("name") or "").strip()
             email = (user.get("email") or data.get("email") or data.get("user_email") or "").strip()
             slug  = str(plan.get("slug") or plan.get("id") or data.get("plan_id") or "").strip()
             product = (prod.get("title") or prod.get("name") or plan.get("title") or plan.get("name") or slug or "Unknown product")
 
             amount = None
-            for k in ("final_amount", "total", "amount", "usd_total", "subtotal", "amount_after_fees"):
+            for k in ("total", "final_amount", "usd_total", "subtotal", "amount", "amount_after_fees"):
                 v = data.get(k)
                 try:
                     if v not in (None, ""):
