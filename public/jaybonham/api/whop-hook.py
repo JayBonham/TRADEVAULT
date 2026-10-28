@@ -8,6 +8,22 @@ from http.server import BaseHTTPRequestHandler
 WHOP_SECRET  = os.environ.get("WHOP_WEBHOOK_SECRET", "")
 GHL_API_KEY  = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
+SLACK_WEBHOOK_PAYMENTS = os.environ.get("SLACK_WEBHOOK_PAYMENTS", "")
+
+PLAN_PRICES = {
+    "sniper-basic-ed":    999.0,
+    "sniper-accelerator": 5999.0,
+    "sniper-elite-72":    9999.0,
+}
+
+SLACK_EVENTS = {
+    "payment.succeeded": ("\U0001F4B0", "Payment received"),
+    "payment.failed":    ("\u26A0\uFE0F", "Payment FAILED"),
+    "payment.refunded":  ("\U0001F501", "Refund issued"),
+    "refund.created":    ("\U0001F501", "Refund issued"),
+    "refund.updated":    ("\U0001F501", "Refund updated"),
+    "dispute.created":   ("\U0001F6A8", "Dispute / chargeback opened"),
+}
 
 PLAN_TAGS = {
     "sniper-basic-ed":    ["purchased", "purchased-standard"],
@@ -48,6 +64,9 @@ class handler(BaseHTTPRequestHandler):
             import sys
             print("WHOP EVENT:", event_type, json.dumps(event)[:500], file=sys.stderr)
 
+            if event_type in SLACK_EVENTS:
+                self._notify_slack(event_type, event.get("data", {}) or {})
+
             if event_type not in ("payment.succeeded", "membership.went_valid",
                                    "membership.activated", "member.created"):
                 self._json(200, {"ok": True, "skipped": event_type})
@@ -80,6 +99,62 @@ class handler(BaseHTTPRequestHandler):
 
         except Exception as e:
             self._json(500, {"error": str(e)})
+
+    def _notify_slack(self, event_type, data):
+        """Post a payment line to #payment-confirmations-us30. Never breaks the webhook."""
+        import sys
+        if not SLACK_WEBHOOK_PAYMENTS:
+            return
+        try:
+            icon, label = SLACK_EVENTS[event_type]
+            user = data.get("user") or data.get("customer") or data.get("member") or {}
+            if not isinstance(user, dict):
+                user = {}
+            plan = data.get("plan") or {}
+            prod = data.get("product") or {}
+            if not isinstance(plan, dict):
+                plan = {}
+            if not isinstance(prod, dict):
+                prod = {}
+            name  = (user.get("name") or user.get("username") or data.get("name") or "").strip()
+            email = (user.get("email") or data.get("email") or data.get("user_email") or "").strip()
+            slug  = str(plan.get("slug") or plan.get("id") or data.get("plan_id") or "").strip()
+            product = (prod.get("title") or prod.get("name") or plan.get("title") or plan.get("name") or slug or "Unknown product")
+
+            amount = None
+            for k in ("final_amount", "total", "amount", "usd_total", "subtotal", "amount_after_fees"):
+                v = data.get(k)
+                try:
+                    if v not in (None, ""):
+                        amount = float(v)
+                        break
+                except (TypeError, ValueError):
+                    pass
+            if amount is None:
+                amount = PLAN_PRICES.get(slug)
+            currency = (data.get("currency") or "usd").upper()
+            amt = f"${amount:,.2f} {currency}" if amount is not None else "amount n/a"
+
+            lines = [f"{icon} *{label}: {amt}*",
+                     f"*Name:* {name or 'n/a'}",
+                     f"*Email:* {email or 'n/a'}",
+                     f"*Product:* {product}"]
+            pid = data.get("id")
+            if pid:
+                lines.append(f"*Whop ID:* `{pid}`")
+            if event_type == "payment.failed":
+                reason = data.get("failure_message") or data.get("failure_reason") or ""
+                if reason:
+                    lines.append(f"*Reason:* {reason}")
+
+            payload = json.dumps({"text": "\n".join(lines)}).encode()
+            conn = http.client.HTTPSConnection("hooks.slack.com", timeout=5)
+            conn.request("POST", SLACK_WEBHOOK_PAYMENTS.replace("https://hooks.slack.com", ""),
+                         payload, {"Content-Type": "application/json"})
+            r = conn.getresponse()
+            print("SLACK_PAYMENT:", r.status, file=sys.stderr)
+        except Exception as e:
+            print("SLACK_PAYMENT_ERR:", e, file=sys.stderr)
 
     def _ghl_upsert(self, email, first, last, phone, tags):
         import sys
