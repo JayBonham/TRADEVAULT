@@ -2,677 +2,748 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The Trade Vault — Trade with Rules, Not Instinct</title>
 <meta name="description" content="Three proprietary scanners. Four live educators. 18 structured modules. Stop guessing and start executing with a rules-based trading system.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800;900&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="assets/jay-stage.webp">
-<link rel="preload" as="image" href="assets/killshot-graphic.webp">
-<link rel="preload" as="image" href="assets/smartshot-graphic.webp">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/tv-icon.png">
 <style>
 :root{
-  --bg:#060A12;--bg1:#09101E;--bg2:#0C1526;--bg3:#111D33;
-  --bd:rgba(255,255,255,.07);--bd2:rgba(47,110,232,.3);
-  --fg:#F0F5FF;--fg2:#8FA3BF;--fg3:#445570;
-  --blue:#2F6EE8;--blue2:#4B9EFF;--cyan:#38E8FF;
-  --grad:linear-gradient(135deg,#2F6EE8,#38E8FF);
-  --H:'Saira Condensed',sans-serif;
-  --B:'Archivo',sans-serif;
-  --M:'IBM Plex Mono',monospace;
+  /* ground: deep navy, darkest → lightest */
+  --g0:#050A14; --g1:#08111F; --g2:#0E1A2E;
+  --hair:rgba(255,255,255,.08); --hair-2:rgba(255,255,255,.14);
+  --tx:#EAF0FA; --tx-dim:#B3C0D4; --tx-mute:#7F8DA3;
+  /* the one accent: Trade Vault blue */
+  --acc:#4B9EFF; --acc-soft:rgba(75,158,255,.12); --acc-rgb:75,158,255;
+  /* status colours, mock UI panels only */
+  --ok:#7BE0B0; --warn:#F5B85C;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --max:1120px;
+  --display:'Instrument Sans',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--fg);font-family:var(--B);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html{background:var(--g0);scroll-behavior:smooth}
+body{background:transparent;color:var(--tx);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(900px 600px at 12% 8%,rgba(28,72,170,.24),transparent 70%),
+    radial-gradient(800px 600px at 92% 45%,rgba(75,158,255,.09),transparent 70%),
+    radial-gradient(1000px 700px at 30% 100%,rgba(18,44,120,.22),transparent 70%),
+    var(--g0)}
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
-::selection{background:var(--blue);color:#fff}
+button{font:inherit;color:inherit}
+::selection{background:var(--acc);color:#fff}
 
-@keyframes rise   {from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
-@keyframes fadeIn {from{opacity:0}to{opacity:1}}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes pulse  {0%{transform:scale(1);opacity:.8}70%{transform:scale(2.4);opacity:0}100%{opacity:0}}
-@keyframes blink  {0%,100%{opacity:1}50%{opacity:.15}}
-@keyframes scanln {from{top:-2px}to{top:102%}}
+@keyframes blink{50%{opacity:.25}}
+@keyframes pulse{50%{transform:scale(1.04)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
 
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
-.reveal.in{opacity:1;transform:none}
-.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+/* ── layout + type ── */
+.W{max-width:calc(var(--max) + 2 * 24px);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.sec{padding-block:clamp(72px,11vh,128px);border-top:1px solid var(--hair)}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:1.02;text-wrap:balance}
+h1{font-size:clamp(44px,6.4vw,84px)}
+h2{font-size:clamp(34px,4.8vw,60px)}
+.hl{color:var(--acc)}
+.kick{display:block;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:22px}
+.kick b{font-weight:500;color:var(--acc)}
+.kick b::after{content:"—";margin:0 .7em;color:var(--tx-mute)}
+.lede{color:var(--tx-dim);max-width:56ch;margin-top:20px}
+.head{max-width:760px;margin-bottom:56px}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
 
-.W{max-width:1180px;margin:0 auto;padding-inline:clamp(18px,4vw,52px)}
-.sec{padding-block:96px}
-.lbl{display:inline-flex;align-items:center;gap:8px;font-family:var(--B);font-size:9px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
-.lbl::before{content:'';width:20px;height:1.5px;background:var(--cyan);opacity:.6}
-h2.H{font-family:var(--H);font-weight:800;font-size:clamp(44px,6.5vw,80px);text-transform:uppercase;line-height:.9;margin-bottom:16px}
-.sub{color:var(--fg2);font-size:15px;line-height:1.7;max-width:52ch}
-.btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;font-family:var(--B);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:14px 28px;transition:background .2s,transform .2s,box-shadow .2s;cursor:pointer;border:none}
-.btn-p:hover{background:var(--blue2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(47,110,232,.38)}
-.btn-o{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--fg);font-family:var(--B);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:13px 28px;border:1px solid rgba(255,255,255,.2);transition:border-color .2s,color .2s;cursor:pointer}
-.btn-o:hover{border-color:var(--blue2);color:var(--blue2)}
+/* ── reveal: rise + un-blur ── */
+.reveal{opacity:0;transform:translateY(18px);filter:blur(8px);transition:opacity 1s var(--ease),transform 1s var(--ease),filter 1s var(--ease)}
+.reveal.in{opacity:1;transform:none;filter:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
 
-/* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;height:68px;display:flex;align-items:center;justify-content:space-between;padding-inline:clamp(18px,4vw,56px);border-bottom:1px solid transparent;transition:background .4s,border-color .4s,backdrop-filter .4s}
-nav.scrolled{background:rgba(6,10,18,.92);backdrop-filter:blur(16px);border-color:var(--bd)}
-.nl{display:flex;align-items:center;gap:12px}
-.n1{font-family:var(--H);font-weight:800;font-size:18px;letter-spacing:.16em;text-transform:uppercase}
-.n2{font-family:var(--M);font-size:8px;letter-spacing:.32em;color:var(--cyan);text-transform:uppercase;margin-top:3px}
-.nav-links{display:flex;gap:30px;font-family:var(--B);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
-.nav-links a{color:var(--fg2);transition:color .2s}
-.nav-links a:hover{color:var(--fg)}
-.mb{display:none;width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--fg);cursor:pointer;align-items:center;justify-content:center}
-#mob{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;padding:24px clamp(20px,6vw,40px);transform:translateX(100%);transition:transform .42s cubic-bezier(.7,0,.2,1)}
-#mob.open{transform:none}
-.mob-links{display:flex;flex-direction:column;gap:4px;margin-top:48px;font-family:var(--H);font-weight:800;text-transform:uppercase;font-size:clamp(36px,12vw,60px);line-height:1.05}
-.mob-links a{color:var(--fg2);transition:color .2s}
+/* ── buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:16px 34px;border-radius:999px;background:#fff;color:#07101F;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em;border:0;cursor:pointer;
+  box-shadow:0 10px 40px rgba(var(--acc-rgb),.22),inset 0 -2px 0 rgba(0,0,0,.08);transition:box-shadow .2s,transform .2s}
+.btn:hover{box-shadow:0 14px 50px rgba(var(--acc-rgb),.38);transform:translateY(-1px)}
+.btn .arr{color:var(--acc)}
+.btn-g{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:16px 30px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--hair-2);color:var(--tx);font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em;transition:background .2s,border-color .2s}
+.btn-g:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.24)}
+.note{display:block;margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-mute)}
 
-/* ── HERO 4-PANEL ── */
-#hero{position:relative;min-height:82vh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
-.hero-panels{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr)}
-.hp{position:relative;overflow:hidden}
-.hp img{width:100%;height:100%;object-fit:cover;transition:transform 12s ease;filter:saturate(.75) contrast(1.06)}
-.hp:nth-child(1) img{object-position:65% 15%;transform:scale(1.55);transform-origin:65% 35%}
-.hp:nth-child(2){background:linear-gradient(170deg,#0B1828 0%,#0D1E34 100%)}
-.hp:nth-child(2) img{object-fit:contain;object-position:center 90%;padding-top:0}
-.hp:nth-child(3) img{object-position:center 12%;object-fit:cover}
-.hp:nth-child(4) img{object-position:center 15%}
-.hp::after{content:'';position:absolute;inset:0;background:rgba(6,10,18,.76)}
-.hp:nth-child(2)::after{background:rgba(6,10,18,.65)}
-.hp+.hp::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:rgba(47,110,232,.2);z-index:2}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,#060A12 0%,rgba(6,10,18,.7) 25%,rgba(6,10,18,.4) 55%,rgba(6,10,18,.55) 100%);z-index:1}
-.hero-lr{position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,10,18,.75) 0%,rgba(6,10,18,.2) 22%,rgba(6,10,18,.2) 78%,rgba(6,10,18,.75) 100%);z-index:1}
-/* panel name labels — hidden, educator strip handles labelling */
-.hp-name{display:none}
-.hero-content{position:relative;z-index:4;padding-inline:clamp(18px,4vw,56px);padding-bottom:clamp(64px,9vh,96px);text-align:center;display:flex;flex-direction:column;align-items:center}
-.hero-pad{padding-top:clamp(72px,9vh,100px)}
-.hero-tag{display:inline-flex;align-items:center;gap:10px;background:rgba(47,110,232,.14);border:1px solid rgba(47,110,232,.32);padding:7px 16px;font-family:var(--M);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--blue2);margin-bottom:28px}
-.hd{width:6px;height:6px;border-radius:50%;background:var(--cyan);position:relative}
-.hd::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--cyan);animation:pulse 2.2s ease-out infinite}
-.hero-h1{font-family:var(--H);font-weight:900;font-size:clamp(72px,11vw,140px);text-transform:uppercase;line-height:.84;margin-bottom:22px;animation:rise .9s .2s cubic-bezier(.22,1,.36,1) both}
-.hero-h1 em{font-style:normal;color:var(--blue2)}
-.hero-p{color:var(--fg2);font-size:16px;line-height:1.7;max-width:48ch;margin-bottom:36px;animation:rise .9s .38s cubic-bezier(.22,1,.36,1) both}
-.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:rise .9s .52s cubic-bezier(.22,1,.36,1) both}
-.hero-ctas .btn-p{padding:16px 36px;font-size:14px}
-.hero-ctas .btn-o{padding:15px 36px;font-size:14px}
-/* educators strip at bottom of hero */
-.hero-educators{position:absolute;bottom:0;left:0;right:0;z-index:4;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(6,10,18,.6);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.08)}
-.he{padding:16px clamp(12px,2vw,24px);border-right:1px solid rgba(255,255,255,.06);text-align:center}
-.he:last-child{border-right:none}
-.he-name{font-family:var(--H);font-weight:800;font-size:clamp(14px,1.8vw,20px);text-transform:uppercase;letter-spacing:.04em}
-.he-role{font-family:var(--M);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-top:3px}
+/* ── nav: floating frosted bar ── */
+.nav{position:fixed;top:14px;left:0;right:0;z-index:200;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.nav-in{max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 10px 10px 18px;border-radius:18px;
+  background:rgba(8,17,31,.62);border:1px solid var(--hair-2);box-shadow:0 10px 40px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.brand img:first-child{width:26px;height:26px;object-fit:contain}
+.brand img+img{height:13px;width:auto;opacity:.92}
+.nav-links{display:flex;gap:28px;font-size:14px;font-weight:500;color:var(--tx-mute)}
+.nav-links a{transition:color .2s}
+.nav-links a:hover{color:var(--tx)}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nav .btn{min-height:44px;padding:10px 20px;font-size:15px;background:var(--acc);color:#fff;box-shadow:none}
+.nav .btn:hover{background:#6CB1FF;box-shadow:none}
+.nav .btn .arr{color:#fff}
+.mb{display:none;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--hair-2);cursor:pointer;align-items:center;justify-content:center}
+#mob{position:fixed;inset:0;z-index:300;background:rgba(5,10,20,.96);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);display:flex;flex-direction:column;
+  padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
+#mob.open{opacity:1;pointer-events:auto}
+.mob-links{display:grid;margin-top:40px;border-top:1px solid var(--hair)}
+.mob-links a{font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:-.03em;padding:14px 0;border-bottom:1px solid var(--hair)}
+.mob-links a small{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.2em;color:var(--acc);margin-right:14px;vertical-align:middle}
 
-/* ── TRUST BAR ── */
-.trust{border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);background:var(--bg1)}
-.trust-inner{display:grid;grid-template-columns:repeat(4,1fr)}
-.ti{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:clamp(36px,4.5vw,56px) clamp(16px,2.5vw,32px);border-right:1px solid var(--bd)}
-.ti:last-child{border-right:none}
-.ti-n{font-family:var(--H);font-weight:800;text-transform:uppercase;font-size:clamp(22px,2.6vw,40px);letter-spacing:.02em;color:var(--fg);line-height:1}
-.ti-l{font-family:var(--B);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--fg3)}
+/* ── hero ── */
+.hero{padding-top:clamp(140px,20vh,190px);padding-bottom:clamp(64px,9vh,96px);text-align:center}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-dim);margin-bottom:30px}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:blink 2s infinite}
+.hero h1{max-width:13ch;margin:0 auto}
+.hero .lede{margin:24px auto 0;font-size:18px;color:var(--tx-mute)}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:38px}
+.frame{position:relative;margin-top:clamp(56px,8vh,84px);border-radius:22px;overflow:hidden;border:1px solid var(--hair-2);background:var(--g1);
+  box-shadow:0 40px 120px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04),0 0 120px rgba(var(--acc-rgb),.10)}
+.crew{display:grid;grid-template-columns:repeat(4,1fr)}
+.crew figure{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(170deg,#0B1628,#0E1D35)}
+.crew figure+figure{border-left:1px solid var(--hair)}
+.crew img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) contrast(1.04);transition:transform 1.2s var(--ease),filter .6s}
+.crew figure:hover img{transform:scale(1.04);filter:saturate(1) contrast(1.04)}
+.crew .cut img{object-position:center 8%}
+.crew figure::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(5,10,20,.92) 100%)}
+.crew figcaption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;text-align:left}
+.crew figcaption b{display:block;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em}
+.crew figcaption span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.live-chip{position:absolute;top:16px;left:16px;z-index:3;display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+.live-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 2s infinite}
 
+/* ── stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--hair)}
+.stat{padding:clamp(40px,6vh,64px) 24px clamp(40px,6vh,64px) 0}
+.stat+.stat{border-left:1px solid var(--hair);padding-left:28px}
+.stat b{display:block;font-family:var(--display);font-weight:700;font-size:clamp(40px,4.4vw,58px);letter-spacing:-.04em;line-height:1;color:var(--tx)}
+.stat.feat b{color:var(--acc)}
+.stat span{display:block;margin-top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
 
-/* ── EDUCATORS 2x2 ── */
-#educators{border-top:1px solid var(--bd)}
-.edu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:rgba(255,255,255,.06);margin-top:56px}
-.edu-card{background:var(--bg1);display:flex;flex-direction:column;position:relative;overflow:hidden}
-.edu-photo{position:relative;overflow:hidden;height:clamp(280px,36vw,440px)}
-.edu-photo img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.22,1,.36,1)}
-.edu-card:hover .edu-photo img{transform:scale(1.05)}
-.edu-photo-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,var(--bg1) 100%)}
-/* Tyler special: transparent bg needs dark gradient */
-.edu-card.tyler .edu-photo{background:linear-gradient(160deg,#0A1020 0%,#111D33 100%)}
-.edu-card.tyler .edu-photo img{object-fit:contain;object-position:center bottom;padding-top:20px}
-.edu-card.adam .edu-photo{background:linear-gradient(160deg,#080E1C 0%,#0C1828 100%)}
-.edu-card.adam .edu-photo img{object-fit:contain;object-position:center bottom;padding-top:10px}
-.edu-body{padding:24px 28px 32px}
-.edu-scanner{display:inline-flex;align-items:center;gap:6px;background:rgba(47,110,232,.1);border:1px solid rgba(47,110,232,.25);padding:3px 12px;font-family:var(--M);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue2);margin-bottom:14px}
-.edu-name{font-family:var(--H);font-weight:900;font-size:clamp(36px,4vw,52px);text-transform:uppercase;line-height:.9;margin-bottom:8px}
-.edu-role{font-family:var(--B);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;opacity:.8}
-.edu-bio{font-size:14px;color:var(--fg2);line-height:1.65;max-width:46ch;margin-bottom:16px}
-.edu-tags{display:flex;flex-wrap:wrap;gap:6px}
-.tag{background:rgba(255,255,255,.04);border:1px solid var(--bd);padding:4px 10px;font-family:var(--M);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3)}
+/* ── cards ── */
+.card{background:rgba(255,255,255,.025);border:1px solid var(--hair);border-radius:20px;overflow:hidden;transition:background .3s,border-color .3s}
+.card:hover{background:rgba(255,255,255,.04);border-color:var(--hair-2)}
+.tag{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--hair-2);font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
 
-/* ── SCANNERS with UI mockups ── */
-#scanners{background:var(--bg1);border-top:3px solid var(--blue);border-bottom:1px solid var(--bd)}
-.scan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.06)}
-.scard{background:var(--bg2);display:flex;flex-direction:column;position:relative;overflow:hidden}
-/* Floating laptop — all scanner cards */
-.scard.ks,.scard.ss,.scard.sp{overflow:visible}
-.scard.ks .scan-mock,.scard.ss .scan-mock,.scard.sp .scan-mock{overflow:visible;border-bottom:none;padding:24px 16px 0;display:flex;align-items:flex-end;min-height:140px;position:relative;z-index:3}
-.scard.ks .scan-mock{background:linear-gradient(180deg,#070D14 0%,#0B1422 100%)}
-.scard.ss .scan-mock{background:linear-gradient(180deg,#1C1030 0%,#160D28 100%)}
-.scard.sp .scan-mock{background:linear-gradient(180deg,#070D14 0%,#0B1422 100%)}
-.scard.ks .scan-mock img,.scard.ss .scan-mock img,.scard.sp .scan-mock img{width:100%;height:auto;display:block;margin-bottom:-72px;filter:drop-shadow(0 20px 48px rgba(0,0,0,.85))}
-.scard.ks .scard-body,.scard.ss .scard-body,.scard.sp .scard-body{padding-top:84px;position:relative;z-index:2;background:var(--bg2)}
-/* top accent */
-.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.ks::before{background:linear-gradient(90deg,#2F6EE8,#38E8FF)}
-.ss::before{background:linear-gradient(90deg,#7C3AED,#2F6EE8)}
-.sp::before{background:linear-gradient(90deg,#38E8FF,#06B6D4)}
-/* mockup window */
-.scan-mock{position:relative;overflow:hidden;border-bottom:1px solid var(--bd);background:#070D14}
-.sm-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid rgba(75,158,255,.08);background:rgba(0,0,0,.3)}
-.sm-dot{width:6px;height:6px;border-radius:50%}
-.sm-title{font-family:var(--M);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg3);margin-left:6px}
-.sm-live{display:flex;align-items:center;gap:5px;margin-left:auto;font-family:var(--M);font-size:8px;letter-spacing:.14em;color:var(--cyan)}
-.sm-blink{width:4px;height:4px;border-radius:50%;background:var(--cyan);animation:blink 1.4s infinite}
-.sm-body{padding:12px}
-/* candlestick chart SVG */
-.chart-svg{width:100%;display:block}
-/* EMA line, POC, signal */
-.poc-line{stroke:rgba(75,158,255,.5);stroke-width:1;stroke-dasharray:4 3}
-.ema20{stroke:#2F6EE8;stroke-width:1.2;fill:none}
-.ema50{stroke:#38E8FF;stroke-width:1;fill:none;opacity:.7}
-/* signal star */
-.sig-star{fill:var(--cyan)}
-/* zone highlights */
-.sup-zone{fill:rgba(239,68,68,.08)}
-.dem-zone{fill:rgba(47,110,232,.1)}
-/* scan sweep */
-.scan-sweep{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(56,232,255,.4),transparent);animation:scanln 3s linear infinite;pointer-events:none}
-.sm-indicators{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 12px;border-top:1px solid var(--bd)}
-.sm-ind{background:rgba(0,0,0,.3);padding:6px 8px}
-.sm-ind-l{font-family:var(--M);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3)}
-.sm-ind-v{font-family:var(--M);font-size:12px;font-weight:600;margin-top:3px}
-.green{color:#22C55E}.red{color:#EF4444}.blue{color:var(--blue2)}
-.sm-signal{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(47,110,232,.08);border-top:1px solid var(--bd)}
-.sm-signal-l{font-family:var(--M);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg2);display:flex;align-items:center;gap:6px}
-.sm-badge{font-family:var(--M);font-size:8px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:3px 10px;background:var(--cyan);color:var(--bg)}
-.sm-badge.sell{background:#EF4444;color:#fff}
-/* scard text area */
-.scard-body{padding:28px}
-.scard-n{font-family:var(--M);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg3);margin-bottom:14px}
-.scard-name{font-family:var(--H);font-weight:800;font-size:36px;text-transform:uppercase;line-height:1}
-.scard-sub{font-family:var(--M);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-top:6px;margin-bottom:14px}
-.scard-desc{font-size:14px;color:var(--fg2);line-height:1.65;margin-bottom:16px}
-.scard-by{font-family:var(--M);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg3)}
-.scard-by strong{color:var(--fg2)}
+/* educators */
+.edu{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.edu .ph{position:relative;height:clamp(260px,30vw,380px);background:linear-gradient(170deg,#0B1628,#0E1D35);overflow:hidden}
+.edu .ph img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
+.edu .card:hover .ph img{transform:scale(1.04)}
+.edu .ph.cut img{object-fit:contain;object-position:center bottom;padding-top:24px}
+.edu .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(8,17,31,.95) 100%)}
+.edu .bd{padding:6px 28px 30px}
+.edu .sc{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
+.edu .sc::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.edu h3{font-size:clamp(28px,2.8vw,36px)}
+.edu .role{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);margin:8px 0 14px}
+.edu p{color:var(--tx-dim);font-size:15.5px;margin-bottom:18px;max-width:52ch}
 
-/* ── WHAT YOU GET ── */
-#content-types{background:var(--bg);border-top:1px solid var(--bd)}
-.ct-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--bd);margin-top:52px}
-.ct{border-right:1px solid var(--bd);position:relative;overflow:hidden;display:flex;flex-direction:column}
-.ct:last-child{border-right:none}
-.ct-img{position:relative;overflow:hidden;height:220px;background:var(--bg2)}
-.ct-img img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;transition:transform .6s ease}
-.ct:hover .ct-img img{transform:scale(1.04)}
-.ct-img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,var(--bg1) 100%)}
-.ct-body{padding:24px 28px 32px;flex:1;background:var(--bg1)}
-.ct-title{font-family:var(--H);font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:8px}
-.ct-desc{font-size:14px;color:var(--fg2);line-height:1.65}
+/* scanners */
+.scans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.scans .shot{padding:28px 22px 6px;background:radial-gradient(420px 220px at 50% 100%,rgba(var(--acc-rgb),.10),transparent 70%)}
+.scans .shot img{width:100%;height:auto;filter:drop-shadow(0 24px 40px rgba(0,0,0,.7))}
+.scans .bd{padding:22px 26px 28px;border-top:1px solid var(--hair)}
+.scans .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.scans .n b{font-weight:500;color:var(--acc)}
+.scans h3{font-size:30px;margin:10px 0 4px}
+.scans .mk{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-dim);margin-bottom:14px}
+.scans p{color:var(--tx-dim);font-size:15px}
 
-/* ── CURRICULUM ── */
-#curriculum{background:var(--bg1);border-top:1px solid var(--bd)}
-.curric-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:52px;flex-wrap:wrap;gap:24px}
-.tier-tabs{display:flex;gap:2px}
-.ttab{padding:11px 26px;cursor:pointer;background:rgba(255,255,255,.04);color:var(--fg3);border:none;font-family:var(--B);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:all .18s}
-.ttab:hover{color:var(--fg2);background:rgba(255,255,255,.07)}
-.ttab.active{background:var(--blue);color:#fff}
-.tpanel{display:none;flex-direction:column}
-.tpanel.active{display:flex}
-.mod{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden}
-.mod:first-child{border-top:1px solid rgba(255,255,255,.07)}
-.mhdr{display:flex;align-items:center;justify-content:space-between;padding:24px 0;cursor:pointer;gap:20px;transition:opacity .2s}
-.mhdr:hover{opacity:.6}
-.ml{display:flex;align-items:center;gap:28px;flex:1}
-.mn{font-family:var(--H);font-size:46px;font-weight:900;line-height:1;color:rgba(255,255,255,.11);letter-spacing:-.01em;flex:none;width:76px}
-.mt{font-weight:600;font-size:17px;line-height:1.2}
-.mm{font-family:var(--B);font-size:10px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);margin-left:10px;white-space:nowrap}
-.chev{color:rgba(255,255,255,.22);transition:transform .22s;flex:none}
-.mod.open .chev{transform:rotate(180deg)}
-.mlessons{display:none;padding-bottom:20px}
-.mod.open .mlessons{display:block}
-.lesson{padding:9px 0 9px 104px;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:10px}
-.lesson:last-child{border-bottom:none}
-.lesson::before{content:'';width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.2);flex:none}
+/* ── scroll-pinned sequence ── */
+.seq-intro{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.seq-n{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:16px}
+.seq-n b{font-weight:500;color:var(--acc)}
+.seq-txt h3{font-size:clamp(28px,2.8vw,40px);margin-bottom:14px}
+.seq-txt p{color:var(--tx-dim);max-width:40ch}
+.seq-dots{display:none}
+.disc{margin-top:28px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
 
-/* ── TESTIMONIALS ── */
-#proof{background:var(--bg);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
-.proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:52px}
-.proof-item{position:relative;overflow:hidden;border:1px solid var(--bd);border-radius:2px}
-.proof-item img{width:100%;display:block;filter:saturate(.9)}
-.proof-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(6,10,18,.95) 100%)}
-.proof-quote{position:absolute;bottom:0;left:0;right:0;padding:18px;font-size:13px;color:var(--fg2);line-height:1.5;border-top:1px solid rgba(47,110,232,.2)}
-.proof-name{font-family:var(--M);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
+/* mock UI panels */
+.ui{background:linear-gradient(180deg,#132340 0%,#0A1426 100%);border:1px solid rgba(255,255,255,.11);border-radius:18px;overflow:hidden;color:var(--tx);font-size:14px;line-height:1.45;
+  box-shadow:0 50px 120px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.ui-top{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--hair)}
+.ui-top b{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+.ui-top span{color:var(--tx-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ui-top em{margin-left:auto;display:flex;align-items:center;gap:7px;font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);white-space:nowrap}
+.ui-top em::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 2s infinite}
+.ui-body{padding:18px;display:grid;gap:10px}
+.ui-chart{border-radius:12px;background:rgba(0,0,0,.22);border:1px solid var(--hair);padding:8px 8px 4px}
+.ui-chart svg{display:block;width:100%;height:auto}
+.ui-rows{display:grid;gap:6px}
+.ui-rows div{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--hair);font-size:13px}
+.ui-rows b{font-weight:600}
+.ui-rows span{color:var(--tx-mute)}
+.st{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.05);color:var(--tx-mute)}
+.st.go{background:rgba(123,224,176,.12);color:var(--ok)}
+.st.wait{background:rgba(245,184,92,.12);color:var(--warn)}
+.ui-msg{max-width:84%;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--hair)}
+.ui-msg small,.ui-input small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:4px}
+.ui-msg.out{justify-self:end;background:linear-gradient(160deg,rgba(var(--acc-rgb),.22),rgba(var(--acc-rgb),.10));border-color:rgba(var(--acc-rgb),.3)}
+.ui-input{padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.25);border:1px dashed var(--hair-2);color:var(--tx-dim)}
+.ui-tl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:relative;padding-top:16px}
+.ui-tl::before{content:"";position:absolute;left:6px;right:6px;top:5px;height:2px;background:var(--hair-2)}
+.ui-tl span{position:relative;font-size:12px;color:var(--tx-mute)}
+.ui-tl span::before{content:"";position:absolute;left:0;top:-15px;width:10px;height:10px;border-radius:50%;background:#26354F}
+.ui-tl b{display:block;color:var(--tx);font-weight:600;font-size:13px}
+.ui-tl .done::before{background:var(--ok)}
+.ui-tl .now::before{background:var(--acc);box-shadow:0 0 12px var(--acc)}
+.ui-flag{justify-self:start;padding:6px 12px;border-radius:999px;background:var(--acc-soft);color:var(--acc);font-size:12px;font-weight:600}
+.ui-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ui-stats span{padding:12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--hair);font-size:12px;color:var(--tx-mute)}
+.ui-stats b{display:block;font-family:var(--display);font-weight:700;letter-spacing:-.03em;font-size:28px;line-height:1;color:var(--tx);margin-bottom:4px}
+.ui-list{list-style:none;display:grid;gap:7px}
+.ui-list li{position:relative;padding-left:20px;color:var(--tx-dim);font-size:13.5px}
+.ui-list li::before{content:"";position:absolute;left:2px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.ui-list li.w::before{background:var(--warn)}
+.ui-foot{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--hair)}
+.ui-foot span{display:flex;flex-direction:column;gap:3px;padding:12px 18px;font-size:13px;font-weight:600;border-left:1px solid var(--hair)}
+.ui-foot span:first-child{border-left:0}
+.ui-foot i{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-mute);font-weight:500}
+.ui-foot .hot{color:var(--acc)}
 
-/* ── LIVE FEATURES ── */
-#live{background:var(--bg1);border-top:1px solid var(--bd)}
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.06)}
-.feat{padding:48px 36px;background:var(--bg1)}
-.feat-num{font-family:var(--H);font-size:80px;font-weight:900;color:rgba(255,255,255,.06);line-height:1;margin-bottom:12px;letter-spacing:-.01em}
-.feat-t{font-family:var(--H);font-weight:700;font-size:22px;text-transform:uppercase;margin-bottom:10px}
-.feat-d{font-size:14px;color:var(--fg2);line-height:1.65}
-.feat-badge{display:inline-block;margin-top:14px;background:rgba(56,232,255,.1);border:1px solid rgba(56,232,255,.25);padding:3px 10px;font-family:var(--M);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+@media(min-width:1024px){
+  .seq{height:calc(5 * 80vh + 100vh);margin-top:20px}
+  .seq-pin{position:sticky;top:0;height:100vh;display:flex;align-items:center}
+  .seq-box{position:relative;width:100%;height:min(640px,82vh)}
+  .seq-item{display:contents}
+  .seq-txt{position:absolute;left:0;top:50%;width:36%;transform:translateY(-50%) translateY(24px);opacity:0;filter:blur(6px);pointer-events:none;transition:opacity .6s var(--ease),transform .8s var(--ease),filter .6s var(--ease)}
+  .seq-item.on .seq-txt{opacity:1;transform:translateY(-50%);filter:none;pointer-events:auto}
+  .seq-panel{position:absolute;right:0;top:50%;width:min(620px,56%);margin-top:-150px;z-index:calc(5 - var(--i));
+    transform:perspective(1800px) translate3d(calc(70px + var(--i) * 8px),calc(-235px + var(--i) * 42px),0) rotateX(58deg) rotateZ(-30deg) scale(.82);
+    opacity:.8;filter:brightness(.62) saturate(.85);transition:transform 1s var(--ease),opacity .7s var(--ease),filter .7s var(--ease)}
+  .seq-item.on .seq-panel{z-index:10;opacity:1;filter:none;transform:perspective(1800px) translate3d(0,60px,0) rotateX(0) rotateZ(0) scale(1)}
+  .seq-dots{display:flex;position:absolute;left:0;bottom:4%;width:36%}
+  .seq-dots button{flex:1;position:relative;padding:18px 0 0;border:0;background:none;color:var(--tx-mute);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-align:left;cursor:pointer}
+  .seq-dots button::before{content:"";position:absolute;left:0;right:8px;top:0;height:2px;background:var(--hair-2);transition:background .4s}
+  .seq-dots button.on{color:var(--tx)}
+  .seq-dots button.on::before{background:var(--acc)}
+  .seq-dots button:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+  .disc{margin-top:-40px}
+}
+@media(max-width:1023px){
+  .seq{margin-top:48px}
+  .seq-box{display:grid;gap:56px}
+  .seq-txt{margin-bottom:20px}
+}
 
-/* ── PRICING ── */
-#pricing{background:var(--bg);border-top:1px solid var(--bd)}
-.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px}
-.pcard{background:var(--bg1);border:1px solid var(--bd);overflow:hidden;display:flex;flex-direction:column}
-.pcard.feat{border-color:var(--bd2);box-shadow:0 0 0 1px rgba(47,110,232,.1),0 32px 80px rgba(0,0,0,.5)}
-.pt{padding:36px 36px 26px;border-bottom:1px solid var(--bd)}
-.pbl{font-family:var(--M);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
-.pbl.b1{color:var(--blue2)}.pbl.b2{color:var(--cyan)}
-.pname{font-family:var(--H);font-weight:800;font-size:32px;text-transform:uppercase;margin-bottom:6px}
-.ptag{font-size:13px;color:var(--fg2);margin-bottom:22px}
-.pstart{font-size:13px;color:var(--fg2);margin-bottom:5px}
-.pstart strong{color:var(--fg);font-size:18px}
-.pmo{font-size:13px;color:var(--fg2)}
-.pmo strong{font-size:48px;font-weight:700;color:var(--fg);line-height:1}
-.pcta{padding:24px 36px}
-.pcta .btn-p,.pcta .btn-o{width:100%;justify-content:center;padding:16px;font-size:13px}
-.pf{padding:0 36px 32px;flex:1}
-.pfi{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:var(--fg2)}
-.pfi:last-child{border-bottom:none}
-.pfi::before{content:'✓';color:var(--cyan);font-weight:700;flex:none;margin-top:1px;font-size:12px}
+/* what you get */
+.get{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.get .media{position:relative;height:220px;overflow:hidden;background:var(--g1)}
+.get .media img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform 1.2s var(--ease)}
+.get .card:hover .media img{transform:scale(1.04)}
+.get .media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(8,17,31,.9) 100%)}
+.get .chip{position:absolute;left:14px;bottom:14px;z-index:2;display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(5,10,20,.65);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase}
+.get .chip.live{top:14px;bottom:auto}
+.get .chip.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 2s infinite}
+.play{width:22px;height:22px;border-radius:50%;background:rgba(var(--acc-rgb),.92);display:grid;place-items:center;animation:pulse 2.4s var(--ease) infinite}
+.book{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:radial-gradient(360px 200px at 50% 100%,rgba(var(--acc-rgb),.10),transparent 70%),var(--g1)}
+.book .pdf{position:relative;width:118px;height:150px}
+.book .pdf div{position:absolute;inset:0;border-radius:6px;border:1px solid var(--hair-2);background:linear-gradient(160deg,#14284A,#0C1A33)}
+.book .pdf div:nth-child(1){transform:rotate(6deg) translate(8px,2px);opacity:.5}
+.book .pdf div:nth-child(2){transform:rotate(3deg) translate(4px,1px);opacity:.75}
+.book .pdf div:nth-child(3){padding:14px 12px}
+.book .pdf i{display:block;height:2px;width:100%;background:var(--acc);margin-bottom:10px}
+.book .pdf strong{display:block;font-family:var(--display);font-size:13px;line-height:1.15;letter-spacing:-.01em;margin-bottom:6px}
+.book .pdf em{font-style:normal;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.book .pdf u{display:block;height:1px;background:rgba(255,255,255,.08);margin-top:9px;text-decoration:none}
+.get .bd{padding:22px 26px 28px}
+.get h3{font-size:24px;margin-bottom:8px}
+.get p{color:var(--tx-dim);font-size:15px}
 
-/* ── FAQ ── */
-.faq{max-width:780px}
-.fi{border-bottom:1px solid var(--bd)}
-.fq{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0;cursor:pointer;font-weight:600;font-size:16px;transition:color .2s}
-.fq:hover{color:var(--blue2)}
-.fq svg{flex:none;color:var(--fg3);transition:transform .22s}
-.fi.open .fq svg{transform:rotate(180deg)}
-.fa{display:none;padding-bottom:24px;font-size:14px;color:var(--fg2);line-height:1.8}
-.fi.open .fa{display:block}
+/* curriculum */
+.curric-top{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-bottom:44px}
+.curric-top .head{margin-bottom:0}
+.tabs{display:inline-flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--hair-2)}
+.ttab{padding:10px 20px;border-radius:999px;border:0;background:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);transition:color .2s,background .2s}
+.ttab:hover{color:var(--tx)}
+.ttab.active{background:var(--acc-soft);color:var(--acc)}
+.tpanel{display:none;border-top:1px solid var(--hair)}
+.tpanel.active{display:block}
+.mod{border-bottom:1px solid var(--hair)}
+.mhdr{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0;cursor:pointer}
+.ml{display:flex;align-items:baseline;gap:24px;flex:1;min-width:0}
+.mn{flex:none;width:44px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--acc)}
+.mt{font-family:var(--display);font-weight:600;font-size:clamp(18px,1.9vw,22px);letter-spacing:-.02em;line-height:1.25;transition:color .2s}
+.mhdr:hover .mt{color:var(--tx-dim)}
+.mm{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);margin-left:12px;white-space:nowrap}
+.chev{flex:none;color:var(--tx-mute);transition:transform .3s var(--ease)}
+.mod.open .chev{transform:rotate(180deg);color:var(--acc)}
+.mlessons{display:none;padding:0 0 22px 68px}
+.mod.open .mlessons{display:grid;gap:2px;animation:fade .45s var(--ease)}
+.lesson{display:flex;align-items:center;gap:12px;padding:7px 0;font-size:15px;color:var(--tx-dim)}
+.lesson::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:var(--hair-2)}
 
-/* ── CTA ── */
-.cta-box{position:relative;overflow:hidden;padding:clamp(80px,11vw,136px) clamp(36px,5vw,80px);text-align:center}
-.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 900px 600px at 50% 50%,rgba(47,110,232,.06) 0%,transparent 65%);pointer-events:none}
-.cta-box h2{font-family:var(--H);font-weight:900;font-size:clamp(64px,10vw,126px);text-transform:uppercase;line-height:.86;margin-bottom:20px}
-.cta-box p{color:var(--fg2);max-width:46ch;margin:0 auto 36px;font-size:15px;line-height:1.7}
-.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.cta-btns .btn-p,.cta-btns .btn-o{padding:16px 36px;font-size:14px}
-
-/* ── FOOTER ── */
-footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
-.foot-top{display:flex;justify-content:space-between;align-items:flex-start;gap:32px;flex-wrap:wrap;margin-bottom:36px}
-.flinks{display:flex;flex-wrap:wrap;gap:20px;list-style:none}
-.flinks a{font-family:var(--M);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);transition:color .2s}
-.flinks a:hover{color:var(--fg2)}
-.risk{font-size:11px;color:var(--fg3);line-height:1.8;border-top:1px solid var(--bd);padding-top:28px;max-width:960px}
-.fcopy{font-family:var(--M);font-size:9px;letter-spacing:.14em;color:var(--fg3);margin-top:14px}
-
-/* ── TESTIMONIAL SLIDER + LIGHTBOX ── */
-.tslider-wrap{position:relative;margin-top:48px;padding:0 28px}
+/* community slider */
+.tslider-wrap{position:relative}
 .tslider-vp{overflow:hidden}
-.tslider-track{display:flex;gap:8px;transition:transform .45s cubic-bezier(.22,1,.36,1)}
-.tthumb{position:relative;overflow:hidden;cursor:pointer;flex:0 0 calc(25% - 6px);aspect-ratio:1;background:var(--bg2);border:1px solid var(--bd)}
-.tthumb img{width:100%;height:100%;object-fit:cover;object-position:center 8%;display:block;transition:transform .4s ease,filter .3s}
-.tthumb:hover img{transform:scale(1.04);filter:brightness(.75)}
-.tthumb-zoom{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;background:rgba(6,10,18,.35)}
-.tthumb:hover .tthumb-zoom{opacity:1}
-.tthumb-zoom svg{color:rgba(255,255,255,.9)}
-.tslider-btn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:var(--blue);border:1px solid var(--blue2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:5;transition:background .2s,box-shadow .2s}
-.tslider-btn:hover{background:var(--blue2);box-shadow:0 4px 20px rgba(47,110,232,.5)}
-.tslider-btn:disabled{opacity:.28;cursor:default;pointer-events:none}
-.tslider-prev{left:0}.tslider-next{right:0}
-@media(max-width:960px){.tthumb{flex:0 0 calc(33.333% - 5.33px)}}
-@media(max-width:640px){.tthumb{flex:0 0 calc(50% - 4px)}}
-/* lightbox */
-.lb{position:fixed;inset:0;z-index:900;background:rgba(4,7,14,.94);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px)}
-.lb.open{opacity:1;pointer-events:all}
-.lb-img-wrap{position:relative;max-height:90vh;max-width:min(480px,90vw);display:flex;align-items:center}
-.lb img{max-height:90vh;max-width:100%;object-fit:contain;display:block}
-.lb-close{position:fixed;top:24px;right:24px;width:44px;height:44px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:901;transition:background .2s}
-.lb-close:hover{background:rgba(255,255,255,.16)}
-.lb-arr{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;z-index:901;transition:background .2s}
-.lb-arr:hover{background:rgba(47,110,232,.25);border-color:var(--blue)}
-.lb-prev{left:20px}.lb-next{right:20px}
-.lb-counter{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);font-family:var(--M);font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.4);z-index:901}
+.tslider-track{display:flex;gap:12px;transition:transform .6s var(--ease)}
+.tthumb{position:relative;flex:0 0 calc(25% - 9px);aspect-ratio:1;border-radius:16px;overflow:hidden;cursor:zoom-in;background:var(--g1);border:1px solid var(--hair);padding:0}
+.tthumb img{width:100%;height:100%;object-fit:cover;object-position:center 8%;transition:transform .8s var(--ease),filter .3s}
+.tthumb:hover img{transform:scale(1.04);filter:brightness(.8)}
+.tnav{display:flex;gap:8px;margin-top:24px;align-items:center}
+.tnav button{width:48px;height:48px;border-radius:50%;border:1px solid var(--hair-2);background:rgba(255,255,255,.03);cursor:pointer;display:grid;place-items:center;transition:background .2s,border-color .2s,opacity .2s}
+.tnav button:hover{background:rgba(255,255,255,.07)}
+.tnav button:disabled{opacity:.3;cursor:default}
+.tnav .mono{margin-left:12px}
+.lb{position:fixed;inset:0;z-index:900;background:rgba(3,7,14,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.lb.open{opacity:1;pointer-events:auto}
+.lb img{max-height:88vh;max-width:min(480px,86vw);border-radius:14px;object-fit:contain}
+.lb button{position:fixed;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--hair-2);cursor:pointer;display:grid;place-items:center}
+.lb-close{top:max(20px,env(safe-area-inset-top,0px));right:max(20px,env(safe-area-inset-right,0px))}
+.lb-prev{left:max(16px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%)}
+.lb-next{right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%)}
+.lb-ctr{position:fixed;bottom:max(24px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%)}
 
-/* ── RESPONSIVE ── */
+/* live */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feats .card{padding:34px 30px}
+.feats .num{font-family:var(--display);font-weight:700;font-size:clamp(40px,4.4vw,58px);letter-spacing:-.04em;line-height:1;color:rgba(255,255,255,.12);margin-bottom:26px}
+.feats h3{font-size:24px;margin-bottom:10px}
+.feats p{color:var(--tx-dim);font-size:15px}
+.feats .tag{margin-top:16px;color:var(--acc);border-color:rgba(var(--acc-rgb),.35)}
+
+/* pricing */
+.price{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:960px}
+.pcard{display:flex;flex-direction:column;padding:34px}
+.pcard.hot{border-color:rgba(var(--acc-rgb),.48);background:linear-gradient(160deg,rgba(var(--acc-rgb),.12),rgba(var(--acc-rgb),.02) 60%)}
+.pcard.hot:hover{border-color:rgba(var(--acc-rgb),.6)}
+.plan{min-height:28px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.plan .tag{color:var(--acc);border-color:rgba(var(--acc-rgb),.35)}
+.pcard h3{font-size:36px;margin:14px 0 8px}
+.pcard .ptag{color:var(--tx-dim);font-size:15px;min-height:3.2em}
+.amt{display:flex;align-items:baseline;gap:8px;margin:26px 0 4px}
+.amt b{font-family:var(--display);font-weight:700;font-size:clamp(44px,4.6vw,58px);letter-spacing:-.04em;line-height:1}
+.amt span{color:var(--tx-mute);font-size:15px}
+.start{font-size:14px;color:var(--tx-mute)}
+.start strong{color:var(--tx-dim);font-weight:600}
+.pcard .btn,.pcard .btn-g{width:100%;margin:28px 0 26px}
+.pf{list-style:none;display:grid;gap:12px;border-top:1px solid var(--hair);padding-top:24px}
+.pf li{display:flex;gap:12px;font-size:14.5px;color:var(--tx-dim);line-height:1.5}
+.pf li::before{content:"";flex:none;width:16px;height:16px;margin-top:2px;border-radius:50%;background:var(--acc-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.2 2.2 4.8-4.8' fill='none' stroke='%234B9EFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+
+/* faq */
+.faq details{border:1px solid var(--hair);border-radius:16px;background:rgba(255,255,255,.025);margin-bottom:10px;transition:border-color .3s}
+.faq details[open]{border-color:var(--hair-2)}
+.faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 22px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;font-family:var(--mono);font-weight:500;font-size:18px;color:var(--acc);transition:transform .3s var(--ease)}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq .a{padding:0 22px 22px;color:var(--tx-dim);font-size:15.5px}
+.faq-split{display:none}
+@media(min-width:1024px){
+  .faq.has-split details{display:none}
+  .faq-split{display:grid;grid-template-columns:1fr 1.15fr;gap:64px;align-items:start}
+  .faq-list{display:grid;border-top:1px solid var(--hair)}
+  .faq-q{display:block;width:100%;text-align:left;padding:18px 0 18px 22px;border:0;border-bottom:1px solid var(--hair);border-left:2px solid transparent;background:none;color:var(--tx-mute);font-family:var(--body);font-size:19px;line-height:1.3;cursor:pointer;transition:color .25s,border-color .25s}
+  .faq-q small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+  .faq-q small b{font-weight:500;color:var(--acc);margin-right:10px}
+  .faq-q:hover{color:var(--tx-dim)}
+  .faq-q.on{color:var(--tx);border-left-color:var(--acc)}
+  .faq-q:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .faq-pane{position:sticky;top:120px;padding-top:18px}
+  .faq-pane small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:14px}
+  .faq-pane small b{font-weight:500;color:var(--acc)}
+  .faq-pane h3{font-size:30px;letter-spacing:-.03em;line-height:1.05}
+  .faq-pane .short{font-family:var(--display);font-weight:700;letter-spacing:-.035em;font-size:44px;line-height:1;color:var(--acc);margin:10px 0 22px}
+  .faq-pane p{color:var(--tx-dim);font-size:17px;line-height:1.65}
+  .faq-pane.swap{animation:fade .45s var(--ease)}
+}
+
+/* final cta */
+.final{text-align:center;background:radial-gradient(900px 520px at 50% 0%,rgba(var(--acc-rgb),.10),transparent 70%)}
+.final h2{font-size:clamp(44px,6.4vw,84px);max-width:12ch;margin:0 auto}
+.final .lede{margin:22px auto 0}
+.final .hero-ctas{margin-top:36px}
+
+/* footer */
+footer{border-top:1px solid var(--hair);padding-block:56px 44px}
+.foot-top{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:32px}
+.flinks{display:flex;gap:24px;list-style:none}
+.flinks a{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);transition:color .2s}
+.flinks a:hover{color:var(--tx)}
+.risk{font-size:12.5px;line-height:1.75;color:var(--tx-mute);border-top:1px solid var(--hair);padding-top:28px;max-width:960px}
+.fcopy{margin-top:16px}
+
+/* ── responsive (layout only; .seq and .faq-split carry their own) ── */
 @media(max-width:960px){
-  .hero-panels{grid-template-columns:repeat(2,1fr)}
-  .hp:nth-child(3),.hp:nth-child(4){display:none}
-  .hero-educators{grid-template-columns:repeat(2,1fr)}
-  .he:nth-child(3){border-top:1px solid rgba(255,255,255,.06)}
-  .he:nth-child(4){border-top:1px solid rgba(255,255,255,.06)}
-  .trust-inner{grid-template-columns:repeat(2,1fr)}
-  .ti:nth-child(2){border-right:none}
-  .ti:nth-child(3){border-top:1px solid var(--bd)}
-  .ti:nth-child(4){border-top:1px solid var(--bd);border-right:none}
-  .scan-grid{grid-template-columns:1fr}
-  .edu-grid{grid-template-columns:1fr}
-  .ct-grid{grid-template-columns:1fr}
-  .ct{border-right:none;border-bottom:1px solid var(--bd)}
-  .ct:last-child{border-bottom:none}
-  .ct-img{height:200px}
-  .feat-grid{grid-template-columns:1fr}
-  .price-grid{grid-template-columns:1fr}
-  .proof-grid{grid-template-columns:1fr}
-  .foot-top{flex-direction:column}
-  .nav-links,.nav-ctad{display:none}
+  .nav-links,.nav .btn{display:none}
   .mb{display:flex}
-  .curric-top{flex-direction:column;align-items:flex-start}
+  .nav-in{padding:8px 8px 8px 16px}
+  .crew{grid-template-columns:repeat(2,1fr)}
+  .crew figure:nth-child(3){border-left:0}
+  .crew figure:nth-child(n+3){border-top:1px solid var(--hair)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(3){border-left:0;padding-left:0}
+  .stat:nth-child(n+3){border-top:1px solid var(--hair)}
+  .edu,.scans,.get,.feats,.price{grid-template-columns:1fr}
+  .scans .shot{max-width:520px;margin:0 auto}
 }
 @media(max-width:640px){
-  /* hero — 2×2 grid on mobile */
-  .hero-panels{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
-  .hp:nth-child(2),.hp:nth-child(3),.hp:nth-child(4){display:block}
-  .hp-name{display:block;font-size:9px;letter-spacing:.14em;padding:6px 10px 7px}
-  #hero{min-height:100vh}
-  .hero-h1{font-size:clamp(54px,14vw,80px)}
-  .hero-p{font-size:14px;max-width:36ch}
-  .hero-ctas .btn-p,.hero-ctas .btn-o{width:100%;justify-content:center;padding:15px 20px}
-  .hero-ctas{flex-direction:column;width:100%;max-width:320px}
-  /* trust bar */
-  .trust-inner{grid-template-columns:1fr}
-  .ti{border-right:none;border-bottom:1px solid var(--bd)}
-  .ti:last-child{border-bottom:none}
-  /* sections */
-  .sec{padding-block:64px}
-  /* educators */
-  .edu-body{padding:18px 20px 26px}
-  .edu-photo{height:clamp(240px,60vw,340px)}
-  /* scanners */
-  .scard-body{padding:20px}
-  /* content types */
-  .ct-img{height:180px}
-  .ct-body{padding:18px 20px 26px}
-  /* pricing */
-  .pt{padding:24px 20px 18px}
-  .pf{padding:0 20px 24px}
-  .pcta{padding:16px 20px}
-  /* live features */
-  .feat{padding:28px 20px}
-  /* testimonial slider */
-  .tslider-wrap{padding:0 50px}
-  /* cta box */
-  .cta-box{padding:52px clamp(18px,5vw,36px)}
-  /* footer */
-  .flinks{gap:14px}
+  body{font-size:16px}
+  .hero{text-align:left}
+  .hero h1{margin:0}
+  .hero .lede{margin-left:0}
+  .hero-ctas{justify-content:flex-start}
+  .hero-ctas>a{width:100%}
+  .pill{font-size:10px;letter-spacing:.14em}
+  .crew figcaption{left:12px;right:12px;bottom:12px}
+  .crew figcaption b{font-size:16px}
+  .crew figcaption span{font-size:8.5px;letter-spacing:.12em}
+  .stat{padding:30px 12px 30px 0}
+  .stat+.stat{padding-left:16px}
+  .stat:nth-child(3){padding-left:0}
+  .edu .bd{padding:4px 20px 24px}
+  .pcard{padding:26px 22px}
+  .feats .card{padding:28px 22px}
+  .mlessons{padding-left:0}
+  .ml{gap:14px}
+  .mn{width:auto}
+  .mm{display:block;margin:6px 0 0}
+  .tabs{width:100%}
+  .ttab{flex:1;padding:10px 6px;font-size:10px;letter-spacing:.1em}
+  .tthumb{flex:0 0 calc(50% - 6px)}
+  .ui{font-size:13px;border-radius:14px}
+  .ui-body{padding:14px}
+  .ui-top{padding:13px 14px}
+  .ui-rows div{grid-template-columns:64px 1fr auto;padding:8px 10px}
+  .ui-foot span{padding:10px 12px;font-size:12px}
+  .ui-stats b{font-size:22px}
+  .ui-stats span{padding:10px}
+  .faq summary{font-size:16.5px;padding:18px}
+  .faq .a{padding:0 18px 18px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;filter:none;transition:none}
+  .seq-panel,.seq-txt{transition:none!important}
+  .pill .dot,.ui-top em::before,.live-chip::before,.play,.get .chip.live::before{animation:none}
 }
 </style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav id="nav">
-  <a href="/" class="nl" style="gap:10px">
-    <img src="assets/tv-icon.png" alt="" width="26" height="26" style="object-fit:contain;flex:none">
-    <img src="assets/tv-logo.png" alt="The Trade Vault" height="15" style="object-fit:contain;flex:none;opacity:.9">
-  </a>
-  <div class="nav-links">
-    <a href="#educators">Educators</a><a href="#scanners">Scanners</a>
-    <a href="#curriculum">Curriculum</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+<header class="nav">
+  <div class="nav-in">
+    <a href="#top" class="brand" aria-label="The Trade Vault">
+      <img src="assets/tv-icon.png" alt="" width="26" height="26">
+      <img src="assets/tv-logo.png" alt="The Trade Vault" width="166" height="13">
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#educators">Educators</a><a href="#scanners">Scanners</a><a href="#curriculum">Curriculum</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-r">
+      <a href="#pricing" class="btn">Join the Vault <span class="arr">→</span></a>
+      <button class="mb" id="mob-open" aria-label="Open menu"><svg width="18" height="12" viewBox="0 0 18 12"><path d="M0 1h18M0 6h18M0 11h18" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    </div>
   </div>
-  <div style="display:flex;gap:12px;align-items:center">
-    <a href="#pricing" class="btn-p nav-ctad" style="padding:11px 20px;font-size:11px">Join the Vault →</a>
-    <button class="mb" id="mob-open"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M0 1h18M0 7h18M0 13h18" stroke="currentColor" stroke-width="1.5"/></svg></button>
-  </div>
-</nav>
+</header>
 
-<!-- MOBILE MENU -->
-<div id="mob">
-  <div style="display:flex;align-items:center;justify-content:space-between;height:44px">
-    <div class="n1" style="font-size:15px">The Trade Vault</div>
-    <button id="mob-close" style="width:42px;height:42px;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--fg);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+<div id="mob" aria-hidden="true">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <span class="brand"><img src="assets/tv-icon.png" alt="" width="26" height="26"><img src="assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"></span>
+    <button class="mb" id="mob-close" aria-label="Close menu" style="display:flex"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
   </div>
   <nav class="mob-links">
-    <a href="#educators" onclick="closeMob()">Educators</a><a href="#scanners" onclick="closeMob()">Scanners</a>
-    <a href="#curriculum" onclick="closeMob()">Curriculum</a><a href="#pricing" onclick="closeMob()">Pricing</a><a href="#faq" onclick="closeMob()">FAQ</a>
+    <a href="#educators"><small>01</small>Educators</a><a href="#scanners"><small>02</small>Scanners</a><a href="#curriculum"><small>05</small>Curriculum</a><a href="#pricing"><small>08</small>Pricing</a><a href="#faq"><small>09</small>FAQ</a>
   </nav>
-  <div style="margin-top:auto;padding-top:24px;border-top:1px solid var(--bd)">
-    <a href="#pricing" onclick="closeMob()" class="btn-p" style="width:100%;justify-content:center;padding:18px;font-size:13px">Join the Vault →</a>
-  </div>
+  <div style="margin-top:auto"><a href="#pricing" class="btn" style="width:100%">Join the Vault <span class="arr">→</span></a></div>
 </div>
+
+<main id="top">
 
 <!-- HERO -->
-<section id="hero">
-  <!-- 4-panel background -->
-  <div class="hero-panels">
-    <div class="hp">
-      <img src="assets/jay-stage.webp" alt="" aria-hidden="true">
-      <div class="hp-name">Jay Bonham</div>
+<section class="hero">
+  <div class="W">
+    <div class="pill reveal"><span class="dot"></span>Live sessions · Monday to Friday</div>
+    <h1 class="reveal d1">Trade with rules, <span class="hl">not instinct.</span></h1>
+    <p class="lede reveal d2">Built on one rule: a proven system beats emotion, every time. Three proprietary scanners. Four live educators. 18 structured modules. Everything you need to stop guessing and start executing.</p>
+    <div class="reveal d3">
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn">Join the Vault <span class="arr">→</span></a>
+        <a href="#curriculum" class="btn-g">View curriculum</a>
+      </div>
+      <span class="note">From $99 / month · Full curriculum from day one</span>
     </div>
-    <div class="hp">
-      <img src="assets/tyler-collins.webp" alt="" aria-hidden="true">
-      <div class="hp-name">Tyler Collins</div>
-    </div>
-    <div class="hp">
-      <img src="assets/andrew-bridges.jpg" alt="" aria-hidden="true" style="object-position:center 12%">
-      <div class="hp-name">Andrew Bridges</div>
-    </div>
-    <div class="hp">
-      <img src="assets/adam-haase.webp" alt="" aria-hidden="true">
-      <div class="hp-name">Adam Haase</div>
+
+    <div class="frame reveal">
+      <span class="live-chip">Your educators</span>
+      <div class="crew">
+        <figure><img src="assets/jay-stage.webp" alt="Jay Bonham" style="object-position:60% 20%"><figcaption><b>Jay Bonham</b><span>Founder · Killshot</span></figcaption></figure>
+        <figure class="cut"><img src="assets/tyler-collins-cut.webp" alt="Tyler Collins"><figcaption><b>Tyler Collins</b><span>Gold &amp; NQ · Smartshot</span></figcaption></figure>
+        <figure><img src="assets/andrew-bridges.jpg" alt="Andrew Bridges" style="object-position:center 12%"><figcaption><b>Andrew Bridges</b><span>Indices · Spectrum</span></figcaption></figure>
+        <figure><img src="assets/adam-haase.webp" style="object-position:center 20%" alt="Adam Haase"><figcaption><b>Adam Haase</b><span>US30 · Killshot</span></figcaption></figure>
+      </div>
     </div>
   </div>
-  <div class="hero-overlay"></div>
-  <div class="hero-lr"></div>
-
-  <!-- content -->
-  <div class="hero-content">
-    <div class="hero-pad"></div>
-<h1 class="hero-h1">Trade<br>with <em>rules.</em></h1>
-    <p class="hero-p">Built on one rule: a proven system beats emotion, every time. Three proprietary scanners. Four live educators. 18 structured modules. Everything you need to stop guessing and start executing.</p>
-    <div class="hero-ctas">
-      <a href="#pricing" class="btn-p">Join the Vault →</a>
-      <a href="#curriculum" class="btn-o">View curriculum</a>
-    </div>
-  </div>
-
 </section>
 
-<!-- TRUST BAR -->
-<div class="trust">
-  <div class="trust-inner W">
-    <div class="ti reveal">
-      <div class="ti-n">KNF Regulated</div><div class="ti-l">Institutional-grade compliance</div>
-    </div>
-    <div class="ti reveal d1">
-      <div class="ti-n">500+ Clients</div><div class="ti-l">Personal mentorship delivered</div>
-    </div>
-    <div class="ti reveal d2">
-      <div class="ti-n">100k+ Traders</div><div class="ti-l">Across the global community</div>
-    </div>
-    <div class="ti reveal d3">
-      <div class="ti-n">110+ Lessons</div><div class="ti-l">Video + PDF across 18 modules</div>
-    </div>
+<!-- STATS -->
+<div class="W">
+  <div class="stats">
+    <div class="stat reveal"><b>KNF</b><span>Regulated founder</span></div>
+    <div class="stat feat reveal d1"><b>500+</b><span>Mentorship clients</span></div>
+    <div class="stat reveal d2"><b>100k+</b><span>Traders in the community</span></div>
+    <div class="stat reveal d3"><b>110+</b><span>Lessons · 18 modules</span></div>
   </div>
 </div>
 
-
-<!-- EDUCATORS -->
+<!-- 01 EDUCATORS -->
 <section class="sec" id="educators">
   <div class="W">
-    <div class="reveal">
-
-      <h2 class="H">Four traders.<br>All active today.</h2>
-      <p class="sub">Every educator in the Vault trades live — you learn from people who execute these same setups in the same markets, every session.</p>
+    <div class="head reveal">
+      <span class="kick"><b>01</b>The educators</span>
+      <h2>Four traders. <span class="hl">All active today.</span></h2>
+      <p class="lede">Every educator in the Vault trades live. You learn from people who execute these same setups in the same markets, every session.</p>
     </div>
-    <div class="edu-grid">
-      <!-- Jay -->
-      <div class="edu-card reveal">
-        <div class="edu-photo">
-          <img src="assets/jay-stage.webp" alt="Jay Bonham" loading="eager" style="object-position:center 22%">
-          <div class="edu-photo-overlay"></div>
+    <div class="edu">
+      <article class="card reveal">
+        <div class="ph"><img src="assets/jay-stage.webp" alt="Jay Bonham" loading="lazy" style="object-position:center 22%"></div>
+        <div class="bd">
+          <div class="sc">Killshot scanner</div>
+          <h3>Jay Bonham</h3>
+          <div class="role">Founder · US30 Sniper</div>
+          <p>KNF-regulated trader and Liquidity Provider. Jay built the Killshot methodology from years of active trading on US30: a rules-based system that removes emotion from every decision. 500+ mentorship clients worldwide.</p>
+          <div class="tags"><span class="tag">US30</span><span class="tag">Killshot</span><span class="tag">KNF Regulated</span><span class="tag">Liquidity Provider</span></div>
         </div>
-        <div class="edu-body">
-          <div class="edu-scanner">⊕ Killshot Scanner</div>
-          <div class="edu-name">Jay Bonham</div>
-          <div class="edu-role">Founder · US30 Sniper</div>
-          <p class="edu-bio">KNF-regulated trader and Liquidity Provider. Jay built the Killshot methodology from years of active trading on US30 — a rules-based system that removes emotion from every decision. 500+ mentorship clients worldwide.</p>
-          <div class="edu-tags"><span class="tag">US30</span><span class="tag">Killshot</span><span class="tag">KNF Regulated</span><span class="tag">Liquidity Provider</span></div>
+      </article>
+      <article class="card reveal d1">
+        <div class="ph cut"><img src="assets/tyler-collins-cut.webp" alt="Tyler Collins" loading="lazy"></div>
+        <div class="bd">
+          <div class="sc">Smartshot scanner</div>
+          <h3>Tyler Collins</h3>
+          <div class="role">Gold &amp; NQ Specialist</div>
+          <p>Founder of Smart Shot Daily and author of “Zen and the Art of Not Blowing Your Trading Account.” 9 years trading futures, forex, crypto and commodities, now focused on Gold and NQ with his own Smart Money Concepts entry model.</p>
+          <div class="tags"><span class="tag">Gold</span><span class="tag">NQ</span><span class="tag">Smart Money Concepts</span><span class="tag">9 Years</span></div>
         </div>
-      </div>
-      <!-- Tyler -->
-      <div class="edu-card tyler reveal d1">
-        <div class="edu-photo">
-          <img src="assets/tyler-collins.webp" alt="Tyler Collins" loading="lazy">
-          <div class="edu-photo-overlay" style="background:linear-gradient(to bottom,transparent 40%,#09101E 100%)"></div>
+      </article>
+      <article class="card reveal">
+        <div class="ph"><img src="assets/andrew-bridges.jpg" alt="Andrew Bridges" loading="lazy" style="object-position:center 15%"></div>
+        <div class="bd">
+          <div class="sc">Spectrum scanner</div>
+          <h3>Andrew Bridges</h3>
+          <div class="role">Technical Specialist</div>
+          <p>15 years in financial markets, 6 as an educator. Andrew brings institutional methodology from two bespoke fund Risk Management and Strategy Development departments, plus live trading desk experience on DAX, Gold and ES.</p>
+          <div class="tags"><span class="tag">US30</span><span class="tag">Emini ES</span><span class="tag">Nasdaq</span><span class="tag">15 Years</span></div>
         </div>
-        <div class="edu-body">
-          <div class="edu-scanner">⊕ Smartshot Scanner</div>
-          <div class="edu-name">Tyler Collins</div>
-          <div class="edu-role">Gold &amp; NQ Specialist</div>
-          <p class="edu-bio">Founder of Smart Shot Daily and author of <em>"Zen and the Art of Not Blowing Your Trading Account."</em> 9 years trading across futures, forex, crypto and commodities — now focused on Gold and NQ with his own Smart Money Concepts entry model.</p>
-          <div class="edu-tags"><span class="tag">Gold</span><span class="tag">NQ</span><span class="tag">Smart Money Concepts</span><span class="tag">9 Years exp</span></div>
+      </article>
+      <article class="card reveal d1">
+        <div class="ph"><img src="assets/adam-haase.webp" alt="Adam Haase" loading="lazy" style="object-position:center 18%"></div>
+        <div class="bd">
+          <div class="sc">Killshot scanner</div>
+          <h3>Adam Haase</h3>
+          <div class="role">Killshot Specialist · Polish Community</div>
+          <p>Trading since 2019, Adam combines the Killshot methodology with Price Action across US30, NAS100 and Gold. He collaborates with an investment fund and leads one of Europe's fastest-growing Polish-speaking trading communities.</p>
+          <div class="tags"><span class="tag">US30</span><span class="tag">NAS100</span><span class="tag">Gold</span><span class="tag">Polish Community</span></div>
         </div>
-      </div>
-      <!-- Andrew -->
-      <div class="edu-card reveal d2">
-        <div class="edu-photo">
-          <img src="assets/andrew-bridges.jpg" alt="Andrew Bridges" loading="lazy" style="object-position:center 15%">
-          <div class="edu-photo-overlay"></div>
-        </div>
-        <div class="edu-body">
-          <div class="edu-scanner">⊕ Spectrum Scanner</div>
-          <div class="edu-name">Andrew Bridges</div>
-          <div class="edu-role">Technical Specialist</div>
-          <p class="edu-bio">15 years in financial markets, 6 years as an educator. Andrew brings institutional methodology from two bespoke fund Risk Management and Strategy Development departments — plus live trading desk experience on DAX, Gold and ES.</p>
-          <div class="edu-tags"><span class="tag">US30</span><span class="tag">Emini ES</span><span class="tag">Nasdaq</span><span class="tag">15 Years exp</span></div>
-        </div>
-      </div>
-      <!-- Adam -->
-      <div class="edu-card adam reveal d3">
-        <div class="edu-photo">
-          <img src="assets/adam-haase.webp" alt="Adam Haase" loading="lazy">
-          <div class="edu-photo-overlay"></div>
-        </div>
-        <div class="edu-body">
-          <div class="edu-scanner">⊕ Killshot Scanner</div>
-          <div class="edu-name">Adam Haase</div>
-          <div class="edu-role">Killshot Specialist · Polish Community</div>
-          <p class="edu-bio">Trading since 2019, Adam combines the Killshot methodology with Price Action analysis across US30, NAS100 and Gold — collaborating with an investment fund and leading one of Europe's fastest-growing Polish-speaking trading communities.</p>
-          <div class="edu-tags"><span class="tag">US30</span><span class="tag">NAS100</span><span class="tag">Gold</span><span class="tag">Polish Community</span></div>
-        </div>
-      </div>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- SCANNERS with UI mockups -->
+<!-- 02 SCANNERS -->
 <section class="sec" id="scanners">
   <div class="W">
-    <div style="margin-bottom:48px" class="reveal">
-      <h2 class="H" style="font-size:clamp(56px,9vw,116px);line-height:.88;margin-bottom:20px">Three scanners.<br>One vault.</h2>
-      <p class="sub">These aren't free indicators. Your educators built these scanners, trade with them live in front of you, and teach you to read every signal. Setup identification is automated. Execution is still yours.</p>
+    <div class="head reveal">
+      <span class="kick"><b>02</b>The scanners</span>
+      <h2>Three scanners. <span class="hl">One vault.</span></h2>
+      <p class="lede">These aren't free indicators. Your educators built these scanners, trade with them live in front of you, and teach you to read every signal. Setup identification is automated. Execution is still yours.</p>
     </div>
-    <div class="scan-grid">
-      <!-- KILLSHOT -->
-      <div class="scard ks reveal">
-        <div class="scan-mock">
-          <img src="assets/killshot-graphic.webp" alt="Killshot Scanner interface" loading="lazy">
-        </div>
-        <div class="scard-body">
-          <div class="scard-n">01 / 03</div>
-          <div class="scard-name">Killshot</div>
-          <div class="scard-sub">US30</div>
-          <p class="scard-desc">The original rules-based scanner for US30. EMA structure, Point of Control levels, and proprietary signal stars combine to identify high-probability entries with defined risk.</p>
-        </div>
-      </div>
-      <!-- SMARTSHOT -->
-      <div class="scard ss reveal d1">
-        <div class="scan-mock">
-          <img src="assets/smartshot-graphic.webp" alt="Smartshot Scanner interface" loading="lazy">
-        </div>
-        <div class="scard-body">
-          <div class="scard-n">02 / 03</div>
-          <div class="scard-name">Smartshot</div>
-          <div class="scard-sub">Gold &amp; NQ</div>
-          <p class="scard-desc">Built on Smart Money Concepts — maps liquidity and structure on higher timeframes, signals entries on lower timeframes with order flow confirmation. A+ and B+ setups only.</p>
-        </div>
-      </div>
-      <!-- SPECTRUM -->
-      <div class="scard sp reveal d2">
-        <div class="scan-mock">
-          <img src="assets/spectrum-graphic.webp" alt="Spectrum Scanner interface" loading="lazy">
-        </div>
-        <div class="scard-body">
-          <div class="scard-n">03 / 03</div>
-          <div class="scard-name">Spectrum</div>
-          <div class="scard-sub">US30 · ES · NQ</div>
-          <p class="scard-desc">Built on initial market auction theory and session volume analysis. Uses liquidity inducement to identify high-probability entries across index instruments. Institutional methodology, retail precision.</p>
-        </div>
-      </div>
+    <div class="scans">
+      <article class="card reveal">
+        <div class="shot"><img src="assets/killshot-graphic.webp" alt="Killshot scanner on a laptop" loading="lazy" width="1200" height="810"></div>
+        <div class="bd"><div class="n"><b>01</b> / 03</div><h3>Killshot</h3><div class="mk">US30</div>
+          <p>The original rules-based scanner for US30. EMA structure, Point of Control levels and proprietary signal stars combine to flag high-probability entries with defined risk.</p></div>
+      </article>
+      <article class="card reveal d1">
+        <div class="shot"><img src="assets/smartshot-graphic.webp" alt="Smartshot scanner on a laptop" loading="lazy" width="1200" height="810"></div>
+        <div class="bd"><div class="n"><b>02</b> / 03</div><h3>Smartshot</h3><div class="mk">Gold &amp; NQ</div>
+          <p>Built on Smart Money Concepts. Maps liquidity and structure on higher timeframes, then signals entries on lower timeframes with order-flow confirmation. A+ and B+ setups only.</p></div>
+      </article>
+      <article class="card reveal d2">
+        <div class="shot"><img src="assets/spectrum-graphic.webp" alt="Spectrum scanner on a laptop" loading="lazy" width="2925" height="1976"></div>
+        <div class="bd"><div class="n"><b>03</b> / 03</div><h3>Spectrum</h3><div class="mk">US30 · ES · NQ</div>
+          <p>Built on initial market auction theory and session volume analysis. Uses liquidity inducement to find high-probability entries across index instruments. Institutional method, retail precision.</p></div>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- WHAT YOU GET -->
-<section class="sec" id="content-types">
+<!-- 03 INSIDE THE VAULT: pinned sequence -->
+<section class="sec" id="inside">
   <div class="W">
-    <div style="margin-bottom:0" class="reveal">
-
-      <h2 class="H">Watch it.<br>Read it.<br>Trade it the same day.</h2>
-      <p class="sub">Not just video. Every module is a complete learning block — watch the lesson, study the written playbook, then watch your educators execute the same setup live in real markets. The kind of repetition that actually builds consistency.</p>
-    </div>
-    <div class="ct-grid">
-      <!-- VIDEO LESSONS -->
-      <div class="ct reveal">
-        <div class="ct-img">
-          <img src="assets/jay-charts.webp" alt="Educator teaching at trading desk" loading="lazy">
-          <div class="ct-img-overlay"></div>
-          <!-- play badge -->
-          <div style="position:absolute;bottom:16px;left:16px;display:flex;align-items:center;gap:10px;background:rgba(6,10,18,.8);backdrop-filter:blur(8px);border:1px solid rgba(75,158,255,.2);padding:7px 14px">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 1l9 5-9 5V1z" fill="#4B9EFF"/></svg>
-            <span style="font-family:var(--M);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)">110+ HD Lessons</span>
-          </div>
-        </div>
-        <div class="ct-body">
-          <div class="ct-title">Video Lessons</div>
-          <p class="ct-desc">110+ HD video lessons across 18 modules. Watch your educators explain, execute and review — exactly how they trade, in real time. On demand, forever.</p>
-        </div>
+    <div class="seq-intro reveal">
+      <div class="head" style="margin-bottom:0">
+        <span class="kick"><b>03</b>Inside the Vault</span>
+        <h2>From signal to journal, <span class="hl">every trade has rules.</span></h2>
       </div>
-      <!-- PDF PLAYBOOKS -->
-      <div class="ct reveal d1">
-        <div class="ct-img" style="background:#060C18;display:flex;align-items:center;justify-content:center;gap:14px;flex-direction:column;padding:24px">
-          <!-- stacked PDF book visual -->
-          <div style="position:relative;width:120px;height:156px">
-            <div style="position:absolute;bottom:0;left:10px;right:-10px;height:150px;background:linear-gradient(135deg,#0C1E3A,#0E2448);border:1px solid rgba(47,110,232,.3);transform:rotate(4deg)"></div>
-            <div style="position:absolute;bottom:0;left:5px;right:-5px;height:152px;background:linear-gradient(135deg,#0E2040,#10274D);border:1px solid rgba(47,110,232,.4);transform:rotate(2deg)"></div>
-            <div style="position:absolute;bottom:0;left:0;right:0;height:154px;background:linear-gradient(160deg,#0F2244,#112A54);border:1px solid rgba(75,158,255,.35);padding:14px 12px">
-              <div style="width:100%;height:2px;background:var(--blue);margin-bottom:10px"></div>
-              <div style="font-family:var(--H);font-weight:800;font-size:13px;text-transform:uppercase;color:rgba(255,255,255,.9);line-height:1.1;margin-bottom:8px">5 Rules of<br>Sniper Trading</div>
-              <div style="font-family:var(--M);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue2);margin-bottom:10px">Jay Bonham</div>
-              <div style="width:80%;height:1px;background:rgba(255,255,255,.08);margin-bottom:7px"></div>
-              <div style="width:90%;height:1px;background:rgba(255,255,255,.05);margin-bottom:5px"></div>
-              <div style="width:70%;height:1px;background:rgba(255,255,255,.05);margin-bottom:5px"></div>
-              <div style="width:85%;height:1px;background:rgba(255,255,255,.05)"></div>
+      <p class="mono">Illustrations · 5 steps of a Vault trade</p>
+    </div>
+    <div class="seq" id="seq">
+      <div class="seq-pin">
+        <div class="seq-box">
+
+          <div class="seq-item on" style="--i:0">
+            <div class="seq-txt">
+              <span class="seq-n"><b>01</b> / 05 · The scanner</span>
+              <h3>The scanner finds the setup. <span class="hl">You make the call.</span></h3>
+              <p>Killshot, Smartshot and Spectrum watch the markets for you and flag the setups that match the rules. Nothing fires on a hunch.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Killshot</b><span>US30 · 5m</span><em>Live</em></div>
+              <div class="ui-body">
+                <div class="ui-chart"><svg viewBox="0 0 560 140" role="presentation"><line x1="0" x2="560" y1="103.2" y2="103.2" stroke="rgba(255,255,255,.22)" stroke-dasharray="4 4"/><text x="552" y="98.2" text-anchor="end" fill="rgba(255,255,255,.4)" font-family="JetBrains Mono,monospace" font-size="9" letter-spacing="1.5">POC</text><polyline points="24,112.8 62,110.6 100,106.6 138,96.4 176,90.1 214,91.7 252,96.9 290,98.3 328,91.9 366,81.1 404,73.8 442,66.9 480,56.6 518,46.6" fill="none" stroke="#4B9EFF" stroke-width="1.6" opacity=".85"/><line x1="24" x2="24" y1="87.2" y2="122.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="17" y="96.8" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="62" x2="62" y1="90.4" y2="112.8" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="55" y="96.8" width="14" height="9.6" rx="2" fill="rgba(255,255,255,.38)"/><line x1="100" x2="100" y1="77.6" y2="109.6" stroke="#7BE0B0" stroke-width="1.4"/><rect x="93" y="84.0" width="14" height="22.4" rx="2" fill="#7BE0B0"/><line x1="138" x2="138" y1="64.8" y2="90.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="131" y="71.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="176" x2="176" y1="68.0" y2="87.2" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="169" y="71.2" width="14" height="9.6" rx="2" fill="rgba(255,255,255,.38)"/><line x1="214" x2="214" y1="74.4" y2="100.0" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="207" y="80.8" width="14" height="12.8" rx="2" fill="rgba(255,255,255,.38)"/><line x1="252" x2="252" y1="87.2" y2="106.4" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="245" y="93.6" width="14" height="6.4" rx="2" fill="rgba(255,255,255,.38)"/><line x1="290" x2="290" y1="80.8" y2="104.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="283" y="87.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="328" x2="328" y1="61.6" y2="90.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="321" y="68.0" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="366" x2="366" y1="48.8" y2="74.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="359" y="55.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="404" x2="404" y1="52.0" y2="66.4" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="397" y="55.2" width="14" height="6.4" rx="2" fill="rgba(255,255,255,.38)"/><line x1="442" x2="442" y1="36.0" y2="64.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="435" y="42.4" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="480" x2="480" y1="26.4" y2="48.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="473" y="32.8" width="14" height="9.6" rx="2" fill="#7BE0B0"/><line x1="518" x2="518" y1="16.8" y2="39.2" stroke="#7BE0B0" stroke-width="1.4"/><rect x="511" y="23.2" width="14" height="9.6" rx="2" fill="#7BE0B0"/><path d="M290 112.8l1.8 3.9 4.2.5-3.1 2.9.8 4.2-3.7-2.1-3.7 2.1.8-4.2-3.1-2.9 4.2-.5z" fill="#4B9EFF"/></svg></div>
+                <div class="ui-rows">
+                  <div><b>US30</b><span>Star printed at POC</span><i class="st go">Setup</i></div>
+                  <div><b>NAS100</b><span>Pulling back to EMA</span><i class="st wait">Watch</i></div>
+                  <div><b>XAUUSD</b><span>Inside the range</span><i class="st">No trade</i></div>
+                </div>
+              </div>
+              <div class="ui-foot"><span><i>Scanner</i>Killshot</span><span><i>Session</i>NY open</span><span class="hot"><i>Next</i>Run the checklist</span></div>
             </div>
           </div>
-          <div style="font-family:var(--M);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3)">+ 18 module playbooks</div>
-        </div>
-        <div class="ct-body">
-          <div class="ct-title">PDF Playbooks</div>
-          <p class="ct-desc">Every module includes a written guide, checklist and playbook — downloadable and yours to keep. Always have the rules in front of you, even away from the screen.</p>
-        </div>
-      </div>
-      <!-- LIVE SESSIONS -->
-      <div class="ct reveal d2">
-        <div class="ct-img">
-          <img src="assets/jay-training.webp" alt="Live trading session with Killshot signals" loading="lazy" style="object-position:80% 0%">
-          <div class="ct-img-overlay"></div>
-          <div style="position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:7px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);padding:5px 12px">
-            <span style="width:6px;height:6px;border-radius:50%;background:#EF4444;animation:blink 1.4s infinite;flex:none"></span>
-            <span style="font-family:var(--M);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#EF4444">Live now</span>
+
+          <div class="seq-item" style="--i:1">
+            <div class="seq-txt">
+              <span class="seq-n"><b>02</b> / 05 · The checklist</span>
+              <h3>No trade until <span class="hl">every box is ticked.</span></h3>
+              <p>Every setup goes through the same written rules from your module playbooks. One missing box means you wait.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Pre-trade checklist</b><span>US30 · Long</span><em>4 of 5</em></div>
+              <div class="ui-body">
+                <ul class="ui-list">
+                  <li>Trend: price above the 20 and 50 EMA</li>
+                  <li>Pulled back into the Point of Control</li>
+                  <li>Signal star printed</li>
+                  <li>No high-impact news in the next 30 minutes</li>
+                  <li class="w">Candle close confirms the entry</li>
+                </ul>
+                <div class="ui-flag">Waiting for the 5m candle to close</div>
+              </div>
+              <div class="ui-foot"><span><i>Rules met</i>4 of 5</span><span><i>Status</i>Wait</span><span class="hot"><i>Next</i>Size the trade</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:2">
+            <div class="seq-txt">
+              <span class="seq-n"><b>03</b> / 05 · Risk first</span>
+              <h3>Size every trade <span class="hl">before you enter.</span></h3>
+              <p>You decide what you're willing to lose before the market does. Stop, size and target are set before you click buy.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Risk calculator</b><span>Example account</span><em>Ready</em></div>
+              <div class="ui-body">
+                <div class="ui-stats"><span><b>1%</b>Risk per trade</span><span><b>40 pts</b>Stop distance</span><span><b>1 : 2</b>Planned R:R</span></div>
+                <div class="ui-rows">
+                  <div><b>Account</b><span>Example balance</span><i class="st">$10,000</i></div>
+                  <div><b>Max loss</b><span>1% of account</span><i class="st">$100</i></div>
+                  <div><b>Size</b><span>$100 ÷ 40 pts</span><i class="st go">$2.50 / pt</i></div>
+                </div>
+              </div>
+              <div class="ui-foot"><span><i>Stop</i>Placed</span><span><i>Target</i>Placed</span><span class="hot"><i>Next</i>Enter on close</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:3">
+            <div class="seq-txt">
+              <span class="seq-n"><b>04</b> / 05 · Live session</span>
+              <h3>Trade it live, <span class="hl">next to your educator.</span></h3>
+              <p>Five live sessions a week. Your educator calls the levels, explains every decision and manages the trade in real time.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Live room</b><span>NY open · Jay</span><em>Live</em></div>
+              <div class="ui-body">
+                <div class="ui-msg"><small>9:24 AM ET · Jay</small>Pre-market levels are up. Watching the POC. No trade until we get a close.</div>
+                <div class="ui-msg out"><small>9:31 AM ET · You</small>Star printed. Waiting for the close like the checklist says.</div>
+                <div class="ui-msg"><small>9:35 AM ET · Jay</small>Close confirmed. Same rules as yesterday: stop under the wick, size it first.</div>
+              </div>
+              <div class="ui-foot"><span><i>Sessions</i>5 a week</span><span><i>Format</i>Live + replay</span><span class="hot"><i>Next</i>Post-session review</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:4">
+            <div class="seq-txt">
+              <span class="seq-n"><b>05</b> / 05 · The journal</span>
+              <h3>Every trade logged. <span class="hl">Every lesson kept.</span></h3>
+              <p>Win or lose, the trade goes in the journal. The question isn’t “did it work?” It’s “did I follow the rules?”</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Trade journal</b><span>Entry · US30 long</span><em>Review</em></div>
+              <div class="ui-body">
+                <div class="ui-tl"><span class="done"><b>Plan</b>Checklist</span><span class="done"><b>Entry</b>On close</span><span class="done"><b>Manage</b>Stop to BE</span><span class="now"><b>Review</b>Today</span></div>
+                <div class="ui-input"><small>Note to self</small>Wanted to jump in early. Waited for the close instead. Stop and size set before entry.</div>
+                <ul class="ui-list"><li>Followed the checklist</li><li>Risk set before entry</li><li class="w">Felt FOMO at the open. Work on it</li></ul>
+              </div>
+              <div class="ui-foot"><span><i>Rules followed</i>Yes</span><span><i>Mindset</i>Calm</span><span class="hot"><i>Next</i>Weekly review</span></div>
+            </div>
+          </div>
+
+          <div class="seq-dots" role="tablist" aria-label="Steps">
+            <button type="button" class="on" aria-label="The scanner">01</button><button type="button" aria-label="The checklist">02</button><button type="button" aria-label="Risk first">03</button><button type="button" aria-label="Live session">04</button><button type="button" aria-label="The journal">05</button>
           </div>
         </div>
-        <div class="ct-body">
-          <div class="ct-title">Live Sessions</div>
-          <p class="ct-desc">Your educators trade live every session — pre-market prep, live execution, post-session review. Real decisions, real markets. Not recordings from last month.</p>
-        </div>
       </div>
+    </div>
+    <p class="disc">Mock-ups for illustration only. Not real trades, signals or results.</p>
+  </div>
+</section>
+
+<!-- 04 WHAT YOU GET -->
+<section class="sec" id="content-types">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>04</b>How you learn</span>
+      <h2>Watch it. Read it. <span class="hl">Trade it the same day.</span></h2>
+      <p class="lede">Every module is a complete learning block: watch the lesson, study the written playbook, then watch your educators run the same setup live. The kind of repetition that builds consistency.</p>
+    </div>
+    <div class="get">
+      <article class="card reveal">
+        <div class="media"><img src="assets/jay-charts.webp" alt="Educator teaching at a trading desk" loading="lazy">
+          <span class="chip"><span class="play"><svg width="8" height="9" viewBox="0 0 8 9"><path d="M0 0l8 4.5L0 9z" fill="#fff"/></svg></span>110+ HD lessons</span></div>
+        <div class="bd"><h3>Video lessons</h3><p>110+ HD lessons across 18 modules. Watch your educators explain, execute and review exactly how they trade. On demand, forever.</p></div>
+      </article>
+      <article class="card reveal d1">
+        <div class="media book">
+          <div class="pdf"><div></div><div></div><div><i></i><strong>5 Rules of<br>Sniper Trading</strong><em>Jay Bonham</em><u></u><u style="width:80%"></u><u style="width:65%"></u></div></div>
+          <span class="mono" style="font-size:9.5px">+ 18 module playbooks</span>
+        </div>
+        <div class="bd"><h3>PDF playbooks</h3><p>Every module includes a written guide, checklist and playbook to download and keep. Have the rules in front of you, even away from the screen.</p></div>
+      </article>
+      <article class="card reveal d2">
+        <div class="media"><img src="assets/jay-training.webp" alt="Live trading session with Killshot signals" loading="lazy" style="object-position:80% 0%">
+          <span class="chip live">Live now</span></div>
+        <div class="bd"><h3>Live sessions</h3><p>Your educators trade live every session: pre-market prep, live execution, post-session review. Real decisions in real markets, not recordings from last month.</p></div>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- CURRICULUM -->
+<!-- 05 CURRICULUM -->
 <section class="sec" id="curriculum">
   <div class="W">
     <div class="curric-top reveal">
-      <div>
-
-        <h2 class="H">18 modules.<br>Video & written.</h2>
-        <p class="sub" style="margin-top:10px">From your first pip to Wyckoff and scanner bootcamps — a structured progression that builds on itself, not a library of disconnected content.</p>
+      <div class="head">
+        <span class="kick"><b>05</b>The curriculum</span>
+        <h2>18 modules.<br><span class="hl">Video and written.</span></h2>
+        <p class="lede">From your first pip to Wyckoff and the scanner bootcamps. A structured progression that builds on itself, not a library of disconnected content.</p>
       </div>
-      <div class="tier-tabs">
+      <div class="tabs" role="tablist">
         <button class="ttab active" onclick="switchT('basic',this)">Basic</button>
         <button class="ttab" onclick="switchT('intermediate',this)">Intermediate</button>
         <button class="ttab" onclick="switchT('advanced',this)">Advanced</button>
       </div>
     </div>
+    <div class="reveal">
     <div id="t-basic" class="tpanel active">
       <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M01</span><span class="mt">Understanding Forex <span class="mm">· 7 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is Forex — The Global Currency Exchange</div><div class="lesson">History of Forex — From Barter to Blockchain</div><div class="lesson">What you trade</div><div class="lesson">Understanding Forex Pairs</div><div class="lesson">Understanding Forex CFDs — A Basic Introduction</div><div class="lesson">Who trades in Forex? A Tale of Two Traders</div><div class="lesson">How big is the Forex market cap?</div></div></div>
       <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M02</span><span class="mt">Understanding Brokers <span class="mm">· 6 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Navigating the Forex Market — Choosing the right broker</div><div class="lesson">Metatrader — Empowering Retail Traders</div><div class="lesson">What is leverage and how does it work?</div><div class="lesson">How does a broker make money? Spreads and Swap fees</div><div class="lesson">Why demo accounts are your first step</div><div class="lesson">Forex Trading — A Tale of Two Traders</div></div></div>
@@ -697,177 +768,253 @@ footer{border-top:1px solid var(--bd);padding:52px 0 40px;background:var(--bg)}
       <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M17</span><span class="mt">Killshot Advanced <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">The Open Strategy</div><div class="lesson">The Inverse Risk Reward</div><div class="lesson">The 3-Minute Gold Strategy</div><div class="lesson">The PB &amp; J</div><div class="lesson">Integrating Indicators — The Strategic Edge</div></div></div>
       <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M18</span><span class="mt">Advanced Psychology <span class="mm">· 10 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Identity, beliefs and Trading Personality</div><div class="lesson">Emotional Discipline &amp; Impulse Control</div><div class="lesson">Fear, Losses &amp; Risk Assessment</div><div class="lesson">Confidence, Consistency &amp; Self Trust</div><div class="lesson">Patience and High Quality Execution</div><div class="lesson">Managing Greed &amp; Emotional Highs</div><div class="lesson">Revenge Trading &amp; Emotional Recovery</div><div class="lesson">Building Elite Trading Habits &amp; Routines</div><div class="lesson">Thinking in Probabilities</div><div class="lesson">Becoming a Professional Trader through mindset</div></div></div>
     </div>
+    </div>
   </div>
 </section>
 
-<!-- TESTIMONIALS -->
+<!-- 06 COMMUNITY -->
 <section class="sec" id="proof">
   <div class="W">
-    <div style="margin-bottom:0" class="reveal">
-
-      <h2 class="H">Inside the<br>community.</h2>
-      <p class="sub">Direct messages and screenshots from active members — not manufactured quotes, not cherry-picked highlights.</p>
+    <div class="head reveal">
+      <span class="kick"><b>06</b>The community</span>
+      <h2>Inside the <span class="hl">community.</span></h2>
+      <p class="lede">Direct messages and screenshots from active members. Not manufactured quotes, not cherry-picked highlights.</p>
     </div>
     <div class="tslider-wrap reveal">
-      <button class="tslider-btn tslider-prev" id="tbtnPrev" onclick="tSlide(-1)" disabled>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
       <div class="tslider-vp">
         <div class="tslider-track" id="ttrack">
-          <div class="tthumb" onclick="lbOpen(0)"><img src="assets/t1.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(1)"><img src="assets/t2.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(2)"><img src="assets/t3.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(3)"><img src="assets/t4.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(4)"><img src="assets/t5.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(5)"><img src="assets/t6.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(6)"><img src="assets/t7.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(7)"><img src="assets/t8.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(8)"><img src="assets/t9.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(9)"><img src="assets/t10.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
-          <div class="tthumb" onclick="lbOpen(10)"><img src="assets/t11.webp" alt="" loading="lazy"><div class="tthumb-zoom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></div></div>
+          <button class="tthumb" onclick="lbOpen(0)" aria-label="Open screenshot 1"><img src="assets/t1.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(1)" aria-label="Open screenshot 2"><img src="assets/t2.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(2)" aria-label="Open screenshot 3"><img src="assets/t3.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(3)" aria-label="Open screenshot 4"><img src="assets/t4.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(4)" aria-label="Open screenshot 5"><img src="assets/t5.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(5)" aria-label="Open screenshot 6"><img src="assets/t6.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(6)" aria-label="Open screenshot 7"><img src="assets/t7.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(7)" aria-label="Open screenshot 8"><img src="assets/t8.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(8)" aria-label="Open screenshot 9"><img src="assets/t9.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(9)" aria-label="Open screenshot 10"><img src="assets/t10.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(10)" aria-label="Open screenshot 11"><img src="assets/t11.webp" alt="" loading="lazy"></button>
         </div>
       </div>
-      <button class="tslider-btn tslider-next" id="tbtnNext" onclick="tSlide(1)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-    </div>
-    <!-- Lightbox -->
-    <div class="lb" id="lb" onclick="lbClose(event)">
-      <button class="lb-close" onclick="lbClose()"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
-      <button class="lb-arr lb-prev" onclick="lbNav(-1,event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-      <div class="lb-img-wrap"><img id="lb-img" src="" alt=""></div>
-      <button class="lb-arr lb-next" onclick="lbNav(1,event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
-      <div class="lb-counter" id="lb-ctr"></div>
+      <div class="tnav">
+        <button id="tbtnPrev" onclick="tSlide(-1)" disabled aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button id="tbtnNext" onclick="tSlide(1)" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+        <span class="mono">Tap to enlarge</span>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- LIVE -->
+<!-- 07 LIVE -->
 <section class="sec" id="live">
   <div class="W">
-    <div style="margin-bottom:48px" class="reveal">
-
-      <h2 class="H">Every day you're<br>in the markets<br>with us.</h2>
-      <p class="sub">The Vault isn't something you watch once and forget. Your educators trade live every session. Your community breaks down every move. You don't just consume content — you participate in a live trading environment.</p>
+    <div class="head reveal">
+      <span class="kick"><b>07</b>Every day</span>
+      <h2>Every day you're in the markets <span class="hl">with us.</span></h2>
+      <p class="lede">The Vault isn't something you watch once and forget. Your educators trade live every session, and your community breaks down every move.</p>
     </div>
-    <div class="feat-grid reveal">
-      <div class="feat"><div class="feat-num">01</div><div class="feat-t">Daily Live Sessions</div><p class="feat-d">Your educators trade live, every session. Pre-market prep, live execution, post-session review. Not recordings from last month — real decisions, real markets, right now.</p></div>
-      <div class="feat"><div class="feat-num">02</div><div class="feat-t">Copy Trading Systems</div><p class="feat-d">Follow your educator's live positions automatically — every verified setup copied to your account with defined risk. You study while your trades run.</p><span class="feat-badge">Elite only</span></div>
-      <div class="feat"><div class="feat-num">03</div><div class="feat-t">Community Access</div><p class="feat-d">A live community of traders doing the actual work — daily charts, accountability, and direct access to every educator in the Vault. Not a ghost town.</p></div>
+    <div class="feats">
+      <article class="card reveal"><div class="num">01</div><h3>Daily live sessions</h3><p>Pre-market prep, live execution, post-session review. Real decisions in real markets, right now.</p></article>
+      <article class="card reveal d1"><div class="num">02</div><h3>Copy trading systems</h3><p>Follow your educator's live positions automatically, with defined risk on every copied setup. You study while your trades run.</p><span class="tag">Elite only</span></article>
+      <article class="card reveal d2"><div class="num">03</div><h3>Community access</h3><p>Traders doing the actual work: daily charts, accountability and direct access to every educator in the Vault. Not a ghost town.</p></article>
     </div>
   </div>
 </section>
 
-<!-- PRICING -->
+<!-- 08 PRICING -->
 <section class="sec" id="pricing">
   <div class="W">
-    <div style="margin-bottom:48px" class="reveal">
-
-      <h2 class="H">Two ways in.</h2>
-      <p class="sub">Start with one educator's methodology and scanner, or go all-in with the full Vault. Both plans include the complete curriculum from day one.</p>
+    <div class="head reveal">
+      <span class="kick"><b>08</b>Pricing</span>
+      <h2>Two ways <span class="hl">in.</span></h2>
+      <p class="lede">Start with one educator's methodology and scanner, or go all-in with the full Vault. Both plans include the curriculum from day one.</p>
     </div>
-    <div class="price-grid reveal">
-      <div class="pcard">
-        <div class="pt"><div class="pbl b1">Sniper Community</div><div class="pname">Starter</div><p class="ptag">The Killshot system — full curriculum, live sessions, scanner access.</p><div class="pstart">One-time startup: <strong>$124.99</strong></div><div class="pmo"><strong>$99</strong> /month</div></div>
-        <div class="pcta"><a href="https://whop.com/sniper-academy-603f/sniper-community-3c/" class="btn-o" target="_blank" rel="noopener">Join Sniper Community →</a></div>
-        <div class="pf"><div class="pfi">5 live sessions per week — your educators trading live, every session</div><div class="pfi">Basic Academy — trading fundamentals, market structure, risk management &amp; execution</div><div class="pfi">Intermediate Academy — higher-level strategies, technical analysis &amp; Killshot scanner bootcamp</div><div class="pfi">Sniper Community Discord with the full Sniper team</div><div class="pfi">Signal chat — entries, stop losses &amp; profit targets</div><div class="pfi">Killshot Scanner — proprietary setup identification technology</div><div class="pfi">Copy Trader — automatically replicate supported trades</div></div>
-      </div>
-      <div class="pcard feat">
-        <div class="pt"><div class="pbl b2">Sniper Elite</div><div class="pname">Elite</div><p class="ptag">All four educators, all three scanners, every tool in the Vault.</p><div class="pstart">One-time startup: <strong>$154.99</strong></div><div class="pmo"><strong>$139.99</strong> /month</div></div>
-        <div class="pcta"><a href="https://whop.com/sniper-academy-603f/sniper-elite-3d/" class="btn-p" target="_blank" rel="noopener">Join Sniper Elite →</a></div>
-        <div class="pf"><div class="pfi">5 live sessions per week — your educators trading live, every session</div><div class="pfi">Full TradeVault Academies — Basic, Intermediate, Advanced, Trading Psychology &amp; Killshot Scanner Bootcamp</div><div class="pfi">Private Mentorship Discord — community, accountability &amp; direct educator access</div><div class="pfi">Signal chat — entries, stop losses &amp; profit targets</div><div class="pfi">Killshot, Smartshot &amp; Spectrum scanners — all three proprietary tools</div><div class="pfi">Copy Trader — automatically replicate supported trades</div><div class="pfi">Ambush Trade Manager — manage positions, risk &amp; execution more efficiently</div></div>
-      </div>
+    <div class="price">
+      <article class="card pcard reveal">
+        <div class="plan">Sniper Community</div>
+        <h3>Starter</h3>
+        <p class="ptag">The Killshot system: curriculum, live sessions and scanner access.</p>
+        <div class="amt"><b>$99</b><span>/ month</span></div>
+        <div class="start">One-time startup <strong>$124.99</strong></div>
+        <a href="https://whop.com/sniper-academy-603f/sniper-community-3c/" class="btn-g" target="_blank" rel="noopener">Join Sniper Community</a>
+        <ul class="pf">
+          <li>5 live sessions per week with your educators trading live</li>
+          <li>Basic Academy: fundamentals, market structure, risk management and execution</li>
+          <li>Intermediate Academy: higher-level strategies, technical analysis and the Killshot bootcamp</li>
+          <li>Sniper Community Discord with the full Sniper team</li>
+          <li>Signal chat: entries, stop losses and profit targets</li>
+          <li>Killshot Scanner</li>
+          <li>Copy Trader for supported trades</li>
+        </ul>
+      </article>
+      <article class="card pcard hot reveal d1">
+        <div class="plan">Sniper Elite <span class="tag">Full Vault</span></div>
+        <h3>Elite</h3>
+        <p class="ptag">All four educators, all three scanners, every tool in the Vault.</p>
+        <div class="amt"><b>$139.99</b><span>/ month</span></div>
+        <div class="start">One-time startup <strong>$154.99</strong></div>
+        <a href="https://whop.com/sniper-academy-603f/sniper-elite-3d/" class="btn" target="_blank" rel="noopener">Join Sniper Elite <span class="arr">→</span></a>
+        <ul class="pf">
+          <li>5 live sessions per week with your educators trading live</li>
+          <li>Every Academy: Basic, Intermediate, Advanced, Trading Psychology and the Killshot bootcamp</li>
+          <li>Private Mentorship Discord with direct educator access</li>
+          <li>Signal chat: entries, stop losses and profit targets</li>
+          <li>Killshot, Smartshot and Spectrum: all three scanners</li>
+          <li>Copy Trader for supported trades</li>
+          <li>Ambush Trade Manager for positions, risk and execution</li>
+        </ul>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- FAQ -->
-<section class="sec" id="faq" style="background:var(--bg1);border-top:1px solid var(--bd)">
+<!-- 09 FAQ -->
+<section class="sec" id="faq">
   <div class="W">
-    <div style="margin-bottom:44px" class="reveal"><h2 class="H">Questions.</h2></div>
+    <div class="head reveal">
+      <span class="kick"><b>09</b>Questions</span>
+      <h2>Questions, <span class="hl">answered.</span></h2>
+    </div>
     <div class="faq reveal">
-      <div class="fi" onclick="toggleF(this)"><div class="fq">Is this a signals service? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">No. The Trade Vault is an education platform and active trading community. Elite members get access to signals and copy trading systems — but the goal is for you to understand every trade, not just follow one.</div></div>
-      <div class="fi" onclick="toggleF(this)"><div class="fq">What markets does it cover? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">The primary focus is US30 (Dow Jones), Nasdaq (NQ/NAS100), and Gold (XAU/USD). Andrew's Spectrum scanner also covers the Emini ES (S&P 500 futures).</div></div>
-      <div class="fi" onclick="toggleF(this)"><div class="fq">What platform do I need? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">MetaTrader 5 (MT5) and TradingView. Both are covered in the curriculum. You'll also need a broker — Module 2 covers how to choose one.</div></div>
-      <div class="fi" onclick="toggleF(this)"><div class="fq">Which educator should I choose on the Starter plan? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">Depends on the market. Jay and Adam focus on US30 with Killshot. Tyler trades Gold and NQ with Smartshot. Andrew covers US30, ES and Nasdaq with Spectrum. Completely new? Start with Jay — Killshot is the most established methodology in the Vault.</div></div>
-      <div class="fi" onclick="toggleF(this)"><div class="fq">Can I upgrade from Starter to Elite? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">Yes. You can upgrade at any time from inside your member area. The startup fee difference applies on upgrade.</div></div>
-      <div class="fi" onclick="toggleF(this)"><div class="fq">Will I make money? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="fa">We won't promise that, and you should be wary of anyone who does. Trading involves real risk. What The Trade Vault gives you is a proven methodology, real tools, and educators who trade the same markets alongside you. The rest is up to you.</div></div>
+      <details data-tag="Format" data-short="Education first."><summary>Is this a signals service?</summary><div class="a">No. The Trade Vault is an education platform and active trading community. Members get access to signals and copy trading systems, but the goal is for you to understand every trade, not just follow one.</div></details>
+      <details data-tag="Markets" data-short="US30, Nasdaq and Gold."><summary>What markets does it cover?</summary><div class="a">The main focus is US30 (Dow Jones), Nasdaq (NQ/NAS100) and Gold (XAU/USD). Andrew's Spectrum scanner also covers the Emini ES (S&amp;P 500 futures).</div></details>
+      <details data-tag="Setup" data-short="MT5 and TradingView."><summary>What platform do I need?</summary><div class="a">MetaTrader 5 (MT5) and TradingView. Both are covered in the curriculum. You'll also need a broker, and Module 2 covers how to choose one.</div></details>
+      <details data-tag="Starter" data-short="New? Start with Jay."><summary>Which educator should I choose on the Starter plan?</summary><div class="a">It depends on the market. Jay and Adam focus on US30 with Killshot. Tyler trades Gold and NQ with Smartshot. Andrew covers US30, ES and Nasdaq with Spectrum. Completely new? Start with Jay: Killshot is the most established methodology in the Vault.</div></details>
+      <details data-tag="Plans" data-short="Yes, any time."><summary>Can I upgrade from Starter to Elite?</summary><div class="a">Yes. You can upgrade at any time from inside your member area. The startup fee difference applies on upgrade.</div></details>
+      <details data-tag="Risk" data-short="No promises. Ever."><summary>Will I make money?</summary><div class="a">We won't promise that, and you should be wary of anyone who does. Trading involves real risk. The Trade Vault gives you a proven methodology, real tools and educators who trade the same markets alongside you. The rest is up to you.</div></details>
     </div>
   </div>
 </section>
 
-<!-- CTA BANNER -->
-<section class="sec" style="background:var(--bg)">
+<!-- FINAL CTA -->
+<section class="sec final">
   <div class="W">
-    <div class="cta-box reveal">
-      <h2>Stop guessing.<br>Start executing.</h2>
-      <p>Join 500+ traders who swapped gut feeling for a rules-based system — with live educators and proprietary tools included.</p>
-      <div class="cta-btns">
-        <a href="#pricing" class="btn-p">Join the Vault today →</a>
-        <a href="#curriculum" class="btn-o">View the curriculum</a>
+    <span class="kick reveal">Your move</span>
+    <h2 class="reveal d1">Stop guessing. <span class="hl">Start executing.</span></h2>
+    <p class="lede reveal d2">Join 500+ traders who swapped gut feeling for a rules-based system, with live educators and proprietary tools included.</p>
+    <div class="reveal d3">
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn">Join the Vault today <span class="arr">→</span></a>
+        <a href="#curriculum" class="btn-g">View the curriculum</a>
       </div>
+      <span class="note">From $99 / month</span>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
+</main>
+
 <footer>
   <div class="W">
     <div class="foot-top">
-      <div class="nl" style="gap:14px">
-        <img src="assets/tv-icon.png" alt="" width="34" height="34" style="object-fit:contain;flex:none">
-        <img src="assets/tv-logo.png" alt="The Trade Vault" height="20" style="object-fit:contain;flex:none;opacity:.85">
-      </div>
+      <span class="brand"><img src="assets/tv-icon.png" alt="" width="30" height="30" style="width:30px;height:30px"><img src="assets/tv-logo.png" alt="The Trade Vault" width="190" height="15" style="height:15px"></span>
       <ul class="flinks"><li><a href="https://thetradevault.co/terms.html">Terms</a></li><li><a href="https://thetradevault.co/privacy.html">Privacy</a></li><li><a href="mailto:hello@thetradevault.co">Contact</a></li></ul>
     </div>
     <p class="risk">Trading futures, contracts for difference, and other leveraged products carries a substantial risk of loss and is not suitable for every investor. You may lose more than your initial deposit. Past performance is not indicative of future results, and no representation is made that any account will or is likely to achieve profits or losses similar to those discussed. The Trade Vault provides educational content and analytical tools only. Nothing on this site is investment, financial, legal, or tax advice, and nothing here is a recommendation or solicitation to buy or sell any security or derivative. The Trade Vault is not a registered investment adviser, dealer, or commodity trading advisor in any jurisdiction. You are solely responsible for your own trading decisions. Consider your objectives and circumstances, and seek advice from a licensed professional, before trading.</p>
-    <div class="fcopy">© 2026 The Trade Vault. All rights reserved.</div>
+    <div class="mono fcopy">© 2026 The Trade Vault. All rights reserved.</div>
   </div>
 </footer>
 
+<div class="lb" id="lb" onclick="lbClose(event)">
+  <button class="lb-close" onclick="lbClose()" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <button class="lb-prev" onclick="lbNav(-1,event)" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-next" onclick="lbNav(1,event)" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+  <div class="lb-ctr mono" id="lb-ctr"></div>
+</div>
+
 <script>
-const nav=document.getElementById('nav');
-window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>20),{passive:true});
+// mobile menu
 const mob=document.getElementById('mob');
 document.getElementById('mob-open').onclick=()=>mob.classList.add('open');
 document.getElementById('mob-close').onclick=()=>mob.classList.remove('open');
-function closeMob(){mob.classList.remove('open')}
+mob.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mob.classList.remove('open')));
 
-// reveal
-const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}})},{threshold:.1});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+// reveal: rise + un-blur
+(function(){
+  var els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return}
+  var io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  els.forEach(e=>io.observe(e));
+})();
 
+// pinned sequence (desktop only)
+(function(){
+  var seq=document.getElementById('seq'); if(!seq) return;
+  var items=[...seq.querySelectorAll('.seq-item')], dots=[...seq.querySelectorAll('.seq-dots button')],
+      desk=matchMedia('(min-width:1024px)'), cur=0;
+  function set(n){ if(n===cur) return; cur=n;
+    items.forEach((it,i)=>it.classList.toggle('on',i===n)); dots.forEach((d,i)=>d.classList.toggle('on',i===n)); }
+  function onScroll(){ if(!desk.matches) return;
+    var span=seq.offsetHeight-innerHeight, p=Math.min(1,Math.max(0,-seq.getBoundingClientRect().top/span));
+    set(Math.min(items.length-1,Math.floor(p*items.length))); }
+  dots.forEach((d,i)=>d.addEventListener('click',()=>{
+    var top=seq.getBoundingClientRect().top+scrollY, span=seq.offsetHeight-innerHeight;
+    scrollTo({top:top+span*(i+.5)/items.length,behavior:'smooth'}); }));
+  addEventListener('scroll',onScroll,{passive:true}); addEventListener('resize',onScroll); onScroll();
+})();
+
+// FAQ: question list + answer pane on desktop (accordion stays on mobile)
+(function(){
+  var faq=document.querySelector('.faq');
+  if(!faq||!matchMedia('(min-width:1024px)').matches) return;
+  var ds=[...faq.querySelectorAll('details[data-short]')]; if(!ds.length) return;
+  var wrap=document.createElement('div'), list=document.createElement('div'), pane=document.createElement('div');
+  wrap.className='faq-split'; list.className='faq-list'; pane.className='faq-pane';
+  pane.setAttribute('aria-live','polite'); list.setAttribute('role','tablist');
+  function q(d){return d.querySelector('summary').textContent.trim()}
+  function num(i){return (i<9?'0':'')+(i+1)}
+  function show(i){
+    var d=ds[i];
+    [...list.children].forEach((b,j)=>{b.classList.toggle('on',j===i);b.setAttribute('aria-selected',j===i)});
+    pane.innerHTML='<small><b>'+num(i)+'</b> / '+d.dataset.tag+'</small><h3></h3><div class="short"></div><p></p>';
+    pane.querySelector('h3').textContent=q(d);
+    pane.querySelector('.short').textContent=d.dataset.short;
+    pane.querySelector('p').textContent=d.querySelector('.a').textContent;
+    pane.classList.remove('swap'); void pane.offsetWidth; pane.classList.add('swap');
+  }
+  ds.forEach((d,i)=>{
+    var b=document.createElement('button');
+    b.type='button'; b.className='faq-q'; b.setAttribute('role','tab');
+    b.innerHTML='<small><b>'+num(i)+'</b>'+d.dataset.tag+'</small>';
+    b.appendChild(document.createTextNode(q(d)));
+    b.addEventListener('click',()=>show(i));
+    list.appendChild(b);
+  });
+  wrap.append(list,pane); faq.appendChild(wrap); faq.classList.add('has-split');
+  show(0);
+})();
+
+// curriculum
 function toggleM(el){el.classList.toggle('open')}
 function switchT(t,btn){
   document.querySelectorAll('.tpanel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ttab').forEach(b=>b.classList.remove('active'));
   document.getElementById('t-'+t).classList.add('active');btn.classList.add('active');
 }
-function toggleF(el){el.classList.toggle('open')}
 
-// ── Testimonial slider ──
+// community slider
 let tIdx=0;
 function tSlide(dir){
   const track=document.getElementById('ttrack');
-  const perView=window.innerWidth<=640?2:window.innerWidth<=960?3:4;
+  const perView=innerWidth<=640?2:4;
   const tMax=track.children.length-perView;
   tIdx=Math.max(0,Math.min(tIdx+dir,tMax));
-  const w=track.children[0].offsetWidth+8;
+  const w=track.children[0].offsetWidth+12;
   track.style.transform=`translateX(-${tIdx*w}px)`;
   document.getElementById('tbtnPrev').disabled=tIdx===0;
   document.getElementById('tbtnNext').disabled=tIdx>=tMax;
 }
 
-// ── Lightbox ──
-const lbSrcs=['assets/t1.webp','assets/t2.webp','assets/t3.webp','assets/t4.webp','assets/t5.webp','assets/t6.webp','assets/t7.webp','assets/t8.webp','assets/t9.webp','assets/t10.webp','assets/t11.webp'];
+// lightbox
+const lbSrcs=[...document.querySelectorAll('.tthumb img')].map(i=>i.getAttribute('src'));
 let lbIdx=0;
-const lbEl=document.getElementById('lb');
-const lbImg=document.getElementById('lb-img');
-const lbCtr=document.getElementById('lb-ctr');
-function lbOpen(i){lbIdx=i;lbImg.src=lbSrcs[i];lbEl.classList.add('open');lbCtr.textContent=`${i+1} / ${lbSrcs.length}`;document.body.style.overflow='hidden'}
-function lbClose(e){if(e&&e.target!==lbEl&&!e.target.classList.contains('lb-close'))return;lbEl.classList.remove('open');document.body.style.overflow=''}
-function lbNav(dir,e){if(e)e.stopPropagation();lbIdx=(lbIdx+dir+lbSrcs.length)%lbSrcs.length;lbImg.src=lbSrcs[lbIdx];lbCtr.textContent=`${lbIdx+1} / ${lbSrcs.length}`}
-document.addEventListener('keydown',e=>{if(!lbEl.classList.contains('open'))return;if(e.key==='Escape')lbEl.classList.remove('open'),document.body.style.overflow='';if(e.key==='ArrowRight')lbNav(1);if(e.key==='ArrowLeft')lbNav(-1)});
+const lbEl=document.getElementById('lb'), lbImg=document.getElementById('lb-img'), lbCtr=document.getElementById('lb-ctr');
+function lbShow(){lbImg.src=lbSrcs[lbIdx];lbCtr.textContent=`${lbIdx+1} / ${lbSrcs.length}`}
+function lbOpen(i){lbIdx=i;lbShow();lbEl.classList.add('open');document.body.style.overflow='hidden'}
+function lbClose(e){if(e&&e.target!==lbEl&&!e.target.closest('.lb-close'))return;lbEl.classList.remove('open');document.body.style.overflow=''}
+function lbNav(dir,e){if(e)e.stopPropagation();lbIdx=(lbIdx+dir+lbSrcs.length)%lbSrcs.length;lbShow()}
+document.addEventListener('keydown',e=>{if(!lbEl.classList.contains('open'))return;if(e.key==='Escape')lbClose();if(e.key==='ArrowRight')lbNav(1);if(e.key==='ArrowLeft')lbNav(-1)});
 </script>
 </body>
 </html>
