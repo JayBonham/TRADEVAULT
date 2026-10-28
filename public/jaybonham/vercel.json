@@ -39,6 +39,9 @@
     },
     "api/vt.py": {
       "maxDuration": 10
+    },
+    "api/jb-webinar.py": {
+      "maxDuration": 15
     }
   },
   "redirects": [

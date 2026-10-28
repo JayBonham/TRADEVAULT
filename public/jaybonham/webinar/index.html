@@ -313,11 +313,7 @@ footer p{margin:0 0 10px;max-width:100ch;line-height:1.6}
           </div>
         </div>
 
-        <!-- ============================================================
-             PLACEHOLDER FORM — swap for the GHL form / webhook.
-             Fields: name, email, phone. Submit handler is at the bottom
-             of the page (search "REGISTER HANDLER").
-             ============================================================ -->
+        <!-- Posts to /api/jb-webinar → GHL contact + tags (+ inbound webhook if set) -->
         <form class="f" id="regForm" novalidate>
           <label for="r-name">First name</label>
           <input id="r-name" name="name" type="text" placeholder="First name" autocomplete="given-name" required>
@@ -330,15 +326,6 @@ footer p{margin:0 0 10px;max-width:100ch;line-height:1.6}
           <p class="fine">By registering you agree to receive webinar reminders by email and SMS. Msg &amp; data rates may apply. Reply STOP to opt out. We never share your details.</p>
         </form>
 
-        <div class="done" aria-live="polite">
-          <div class="chk">✓</div>
-          <h3>You're in<span data-fname></span>.</h3>
-          <p>Your seat is saved for <b style="color:var(--fg)" data-when-full>Thursday</b>. The live link is on its way to your email and phone. Add it to your calendar so you don't miss the start:</p>
-          <div class="cal">
-            <a href="#" target="_blank" rel="noopener" data-gcal>Google Calendar</a>
-            <button type="button" data-ics>Apple / Outlook</button>
-          </div>
-        </div>
         <div class="trust"><span>100% free</span><span>No card</span><span>Live Q&amp;A</span></div>
       </div>
     </div>
@@ -553,121 +540,21 @@ footer p{margin:0 0 10px;max-width:100ch;line-height:1.6}
   <a href="#register" class="btn" data-go>Save my seat</a>
 </div>
 
+<script src="/webinar/schedule.js"></script>
 <script>
-/* =================================================================
-   WEBINAR SCHEDULE — edit here.
-   Runs weekly. Shows the next session on/after FIRST_DATE; a session
-   stays "live now" for LIVE_WINDOW minutes after it starts.
-   ================================================================= */
-var WEBINAR = {
-  firstDate: '2026-11-05',          // first session (YYYY-MM-DD)
-  weekday: 4,                       // 0=Sun … 4=Thu
-  hour: 19, minute: 0,              // 7:00 PM …
-  tz: 'America/New_York', tzLabel: 'ET',
-  durationMin: 60,
-  liveWindowMin: 75,
-  title: 'The Secrets of a Hedge Fund Trader — Live with Jay Bonham'
-};
-
 (function () {
-  function tzOffset(date, tz) {
-    var p = {};
-    new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      .formatToParts(date).forEach(function (x) { p[x.type] = x.value; });
-    return Date.UTC(+p.year, p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - date.getTime();
-  }
-  function zoned(y, mo, d, h, mi, tz) {   // wall time in tz -> Date
-    var guess = Date.UTC(y, mo, d, h, mi);
-    var t = guess - tzOffset(new Date(guess), tz);
-    return new Date(guess - tzOffset(new Date(t), tz));
-  }
-  function nextSession(now) {
-    var f = WEBINAR.firstDate.split('-').map(Number);
-    var base = new Date(Date.UTC(f[0], f[1] - 1, f[2]));
-    while (base.getUTCDay() !== WEBINAR.weekday) base.setUTCDate(base.getUTCDate() + 1);
-    for (var i = 0; i < 520; i++) {
-      var s = zoned(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), WEBINAR.hour, WEBINAR.minute, WEBINAR.tz);
-      if (s.getTime() + WEBINAR.liveWindowMin * 60000 > now) return s;
-      base.setUTCDate(base.getUTCDate() + 7);
-    }
-  }
-
-  var start = nextSession(Date.now());
-  var end = new Date(start.getTime() + WEBINAR.durationMin * 60000);
-  var fmt = function (o, tz) { return new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: tz }, o)).format(start); };
-  var day   = fmt({ weekday: 'long' }, WEBINAR.tz);
-  var date  = fmt({ month: 'short', day: 'numeric' }, WEBINAR.tz);
-  var dateL = fmt({ weekday: 'long', month: 'long', day: 'numeric' }, WEBINAR.tz);
-  var time  = fmt({ hour: 'numeric', minute: '2-digit' }, WEBINAR.tz) + ' ' + WEBINAR.tzLabel;
-  var userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  var local = '';
-  if (userTz && tzOffset(start, userTz) !== tzOffset(start, WEBINAR.tz)) {
-    local = 'That\'s ' + new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(start) + ' your time';
-  }
-
-  function set(sel, txt) { document.querySelectorAll(sel).forEach(function (e) { e.textContent = txt; }); }
-  set('[data-when-short],[data-when-short2],[data-when-short3]', day + ', ' + date + ' · ' + time);
-  set('[data-when-date]', day + ' ' + date);
-  set('[data-when-time]', time);
-  set('[data-when-local]', local || 'Live with Jay');
-  set('[data-when-ribbon]', 'Live · ' + day + ' ' + date + ' · ' + time);
-  set('[data-when-full],[data-when-full2]', dateL + ' at ' + time);
-  set('[data-yr]', new Date().getFullYear());
-
-  // countdown
-  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
-  function tick() {
-    var ms = start.getTime() - Date.now();
-    if (ms <= 0) {
-      set('[data-cd-mini]', '● Live now');
-      document.querySelectorAll('[data-cd]').forEach(function (c) { c.querySelectorAll('b').forEach(function (b) { b.textContent = '00'; }); });
-      return;
-    }
-    var s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
-    document.querySelectorAll('[data-cd]').forEach(function (c) {
-      c.querySelector('[data-d]').textContent = pad(d);
-      c.querySelector('[data-h]').textContent = pad(h);
-      c.querySelector('[data-m]').textContent = pad(m);
-      c.querySelector('[data-s]').textContent = pad(sec);
-    });
-    set('[data-cd-mini]', 'Starts in ' + (d ? d + 'd ' : '') + pad(h) + 'h ' + pad(m) + 'm ' + pad(sec) + 's');
-  }
-  tick(); setInterval(tick, 1000);
-
-  // calendar links
-  var z = function (dt) { return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-  var details = 'Free live training with Jay Bonham. Your join link is in your email and texts.\n\nhttps://jaybonham.com/webinar';
-  var g = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(WEBINAR.title) +
-          '&dates=' + z(start) + '/' + z(end) + '&details=' + encodeURIComponent(details) + '&location=' + encodeURIComponent('Online — link in your email');
-  document.querySelectorAll('[data-gcal]').forEach(function (a) { a.href = g; });
-  document.querySelectorAll('[data-ics]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Jay Bonham//Webinar//EN', 'BEGIN:VEVENT',
-        'UID:' + z(start) + '@jaybonham.com', 'DTSTAMP:' + z(new Date()), 'DTSTART:' + z(start), 'DTEND:' + z(end),
-        'SUMMARY:' + WEBINAR.title, 'DESCRIPTION:' + details.replace(/\n/g, '\\n'), 'LOCATION:Online — link in your email',
-        'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Jay Bonham live training starts in 15 minutes', 'END:VALARM',
-        'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-      a.download = 'jay-bonham-live-training.ics';
-      document.body.appendChild(a); a.click(); a.remove();
-    });
-  });
-
   // CTA buttons → scroll to form + focus
   document.querySelectorAll('[data-go]').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
-      var card = document.getElementById('register');
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(function () { var i = document.getElementById('r-name'); if (i && !card.classList.contains('ok')) i.focus({ preventScroll: true }); }, 600);
+      document.getElementById('register').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function () { var i = document.getElementById('r-name'); if (i) i.focus({ preventScroll: true }); }, 600);
     });
   });
 
-  /* ============ REGISTER HANDLER (placeholder) ============
-     TODO: post to the GHL form / webhook. Currently validates,
-     fires the pixel, and shows the confirmation state.        */
+  /* ============ REGISTER → /api/jb-webinar → GHL ============ */
   var form = document.getElementById('regForm'), err = document.getElementById('regErr'), btn = document.getElementById('regBtn');
+  var qs = new URLSearchParams(location.search);
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var fN = document.getElementById('r-name'), fE = document.getElementById('r-email'), fP = document.getElementById('r-phone');
@@ -676,23 +563,28 @@ var WEBINAR = {
     if (!name) return (err.textContent = 'Please enter your first name.', fN.focus());
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return (err.textContent = 'Please enter a valid email.', fE.focus());
     if (phone.replace(/\D/g, '').length < 7) return (err.textContent = 'Please enter a valid mobile number.', fP.focus());
-    btn.disabled = true; btn.textContent = 'Saving your seat…';
+    btn.disabled = true; var label = btn.textContent; btn.textContent = 'Saving your seat…';
 
-    // >>> GHL submission goes here <<<
-    Promise.resolve().then(function () {
-      try { fbq('track', 'CompleteRegistration', { content_name: 'Webinar', value: 0, currency: 'USD' }); } catch (x) {}
-      try { localStorage.setItem('jb_vt_email', email.toLowerCase()); } catch (x) {}
-      document.querySelectorAll('[data-fname]').forEach(function (s) { s.textContent = ', ' + name.split(' ')[0]; });
-      document.getElementById('register').classList.add('ok');
-      document.getElementById('register').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+    var payload = { name: name, email: email, phone: phone, session: JBW.start.toISOString(), ref: document.referrer || '' };
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'].forEach(function (k) { if (qs.get(k)) payload[k] = qs.get(k); });
+
+    fetch('/api/jb-webinar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok || !d.ok) throw new Error(d.error || 'Something went wrong. Please try again.'); }); })
+      .then(function () {
+        try { fbq('track', 'CompleteRegistration', { content_name: 'Webinar', value: 0, currency: 'USD' }); } catch (x) {}
+        try { localStorage.setItem('jb_vt_email', email.toLowerCase()); } catch (x) {}
+        setTimeout(function () {
+          location.href = '/webinar/registered?s=' + encodeURIComponent(JBW.start.toISOString()) + '&n=' + encodeURIComponent(name.split(' ')[0]);
+        }, 250);
+      })
+      .catch(function (x) { err.textContent = x.message; btn.disabled = false; btn.textContent = label; });
   });
 
-  // sticky bar: show once the form is off-screen, hide after registering
+  // sticky bar: show once the form is scrolled past
   var sticky = document.getElementById('sticky'), card = document.getElementById('register');
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (es) {
-      es.forEach(function (x) { sticky.classList.toggle('show', !x.isIntersecting && x.boundingClientRect.top < 0 && !card.classList.contains('ok')); });
+      es.forEach(function (x) { sticky.classList.toggle('show', !x.isIntersecting && x.boundingClientRect.top < 0); });
     }).observe(card);
   }
 
