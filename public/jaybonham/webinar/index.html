@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Free Live Training — The Secrets of a Hedge Fund Trader | Jay Bonham</title>
+<meta name="description" content="Free live training every Thursday. Jay Bonham — hedge fund manager and liquidity provider trader — breaks down how professionals actually trade, and the path to becoming consistently profitable.">
+<meta property="og:title" content="The Secrets of a Hedge Fund Trader — Free Live Training">
+<meta property="og:description" content="How professionals actually trade, and the path to consistent profitability. Live with Jay Bonham. Free.">
+<meta property="og:image" content="https://jaybonham.com/assets/webinar/jay-host.webp">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' fill='%234B9EFF'%3EJB%3C/text%3E%3C/svg%3E">
+<!-- Meta Pixel -->
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');fbq('track','ViewContent',{content_name:'Webinar Registration'});</script>
+<style>
+:root{
+  --bg:#06080B; --bg2:#0A0E14; --panel:#0C121B; --line:rgba(255,255,255,.08); --line2:rgba(75,158,255,.22);
+  --fg:#F2F5F7; --mute:#9AA4B0; --dim:#5D6875;
+  --blue:#4B9EFF; --cyan:#58E9FF; --ink:#030D1F; --live:#FF4D5E; --ok:#3DDC97;
+  --gut:clamp(18px,4vw,56px);
+}
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Archivo',system-ui,sans-serif;overflow-x:hidden;font-size:16px;line-height:1.55}
+::selection{background:var(--blue);color:var(--bg)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+img{max-width:100%;display:block}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(var(--gut),env(safe-area-inset-left,0px));padding-right:max(var(--gut),env(safe-area-inset-right,0px))}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.disp{font-family:'Saira Condensed','Arial Narrow',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;line-height:.92;text-wrap:balance}
+.eyebrow{display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--cyan)}
+.eyebrow::before{content:"";width:36px;height:1px;background:rgba(88,233,255,.5)}
+.blue{color:var(--blue)}
+section{position:relative}
+.sec{padding-block:clamp(70px,10vh,120px);border-top:1px solid var(--line)}
+.h2{font-size:clamp(36px,5vw,64px);margin:16px 0 18px}
+.lede{color:var(--mute);font-size:clamp(15px,1.4vw,17px);max-width:62ch;margin:0}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+/* ── top live bar ── */
+.livebar{position:relative;z-index:101;background:linear-gradient(90deg,#0B1A30,#0A1424 50%,#0B1A30);border-bottom:1px solid var(--line2);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C9D6E6}
+.livebar .wrap{display:flex;align-items:center;justify-content:center;gap:10px 18px;flex-wrap:wrap;padding-block:9px;text-align:center}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 0 3px rgba(255,77,94,.18);animation:blink 1.6s infinite;flex:none}
+.livebar b{color:var(--fg);font-weight:600}
+.livebar .cd-mini{color:var(--cyan)}
+
+/* ── nav ── */
+nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:.17em;text-transform:uppercase;line-height:1}
+.brand-s{font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.28em;color:var(--cyan);text-transform:uppercase;margin-top:3px}
+.nav-cta{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);border:1px solid var(--line2);padding:10px 16px;transition:background .2s}
+.nav-cta:hover{background:rgba(75,158,255,.1)}
+
+/* ── hero ── */
+.hero{overflow:hidden;padding-block:clamp(20px,4vh,48px) clamp(60px,9vh,100px)}
+.hero-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 78% 10%,rgba(75,158,255,.16) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 0% 100%,rgba(88,233,255,.06) 0%,transparent 60%)}
+.hero-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(75,158,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.035) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(180deg,#000 0%,transparent 85%);-webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 85%)}
+.hero-in{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(32px,5vw,72px);align-items:start}
+.tag-live{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(255,77,94,.35);background:rgba(255,77,94,.07);padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#FFB3BA}
+.h1{font-size:clamp(46px,7.4vw,104px);margin:22px 0 22px}
+.h1 .sm{display:block;font-size:.42em;letter-spacing:.06em;color:var(--mute);font-weight:700;margin-bottom:.25em}
+.sub{font-size:clamp(16px,1.6vw,19px);color:#C3CBD3;max-width:56ch;margin:0 0 28px}
+.sub b{color:var(--fg);font-weight:600}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);max-width:560px;margin-bottom:28px}
+.meta>div{background:var(--bg2);padding:14px 16px;min-width:0}
+.meta .k{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+.meta .v{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
+.meta .v small{display:block;font-family:'Archivo',sans-serif;text-transform:none;font-weight:400;font-size:12px;color:var(--mute);letter-spacing:0;margin-top:3px}
+.host{display:flex;align-items:center;gap:14px}
+.host img{width:52px;height:52px;object-fit:cover;object-position:50% 18%;border:1px solid var(--line2)}
+.host .n{font-weight:600;font-size:15px}
+.host .r{font-size:13px;color:var(--mute)}
+
+/* registration card */
+.card{position:relative;background:linear-gradient(160deg,#0E1826 0%,#0A0F17 60%);border:1px solid var(--line2);box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 80px rgba(75,158,255,.08)}
+.card::before,.card::after{content:"";position:absolute;width:16px;height:16px;pointer-events:none}
+.card::before{top:-1px;left:-1px;border-left:2px solid var(--blue);border-top:2px solid var(--blue)}
+.card::after{bottom:-1px;right:-1px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue)}
+.card-photo{position:relative;height:190px;overflow:hidden;border-bottom:1px solid var(--line2)}
+.card-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.card-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(10,15,23,.95) 100%)}
+.card-photo .ribbon{position:absolute;left:18px;bottom:14px;z-index:2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
+.card-body{padding:24px clamp(18px,2.4vw,30px) 26px}
+.card h2{font-size:30px;margin:0 0 6px}
+.card p.c-sub{margin:0 0 18px;color:var(--mute);font-size:14px}
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.cd div{background:rgba(255,255,255,.03);border:1px solid var(--line);text-align:center;padding:10px 4px 8px}
+.cd b{display:block;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.cd span{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.f{display:flex;flex-direction:column;gap:10px}
+.f label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.f input{width:100%;background:#070A0F;border:1px solid rgba(255,255,255,.12);color:var(--fg);font:inherit;font-size:16px;padding:15px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.f input::placeholder{color:#55606C}
+.f input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,158,255,.18)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;background:var(--blue);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:19px 30px;transition:transform .2s,box-shadow .2s,background .2s;text-align:center}
+.btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(75,158,255,.42);background:#64ADFF}
+.btn[disabled]{opacity:.6;transform:none;cursor:wait}
+.f .btn{width:100%;margin-top:4px;font-size:14px;padding:20px}
+.fine{font-size:11.5px;color:var(--dim);line-height:1.5;margin:12px 0 0}
+.trust{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 16px;margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.trust span::before{content:"✓ ";color:var(--ok)}
+.err{color:#FF8A95;font-size:13px;margin:2px 0 0;min-height:0}
+.done{display:none;text-align:left}
+.card.ok .f,.card.ok .c-sub,.card.ok h2.reg,.card.ok .cd-wrap{display:none}
+.card.ok .done{display:block}
+.done .chk{width:44px;height:44px;border-radius:50%;background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.4);display:grid;place-items:center;color:var(--ok);font-size:22px;margin-bottom:14px}
+.done h3{font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:30px;line-height:.95;margin:0 0 8px}
+.done p{color:var(--mute);font-size:14px;margin:0 0 16px}
+.cal{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cal a,.cal button{border:1px solid var(--line2);padding:12px 10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);transition:background .2s}
+.cal a:hover,.cal button:hover{background:rgba(75,158,255,.1)}
+
+/* ── credential strip ── */
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
+.strip .wrap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat{padding:26px 18px;border-left:1px solid var(--line);min-width:0}
+.stat:first-child{border-left:none}
+.stat b{display:block;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:clamp(32px,3.6vw,46px);line-height:1;letter-spacing:-.01em}
+.stat>span{display:block;margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+
+/* ── secrets ── */
+.secrets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:46px}
+.secret{background:var(--bg);padding:clamp(24px,3vw,38px);min-width:0;transition:background .3s}
+.secret:hover{background:#0A0F16}
+.secret .num{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.secret .num::after{content:"";flex:1;height:1px;background:var(--line2)}
+.secret h3{font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(25px,2.5vw,32px);line-height:.95;margin:0 0 12px;text-wrap:balance}
+.secret p{color:var(--mute);margin:0;font-size:15px}
+.secret.qa{background:linear-gradient(135deg,rgba(75,158,255,.10),rgba(6,8,11,0) 70%)}
+.center-cta{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:46px;text-align:center}
+.center-cta small{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+/* ── fit ── */
+.fit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:40px}
+.fit-col{border:1px solid var(--line);padding:clamp(22px,3vw,34px);background:var(--bg2);min-width:0}
+.fit-col h3{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;margin:0 0 18px}
+.fit-col.yes{border-color:rgba(61,220,151,.25)}
+.fit-col.yes h3{color:var(--ok)}
+.fit-col.no h3{color:#FF8A95}
+.fit-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.fit-col li{display:flex;gap:12px;color:#C3CBD3;font-size:15px}
+.fit-col li::before{flex:none;font-family:'IBM Plex Mono',monospace;font-weight:600}
+.fit-col.yes li::before{content:"+";color:var(--ok)}
+.fit-col.no li::before{content:"–";color:#FF8A95}
+
+/* ── about ── */
+.about{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,5vw,70px);align-items:center}
+.about-img{position:relative;border:1px solid var(--line2);overflow:hidden;aspect-ratio:4/5;max-width:100%}
+.about-img img{width:100%;height:100%;object-fit:cover;object-position:72% 50%}
+.about-img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(6,8,11,.9))}
+.about-img .cap{position:absolute;left:20px;right:20px;bottom:18px;z-index:2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
+.about p{color:#C3CBD3;margin:0 0 16px;max-width:60ch}
+.about p.big{font-size:clamp(17px,1.6vw,19px);color:var(--fg)}
+.creds{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:10px}
+.creds li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:#C3CBD3}
+.creds li::before{content:"";flex:none;width:6px;height:6px;margin-top:8px;background:var(--blue)}
+.quote{margin:30px 0 0;padding:20px 22px;border-left:2px solid var(--blue);background:rgba(75,158,255,.05);font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(20px,2.1vw,26px);line-height:1.05;letter-spacing:.01em}
+.quote cite{display:block;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-style:normal;font-size:10px;letter-spacing:.2em;color:var(--mute);font-weight:400}
+
+/* ── proof ── */
+.proof{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;margin-top:44px}
+.vid{position:relative;border:1px solid var(--line2);background:#000}
+.vid video{display:block;width:100%;aspect-ratio:16/9;background:#000;object-fit:cover}
+.vid-cap{display:flex;justify-content:space-between;gap:10px;padding:12px 16px;background:var(--bg2);border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+.vid-cap span:last-child{color:var(--dim)}
+.proof-side{display:flex;flex-direction:column;gap:20px;min-width:0}
+.tq{border:1px solid var(--line);background:var(--bg2);padding:22px 24px;min-width:0}
+.tq p{margin:0 0 12px;color:#D5DCE3;font-size:15px}
+.tq .who{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue)}
+.vids-sm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.disc{font-size:11.5px;color:var(--dim);margin:18px 0 0;max-width:90ch}
+
+/* ── bonus ── */
+.bonus{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(20px,3vw,40px);align-items:center;border:1px solid var(--line2);background:linear-gradient(135deg,rgba(13,24,40,.8),rgba(6,8,11,.4));padding:clamp(22px,3vw,36px)}
+.cover{position:relative;width:118px;height:160px;background:linear-gradient(155deg,#0D1828 0%,#06080B 70%);border:1px solid rgba(75,158,255,.34);overflow:hidden;box-shadow:0 24px 50px rgba(0,0,0,.6);transform:rotate(-4deg)}
+.cover::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(75,158,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(75,158,255,.06) 1px,transparent 1px);background-size:12px 12px}
+.cover .c1{position:absolute;top:10px;left:11px;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px}
+.cover .c2{position:absolute;left:11px;right:8px;bottom:12px;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:18px;line-height:.88;text-transform:uppercase}
+.bonus .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ok);margin-bottom:8px}
+.bonus h3{font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:clamp(26px,3vw,38px);line-height:.95;margin:0 0 10px}
+.bonus p{margin:0;color:var(--mute);font-size:15px;max-width:58ch}
+
+/* ── faq ── */
+.faq{max-width:820px;margin:40px auto 0;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:20px;align-items:center;padding:22px 2px;font-weight:600;font-size:17px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:'IBM Plex Mono',monospace;color:var(--blue);font-size:20px;transition:transform .25s;flex:none}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:0 0 22px;color:var(--mute);max-width:70ch}
+
+/* ── final ── */
+.final{text-align:center;overflow:hidden}
+.final .hero-bg{background:radial-gradient(ellipse 60% 70% at 50% 100%,rgba(75,158,255,.18) 0%,transparent 65%)}
+.final .h2{font-size:clamp(40px,6vw,80px)}
+.final .cd{max-width:420px;margin:28px auto 30px}
+
+footer{border-top:1px solid var(--line);padding-block:36px 110px;color:var(--dim);font-size:12px}
+footer .links{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+footer .links a:hover{color:var(--fg)}
+footer p{margin:0 0 10px;max-width:100ch;line-height:1.6}
+
+/* ── sticky mobile bar ── */
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:120;display:none;align-items:center;gap:12px;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(6,8,11,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line2);transform:translateY(110%);transition:transform .35s ease}
+.sticky.show{transform:none}
+.sticky .s-t{flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);line-height:1.4}
+.sticky .s-t b{display:block;color:var(--fg);font-size:11px}
+.sticky .btn{padding:14px 18px;font-size:11.5px;flex:none}
+
+@media(max-width:960px){
+  .hero-in{grid-template-columns:1fr;gap:0}
+  .hero-l{display:contents}
+  .hero-l>*{order:1}
+  .hero-in .card{order:2;margin:4px 0 28px}
+  .hero-l>.m-order{order:3}
+  .hero-l>.meta{margin-bottom:22px}
+  .about{grid-template-columns:1fr}
+  .about-img{aspect-ratio:16/10}
+  .proof{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .strip .wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat:nth-child(3){border-left:none}
+  .stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .secrets,.fit{grid-template-columns:1fr}
+  .bonus{grid-template-columns:1fr;text-align:left}
+  .bonus .btn{width:100%}
+  .sticky{display:flex}
+  .nav-cta{display:none}
+}
+@media(max-width:480px){
+  .meta{grid-template-columns:1fr}
+  .vids-sm{grid-template-columns:1fr}
+  .cd b{font-size:26px}
+  .card-photo{height:150px}
+  .livebar .wrap{font-size:10px;letter-spacing:.1em}
+}
+</style>
+<script src="/vt.js" defer></script>
+</head>
+<body>
+
+<!-- ===== LIVE BAR ===== -->
+<div class="livebar">
+  <div class="wrap">
+    <span style="display:flex;align-items:center;gap:10px"><span class="dot"></span><b>Free live training</b></span>
+    <span data-when-short>Thursday · 7:00 PM ET</span>
+    <span class="cd-mini" data-cd-mini>Starts soon</span>
+  </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<div class="wrap">
+  <nav>
+    <a href="https://jaybonham.com" class="brand" aria-label="Jay Bonham home">
+      <svg width="32" height="32" viewBox="0 0 56 56" fill="none" style="flex:none" aria-hidden="true">
+        <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+        <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/>
+      </svg>
+      <div><div class="brand-n">Jay Bonham</div><div class="brand-s">Precision Under Pressure</div></div>
+    </a>
+    <a href="#register" class="nav-cta" data-go>Save my free seat →</a>
+  </nav>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="wrap hero-in">
+    <div class="hero-l">
+      <span class="tag-live reveal"><span class="dot"></span>Live · Free · Every Thursday</span>
+      <h1 class="disp h1 reveal"><span class="sm">Free live training</span>The Secrets of a <span class="blue">Hedge Fund Trader</span></h1>
+      <p class="sub reveal">How professionals <b>actually</b> trade — and the exact process to go from inconsistent to <b>consistently profitable</b>. Taught live by a trader who manages a hedge fund and trades for a regulated liquidity provider.</p>
+
+      <div class="meta reveal m-order">
+        <div><div class="k">Date</div><div class="v" data-when-date>Thursday</div></div>
+        <div><div class="k">Time</div><div class="v"><span data-when-time>7:00 PM ET</span><small data-when-local></small></div></div>
+        <div><div class="k">Length</div><div class="v">60 Minutes<small>Plus live Q&amp;A with Jay</small></div></div>
+        <div><div class="k">Where</div><div class="v">Online · Live<small>Join link sent by email &amp; text</small></div></div>
+      </div>
+
+      <div class="host reveal m-order">
+        <img src="/assets/webinar/jay-host.webp" alt="Jay Bonham" width="52" height="52">
+        <div><div class="n">Hosted by Jay Bonham</div><div class="r">Hedge fund manager · Liquidity provider trader · 500+ traders mentored</div></div>
+      </div>
+    </div>
+
+    <!-- REGISTRATION CARD -->
+    <div class="card reveal" id="register">
+      <div class="card-photo">
+        <img src="/assets/webinar/jay-host.webp" alt="" aria-hidden="true">
+        <div class="ribbon" data-when-ribbon>Live · Thursday 7:00 PM ET</div>
+      </div>
+      <div class="card-body">
+        <h2 class="disp reg">Reserve your <span class="blue">free seat</span></h2>
+        <p class="c-sub">The live link is sent to registered attendees only.</p>
+        <div class="cd-wrap">
+          <div class="cd" data-cd>
+            <div><b data-d>--</b><span>Days</span></div>
+            <div><b data-h>--</b><span>Hrs</span></div>
+            <div><b data-m>--</b><span>Min</span></div>
+            <div><b data-s>--</b><span>Sec</span></div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             PLACEHOLDER FORM — swap for the GHL form / webhook.
+             Fields: name, email, phone. Submit handler is at the bottom
+             of the page (search "REGISTER HANDLER").
+             ============================================================ -->
+        <form class="f" id="regForm" novalidate>
+          <label for="r-name">First name</label>
+          <input id="r-name" name="name" type="text" placeholder="First name" autocomplete="given-name" required>
+          <label for="r-email">Email</label>
+          <input id="r-email" name="email" type="email" placeholder="Best email address" autocomplete="email" required>
+          <label for="r-phone">Phone</label>
+          <input id="r-phone" name="phone" type="tel" placeholder="Mobile number (for your reminder text)" autocomplete="tel" required>
+          <p class="err" id="regErr" role="alert"></p>
+          <button class="btn" type="submit" id="regBtn">Save my free seat →</button>
+          <p class="fine">By registering you agree to receive webinar reminders by email and SMS. Msg &amp; data rates may apply. Reply STOP to opt out. We never share your details.</p>
+        </form>
+
+        <div class="done" aria-live="polite">
+          <div class="chk">✓</div>
+          <h3>You're in<span data-fname></span>.</h3>
+          <p>Your seat is saved for <b style="color:var(--fg)" data-when-full>Thursday</b>. The live link is on its way to your email and phone. Add it to your calendar so you don't miss the start:</p>
+          <div class="cal">
+            <a href="#" target="_blank" rel="noopener" data-gcal>Google Calendar</a>
+            <button type="button" data-ics>Apple / Outlook</button>
+          </div>
+        </div>
+        <div class="trust"><span>100% free</span><span>No card</span><span>Live Q&amp;A</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CREDENTIAL STRIP ===== -->
+<div class="strip">
+  <div class="wrap">
+    <div class="stat reveal"><b>7<span class="blue">+</span> Yrs</b><span>Full-time in the markets</span></div>
+    <div class="stat reveal"><b>500<span class="blue">+</span></b><span>Traders mentored 1:1</span></div>
+    <div class="stat reveal"><b>10K<span class="blue">+</span></b><span>Trader network</span></div>
+    <div class="stat reveal"><b>KNF</b><span>Regulated liquidity provider</span></div>
+  </div>
+</div>
+
+<!-- ===== WHAT YOU'LL LEARN ===== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="eyebrow reveal">On this live training</div>
+    <h2 class="disp h2 reveal">What the pros know <span class="blue">that you don't</span></h2>
+    <p class="lede reveal">Retail traders hunt for a better indicator. Professionals run a process. In one hour, Jay pulls back the curtain on how money is actually managed at the institutional level — and how you apply it to your own account.</p>
+
+    <div class="secrets">
+      <div class="secret reveal">
+        <div class="num">Secret 01</div>
+        <h3>Hedge funds don't predict. <span class="blue">They price risk.</span></h3>
+        <p>Why professionals decide what they're willing to lose before they ever think about what they'll make — and the sizing rule that keeps a bad day a bad day, never a blown account.</p>
+      </div>
+      <div class="secret reveal">
+        <div class="num">Secret 02</div>
+        <h3>Your strategy isn't the problem. <span class="blue">You are.</span></h3>
+        <p>Most traders lose with a strategy that works. Jay walks through the five-step Precision Loop he runs every session so emotion stops placing your trades for you.</p>
+      </div>
+      <div class="secret reveal">
+        <div class="num">Secret 03</div>
+        <h3>Inside the Killshot setup <span class="blue">on US30 &amp; gold</span></h3>
+        <p>A live breakdown of the strategy Jay built from seven years of screen time: what makes the cut, what never does, and why fewer trades almost always means better results.</p>
+      </div>
+      <div class="secret reveal">
+        <div class="num">Secret 04</div>
+        <h3>The road to <span class="blue">consistent profitability</span></h3>
+        <p>The stages every profitable trader goes through — and the exact habits, rules and review process that move you from one stage to the next, whatever your account size.</p>
+      </div>
+      <div class="secret qa reveal" style="grid-column:1/-1">
+        <div class="num">+ Live</div>
+        <h3>Your questions, <span class="blue">answered live by Jay</span></h3>
+        <p>Bring your trades, your setups and your problems. The last part of every session is open Q&amp;A — the part most people say is worth the hour on its own.</p>
+      </div>
+    </div>
+
+    <div class="center-cta reveal">
+      <a href="#register" class="btn" data-go>Save my free seat →</a>
+      <small data-when-short2>Thursday · 7:00 PM ET · Free</small>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHO IT'S FOR ===== -->
+<section class="sec" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow reveal">Is this for you?</div>
+    <h2 class="disp h2 reveal">Built for traders who are <span class="blue">done guessing</span></h2>
+    <div class="fit">
+      <div class="fit-col yes reveal">
+        <h3>This is for you if</h3>
+        <ul>
+          <li>You've been trading a while but your results swing week to week</li>
+          <li>You know your strategy works — you just don't follow it under pressure</li>
+          <li>You're new and want to learn it properly from day one, not from TikTok</li>
+          <li>You want to learn from someone actively managing money, not just talking about it</li>
+          <li>You're thinking in months and years, not get-rich-this-week</li>
+        </ul>
+      </div>
+      <div class="fit-col no reveal">
+        <h3>This isn't for you if</h3>
+        <ul>
+          <li>You're looking for a signal to copy without understanding it</li>
+          <li>You want someone to promise you'll be rich by next month</li>
+          <li>You're not willing to follow rules when it's inconvenient</li>
+          <li>You think mindset is fluff (it's the whole game)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT JAY ===== -->
+<section class="sec">
+  <div class="wrap about">
+    <div class="about-img reveal">
+      <img src="/assets/webinar/jay-stage.webp" alt="Jay Bonham speaking on stage" loading="lazy">
+      <div class="cap">Jay Bonham · On stage</div>
+    </div>
+    <div>
+      <div class="eyebrow reveal">Your host</div>
+      <h2 class="disp h2 reveal">From the farm <span class="blue">to the fund</span></h2>
+      <p class="big reveal">Jay grew up in a small town where the day starts before the sun. No trust fund, no head start — and when he started trading, he lost, got back up, and lost again.</p>
+      <p class="reveal">Over seven years he treated the charts the way he treated life: patient, disciplined and honest about what was and wasn't working. Out of that grind came Killshot — the strategy he built from his own wins, losses and thousands of hours of screen time.</p>
+      <p class="reveal">Today he manages a hedge fund and trades for a regulated liquidity provider. He's spent years teaching thousands of traders not just how to read a chart, but how to build the mindset that survives the bad days.</p>
+      <ul class="creds reveal">
+        <li>Manages a hedge fund and trades for a KNF-regulated liquidity provider</li>
+        <li>Personally mentored 500+ traders since 2019, network of 10,000+</li>
+        <li>Built three proprietary market scanners running live today</li>
+        <li><span>Author of <i>Mindset Before Markets</i> · speaker on stages worldwide</span></li>
+      </ul>
+      <blockquote class="quote reveal">"Markets don't care how you feel. Your job is to show up the same way every day."<cite>— Jay Bonham</cite></blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROOF ===== -->
+<section class="sec" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow reveal">Real people. Real results.</div>
+    <h2 class="disp h2 reveal">Hear it from <span class="blue">the traders</span></h2>
+    <div class="proof">
+      <div class="reveal">
+        <div class="vid">
+          <video src="/assets/testimonials/ash.mp4" poster="/assets/testimonials/ash.jpg" controls playsinline preload="none"></video>
+          <div class="vid-cap"><span>Ash Barks · Student case study</span><span>1:03</span></div>
+        </div>
+        <div class="tq" style="border-top:none">
+          <p>"I was blowing an account every month. Frustrated. Never following my own rules. Jay showed me exactly what I was doing wrong — technically and in my head. The accountability and mindset shift happened fast."</p>
+          <div class="who">Ash Barks</div>
+        </div>
+      </div>
+      <div class="proof-side">
+        <div class="vids-sm">
+          <div class="vid reveal">
+            <video src="/assets/testimonials/rees.mp4" poster="/assets/testimonials/rees.jpg" controls playsinline preload="none"></video>
+            <div class="vid-cap"><span>Rees Roberts</span><span>1:23</span></div>
+          </div>
+          <div class="vid reveal">
+            <video src="/assets/testimonials/gary.mp4" poster="/assets/testimonials/gary.jpg" controls playsinline preload="none"></video>
+            <div class="vid-cap"><span>Gary Brunskill</span><span>1:03</span></div>
+          </div>
+        </div>
+        <div class="vid reveal">
+          <img src="/assets/webinar/jay-crowd.webp" alt="Jay Bonham with traders at a live event" loading="lazy" style="width:100%;aspect-ratio:16/9;object-fit:cover">
+          <div class="vid-cap"><span>Jay with traders at a live event</span><span>In person</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="disc reveal">Individual results shown are not typical. Trading involves substantial risk of loss and is not suitable for everyone; past performance does not guarantee future results.</p>
+  </div>
+</section>
+
+<!-- ===== BONUS ===== -->
+<section class="sec">
+  <div class="wrap">
+    <div class="bonus reveal">
+      <div class="cover" aria-hidden="true">
+        <div class="c1"><span>J</span><span class="blue">B</span></div>
+        <div class="c2">5 Rules<br>To Trade<br><span class="blue">Like A<br>Sniper</span></div>
+      </div>
+      <div>
+        <div class="k">Free bonus for registering</div>
+        <h3>The 5 Rules to Trade <span class="blue">Like a Sniper</span></h3>
+        <p>Every registrant gets Jay's playbook — the non-negotiable rules he applies to every single trade. Read it before Thursday and you'll get twice as much out of the session.</p>
+      </div>
+      <a href="#register" class="btn" data-go>Claim it →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="sec" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="eyebrow reveal" style="justify-content:center">Questions</div>
+    <h2 class="disp h2 reveal" style="text-align:center">Before you <span class="blue">register</span></h2>
+    <div class="faq reveal">
+      <details><summary>Is it really free?</summary><p>Yes. No card, no catch. Register with your name, email and phone and we'll send you the live link.</p></details>
+      <details><summary>Do I need trading experience?</summary><p>No. Jay explains everything from the ground up, and experienced traders get the most out of the risk and execution sections — most people's real problem isn't knowledge, it's consistency.</p></details>
+      <details><summary>Where is it held? What do I need?</summary><p>It's online. After you register you'll get the join link by email and text. All you need is a phone or computer and a decent connection — join a few minutes early.</p></details>
+      <details><summary>Will there be a replay?</summary><p>This is built to be watched live — the Q&amp;A is where you get your own questions answered, and that only happens in the room. Block out the hour.</p></details>
+      <details><summary>Can't make this Thursday?</summary><p>Jay runs this training every Thursday. Register anyway and we'll make sure you get a seat at the next one.</p></details>
+      <details><summary>Is this a sales pitch?</summary><p>The hour is teaching. At the end, Jay will share how you can work with him directly if you want more help — no pressure, and the training stands on its own either way.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="sec final">
+  <div class="hero-bg"></div>
+  <div class="wrap" style="position:relative">
+    <span class="tag-live reveal"><span class="dot"></span>Live · Free</span>
+    <h2 class="disp h2 reveal" style="margin-top:22px">Stop guessing.<br><span class="blue">Learn how the pros trade.</span></h2>
+    <p class="lede reveal" style="margin:0 auto" data-when-full2>Thursday · 7:00 PM ET</p>
+    <div class="cd reveal" data-cd>
+      <div><b data-d>--</b><span>Days</span></div>
+      <div><b data-h>--</b><span>Hrs</span></div>
+      <div><b data-m>--</b><span>Min</span></div>
+      <div><b data-s>--</b><span>Sec</span></div>
+    </div>
+    <a href="#register" class="btn reveal" data-go style="padding:22px 56px">Save my free seat →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/risk">Risk disclosure</a><a href="https://jaybonham.com">jaybonham.com</a></div>
+    <p>Trading foreign exchange, indices, commodities and other leveraged products carries a high level of risk and may not be suitable for all investors. You could lose some or all of your capital. All content is for educational purposes only and is not financial advice. Past performance is not indicative of future results.</p>
+    <p>This site is not part of the Facebook website or Facebook Inc. and is not endorsed by Facebook in any way.</p>
+    <p>© <span data-yr>2026</span> Jay Bonham. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- sticky mobile bar -->
+<div class="sticky" id="sticky">
+  <div class="s-t"><b>Free live training</b><span data-when-short3>Thursday · 7:00 PM ET</span></div>
+  <a href="#register" class="btn" data-go>Save my seat</a>
+</div>
+
+<script>
+/* =================================================================
+   WEBINAR SCHEDULE — edit here.
+   Runs weekly. Shows the next session on/after FIRST_DATE; a session
+   stays "live now" for LIVE_WINDOW minutes after it starts.
+   ================================================================= */
+var WEBINAR = {
+  firstDate: '2026-11-05',          // first session (YYYY-MM-DD)
+  weekday: 4,                       // 0=Sun … 4=Thu
+  hour: 19, minute: 0,              // 7:00 PM …
+  tz: 'America/New_York', tzLabel: 'ET',
+  durationMin: 60,
+  liveWindowMin: 75,
+  title: 'The Secrets of a Hedge Fund Trader — Live with Jay Bonham'
+};
+
+(function () {
+  function tzOffset(date, tz) {
+    var p = {};
+    new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      .formatToParts(date).forEach(function (x) { p[x.type] = x.value; });
+    return Date.UTC(+p.year, p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - date.getTime();
+  }
+  function zoned(y, mo, d, h, mi, tz) {   // wall time in tz -> Date
+    var guess = Date.UTC(y, mo, d, h, mi);
+    var t = guess - tzOffset(new Date(guess), tz);
+    return new Date(guess - tzOffset(new Date(t), tz));
+  }
+  function nextSession(now) {
+    var f = WEBINAR.firstDate.split('-').map(Number);
+    var base = new Date(Date.UTC(f[0], f[1] - 1, f[2]));
+    while (base.getUTCDay() !== WEBINAR.weekday) base.setUTCDate(base.getUTCDate() + 1);
+    for (var i = 0; i < 520; i++) {
+      var s = zoned(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), WEBINAR.hour, WEBINAR.minute, WEBINAR.tz);
+      if (s.getTime() + WEBINAR.liveWindowMin * 60000 > now) return s;
+      base.setUTCDate(base.getUTCDate() + 7);
+    }
+  }
+
+  var start = nextSession(Date.now());
+  var end = new Date(start.getTime() + WEBINAR.durationMin * 60000);
+  var fmt = function (o, tz) { return new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: tz }, o)).format(start); };
+  var day   = fmt({ weekday: 'long' }, WEBINAR.tz);
+  var date  = fmt({ month: 'short', day: 'numeric' }, WEBINAR.tz);
+  var dateL = fmt({ weekday: 'long', month: 'long', day: 'numeric' }, WEBINAR.tz);
+  var time  = fmt({ hour: 'numeric', minute: '2-digit' }, WEBINAR.tz) + ' ' + WEBINAR.tzLabel;
+  var userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  var local = '';
+  if (userTz && tzOffset(start, userTz) !== tzOffset(start, WEBINAR.tz)) {
+    local = 'That\'s ' + new Intl.DateTimeFormat('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(start) + ' your time';
+  }
+
+  function set(sel, txt) { document.querySelectorAll(sel).forEach(function (e) { e.textContent = txt; }); }
+  set('[data-when-short],[data-when-short2],[data-when-short3]', day + ', ' + date + ' · ' + time);
+  set('[data-when-date]', day + ' ' + date);
+  set('[data-when-time]', time);
+  set('[data-when-local]', local || 'Live with Jay');
+  set('[data-when-ribbon]', 'Live · ' + day + ' ' + date + ' · ' + time);
+  set('[data-when-full],[data-when-full2]', dateL + ' at ' + time);
+  set('[data-yr]', new Date().getFullYear());
+
+  // countdown
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  function tick() {
+    var ms = start.getTime() - Date.now();
+    if (ms <= 0) {
+      set('[data-cd-mini]', '● Live now');
+      document.querySelectorAll('[data-cd]').forEach(function (c) { c.querySelectorAll('b').forEach(function (b) { b.textContent = '00'; }); });
+      return;
+    }
+    var s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+    document.querySelectorAll('[data-cd]').forEach(function (c) {
+      c.querySelector('[data-d]').textContent = pad(d);
+      c.querySelector('[data-h]').textContent = pad(h);
+      c.querySelector('[data-m]').textContent = pad(m);
+      c.querySelector('[data-s]').textContent = pad(sec);
+    });
+    set('[data-cd-mini]', 'Starts in ' + (d ? d + 'd ' : '') + pad(h) + 'h ' + pad(m) + 'm ' + pad(sec) + 's');
+  }
+  tick(); setInterval(tick, 1000);
+
+  // calendar links
+  var z = function (dt) { return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
+  var details = 'Free live training with Jay Bonham. Your join link is in your email and texts.\n\nhttps://jaybonham.com/webinar';
+  var g = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(WEBINAR.title) +
+          '&dates=' + z(start) + '/' + z(end) + '&details=' + encodeURIComponent(details) + '&location=' + encodeURIComponent('Online — link in your email');
+  document.querySelectorAll('[data-gcal]').forEach(function (a) { a.href = g; });
+  document.querySelectorAll('[data-ics]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Jay Bonham//Webinar//EN', 'BEGIN:VEVENT',
+        'UID:' + z(start) + '@jaybonham.com', 'DTSTAMP:' + z(new Date()), 'DTSTART:' + z(start), 'DTEND:' + z(end),
+        'SUMMARY:' + WEBINAR.title, 'DESCRIPTION:' + details.replace(/\n/g, '\\n'), 'LOCATION:Online — link in your email',
+        'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Jay Bonham live training starts in 15 minutes', 'END:VALARM',
+        'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+      a.download = 'jay-bonham-live-training.ics';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  });
+
+  // CTA buttons → scroll to form + focus
+  document.querySelectorAll('[data-go]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var card = document.getElementById('register');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function () { var i = document.getElementById('r-name'); if (i && !card.classList.contains('ok')) i.focus({ preventScroll: true }); }, 600);
+    });
+  });
+
+  /* ============ REGISTER HANDLER (placeholder) ============
+     TODO: post to the GHL form / webhook. Currently validates,
+     fires the pixel, and shows the confirmation state.        */
+  var form = document.getElementById('regForm'), err = document.getElementById('regErr'), btn = document.getElementById('regBtn');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var fN = document.getElementById('r-name'), fE = document.getElementById('r-email'), fP = document.getElementById('r-phone');
+    var name = fN.value.trim(), email = fE.value.trim(), phone = fP.value.trim();
+    err.textContent = '';
+    if (!name) return (err.textContent = 'Please enter your first name.', fN.focus());
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return (err.textContent = 'Please enter a valid email.', fE.focus());
+    if (phone.replace(/\D/g, '').length < 7) return (err.textContent = 'Please enter a valid mobile number.', fP.focus());
+    btn.disabled = true; btn.textContent = 'Saving your seat…';
+
+    // >>> GHL submission goes here <<<
+    Promise.resolve().then(function () {
+      try { fbq('track', 'CompleteRegistration', { content_name: 'Webinar', value: 0, currency: 'USD' }); } catch (x) {}
+      try { localStorage.setItem('jb_vt_email', email.toLowerCase()); } catch (x) {}
+      document.querySelectorAll('[data-fname]').forEach(function (s) { s.textContent = ', ' + name.split(' ')[0]; });
+      document.getElementById('register').classList.add('ok');
+      document.getElementById('register').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  // sticky bar: show once the form is off-screen, hide after registering
+  var sticky = document.getElementById('sticky'), card = document.getElementById('register');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (x) { sticky.classList.toggle('show', !x.isIntersecting && x.boundingClientRect.top < 0 && !card.classList.contains('ok')); });
+    }).observe(card);
+  }
+
+  // reveal on scroll
+  var els = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function (e) { io.observe(e); });
+  }
+  setTimeout(function () { els.forEach(function (e) { e.classList.add('in'); }); }, 2500);
+
+  // one video at a time
+  document.addEventListener('play', function (e) { if (e.target.tagName !== 'VIDEO') return; document.querySelectorAll('video').forEach(function (v) { if (v !== e.target && !v.paused) v.pause(); }); }, true);
+})();
+</script>
+</body>
+</html>
