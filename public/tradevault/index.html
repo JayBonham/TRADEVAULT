@@ -312,8 +312,8 @@ h2{font-size:clamp(34px,4.8vw,60px)}
 .feats .tag{margin-top:16px;color:var(--acc);border-color:rgba(var(--acc-rgb),.35)}
 
 /* pricing */
-.price{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:960px}
-.pcard{display:flex;flex-direction:column;padding:34px}
+.price{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1180px}
+.pcard{display:flex;flex-direction:column;padding:32px 28px}
 .pcard.hot{border-color:rgba(var(--acc-rgb),.48);background:linear-gradient(160deg,rgba(var(--acc-rgb),.12),rgba(var(--acc-rgb),.02) 60%)}
 .pcard.hot:hover{border-color:rgba(var(--acc-rgb),.6)}
 .plan{min-height:28px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
@@ -321,7 +321,7 @@ h2{font-size:clamp(34px,4.8vw,60px)}
 .pcard h3{font-size:36px;margin:14px 0 8px}
 .pcard .ptag{color:var(--tx-dim);font-size:15px;min-height:3.2em}
 .amt{display:flex;align-items:baseline;gap:8px;margin:26px 0 4px}
-.amt b{font-family:var(--display);font-weight:700;font-size:clamp(44px,4.6vw,58px);letter-spacing:-.04em;line-height:1}
+.amt b{font-family:var(--display);font-weight:700;font-size:clamp(42px,3.8vw,54px);letter-spacing:-.04em;line-height:1}
 .amt span{color:var(--tx-mute);font-size:15px}
 .start{font-size:14px;color:var(--tx-mute)}
 .start strong{color:var(--tx-dim);font-weight:600}
@@ -472,7 +472,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
         <a href="#pricing" class="btn">Join the Vault <span class="arr">→</span></a>
         <a href="#curriculum" class="btn-g">View curriculum</a>
       </div>
-      <span class="note">From $99 / month · Full curriculum from day one</span>
+      <span class="note">From $49.99 / month · Upgrade any time</span>
     </div>
 
     <div class="frame reveal">
@@ -826,42 +826,53 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   <div class="W">
     <div class="head reveal">
       <span class="kick"><b>08</b>Pricing</span>
-      <h2>Two ways <span class="hl">in.</span></h2>
-      <p class="lede">Start with one educator's methodology and scanner, or go all-in with the full Vault. Both plans include the curriculum from day one.</p>
+      <h2>Three ways <span class="hl">in.</span></h2>
+      <p class="lede">Just the tools, one educator and their scanner, or the full Vault. Pick your level and upgrade whenever you're ready.</p>
     </div>
     <div class="price">
       <article class="card pcard reveal">
-        <div class="plan">Sniper Community</div>
-        <h3>Starter</h3>
-        <p class="ptag">The Killshot system: curriculum, live sessions and scanner access.</p>
-        <div class="amt"><b>$99</b><span>/ month</span></div>
-        <div class="start">One-time startup <strong>$124.99</strong></div>
-        <a href="https://whop.com/sniper-academy-603f/sniper-community-3c/" class="btn-g" target="_blank" rel="noopener">Join Sniper Community</a>
+        <div class="plan">Tradevault Tools</div>
+        <h3>Tools</h3>
+        <p class="ptag">Scanner access on its own. For traders who already have a system.</p>
+        <div class="amt"><b>$49.99</b><span>/ month</span></div>
+        <div class="start"><strong>No startup fee</strong></div>
+        <a href="https://whop.com/sniper-academy-603f/sniper-tools/" class="btn-g" target="_blank" rel="noopener">Get Tools</a>
         <ul class="pf">
-          <li>5 live sessions per week with your educators trading live</li>
-          <li>Basic Academy: fundamentals, market structure, risk management and execution</li>
-          <li>Intermediate Academy: higher-level strategies, technical analysis and the Killshot bootcamp</li>
-          <li>Sniper Community Discord with the full Sniper team</li>
-          <li>Signal chat: entries, stop losses and profit targets</li>
-          <li>Killshot Scanner</li>
-          <li>Copy Trader for supported trades</li>
+          <li>Scanner access</li>
+          <li>No startup fee</li>
+          <li>Upgrade to Community or Elite any time</li>
         </ul>
       </article>
-      <article class="card pcard hot reveal d1">
-        <div class="plan">Sniper Elite <span class="tag">Full Vault</span></div>
-        <h3>Elite</h3>
-        <p class="ptag">All four educators, all three scanners, every tool in the Vault.</p>
-        <div class="amt"><b>$139.99</b><span>/ month</span></div>
-        <div class="start">One-time startup <strong>$154.99</strong></div>
-        <a href="https://whop.com/sniper-academy-603f/sniper-elite-3d/" class="btn" target="_blank" rel="noopener">Join Sniper Elite <span class="arr">→</span></a>
+      <article class="card pcard reveal d1">
+        <div class="plan">Tradevault Community</div>
+        <h3>Community</h3>
+        <p class="ptag">Pick your educator and their scanner, plus the Basic Academy.</p>
+        <div class="amt"><b>$99.99</b><span>/ month</span></div>
+        <div class="start">One-time startup <strong>$124.99</strong></div>
+        <a href="https://whop.com/sniper-academy-603f/sniper-community-3c/" class="btn-g" target="_blank" rel="noopener">Join Community</a>
         <ul class="pf">
-          <li>5 live sessions per week with your educators trading live</li>
+          <li>Choose 1 educator: Jay, Adam, Tyler or Andrew</li>
+          <li>Choose 1 scanner: Killshot, Smartshot or Spectrum</li>
+          <li>Basic Academy: fundamentals, market structure, risk management and execution</li>
+          <li>Live sessions with your educator</li>
+          <li>Tradevault Community Discord</li>
+        </ul>
+      </article>
+      <article class="card pcard hot reveal d2">
+        <div class="plan">Tradevault Elite <span class="tag">Full Vault</span></div>
+        <h3>Elite</h3>
+        <p class="ptag">Everything. All four educators, all three scanners, all the training.</p>
+        <div class="amt"><b>$124.99</b><span>/ month</span></div>
+        <div class="start">One-time startup <strong>$50</strong></div>
+        <a href="https://whop.com/sniper-academy-603f/sniper-elite-3d/" class="btn" target="_blank" rel="noopener">Join Elite <span class="arr">→</span></a>
+        <ul class="pf">
+          <li>All four educators: Jay, Adam, Tyler and Andrew</li>
+          <li>Killshot, Smartshot and Spectrum: all three scanners</li>
           <li>Every Academy: Basic, Intermediate, Advanced, Trading Psychology and the Killshot bootcamp</li>
+          <li>5 live sessions per week with your educators trading live</li>
           <li>Private Mentorship Discord with direct educator access</li>
           <li>Signal chat: entries, stop losses and profit targets</li>
-          <li>Killshot, Smartshot and Spectrum: all three scanners</li>
-          <li>Copy Trader for supported trades</li>
-          <li>Ambush Trade Manager for positions, risk and execution</li>
+          <li>Copy Trader and the Ambush Trade Manager</li>
         </ul>
       </article>
     </div>
@@ -879,8 +890,8 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
       <details data-tag="Format" data-short="Education first."><summary>Is this a signals service?</summary><div class="a">No. The Trade Vault is an education platform and active trading community. Members get access to signals and copy trading systems, but the goal is for you to understand every trade, not just follow one.</div></details>
       <details data-tag="Markets" data-short="US30, Nasdaq and Gold."><summary>What markets does it cover?</summary><div class="a">The main focus is US30 (Dow Jones), Nasdaq (NQ/NAS100) and Gold (XAU/USD). Andrew's Spectrum scanner also covers the Emini ES (S&amp;P 500 futures).</div></details>
       <details data-tag="Setup" data-short="MT5 and TradingView."><summary>What platform do I need?</summary><div class="a">MetaTrader 5 (MT5) and TradingView. Both are covered in the curriculum. You'll also need a broker, and Module 2 covers how to choose one.</div></details>
-      <details data-tag="Starter" data-short="New? Start with Jay."><summary>Which educator should I choose on the Starter plan?</summary><div class="a">It depends on the market. Jay and Adam focus on US30 with Killshot. Tyler trades Gold and NQ with Smartshot. Andrew covers US30, ES and Nasdaq with Spectrum. Completely new? Start with Jay: Killshot is the most established methodology in the Vault.</div></details>
-      <details data-tag="Plans" data-short="Yes, any time."><summary>Can I upgrade from Starter to Elite?</summary><div class="a">Yes. You can upgrade at any time from inside your member area. The startup fee difference applies on upgrade.</div></details>
+      <details data-tag="Community" data-short="New? Start with Jay."><summary>Which educator should I choose on the Community plan?</summary><div class="a">It depends on the market. Jay and Adam focus on US30 with Killshot. Tyler trades Gold and NQ with Smartshot. Andrew covers US30, ES and Nasdaq with Spectrum. Completely new? Start with Jay: Killshot is the most established methodology in the Vault.</div></details>
+      <details data-tag="Plans" data-short="Yes, any time."><summary>Can I upgrade later?</summary><div class="a">Yes. Start on Tools or Community and move up to Elite at any time from inside your member area.</div></details>
       <details data-tag="Risk" data-short="No promises. Ever."><summary>Will I make money?</summary><div class="a">We won't promise that, and you should be wary of anyone who does. Trading involves real risk. The Trade Vault gives you a proven methodology, real tools and educators who trade the same markets alongside you. The rest is up to you.</div></details>
     </div>
   </div>
@@ -897,7 +908,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
         <a href="#pricing" class="btn">Join the Vault today <span class="arr">→</span></a>
         <a href="#curriculum" class="btn-g">View the curriculum</a>
       </div>
-      <span class="note">From $99 / month</span>
+      <span class="note">From $49.99 / month</span>
     </div>
   </div>
 </section>
