@@ -2,7 +2,7 @@
 POST {name, email, phone, session (ISO UTC start), page, ref, utm_*}
  1. Saves a backup row in Postgres (jb_webinar_regs) so no signup is ever lost.
  2. Upserts the contact in GHL and ADDS tags (never replaces existing tags):
-      workshop-registered, workshop-YYYY-MM-DD
+      webinar-registration, workshop-registered, workshop-YYYY-MM-DD
  3. Forwards the payload to a GHL inbound webhook if GHL_WEBINAR_WEBHOOK is set.
 """
 import http.client
@@ -68,7 +68,7 @@ class handler(BaseHTTPRequestHandler):
         ref = _clip(b.get("ref"), 300)
 
         saved = self._save(name, email, phone, session, utm, ref)
-        ghl = self._ghl(first, last, email, phone, ["workshop-registered", session_tag])
+        ghl = self._ghl(first, last, email, phone, ["webinar-registration", "workshop-registered", session_tag])
         hook = self._webhook({
             "first_name": first, "last_name": last, "full_name": name,
             "email": email, "phone": phone,
@@ -80,7 +80,8 @@ class handler(BaseHTTPRequestHandler):
 
         if not (saved or ghl or hook):
             return self._json(502, {"ok": False, "error": "Something went wrong saving your seat. Please try again."})
-        self._json(200, {"ok": True})
+        # which destinations took it (no PII) so a test signup can confirm GHL is wired
+        self._json(200, {"ok": True, "via": [k for k, v in (("db", saved), ("ghl", ghl), ("hook", hook)) if v]})
 
     # ── backup copy ──────────────────────────────────────────
     def _save(self, name, email, phone, session, utm, ref):
