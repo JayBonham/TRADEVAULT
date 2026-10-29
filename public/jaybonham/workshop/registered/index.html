@@ -7,118 +7,76 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%2306080B'/%3E%3Ctext x='28' y='31' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='30' fill='%234B9EFF'%3EJB%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' rx='12' fill='%23050A14'/%3E%3Ctext x='28' y='36' text-anchor='middle' font-family='Arial,sans-serif' font-weight='800' font-size='26' fill='%234B9EFF'%3EJB%3C/text%3E%3C/svg%3E">
 <!-- Meta Pixel -->
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
+<link rel="stylesheet" href="/workshop/theme.css">
 <style>
-:root{
-  --bg:#06080B; --bg2:#0A0E14; --line:rgba(255,255,255,.08); --line2:rgba(75,158,255,.22);
-  --fg:#F2F5F7; --mute:#9AA4B0; --dim:#5D6875;
-  --blue:#4B9EFF; --cyan:#58E9FF; --ink:#030D1F; --ok:#3DDC97; --amz:#FF9900;
-  --gut:clamp(18px,4vw,56px);
-}
-*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:'Archivo',system-ui,sans-serif;overflow-x:hidden;font-size:16px;line-height:1.55}
-a{color:inherit;text-decoration:none}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-img{max-width:100%;display:block}
-.wrap{max-width:1080px;margin:0 auto;padding-left:max(var(--gut),env(safe-area-inset-left,0px));padding-right:max(var(--gut),env(safe-area-inset-right,0px))}
-.disp{font-family:'Saira Condensed','Arial Narrow',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;line-height:.92;text-wrap:balance}
-.blue{color:var(--blue)}
-.eyebrow{display:flex;align-items:center;gap:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--cyan)}
-.eyebrow::before{content:"";width:36px;height:1px;background:rgba(88,233,255,.5)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;background:var(--blue);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:19px 40px;transition:transform .2s,box-shadow .2s}
-.btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(75,158,255,.42)}
-.btn.amz{background:var(--amz);color:#0F1111}
-.btn.amz:hover{box-shadow:0 14px 40px rgba(255,153,0,.35)}
-.btn.ghost{background:transparent;color:var(--blue);border:1px solid var(--line2);padding:14px 18px;font-size:11px;letter-spacing:.12em}
-.btn.ghost:hover{background:rgba(75,158,255,.1);box-shadow:none}
-
-nav{display:flex;align-items:center;justify-content:space-between;height:68px}
-.brand{display:flex;align-items:center;gap:11px}
-.brand-n{font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:.17em;text-transform:uppercase;line-height:1}
-.brand-s{font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.28em;color:var(--cyan);text-transform:uppercase;margin-top:3px}
-
 /* confirm */
-.top{position:relative;overflow:hidden;padding-block:clamp(24px,5vh,56px) clamp(56px,8vh,90px);text-align:center}
-.top::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 60% at 50% 0%,rgba(61,220,151,.10) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 50% 30%,rgba(75,158,255,.10) 0%,transparent 65%)}
-.top .wrap{position:relative}
-.chk{width:64px;height:64px;border-radius:50%;margin:0 auto 20px;background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.45);display:grid;place-items:center;color:var(--ok);font-size:30px;box-shadow:0 0 50px rgba(61,220,151,.2)}
-.status{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ok);margin-bottom:14px}
-.h1{font-size:clamp(44px,7vw,88px);margin:0 0 16px}
-.when{font-family:'Saira Condensed',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(20px,2.4vw,28px);letter-spacing:.02em;margin:0}
-.local{color:var(--mute);font-size:14px;margin:6px 0 0}
-.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:400px;margin:28px auto 0}
-.cd div{background:rgba(255,255,255,.03);border:1px solid var(--line);padding:10px 4px 8px}
-.cd b{display:block;font-family:'Saira Condensed',sans-serif;font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
-.cd span{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.top{padding-top:clamp(130px,18vh,176px);padding-bottom:clamp(64px,9vh,100px);text-align:center}
+.chk{width:68px;height:68px;border-radius:50%;margin:0 auto 26px;display:grid;place-items:center;background:var(--acc-soft);border:1px solid rgba(var(--acc-rgb),.45);box-shadow:0 0 60px rgba(var(--acc-rgb),.3)}
+.top h1{max-width:13ch;margin:22px auto 0}
+.when{margin-top:24px;font-family:var(--display);font-weight:600;font-size:clamp(19px,2.2vw,24px);letter-spacing:-.02em}
+.local{color:var(--tx-mute);font-size:14.5px;margin-top:6px}
+.top .cd{max-width:420px;margin:30px auto 0}
 
-.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:40px auto 0;text-align:left}
-.step{background:var(--bg2);padding:22px 22px 24px;min-width:0;display:flex;flex-direction:column;gap:10px}
-.step .n{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
-.step h3{font-family:'Saira Condensed',sans-serif;font-weight:800;text-transform:uppercase;font-size:22px;line-height:1;margin:0}
-.step p{margin:0;color:var(--mute);font-size:14px;flex:1}
-.step .row{display:flex;gap:8px;flex-wrap:wrap}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:56px;text-align:left}
+.step{padding:26px 24px 28px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.step .n{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc)}
+.step .n::after{content:"";flex:1;height:1px;background:var(--hair)}
+.step h3{font-size:23px}
+.step p{color:var(--tx-dim);font-size:15px;flex:1}
+.step .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 
 /* sections */
-.sec{padding-block:clamp(60px,9vh,100px);border-top:1px solid var(--line)}
-.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(30px,5vw,64px);align-items:center}
-.split p{color:#C3CBD3;margin:0 0 14px;max-width:56ch}
-.h2{font-size:clamp(36px,5vw,62px);margin:16px 0 18px}
-.ticks{list-style:none;padding:0;margin:20px 0 28px;display:grid;gap:10px}
-.ticks li{display:flex;gap:12px;font-size:15px;color:#C3CBD3}
-.ticks li::before{content:"✓";color:var(--ok);font-weight:600;flex:none}
-.img-frame{position:relative;border:1px solid var(--line2);overflow:hidden;aspect-ratio:4/5}
-.img-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
-.img-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(6,8,11,.85))}
-.img-frame .cap{position:absolute;left:18px;bottom:16px;z-index:2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
-.small{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:12px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(36px,5vw,80px);align-items:center}
+.split p{color:var(--tx-dim);margin-top:16px;max-width:56ch}
+.split .ticks{margin:26px 0 32px}
+.split .ph{aspect-ratio:4/5}
+.split .ph img{object-position:50% 20%}
+.book{display:flex;justify-content:center;padding:clamp(20px,4vw,40px);background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(var(--acc-rgb),.14),transparent 70%)}
+.book img{width:min(300px,72%);border-radius:6px;box-shadow:0 40px 90px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);transform:rotate(-3deg)}
+.stars{display:flex;align-items:center;gap:10px;margin-top:18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.stars i{font-style:normal;color:var(--acc);letter-spacing:2px;font-size:15px}
+footer{padding-block:40px 48px}
 
-.book-cover{display:flex;justify-content:center;padding:30px;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(255,153,0,.10),transparent 70%)}
-.book-cover img{width:min(300px,70%);box-shadow:0 40px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);transform:rotate(-3deg)}
-.stars{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.stars i{color:var(--amz);font-style:normal;letter-spacing:2px;font-size:15px}
-
-footer{border-top:1px solid var(--line);padding-block:32px 40px;color:var(--dim);font-size:12px}
-footer p{margin:0 0 8px;max-width:100ch;line-height:1.6}
-
-@media(max-width:860px){
+@media(max-width:900px){
   .steps{grid-template-columns:1fr}
   .split{grid-template-columns:1fr}
-  .split .img-frame{aspect-ratio:16/10;order:-1}
-  .split .book-cover{order:-1}
+  .split .ph{aspect-ratio:16/11;order:-1}
+  .split .book{order:-1}
   .split .btn{width:100%}
 }
-@media(max-width:420px){.cd b{font-size:26px}}
 </style>
 <script src="/vt.js" defer></script>
 </head>
 <body>
 
-<div class="wrap">
-  <nav>
+<header class="nav">
+  <div class="nav-in" style="min-height:58px">
     <a href="https://jaybonham.com" class="brand" aria-label="Jay Bonham home">
-      <svg width="32" height="32" viewBox="0 0 56 56" fill="none" style="flex:none" aria-hidden="true">
-        <text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
+      <svg width="30" height="30" viewBox="0 0 56 56" fill="none" style="flex:none" aria-hidden="true">
+        <text x="28" y="31" text-anchor="middle" font-family="'Instrument Sans',sans-serif" font-weight="700" font-size="29" letter-spacing="-1.5"><tspan fill="#EAF0FA">J</tspan><tspan fill="#4B9EFF">B</tspan></text>
         <polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/>
       </svg>
-      <div><div class="brand-n">Jay Bonham</div><div class="brand-s">Precision Under Pressure</div></div>
+      <div><div class="brand-n">Jay Bonham</div><div class="brand-s">Precision under pressure</div></div>
     </a>
-  </nav>
-</div>
+    <span class="pill" style="padding:7px 14px;font-size:10px"><span class="dot"></span>Seat confirmed</span>
+  </div>
+</header>
 
+<main>
 <!-- ===== CONFIRMATION ===== -->
 <section class="top">
-  <div class="wrap">
-    <div class="chk">✓</div>
-    <div class="status">Registration confirmed</div>
-    <h1 class="disp h1">You're in<span data-fname></span>.<br><span class="blue">See you live.</span></h1>
-    <p class="when" data-when-full>Thursday at 7:00 PM ET</p>
-    <p class="local" data-when-local></p>
-    <div class="cd" data-cd>
+  <div class="W">
+    <div class="chk reveal"><svg width="28" height="28" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#4B9EFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <span class="kick reveal" style="margin:0"><b>✓</b>Registration confirmed</span>
+    <h1 class="reveal d1">You're in<span data-fname></span>. <span class="hl">See you live.</span></h1>
+    <p class="when reveal d2" data-when-full>Thursday at 7:00 PM ET</p>
+    <p class="local reveal d2" data-when-local></p>
+    <div class="cd reveal d3" data-cd>
       <div><b data-d>--</b><span>Days</span></div>
       <div><b data-h>--</b><span>Hrs</span></div>
       <div><b data-m>--</b><span>Min</span></div>
@@ -126,70 +84,71 @@ footer p{margin:0 0 8px;max-width:100ch;line-height:1.6}
     </div>
 
     <div class="steps">
-      <div class="step">
+      <div class="card step reveal">
         <div class="n">Step 01</div>
         <h3>Check your inbox &amp; texts</h3>
         <p>Your join link is on its way by email and text. Not there in 5 minutes? Check spam or promotions.</p>
       </div>
-      <div class="step">
+      <div class="card step reveal d1">
         <div class="n">Step 02</div>
         <h3>Add it to your calendar</h3>
         <p>People who add it to their calendar are far more likely to show up. Takes two seconds.</p>
-        <div class="row"><a class="btn ghost" href="#" target="_blank" rel="noopener" data-gcal>Google</a><button class="btn ghost" type="button" data-ics>Apple / Outlook</button></div>
+        <div class="row"><a class="btn-g" href="#" target="_blank" rel="noopener" data-gcal>Google</a><button class="btn-g" type="button" data-ics>Apple / Outlook</button></div>
       </div>
-      <div class="step">
+      <div class="card hot step reveal d2">
         <div class="n">Step 03</div>
         <h3>Grab your free bonus</h3>
-        <p>The 5 Rules to Trade Like a Sniper — read it before Thursday and you'll get twice as much from the session.</p>
-        <div class="row"><a class="btn ghost" href="/assets/5-rules-sniper-trading.pdf" target="_blank" rel="noopener" id="bonusBtn">Download playbook ↓</a></div>
+        <p>The 5 Rules to Trade Like a Sniper. Read it before Thursday and you'll get twice as much from the session.</p>
+        <div class="row"><a class="btn-g" href="/assets/5-rules-sniper-trading.pdf" target="_blank" rel="noopener" id="bonusBtn">Download playbook ↓</a></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ===== 1) EXPEDITE → APPLY ===== -->
-<section class="sec" style="background:var(--bg2)">
-  <div class="wrap split">
-    <div class="img-frame">
+<section class="sec">
+  <div class="W split">
+    <div class="ph reveal">
       <img src="/assets/webinar/jay-host.webp" alt="Jay Bonham" loading="lazy">
       <div class="cap">Sniper Academy · Work with Jay directly</div>
     </div>
     <div>
-      <div class="eyebrow">Don't want to wait until Thursday?</div>
-      <h2 class="disp h2">Ready to <span class="blue">expedite the process?</span></h2>
-      <p>The live workshop shows you how professionals trade. The Sniper Academy is where Jay works with you directly — his system, his rules, and him in your corner until it sticks.</p>
-      <ul class="ticks">
+      <span class="kick reveal"><b>01</b>Don't want to wait until Thursday?</span>
+      <h2 class="reveal">Ready to <span class="hl">expedite the process?</span></h2>
+      <p class="reveal">The live workshop shows you how professionals trade. The Sniper Academy is where Jay works with you directly: his system, his rules, and him in your corner until it sticks.</p>
+      <ul class="ticks reveal">
         <li>12-week private mentorship on Jay's Sniper Academy framework</li>
         <li>Weekly personal check-ins and trade reviews with Jay</li>
         <li>Daily trade signals and mindset accountability</li>
-        <li>Deliberately small — by application only</li>
+        <li>Deliberately small, by application only</li>
       </ul>
-      <a href="/apply" class="btn" data-vt-cta id="applyBtn">Learn more →</a>
-      <div class="small">60-second application · No commitment</div>
+      <div class="reveal"><a href="/apply" class="btn" data-vt-cta id="applyBtn">Learn more <span class="arr">→</span></a>
+      <span class="note">60-second application · No commitment</span></div>
     </div>
   </div>
 </section>
 
 <!-- ===== 2) BOOK ===== -->
 <section class="sec">
-  <div class="wrap split">
+  <div class="W split">
     <div>
-      <div class="eyebrow">Published work</div>
-      <h2 class="disp h2">Mindset <span class="blue">before markets.</span></h2>
-      <div class="stars"><i>★★★★★</i>5.0 · Amazon</div>
-      <p>Learn from an institutional trader how to get your mind ready for the markets every day. Build the long-term habits that generate a profitable trading mindset — with any strategy, in any market.</p>
-      <p>The perfect read before Thursday's session.</p>
-      <div style="margin-top:26px"><a href="https://www.amazon.com/dp/B0HK8XJ4Y7" target="_blank" rel="noopener" class="btn amz" id="bookBtn">Get it on Amazon →</a></div>
-      <div class="small">Paperback · Available worldwide</div>
+      <span class="kick reveal"><b>02</b>Published work</span>
+      <h2 class="reveal">Mindset <span class="hl">before markets.</span></h2>
+      <div class="stars reveal"><i>★★★★★</i>5.0 · Amazon</div>
+      <p class="reveal">Learn from an institutional trader how to get your mind ready for the markets every day. Build the long-term habits that generate a profitable trading mindset, with any strategy, in any market.</p>
+      <p class="reveal">The perfect read before Thursday's session.</p>
+      <div class="reveal" style="margin-top:30px"><a href="https://www.amazon.com/dp/B0HK8XJ4Y7" target="_blank" rel="noopener" class="btn" id="bookBtn">Get it on Amazon <span class="arr">→</span></a>
+      <span class="note">Paperback · Available worldwide</span></div>
     </div>
-    <div class="book-cover">
+    <div class="book reveal">
       <img src="/assets/mindset-before-markets.webp" alt="Mindset Before Markets by Jay Bonham — book cover" loading="lazy">
     </div>
   </div>
 </section>
+</main>
 
 <footer>
-  <div class="wrap">
+  <div class="W">
     <p>Trading involves substantial risk and is not suitable for every investor. All content is for educational purposes only and is not financial advice. Past performance is not indicative of future results.</p>
     <p>© <span data-yr>2026</span> Jay Bonham. All rights reserved. · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/risk">Risk</a></p>
   </div>
@@ -202,6 +161,13 @@ footer p{margin:0 0 8px;max-width:100ch;line-height:1.6}
   if (n) JBW.set('[data-fname]', ', ' + n.slice(0, 30));
   function ev(id, name) { var el = document.getElementById(id); if (el) el.addEventListener('click', function () { try { fbq('trackCustom', name); } catch (e) {} }); }
   ev('applyBtn', 'Workshop_ApplyClick'); ev('bookBtn', 'Workshop_BookClick'); ev('bonusBtn', 'Workshop_BonusDownload');
+
+  var els = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .12 });
+    els.forEach(function (e) { io.observe(e); });
+  }
+  setTimeout(function () { els.forEach(function (e) { e.classList.add('in'); }); }, 2500);
 })();
 </script>
 </body>
