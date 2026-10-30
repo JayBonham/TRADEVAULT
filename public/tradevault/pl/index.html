@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Trade Vault — Handluj według zasad, nie instynktu</title>
+<meta name="description" content="Trzy autorskie skanery. Czterech edukatorów na żywo. 18 uporządkowanych modułów. Przestań zgadywać i zacznij działać dzięki systemowi tradingowemu opartemu na zasadach.">
+<link rel="alternate" hreflang="en" href="https://thetradevault.co/">
+<link rel="alternate" hreflang="pl" href="https://thetradevault.co/pl">
+<link rel="alternate" hreflang="x-default" href="https://thetradevault.co/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="../assets/tv-icon.png">
+<style>
+:root{
+  /* ground: deep navy, darkest → lightest */
+  --g0:#050A14; --g1:#08111F; --g2:#0E1A2E;
+  --hair:rgba(255,255,255,.08); --hair-2:rgba(255,255,255,.14);
+  --tx:#EAF0FA; --tx-dim:#B3C0D4; --tx-mute:#7F8DA3;
+  /* the one accent: Trade Vault blue */
+  --acc:#4B9EFF; --acc-soft:rgba(75,158,255,.12); --acc-rgb:75,158,255;
+  /* status colours, mock UI panels only */
+  --ok:#7BE0B0; --warn:#F5B85C;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --max:1120px;
+  --display:'Instrument Sans',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--g0);scroll-behavior:smooth}
+body{background:transparent;color:var(--tx);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(900px 600px at 12% 8%,rgba(28,72,170,.24),transparent 70%),
+    radial-gradient(800px 600px at 92% 45%,rgba(75,158,255,.09),transparent 70%),
+    radial-gradient(1000px 700px at 30% 100%,rgba(18,44,120,.22),transparent 70%),
+    var(--g0)}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit}
+::selection{background:var(--acc);color:#fff}
+
+@keyframes blink{50%{opacity:.25}}
+@keyframes pulse{50%{transform:scale(1.04)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+
+/* ── layout + type ── */
+.W{max-width:calc(var(--max) + 2 * 24px);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.sec{padding-block:clamp(72px,11vh,128px);border-top:1px solid var(--hair)}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:1.02;text-wrap:balance}
+h1{font-size:clamp(44px,6.4vw,84px)}
+h2{font-size:clamp(34px,4.8vw,60px)}
+.hl{color:var(--acc)}
+.kick{display:block;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:22px}
+.kick b{font-weight:500;color:var(--acc)}
+.kick b::after{content:"—";margin:0 .7em;color:var(--tx-mute)}
+.lede{color:var(--tx-dim);max-width:56ch;margin-top:20px}
+.head{max-width:760px;margin-bottom:56px}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+
+/* ── reveal: rise + un-blur ── */
+.reveal{opacity:0;transform:translateY(18px);filter:blur(8px);transition:opacity 1s var(--ease),transform 1s var(--ease),filter 1s var(--ease)}
+.reveal.in{opacity:1;transform:none;filter:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+
+/* ── buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:16px 34px;border-radius:999px;background:#fff;color:#07101F;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em;border:0;cursor:pointer;
+  box-shadow:0 10px 40px rgba(var(--acc-rgb),.22),inset 0 -2px 0 rgba(0,0,0,.08);transition:box-shadow .2s,transform .2s}
+.btn:hover{box-shadow:0 14px 50px rgba(var(--acc-rgb),.38);transform:translateY(-1px)}
+.btn .arr{color:var(--acc)}
+.btn-g{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:16px 30px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--hair-2);color:var(--tx);font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em;transition:background .2s,border-color .2s}
+.btn-g:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.24)}
+.note{display:block;margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-mute)}
+
+/* ── nav: floating frosted bar ── */
+.nav{position:fixed;top:14px;left:0;right:0;z-index:200;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.nav-in{max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 10px 10px 18px;border-radius:18px;
+  background:rgba(8,17,31,.62);border:1px solid var(--hair-2);box-shadow:0 10px 40px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.brand img:first-child{width:26px;height:26px;object-fit:contain}
+.brand img+img{height:13px;width:auto;opacity:.92}
+.nav-links{display:flex;gap:28px;font-size:14px;font-weight:500;color:var(--tx-mute)}
+.nav-links a{transition:color .2s}
+.nav-links a:hover{color:var(--tx)}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nav .btn{min-height:44px;padding:10px 20px;font-size:15px;background:var(--acc);color:#fff;box-shadow:none}
+.nav .btn:hover{background:#6CB1FF;box-shadow:none}
+.nav .btn .arr{color:#fff}
+.mb{display:none;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--hair-2);cursor:pointer;align-items:center;justify-content:center}
+#mob{position:fixed;inset:0;z-index:300;background:rgba(5,10,20,.96);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);display:flex;flex-direction:column;
+  padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
+#mob.open{opacity:1;pointer-events:auto}
+.mob-links{display:grid;margin-top:40px;border-top:1px solid var(--hair)}
+.mob-links a{font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:-.03em;padding:14px 0;border-bottom:1px solid var(--hair)}
+.mob-links a small{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.2em;color:var(--acc);margin-right:14px;vertical-align:middle}
+
+/* ── hero ── */
+.hero{padding-top:clamp(140px,20vh,190px);padding-bottom:clamp(64px,9vh,96px);text-align:center}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-dim);margin-bottom:30px}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:blink 2s infinite}
+.hero h1{max-width:13ch;margin:0 auto}
+.hero .lede{margin:24px auto 0;font-size:18px;color:var(--tx-mute)}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:38px}
+.frame{position:relative;margin-top:clamp(56px,8vh,84px);border-radius:22px;overflow:hidden;border:1px solid var(--hair-2);background:var(--g1);
+  box-shadow:0 40px 120px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04),0 0 120px rgba(var(--acc-rgb),.10)}
+.crew{display:grid;grid-template-columns:repeat(4,1fr)}
+.crew figure{position:relative;aspect-ratio:3/4;overflow:hidden;background:linear-gradient(170deg,#0B1628,#0E1D35)}
+.crew figure+figure{border-left:1px solid var(--hair)}
+.crew img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) contrast(1.04);transition:transform 1.2s var(--ease),filter .6s}
+.crew figure:hover img{transform:scale(1.04);filter:saturate(1) contrast(1.04)}
+.crew .cut img{object-position:center 8%}
+.crew figure::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(5,10,20,.92) 100%)}
+.crew figcaption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;text-align:left}
+.crew figcaption b{display:block;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em}
+.crew figcaption span{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.live-chip{position:absolute;top:16px;left:16px;z-index:3;display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+.live-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 2s infinite}
+
+/* ── stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--hair)}
+.stat{padding:clamp(40px,6vh,64px) 24px clamp(40px,6vh,64px) 0}
+.stat+.stat{border-left:1px solid var(--hair);padding-left:28px}
+.stat b{display:block;font-family:var(--display);font-weight:700;font-size:clamp(40px,4.4vw,58px);letter-spacing:-.04em;line-height:1;color:var(--tx)}
+.stat.feat b{color:var(--acc)}
+.stat span{display:block;margin-top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+
+/* ── cards ── */
+.card{background:rgba(255,255,255,.025);border:1px solid var(--hair);border-radius:20px;overflow:hidden;transition:background .3s,border-color .3s}
+.card:hover{background:rgba(255,255,255,.04);border-color:var(--hair-2)}
+.tag{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--hair-2);font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+
+/* educators */
+.edu{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.edu .ph{position:relative;height:clamp(260px,30vw,380px);background:linear-gradient(170deg,#0B1628,#0E1D35);overflow:hidden}
+.edu .ph img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
+.edu .card:hover .ph img{transform:scale(1.04)}
+.edu .ph.cut img{object-fit:contain;object-position:center bottom;padding-top:24px}
+.edu .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(8,17,31,.95) 100%)}
+.edu .bd{padding:6px 28px 30px}
+.edu .sc{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
+.edu .sc::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.edu h3{font-size:clamp(28px,2.8vw,36px)}
+.edu .role{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);margin:8px 0 14px}
+.edu p{color:var(--tx-dim);font-size:15.5px;margin-bottom:18px;max-width:52ch}
+
+/* scanners */
+.scans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.scans .shot{padding:28px 22px 6px;background:radial-gradient(420px 220px at 50% 100%,rgba(var(--acc-rgb),.10),transparent 70%)}
+.scans .shot img{width:100%;height:auto;filter:drop-shadow(0 24px 40px rgba(0,0,0,.7))}
+.scans .bd{padding:22px 26px 28px;border-top:1px solid var(--hair)}
+.scans .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.scans .n b{font-weight:500;color:var(--acc)}
+.scans h3{font-size:30px;margin:10px 0 4px}
+.scans .mk{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-dim);margin-bottom:14px}
+.scans p{color:var(--tx-dim);font-size:15px}
+
+/* ── scroll-pinned sequence ── */
+.seq-intro{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.seq-n{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:16px}
+.seq-n b{font-weight:500;color:var(--acc)}
+.seq-txt h3{font-size:clamp(28px,2.8vw,40px);margin-bottom:14px}
+.seq-txt p{color:var(--tx-dim);max-width:40ch}
+.seq-dots{display:none}
+.disc{margin-top:28px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
+
+/* mock UI panels */
+.ui{background:linear-gradient(180deg,#132340 0%,#0A1426 100%);border:1px solid rgba(255,255,255,.11);border-radius:18px;overflow:hidden;color:var(--tx);font-size:14px;line-height:1.45;
+  box-shadow:0 50px 120px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.ui-top{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--hair)}
+.ui-top b{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+.ui-top span{color:var(--tx-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ui-top em{margin-left:auto;display:flex;align-items:center;gap:7px;font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);white-space:nowrap}
+.ui-top em::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 2s infinite}
+.ui-body{padding:18px;display:grid;gap:10px}
+.ui-chart{border-radius:12px;background:rgba(0,0,0,.22);border:1px solid var(--hair);padding:8px 8px 4px}
+.ui-chart svg{display:block;width:100%;height:auto}
+.ui-rows{display:grid;gap:6px}
+.ui-rows div{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--hair);font-size:13px}
+.ui-rows b{font-weight:600}
+.ui-rows span{color:var(--tx-mute)}
+.st{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.05);color:var(--tx-mute)}
+.st.go{background:rgba(123,224,176,.12);color:var(--ok)}
+.st.wait{background:rgba(245,184,92,.12);color:var(--warn)}
+.ui-msg{max-width:84%;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--hair)}
+.ui-msg small,.ui-input small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:4px}
+.ui-msg.out{justify-self:end;background:linear-gradient(160deg,rgba(var(--acc-rgb),.22),rgba(var(--acc-rgb),.10));border-color:rgba(var(--acc-rgb),.3)}
+.ui-input{padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.25);border:1px dashed var(--hair-2);color:var(--tx-dim)}
+.ui-tl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:relative;padding-top:16px}
+.ui-tl::before{content:"";position:absolute;left:6px;right:6px;top:5px;height:2px;background:var(--hair-2)}
+.ui-tl span{position:relative;font-size:12px;color:var(--tx-mute)}
+.ui-tl span::before{content:"";position:absolute;left:0;top:-15px;width:10px;height:10px;border-radius:50%;background:#26354F}
+.ui-tl b{display:block;color:var(--tx);font-weight:600;font-size:13px}
+.ui-tl .done::before{background:var(--ok)}
+.ui-tl .now::before{background:var(--acc);box-shadow:0 0 12px var(--acc)}
+.ui-flag{justify-self:start;padding:6px 12px;border-radius:999px;background:var(--acc-soft);color:var(--acc);font-size:12px;font-weight:600}
+.ui-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ui-stats span{padding:12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--hair);font-size:12px;color:var(--tx-mute)}
+.ui-stats b{display:block;font-family:var(--display);font-weight:700;letter-spacing:-.03em;font-size:28px;line-height:1;color:var(--tx);margin-bottom:4px}
+.ui-list{list-style:none;display:grid;gap:7px}
+.ui-list li{position:relative;padding-left:20px;color:var(--tx-dim);font-size:13.5px}
+.ui-list li::before{content:"";position:absolute;left:2px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.ui-list li.w::before{background:var(--warn)}
+.ui-foot{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--hair)}
+.ui-foot span{display:flex;flex-direction:column;gap:3px;padding:12px 18px;font-size:13px;font-weight:600;border-left:1px solid var(--hair)}
+.ui-foot span:first-child{border-left:0}
+.ui-foot i{font-style:normal;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-mute);font-weight:500}
+.ui-foot .hot{color:var(--acc)}
+
+@media(min-width:1024px){
+  .seq{height:calc(5 * 80vh + 100vh);margin-top:20px}
+  .seq-pin{position:sticky;top:0;height:100vh;display:flex;align-items:center}
+  .seq-box{position:relative;width:100%;height:min(640px,82vh)}
+  .seq-item{display:contents}
+  .seq-txt{position:absolute;left:0;top:50%;width:36%;transform:translateY(-50%) translateY(24px);opacity:0;filter:blur(6px);pointer-events:none;transition:opacity .6s var(--ease),transform .8s var(--ease),filter .6s var(--ease)}
+  .seq-item.on .seq-txt{opacity:1;transform:translateY(-50%);filter:none;pointer-events:auto}
+  .seq-panel{position:absolute;right:0;top:50%;width:min(620px,56%);margin-top:-150px;z-index:calc(5 - var(--i));
+    transform:perspective(1800px) translate3d(calc(70px + var(--i) * 8px),calc(-235px + var(--i) * 42px),0) rotateX(58deg) rotateZ(-30deg) scale(.82);
+    opacity:.8;filter:brightness(.62) saturate(.85);transition:transform 1s var(--ease),opacity .7s var(--ease),filter .7s var(--ease)}
+  .seq-item.on .seq-panel{z-index:10;opacity:1;filter:none;transform:perspective(1800px) translate3d(0,60px,0) rotateX(0) rotateZ(0) scale(1)}
+  .seq-dots{display:flex;position:absolute;left:0;bottom:4%;width:36%}
+  .seq-dots button{flex:1;position:relative;padding:18px 0 0;border:0;background:none;color:var(--tx-mute);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-align:left;cursor:pointer}
+  .seq-dots button::before{content:"";position:absolute;left:0;right:8px;top:0;height:2px;background:var(--hair-2);transition:background .4s}
+  .seq-dots button.on{color:var(--tx)}
+  .seq-dots button.on::before{background:var(--acc)}
+  .seq-dots button:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+  .disc{margin-top:-40px}
+}
+@media(max-width:1023px){
+  .seq{margin-top:48px}
+  .seq-box{display:grid;gap:56px}
+  .seq-txt{margin-bottom:20px}
+}
+
+/* what you get */
+.get{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.get .media{position:relative;height:220px;overflow:hidden;background:var(--g1)}
+.get .media img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform 1.2s var(--ease)}
+.get .card:hover .media img{transform:scale(1.04)}
+.get .media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(8,17,31,.9) 100%)}
+.get .chip{position:absolute;left:14px;bottom:14px;z-index:2;display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(5,10,20,.65);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase}
+.get .chip.live{top:14px;bottom:auto}
+.get .chip.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:blink 2s infinite}
+.play{width:22px;height:22px;border-radius:50%;background:rgba(var(--acc-rgb),.92);display:grid;place-items:center;animation:pulse 2.4s var(--ease) infinite}
+.book{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:radial-gradient(360px 200px at 50% 100%,rgba(var(--acc-rgb),.10),transparent 70%),var(--g1)}
+.book .pdf{position:relative;width:118px;height:150px}
+.book .pdf div{position:absolute;inset:0;border-radius:6px;border:1px solid var(--hair-2);background:linear-gradient(160deg,#14284A,#0C1A33)}
+.book .pdf div:nth-child(1){transform:rotate(6deg) translate(8px,2px);opacity:.5}
+.book .pdf div:nth-child(2){transform:rotate(3deg) translate(4px,1px);opacity:.75}
+.book .pdf div:nth-child(3){padding:14px 12px}
+.book .pdf i{display:block;height:2px;width:100%;background:var(--acc);margin-bottom:10px}
+.book .pdf strong{display:block;font-family:var(--display);font-size:13px;line-height:1.15;letter-spacing:-.01em;margin-bottom:6px}
+.book .pdf em{font-style:normal;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.book .pdf u{display:block;height:1px;background:rgba(255,255,255,.08);margin-top:9px;text-decoration:none}
+.get .bd{padding:22px 26px 28px}
+.get h3{font-size:24px;margin-bottom:8px}
+.get p{color:var(--tx-dim);font-size:15px}
+
+/* curriculum */
+.curric-top{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-bottom:44px}
+.curric-top .head{margin-bottom:0}
+.tabs{display:inline-flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--hair-2)}
+.ttab{padding:10px 20px;border-radius:999px;border:0;background:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);transition:color .2s,background .2s}
+.ttab:hover{color:var(--tx)}
+.ttab.active{background:var(--acc-soft);color:var(--acc)}
+.tpanel{display:none;border-top:1px solid var(--hair)}
+.tpanel.active{display:block}
+.mod{border-bottom:1px solid var(--hair)}
+.mhdr{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 0;cursor:pointer}
+.ml{display:flex;align-items:baseline;gap:24px;flex:1;min-width:0}
+.mn{flex:none;width:44px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--acc)}
+.mt{font-family:var(--display);font-weight:600;font-size:clamp(18px,1.9vw,22px);letter-spacing:-.02em;line-height:1.25;transition:color .2s}
+.mhdr:hover .mt{color:var(--tx-dim)}
+.mm{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);margin-left:12px;white-space:nowrap}
+.chev{flex:none;color:var(--tx-mute);transition:transform .3s var(--ease)}
+.mod.open .chev{transform:rotate(180deg);color:var(--acc)}
+.mlessons{display:none;padding:0 0 22px 68px}
+.mod.open .mlessons{display:grid;gap:2px;animation:fade .45s var(--ease)}
+.lesson{display:flex;align-items:center;gap:12px;padding:7px 0;font-size:15px;color:var(--tx-dim)}
+.lesson::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:var(--hair-2)}
+
+/* community slider */
+.tslider-wrap{position:relative}
+.tslider-vp{overflow:hidden}
+.tslider-track{display:flex;gap:12px;transition:transform .6s var(--ease)}
+.tthumb{position:relative;flex:0 0 calc(25% - 9px);aspect-ratio:1;border-radius:16px;overflow:hidden;cursor:zoom-in;background:var(--g1);border:1px solid var(--hair);padding:0}
+.tthumb img{width:100%;height:100%;object-fit:cover;object-position:center 8%;transition:transform .8s var(--ease),filter .3s}
+.tthumb:hover img{transform:scale(1.04);filter:brightness(.8)}
+.tnav{display:flex;gap:8px;margin-top:24px;align-items:center}
+.tnav button{width:48px;height:48px;border-radius:50%;border:1px solid var(--hair-2);background:rgba(255,255,255,.03);cursor:pointer;display:grid;place-items:center;transition:background .2s,border-color .2s,opacity .2s}
+.tnav button:hover{background:rgba(255,255,255,.07)}
+.tnav button:disabled{opacity:.3;cursor:default}
+.tnav .mono{margin-left:12px}
+.lb{position:fixed;inset:0;z-index:900;background:rgba(3,7,14,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.lb.open{opacity:1;pointer-events:auto}
+.lb img{max-height:88vh;max-width:min(480px,86vw);border-radius:14px;object-fit:contain}
+.lb button{position:fixed;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--hair-2);cursor:pointer;display:grid;place-items:center}
+.lb-close{top:max(20px,env(safe-area-inset-top,0px));right:max(20px,env(safe-area-inset-right,0px))}
+.lb-prev{left:max(16px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%)}
+.lb-next{right:max(16px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%)}
+.lb-ctr{position:fixed;bottom:max(24px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%)}
+
+/* live */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feats .card{padding:34px 30px}
+.feats .num{font-family:var(--display);font-weight:700;font-size:clamp(40px,4.4vw,58px);letter-spacing:-.04em;line-height:1;color:rgba(255,255,255,.12);margin-bottom:26px}
+.feats h3{font-size:24px;margin-bottom:10px}
+.feats p{color:var(--tx-dim);font-size:15px}
+.feats .tag{margin-top:16px;color:var(--acc);border-color:rgba(var(--acc-rgb),.35)}
+
+/* pricing */
+.price{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1180px}
+.pcard{display:flex;flex-direction:column;padding:32px 28px}
+.pcard.hot{border-color:rgba(var(--acc-rgb),.48);background:linear-gradient(160deg,rgba(var(--acc-rgb),.12),rgba(var(--acc-rgb),.02) 60%)}
+.pcard.hot:hover{border-color:rgba(var(--acc-rgb),.6)}
+.plan{min-height:28px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.plan .tag{color:var(--acc);border-color:rgba(var(--acc-rgb),.35)}
+.pcard h3{font-size:36px;margin:14px 0 8px}
+.pcard .ptag{color:var(--tx-dim);font-size:15px;min-height:3.2em}
+.amt{display:flex;align-items:baseline;gap:8px;margin:26px 0 4px}
+.amt b{font-family:var(--display);font-weight:700;font-size:clamp(42px,3.8vw,54px);letter-spacing:-.04em;line-height:1}
+.amt span{color:var(--tx-mute);font-size:15px}
+.start{font-size:14px;color:var(--tx-mute)}
+.start strong{color:var(--tx-dim);font-weight:600}
+.pcard .btn,.pcard .btn-g{width:100%;margin:28px 0 26px}
+.pcard .soon{cursor:default;pointer-events:none;opacity:.6;letter-spacing:.14em;text-transform:uppercase;font-size:13px}
+.pf{list-style:none;display:grid;gap:12px;border-top:1px solid var(--hair);padding-top:24px}
+.pf li{display:flex;gap:12px;font-size:14.5px;color:var(--tx-dim);line-height:1.5}
+.pf li::before{content:"";flex:none;width:16px;height:16px;margin-top:2px;border-radius:50%;background:var(--acc-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.2 2.2 4.8-4.8' fill='none' stroke='%234B9EFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+
+/* faq */
+.faq details{border:1px solid var(--hair);border-radius:16px;background:rgba(255,255,255,.025);margin-bottom:10px;transition:border-color .3s}
+.faq details[open]{border-color:var(--hair-2)}
+.faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 22px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;font-family:var(--mono);font-weight:500;font-size:18px;color:var(--acc);transition:transform .3s var(--ease)}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq .a{padding:0 22px 22px;color:var(--tx-dim);font-size:15.5px}
+.faq-split{display:none}
+@media(min-width:1024px){
+  .faq.has-split details{display:none}
+  .faq-split{display:grid;grid-template-columns:1fr 1.15fr;gap:64px;align-items:start}
+  .faq-list{display:grid;border-top:1px solid var(--hair)}
+  .faq-q{display:block;width:100%;text-align:left;padding:18px 0 18px 22px;border:0;border-bottom:1px solid var(--hair);border-left:2px solid transparent;background:none;color:var(--tx-mute);font-family:var(--body);font-size:19px;line-height:1.3;cursor:pointer;transition:color .25s,border-color .25s}
+  .faq-q small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+  .faq-q small b{font-weight:500;color:var(--acc);margin-right:10px}
+  .faq-q:hover{color:var(--tx-dim)}
+  .faq-q.on{color:var(--tx);border-left-color:var(--acc)}
+  .faq-q:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .faq-pane{position:sticky;top:120px;padding-top:18px}
+  .faq-pane small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:14px}
+  .faq-pane small b{font-weight:500;color:var(--acc)}
+  .faq-pane h3{font-size:30px;letter-spacing:-.03em;line-height:1.05}
+  .faq-pane .short{font-family:var(--display);font-weight:700;letter-spacing:-.035em;font-size:44px;line-height:1;color:var(--acc);margin:10px 0 22px}
+  .faq-pane p{color:var(--tx-dim);font-size:17px;line-height:1.65}
+  .faq-pane.swap{animation:fade .45s var(--ease)}
+}
+
+/* final cta */
+.final{text-align:center;background:radial-gradient(900px 520px at 50% 0%,rgba(var(--acc-rgb),.10),transparent 70%)}
+.final h2{font-size:clamp(44px,6.4vw,84px);max-width:12ch;margin:0 auto}
+.final .lede{margin:22px auto 0}
+.final .hero-ctas{margin-top:36px}
+
+/* footer */
+footer{border-top:1px solid var(--hair);padding-block:56px 44px}
+.foot-top{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:32px}
+.flinks{display:flex;gap:24px;list-style:none}
+.flinks a{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);transition:color .2s}
+.flinks a:hover{color:var(--tx)}
+.risk{font-size:12.5px;line-height:1.75;color:var(--tx-mute);border-top:1px solid var(--hair);padding-top:28px;max-width:960px}
+.fcopy{margin-top:16px}
+
+/* ── responsive (layout only; .seq and .faq-split carry their own) ── */
+@media(max-width:960px){
+  .nav-links,.nav .btn{display:none}
+  .mb{display:flex}
+  .nav-in{padding:8px 8px 8px 16px}
+  .crew{grid-template-columns:repeat(2,1fr)}
+  .crew figure:nth-child(3){border-left:0}
+  .crew figure:nth-child(n+3){border-top:1px solid var(--hair)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(3){border-left:0;padding-left:0}
+  .stat:nth-child(n+3){border-top:1px solid var(--hair)}
+  .edu,.scans,.get,.feats,.price{grid-template-columns:1fr}
+  .scans .shot{max-width:520px;margin:0 auto}
+}
+@media(max-width:640px){
+  body{font-size:16px}
+  .hero{text-align:left}
+  .hero h1{margin:0}
+  .hero .lede{margin-left:0}
+  .hero-ctas{justify-content:flex-start}
+  .hero-ctas>a{width:100%}
+  .pill{font-size:10px;letter-spacing:.14em}
+  .crew figcaption{left:12px;right:12px;bottom:12px}
+  .crew figcaption b{font-size:16px}
+  .crew figcaption span{font-size:8.5px;letter-spacing:.12em}
+  .stat{padding:30px 12px 30px 0}
+  .stat+.stat{padding-left:16px}
+  .stat:nth-child(3){padding-left:0}
+  .edu .bd{padding:4px 20px 24px}
+  .pcard{padding:26px 22px}
+  .feats .card{padding:28px 22px}
+  .mlessons{padding-left:0}
+  .ml{gap:14px}
+  .mn{width:auto}
+  .mm{display:block;margin:6px 0 0}
+  .tabs{width:100%}
+  .ttab{flex:1;padding:10px 6px;font-size:10px;letter-spacing:.1em}
+  .tthumb{flex:0 0 calc(50% - 6px)}
+  .ui{font-size:13px;border-radius:14px}
+  .ui-body{padding:14px}
+  .ui-top{padding:13px 14px}
+  .ui-rows div{grid-template-columns:64px 1fr auto;padding:8px 10px}
+  .ui-foot span{padding:10px 12px;font-size:12px}
+  .ui-stats b{font-size:22px}
+  .ui-stats span{padding:10px}
+  .faq summary{font-size:16.5px;padding:18px}
+  .faq .a{padding:0 18px 18px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;filter:none;transition:none}
+  .seq-panel,.seq-txt{transition:none!important}
+  .pill .dot,.ui-top em::before,.live-chip::before,.play,.get .chip.live::before{animation:none}
+}
+/* pl: longer labels in the mock panels */
+.ui-rows div{grid-template-columns:72px minmax(0,1fr) auto}
+.ui-rows div>*,.ui-foot>*{min-width:0;overflow-wrap:anywhere}
+@media(max-width:1023px){.seq-box{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav">
+  <div class="nav-in">
+    <a href="#top" class="brand" aria-label="The Trade Vault">
+      <img src="../assets/tv-icon.png" alt="" width="26" height="26">
+      <img src="../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13">
+    </a>
+    <nav class="nav-links" aria-label="Sekcje">
+      <a href="#educators">Edukatorzy</a><a href="#scanners">Skanery</a><a href="#curriculum">Program</a><a href="#pricing">Cennik</a><a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-r">
+      <a href="#pricing" class="btn">Dołącz do Vault <span class="arr">→</span></a>
+      <button class="mb" id="mob-open" aria-label="Otwórz menu"><svg width="18" height="12" viewBox="0 0 18 12"><path d="M0 1h18M0 6h18M0 11h18" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div id="mob" aria-hidden="true">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <span class="brand"><img src="../assets/tv-icon.png" alt="" width="26" height="26"><img src="../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"></span>
+    <button class="mb" id="mob-close" aria-label="Zamknij menu" style="display:flex"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  </div>
+  <nav class="mob-links">
+    <a href="#educators"><small>01</small>Edukatorzy</a><a href="#scanners"><small>02</small>Skanery</a><a href="#curriculum"><small>05</small>Program</a><a href="#pricing"><small>08</small>Cennik</a><a href="#faq"><small>09</small>FAQ</a>
+  </nav>
+  <div style="margin-top:auto"><a href="#pricing" class="btn" style="width:100%">Dołącz do Vault <span class="arr">→</span></a></div>
+</div>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="W">
+    <div class="pill reveal"><span class="dot"></span>Sesje na żywo · od poniedziałku do piątku</div>
+    <h1 class="reveal d1">Handluj według zasad, <span class="hl">nie instynktu.</span></h1>
+    <p class="lede reveal d2">Zbudowane na jednej zasadzie: sprawdzony system zawsze wygrywa z emocjami. Trzy autorskie skanery. Czterech edukatorów na żywo. 18 uporządkowanych modułów. Wszystko, czego potrzebujesz, żeby przestać zgadywać i zacząć działać.</p>
+    <div class="reveal d3">
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn">Dołącz do Vault <span class="arr">→</span></a>
+        <a href="#curriculum" class="btn-g">Zobacz program</a>
+      </div>
+      <span class="note">Od $49.99 / mies. · Zmiana planu w każdej chwili</span>
+    </div>
+
+    <div class="frame reveal">
+      <span class="live-chip">Twoi edukatorzy</span>
+      <div class="crew">
+        <figure><img src="../assets/jay-stage.webp" alt="Jay Bonham" style="object-position:60% 20%"><figcaption><b>Jay Bonham</b><span>Założyciel · Killshot</span></figcaption></figure>
+        <figure class="cut"><img src="../assets/tyler-collins-cut.webp" alt="Tyler Collins"><figcaption><b>Tyler Collins</b><span>Złoto i NQ · Smartshot</span></figcaption></figure>
+        <figure><img src="../assets/andrew-bridges.jpg" alt="Andrew Bridges" style="object-position:center 12%"><figcaption><b>Andrew Bridges</b><span>Indeksy · Spectrum</span></figcaption></figure>
+        <figure><img src="../assets/adam-haase.webp" style="object-position:center 20%" alt="Adam Haase"><figcaption><b>Adam Haase</b><span>US30 · Killshot</span></figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="W">
+  <div class="stats">
+    <div class="stat reveal"><b>UKNF</b><span>Regulowany założyciel</span></div>
+    <div class="stat feat reveal d1"><b>500+</b><span>Klientów mentoringu</span></div>
+    <div class="stat reveal d2"><b>100k+</b><span>Traderów w społeczności</span></div>
+    <div class="stat reveal d3"><b>110+</b><span>Lekcji · 18 modułów</span></div>
+  </div>
+</div>
+
+<!-- 01 EDUCATORS -->
+<section class="sec" id="educators">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>01</b>Edukatorzy</span>
+      <h2>Czterech traderów. <span class="hl">Wszyscy aktywni.</span></h2>
+      <p class="lede">Każdy edukator w Vault handluje na żywo. Uczysz się od ludzi, którzy na każdej sesji grają te same setupy na tych samych rynkach.</p>
+    </div>
+    <div class="edu">
+      <article class="card reveal">
+        <div class="ph"><img src="../assets/jay-stage.webp" alt="Jay Bonham" loading="lazy" style="object-position:center 22%"></div>
+        <div class="bd">
+          <div class="sc">Skaner Killshot</div>
+          <h3>Jay Bonham</h3>
+          <div class="role">Założyciel · Snajper US30</div>
+          <p>Trader regulowany przez UKNF i dostawca płynności (Liquidity Provider). Jay stworzył metodologię Killshot na bazie lat aktywnego handlu na US30: system oparty na zasadach, który usuwa emocje z każdej decyzji. Ponad 500 klientów mentoringu na całym świecie.</p>
+          <div class="tags"><span class="tag">US30</span><span class="tag">Killshot</span><span class="tag">Regulacja UKNF</span><span class="tag">Dostawca płynności</span></div>
+        </div>
+      </article>
+      <article class="card reveal d1">
+        <div class="ph cut"><img src="../assets/tyler-collins-cut.webp" alt="Tyler Collins" loading="lazy"></div>
+        <div class="bd">
+          <div class="sc">Skaner Smartshot</div>
+          <h3>Tyler Collins</h3>
+          <div class="role">Specjalista od złota i NQ</div>
+          <p>Założyciel Smart Shot Daily i autor książki „Zen and the Art of Not Blowing Your Trading Account”. 9 lat handlu kontraktami futures, forexem, kryptowalutami i surowcami, dziś skupiony na złocie i NQ z własnym modelem wejść Smart Money Concepts.</p>
+          <div class="tags"><span class="tag">Złoto</span><span class="tag">NQ</span><span class="tag">Smart Money Concepts</span><span class="tag">9 lat</span></div>
+        </div>
+      </article>
+      <article class="card reveal">
+        <div class="ph"><img src="../assets/andrew-bridges.jpg" alt="Andrew Bridges" loading="lazy" style="object-position:center 15%"></div>
+        <div class="bd">
+          <div class="sc">Skaner Spectrum</div>
+          <h3>Andrew Bridges</h3>
+          <div class="role">Specjalista od analizy technicznej</div>
+          <p>15 lat na rynkach finansowych, w tym 6 jako edukator. Andrew wnosi instytucjonalną metodologię z działów zarządzania ryzykiem i rozwoju strategii dwóch funduszy, a także doświadczenie z desku tradingowego na DAX, złocie i ES.</p>
+          <div class="tags"><span class="tag">US30</span><span class="tag">Emini ES</span><span class="tag">Nasdaq</span><span class="tag">15 lat</span></div>
+        </div>
+      </article>
+      <article class="card reveal d1">
+        <div class="ph"><img src="../assets/adam-haase.webp" alt="Adam Haase" loading="lazy" style="object-position:center 18%"></div>
+        <div class="bd">
+          <div class="sc">Skaner Killshot</div>
+          <h3>Adam Haase</h3>
+          <div class="role">Specjalista Killshot · Polska społeczność</div>
+          <p>Handluje od 2019 roku. Adam łączy metodologię Killshot z Price Action na US30, NAS100 i złocie. Współpracuje z funduszem inwestycyjnym i prowadzi jedną z najszybciej rosnących polskojęzycznych społeczności tradingowych w Europie.</p>
+          <div class="tags"><span class="tag">US30</span><span class="tag">NAS100</span><span class="tag">Złoto</span><span class="tag">Polska społeczność</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 02 SCANNERS -->
+<section class="sec" id="scanners">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>02</b>Skanery</span>
+      <h2>Trzy skanery. <span class="hl">Jeden Vault.</span></h2>
+      <p class="lede">To nie są darmowe wskaźniki. Twoi edukatorzy zbudowali te skanery, handlują nimi na żywo na Twoich oczach i uczą Cię czytać każdy sygnał. Identyfikacja setupów jest zautomatyzowana. Egzekucja nadal należy do Ciebie.</p>
+    </div>
+    <div class="scans">
+      <article class="card reveal">
+        <div class="shot"><img src="../assets/killshot-graphic.webp" alt="Skaner Killshot na laptopie" loading="lazy" width="1200" height="810"></div>
+        <div class="bd"><div class="n"><b>01</b> / 03</div><h3>Killshot</h3><div class="mk">US30</div>
+          <p>Pierwszy skaner oparty na zasadach dla US30. Struktura EMA, poziomy Point of Control i autorskie gwiazdki sygnałowe razem wskazują wejścia o wysokim prawdopodobieństwie ze zdefiniowanym ryzykiem.</p></div>
+      </article>
+      <article class="card reveal d1">
+        <div class="shot"><img src="../assets/smartshot-graphic.webp" alt="Skaner Smartshot na laptopie" loading="lazy" width="1200" height="810"></div>
+        <div class="bd"><div class="n"><b>02</b> / 03</div><h3>Smartshot</h3><div class="mk">Złoto i NQ</div>
+          <p>Oparty na Smart Money Concepts. Mapuje płynność i strukturę na wyższych interwałach, a następnie sygnalizuje wejścia na niższych interwałach z potwierdzeniem order flow. Tylko setupy A+ i B+.</p></div>
+      </article>
+      <article class="card reveal d2">
+        <div class="shot"><img src="../assets/spectrum-graphic.webp" alt="Skaner Spectrum na laptopie" loading="lazy" width="2925" height="1976"></div>
+        <div class="bd"><div class="n"><b>03</b> / 03</div><h3>Spectrum</h3><div class="mk">US30 · ES · NQ</div>
+          <p>Oparty na teorii aukcji rynkowej i analizie wolumenu sesji. Wykorzystuje indukcję płynności, aby znajdować wejścia o wysokim prawdopodobieństwie na indeksach. Metoda instytucjonalna, detaliczna precyzja.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 03 INSIDE THE VAULT: pinned sequence -->
+<section class="sec" id="inside">
+  <div class="W">
+    <div class="seq-intro reveal">
+      <div class="head" style="margin-bottom:0">
+        <span class="kick"><b>03</b>Wewnątrz Vault</span>
+        <h2>Od sygnału do dziennika, <span class="hl">każda transakcja ma zasady.</span></h2>
+      </div>
+      <p class="mono">Ilustracje · 5 kroków transakcji w Vault</p>
+    </div>
+    <div class="seq" id="seq">
+      <div class="seq-pin">
+        <div class="seq-box">
+
+          <div class="seq-item on" style="--i:0">
+            <div class="seq-txt">
+              <span class="seq-n"><b>01</b> / 05 · Skaner</span>
+              <h3>Skaner znajduje setup. <span class="hl">Ty podejmujesz decyzję.</span></h3>
+              <p>Killshot, Smartshot i Spectrum obserwują rynki za Ciebie i wskazują setupy zgodne z zasadami. Nic nie dzieje się na przeczucie.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Killshot</b><span>US30 · 5m</span><em>Na żywo</em></div>
+              <div class="ui-body">
+                <div class="ui-chart"><svg viewBox="0 0 560 140" role="presentation"><line x1="0" x2="560" y1="103.2" y2="103.2" stroke="rgba(255,255,255,.22)" stroke-dasharray="4 4"/><text x="552" y="98.2" text-anchor="end" fill="rgba(255,255,255,.4)" font-family="JetBrains Mono,monospace" font-size="9" letter-spacing="1.5">POC</text><polyline points="24,112.8 62,110.6 100,106.6 138,96.4 176,90.1 214,91.7 252,96.9 290,98.3 328,91.9 366,81.1 404,73.8 442,66.9 480,56.6 518,46.6" fill="none" stroke="#4B9EFF" stroke-width="1.6" opacity=".85"/><line x1="24" x2="24" y1="87.2" y2="122.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="17" y="96.8" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="62" x2="62" y1="90.4" y2="112.8" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="55" y="96.8" width="14" height="9.6" rx="2" fill="rgba(255,255,255,.38)"/><line x1="100" x2="100" y1="77.6" y2="109.6" stroke="#7BE0B0" stroke-width="1.4"/><rect x="93" y="84.0" width="14" height="22.4" rx="2" fill="#7BE0B0"/><line x1="138" x2="138" y1="64.8" y2="90.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="131" y="71.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="176" x2="176" y1="68.0" y2="87.2" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="169" y="71.2" width="14" height="9.6" rx="2" fill="rgba(255,255,255,.38)"/><line x1="214" x2="214" y1="74.4" y2="100.0" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="207" y="80.8" width="14" height="12.8" rx="2" fill="rgba(255,255,255,.38)"/><line x1="252" x2="252" y1="87.2" y2="106.4" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="245" y="93.6" width="14" height="6.4" rx="2" fill="rgba(255,255,255,.38)"/><line x1="290" x2="290" y1="80.8" y2="104.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="283" y="87.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="328" x2="328" y1="61.6" y2="90.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="321" y="68.0" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="366" x2="366" y1="48.8" y2="74.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="359" y="55.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="404" x2="404" y1="52.0" y2="66.4" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="397" y="55.2" width="14" height="6.4" rx="2" fill="rgba(255,255,255,.38)"/><line x1="442" x2="442" y1="36.0" y2="64.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="435" y="42.4" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="480" x2="480" y1="26.4" y2="48.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="473" y="32.8" width="14" height="9.6" rx="2" fill="#7BE0B0"/><line x1="518" x2="518" y1="16.8" y2="39.2" stroke="#7BE0B0" stroke-width="1.4"/><rect x="511" y="23.2" width="14" height="9.6" rx="2" fill="#7BE0B0"/><path d="M290 112.8l1.8 3.9 4.2.5-3.1 2.9.8 4.2-3.7-2.1-3.7 2.1.8-4.2-3.1-2.9 4.2-.5z" fill="#4B9EFF"/></svg></div>
+                <div class="ui-rows">
+                  <div><b>US30</b><span>Gwiazdka na POC</span><i class="st go">Setup</i></div>
+                  <div><b>NAS100</b><span>Korekta do EMA</span><i class="st wait">Obserwuj</i></div>
+                  <div><b>XAUUSD</b><span>Wewnątrz zakresu</span><i class="st">Bez transakcji</i></div>
+                </div>
+              </div>
+              <div class="ui-foot"><span><i>Skaner</i>Killshot</span><span><i>Sesja</i>Otwarcie NY</span><span class="hot"><i>Dalej</i>Przejdź checklistę</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:1">
+            <div class="seq-txt">
+              <span class="seq-n"><b>02</b> / 05 · Checklista</span>
+              <h3>Żadnej transakcji, <span class="hl">dopóki wszystko nie jest odhaczone.</span></h3>
+              <p>Każdy setup przechodzi przez te same spisane zasady z playbooków modułów. Brakuje jednego punktu? Czekasz.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Checklista przed transakcją</b><span>US30 · Long</span><em>4 z 5</em></div>
+              <div class="ui-body">
+                <ul class="ui-list">
+                  <li>Trend: cena powyżej EMA 20 i 50</li>
+                  <li>Korekta do Point of Control</li>
+                  <li>Pojawiła się gwiazdka sygnału</li>
+                  <li>Brak ważnych newsów w ciągu 30 minut</li>
+                  <li class="w">Zamknięcie świecy potwierdza wejście</li>
+                </ul>
+                <div class="ui-flag">Czekam na zamknięcie świecy 5m</div>
+              </div>
+              <div class="ui-foot"><span><i>Spełnione zasady</i>4 z 5</span><span><i>Status</i>Czekaj</span><span class="hot"><i>Dalej</i>Ustal wielkość pozycji</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:2">
+            <div class="seq-txt">
+              <span class="seq-n"><b>03</b> / 05 · Najpierw ryzyko</span>
+              <h3>Ustal wielkość każdej pozycji <span class="hl">przed wejściem.</span></h3>
+              <p>To Ty decydujesz, ile jesteś gotów stracić, zanim zrobi to rynek. Stop, wielkość pozycji i cel ustalasz, zanim klikniesz kup.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Kalkulator ryzyka</b><span>Przykładowe konto</span><em>Gotowe</em></div>
+              <div class="ui-body">
+                <div class="ui-stats"><span><b>1%</b>Ryzyko na transakcję</span><span><b>40 pkt</b>Odległość stopa</span><span><b>1 : 2</b>Planowane R:R</span></div>
+                <div class="ui-rows">
+                  <div><b>Konto</b><span>Przykładowe saldo</span><i class="st">$10,000</i></div>
+                  <div><b>Maks. strata</b><span>1% konta</span><i class="st">$100</i></div>
+                  <div><b>Wielkość</b><span>$100 ÷ 40 pkt</span><i class="st go">$2.50 / pkt</i></div>
+                </div>
+              </div>
+              <div class="ui-foot"><span><i>Stop</i>Ustawiony</span><span><i>Cel</i>Ustawiony</span><span class="hot"><i>Dalej</i>Wejście po zamknięciu</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:3">
+            <div class="seq-txt">
+              <span class="seq-n"><b>04</b> / 05 · Sesja na żywo</span>
+              <h3>Handluj na żywo, <span class="hl">obok swojego edukatora.</span></h3>
+              <p>Pięć sesji na żywo w tygodniu. Twój edukator wyznacza poziomy, tłumaczy każdą decyzję i zarządza transakcją w czasie rzeczywistym.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Pokój na żywo</b><span>Otwarcie NY · Jay</span><em>Na żywo</em></div>
+              <div class="ui-body">
+                <div class="ui-msg"><small>9:24 AM ET · Jay</small>Poziomy przed otwarciem są gotowe. Obserwuję POC. Żadnej transakcji, dopóki nie będzie zamknięcia.</div>
+                <div class="ui-msg out"><small>9:31 AM ET · Ty</small>Gwiazdka jest. Czekam na zamknięcie, tak jak mówi checklista.</div>
+                <div class="ui-msg"><small>9:35 AM ET · Jay</small>Zamknięcie potwierdzone. Te same zasady co wczoraj: stop pod knotem, najpierw wielkość pozycji.</div>
+              </div>
+              <div class="ui-foot"><span><i>Sesje</i>5 w tygodniu</span><span><i>Format</i>Na żywo + nagranie</span><span class="hot"><i>Dalej</i>Podsumowanie po sesji</span></div>
+            </div>
+          </div>
+
+          <div class="seq-item" style="--i:4">
+            <div class="seq-txt">
+              <span class="seq-n"><b>05</b> / 05 · Dziennik</span>
+              <h3>Każda transakcja zapisana. <span class="hl">Każda lekcja zachowana.</span></h3>
+              <p>Zysk czy strata, transakcja trafia do dziennika. Pytanie nie brzmi „czy zadziałało?”, tylko „czy trzymałem się zasad?”.</p>
+            </div>
+            <div class="seq-panel ui" aria-hidden="true">
+              <div class="ui-top"><b>Dziennik transakcji</b><span>Wejście · US30 long</span><em>Przegląd</em></div>
+              <div class="ui-body">
+                <div class="ui-tl"><span class="done"><b>Plan</b>Checklista</span><span class="done"><b>Wejście</b>Po zamknięciu</span><span class="done"><b>Zarządzanie</b>Stop na BE</span><span class="now"><b>Przegląd</b>Dziś</span></div>
+                <div class="ui-input"><small>Notatka dla siebie</small>Chciałem wejść za wcześnie. Zamiast tego poczekałem na zamknięcie. Stop i wielkość pozycji ustawione przed wejściem.</div>
+                <ul class="ui-list"><li>Checklista zachowana</li><li>Ryzyko ustalone przed wejściem</li><li class="w">FOMO na otwarciu. Do poprawy</li></ul>
+              </div>
+              <div class="ui-foot"><span><i>Zasady zachowane</i>Tak</span><span><i>Nastawienie</i>Spokój</span><span class="hot"><i>Dalej</i>Przegląd tygodnia</span></div>
+            </div>
+          </div>
+
+          <div class="seq-dots" role="tablist" aria-label="Kroki">
+            <button type="button" class="on" aria-label="Skaner">01</button><button type="button" aria-label="Checklista">02</button><button type="button" aria-label="Najpierw ryzyko">03</button><button type="button" aria-label="Sesja na żywo">04</button><button type="button" aria-label="Dziennik">05</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="disc">Makiety wyłącznie poglądowe. To nie są prawdziwe transakcje, sygnały ani wyniki.</p>
+  </div>
+</section>
+
+<!-- 04 WHAT YOU GET -->
+<section class="sec" id="content-types">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>04</b>Jak się uczysz</span>
+      <h2>Obejrzyj. Przeczytaj. <span class="hl">Zagraj to tego samego dnia.</span></h2>
+      <p class="lede">Każdy moduł to kompletny blok nauki: obejrzyj lekcję, przestudiuj pisemny playbook, a potem zobacz, jak Twoi edukatorzy grają ten sam setup na żywo. Taka powtarzalność buduje konsekwencję.</p>
+    </div>
+    <div class="get">
+      <article class="card reveal">
+        <div class="media"><img src="../assets/jay-charts.webp" alt="Edukator prowadzący zajęcia przy biurku tradingowym" loading="lazy">
+          <span class="chip"><span class="play"><svg width="8" height="9" viewBox="0 0 8 9"><path d="M0 0l8 4.5L0 9z" fill="#fff"/></svg></span>110+ lekcji HD</span></div>
+        <div class="bd"><h3>Lekcje wideo</h3><p>110+ lekcji HD w 18 modułach. Zobacz, jak Twoi edukatorzy tłumaczą, realizują i analizują dokładnie to, jak handlują. Na żądanie, na zawsze.</p></div>
+      </article>
+      <article class="card reveal d1">
+        <div class="media book">
+          <div class="pdf"><div></div><div></div><div><i></i><strong>5 zasad<br>Sniper Tradingu</strong><em>Jay Bonham</em><u></u><u style="width:80%"></u><u style="width:65%"></u></div></div>
+          <span class="mono" style="font-size:9.5px">+ 18 playbooków do modułów</span>
+        </div>
+        <div class="bd"><h3>Playbooki PDF</h3><p>Każdy moduł zawiera pisemny przewodnik, checklistę i playbook do pobrania. Miej zasady przed oczami, nawet z dala od ekranu.</p></div>
+      </article>
+      <article class="card reveal d2">
+        <div class="media"><img src="../assets/jay-training.webp" alt="Sesja tradingowa na żywo z sygnałami Killshot" loading="lazy" style="object-position:80% 0%">
+          <span class="chip live">Teraz na żywo</span></div>
+        <div class="bd"><h3>Sesje na żywo</h3><p>Twoi edukatorzy handlują na żywo na każdej sesji: przygotowanie przed otwarciem, egzekucja na żywo, podsumowanie po sesji. Prawdziwe decyzje na prawdziwych rynkach, a nie nagrania sprzed miesiąca.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 05 CURRICULUM -->
+<section class="sec" id="curriculum">
+  <div class="W">
+    <div class="curric-top reveal">
+      <div class="head">
+        <span class="kick"><b>05</b>Program</span>
+        <h2>18 modułów.<br><span class="hl">Wideo i tekst.</span></h2>
+        <p class="lede">Od pierwszego pipsa po Wyckoffa i bootcampy skanerów. Uporządkowana ścieżka, w której każdy etap buduje na poprzednim, a nie biblioteka luźnych materiałów.</p>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="ttab active" onclick="switchT('basic',this)">Podstawowy</button>
+        <button class="ttab" onclick="switchT('intermediate',this)">Średniozaawansowany</button>
+        <button class="ttab" onclick="switchT('advanced',this)">Zaawansowany</button>
+      </div>
+    </div>
+    <div class="reveal">
+    <div id="t-basic" class="tpanel active">
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M01</span><span class="mt">Zrozumieć Forex <span class="mm">· 7 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Czym jest Forex — globalny rynek walutowy</div><div class="lesson">Historia Forexu — od handlu wymiennego do blockchaina</div><div class="lesson">Czym handlujesz</div><div class="lesson">Pary walutowe na Forexie</div><div class="lesson">Kontrakty CFD na Forexie — podstawowe wprowadzenie</div><div class="lesson">Kto handluje na Forexie? Opowieść o dwóch traderach</div><div class="lesson">Jak duży jest rynek Forex?</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M02</span><span class="mt">Zrozumieć brokerów <span class="mm">· 6 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Rynek Forex — wybór właściwego brokera</div><div class="lesson">MetaTrader — narzędzie dla traderów detalicznych</div><div class="lesson">Czym jest dźwignia i jak działa?</div><div class="lesson">Jak zarabia broker? Spready i opłaty swapowe</div><div class="lesson">Dlaczego konto demo to Twój pierwszy krok</div><div class="lesson">Trading na Forexie — opowieść o dwóch traderach</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M03</span><span class="mt">Pierwsze pojęcia i podstawy <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Świece w tradingu</div><div class="lesson">Czym jest pips?</div><div class="lesson">Kupno i sprzedaż na Forexie</div><div class="lesson">Wielkość lota w tradingu na Forexie</div><div class="lesson">Podstawy tradingu na Forexie</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M04</span><span class="mt">Egzekucja na rynkach <span class="mm">· 8 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Rodzaje zleceń na Forexie</div><div class="lesson">Wpływ spreadów na trading</div><div class="lesson">Czym jest depozyt zabezpieczający i jak wpływa na trading?</div><div class="lesson">Kluczowa rola zarządzania ryzykiem w tradingu</div><div class="lesson">Risk-Reward i odwrócony Risk Reward w praktyce</div><div class="lesson">Przewodnik po stylach tradingu</div><div class="lesson">Interwały czasowe — przewodnik tradera po timingu rynkowym</div><div class="lesson">Rynki globalne — sesje handlowe</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M05</span><span class="mt">Obsługa platformy <span class="mm">· 9 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Jak otworzyć transakcję na komputerze</div><div class="lesson">Jak ustawić Stop Loss i Take Profit na komputerze</div><div class="lesson">Break even i trailing stop loss — komputer</div><div class="lesson">Jak zamknąć transakcję w MT5 na komputerze</div><div class="lesson">Jak skonfigurować MT5 i dodać EMA — komputer</div><div class="lesson">MT5 na telefonie — przegląd</div><div class="lesson">Jak otworzyć transakcję, ustawić SL i TP oraz break even na telefonie</div><div class="lesson">Jak dodać EMA i Fibonacciego na telefonie</div><div class="lesson">Jak korzystać z TradingView</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M06</span><span class="mt">Mindset tradera <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Siła procentu składanego</div><div class="lesson">Umiejętność przegrywania i pójścia dalej</div><div class="lesson">Mindset długoterminowego tradera</div><div class="lesson">Konsekwencja i zasady</div><div class="lesson">Dlaczego trading?</div></div></div>
+    </div>
+    <div id="t-intermediate" class="tpanel">
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M07</span><span class="mt">Dziennik tradingowy <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Czym jest dziennik transakcji?</div><div class="lesson">Jak stworzyć plan tradingowy</div><div class="lesson">Praca z dziennikiem tradingowym w panelu</div><div class="lesson">Znaczenie backtestów</div><div class="lesson">Budowanie zwycięskich codziennych nawyków</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M08</span><span class="mt">Podstawy analizy technicznej <span class="mm">· 7 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Zrozumieć analizę techniczną</div><div class="lesson">Price Action na Forexie</div><div class="lesson">Trendy na Forexie i jak je wykorzystywać</div><div class="lesson">Konsolidacja ceny na Forexie</div><div class="lesson">Korekty (pullbacki)</div><div class="lesson">Siła tradingu Price Action</div><div class="lesson">Narzędzie Fibonacciego, cele i odwrócenia</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M09</span><span class="mt">Narzędzia tradingowe <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Analiza fundamentalna rynku Forex</div><div class="lesson">Newsy rynkowe — Forex Factory</div><div class="lesson">Wskaźniki na Forexie — Twój kompas na rynkach</div><div class="lesson">Struktura rynku jest najważniejsza</div><div class="lesson">Analiza top-down</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M10</span><span class="mt">Killshot Bootcamp <span class="mm">· 6 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Czym jest Killshot?</div><div class="lesson">Jak to działa?</div><div class="lesson">Czym są EMA?</div><div class="lesson">Czym jest POC?</div><div class="lesson">Czym są gwiazdki i jak z nich korzystać</div><div class="lesson">Jak używać i backtestować Killshot</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M11</span><span class="mt">Smartshot Bootcamp <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Czym jest Smartshot?</div><div class="lesson">Jak to działa?</div><div class="lesson">Zasady w sygnałach</div><div class="lesson">Setupy A+ i B+</div><div class="lesson">Jak używać i backtestować Smartshot</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M12</span><span class="mt">Spectrum Bootcamp <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Czym jest Spectrum?</div><div class="lesson">Jak to działa?</div><div class="lesson">Zasady w sygnałach</div><div class="lesson">Setupy A+ i B+</div><div class="lesson">Jak używać i backtestować Spectrum</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M13</span><span class="mt">Psychologia na wyższym poziomie <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Strach i chciwość</div><div class="lesson">Dyscyplina emocjonalna w tradingu</div><div class="lesson">Dyscyplina strategii — najważniejsza lekcja</div><div class="lesson">Oczekiwania nie płacą — zasady tak</div><div class="lesson">Plan rozwoju osobistego tradera</div></div></div>
+    </div>
+    <div id="t-advanced" class="tpanel">
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M14</span><span class="mt">Bootcamp świecowy <span class="mm">· 7 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Jak działa wolumen w świecy?</div><div class="lesson">Anatomia świecy</div><div class="lesson">Świece objęcia (engulfing)</div><div class="lesson">Świece ekspansji, odrzucenia i pułapki</div><div class="lesson">Dlaczego czekać na zamknięcie świecy?</div><div class="lesson">Świece volume sweep w tradingu</div><div class="lesson">Formacje podwójnego szczytu i podwójnego dna</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M15</span><span class="mt">Podaż i popyt w praktyce <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Czym jest podaż i popyt?</div><div class="lesson">Wizualizacja równowagi rynkowej</div><div class="lesson">Struktura rynku i strefy podaży i popytu</div><div class="lesson">Polowanie na stopy, zbieranie płynności i wybicia</div><div class="lesson">Precyzyjny trading na Forexie</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M16</span><span class="mt">Strategia Wyckoffa <span class="mm">· 6 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Kim był Richard D. Wyckoff?</div><div class="lesson">4 fazy rynku</div><div class="lesson">Faza akumulacji</div><div class="lesson">Faza dystrybucji</div><div class="lesson">Ostatni spring</div><div class="lesson">Wyckoff w Twoim tradingu</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M17</span><span class="mt">Killshot dla zaawansowanych <span class="mm">· 5 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Strategia otwarcia</div><div class="lesson">Odwrócony Risk Reward</div><div class="lesson">3-minutowa strategia na złocie</div><div class="lesson">PB &amp; J</div><div class="lesson">Łączenie wskaźników — strategiczna przewaga</div></div></div>
+      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M18</span><span class="mt">Psychologia zaawansowana <span class="mm">· 10 lekcji</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Tożsamość, przekonania i osobowość tradera</div><div class="lesson">Dyscyplina emocjonalna i kontrola impulsów</div><div class="lesson">Strach, straty i ocena ryzyka</div><div class="lesson">Pewność siebie, konsekwencja i zaufanie do siebie</div><div class="lesson">Cierpliwość i wysokiej jakości egzekucja</div><div class="lesson">Panowanie nad chciwością i euforią</div><div class="lesson">Revenge trading i powrót do równowagi</div><div class="lesson">Budowanie elitarnych nawyków i rutyn tradingowych</div><div class="lesson">Myślenie w kategoriach prawdopodobieństwa</div><div class="lesson">Jak mindset czyni z Ciebie profesjonalnego tradera</div></div></div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 COMMUNITY -->
+<section class="sec" id="proof">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>06</b>Społeczność</span>
+      <h2>Wewnątrz <span class="hl">społeczności.</span></h2>
+      <p class="lede">Wiadomości i zrzuty ekranu od aktywnych członków. Żadnych wymyślonych cytatów ani starannie wybranych highlightów.</p>
+    </div>
+    <div class="tslider-wrap reveal">
+      <div class="tslider-vp">
+        <div class="tslider-track" id="ttrack">
+          <button class="tthumb" onclick="lbOpen(0)" aria-label="Otwórz zrzut ekranu 1"><img src="../assets/t1.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(1)" aria-label="Otwórz zrzut ekranu 2"><img src="../assets/t2.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(2)" aria-label="Otwórz zrzut ekranu 3"><img src="../assets/t3.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(3)" aria-label="Otwórz zrzut ekranu 4"><img src="../assets/t4.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(4)" aria-label="Otwórz zrzut ekranu 5"><img src="../assets/t5.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(5)" aria-label="Otwórz zrzut ekranu 6"><img src="../assets/t6.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(6)" aria-label="Otwórz zrzut ekranu 7"><img src="../assets/t7.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(7)" aria-label="Otwórz zrzut ekranu 8"><img src="../assets/t8.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(8)" aria-label="Otwórz zrzut ekranu 9"><img src="../assets/t9.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(9)" aria-label="Otwórz zrzut ekranu 10"><img src="../assets/t10.webp" alt="" loading="lazy"></button>
+          <button class="tthumb" onclick="lbOpen(10)" aria-label="Otwórz zrzut ekranu 11"><img src="../assets/t11.webp" alt="" loading="lazy"></button>
+        </div>
+      </div>
+      <div class="tnav">
+        <button id="tbtnPrev" onclick="tSlide(-1)" disabled aria-label="Poprzedni"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button id="tbtnNext" onclick="tSlide(1)" aria-label="Dalej"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+        <span class="mono">Dotknij, aby powiększyć</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 LIVE -->
+<section class="sec" id="live">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>07</b>Każdego dnia</span>
+      <h2>Każdego dnia jesteś na rynkach <span class="hl">razem z nami.</span></h2>
+      <p class="lede">Vault to nie coś, co oglądasz raz i zapominasz. Twoi edukatorzy handlują na żywo na każdej sesji, a społeczność analizuje każdy ruch.</p>
+    </div>
+    <div class="feats">
+      <article class="card reveal"><div class="num">01</div><h3>Codzienne sesje na żywo</h3><p>Przygotowanie przed otwarciem, egzekucja na żywo, podsumowanie po sesji. Prawdziwe decyzje na prawdziwych rynkach, tu i teraz.</p></article>
+      <article class="card reveal d1"><div class="num">02</div><h3>Systemy copy tradingu</h3><p>Automatycznie kopiuj pozycje swojego edukatora na żywo, ze zdefiniowanym ryzykiem przy każdym skopiowanym setupie. Uczysz się, a Twoje transakcje pracują.</p><span class="tag">Tylko Elite</span></article>
+      <article class="card reveal d2"><div class="num">03</div><h3>Dostęp do społeczności</h3><p>Traderzy, którzy naprawdę pracują: codzienne wykresy, wzajemna odpowiedzialność i bezpośredni dostęp do każdego edukatora w Vault. Żadne martwe forum.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- 08 PRICING -->
+<section class="sec" id="pricing">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>08</b>Cennik</span>
+      <h2>Trzy sposoby, <span class="hl">by dołączyć.</span></h2>
+      <p class="lede">Same narzędzia, jeden edukator z jego skanerem albo cały Vault. Wybierz swój poziom i zmień plan, kiedy tylko będziesz gotowy.</p>
+    </div>
+    <div class="price">
+      <article class="card pcard reveal">
+        <div class="plan">Tradevault Tools</div>
+        <h3>Tools</h3>
+        <p class="ptag">Sam dostęp do skanera. Dla traderów, którzy mają już swój system.</p>
+        <div class="amt"><b>$49.99</b><span>/ mies.</span></div>
+        <div class="start"><strong>Bez opłaty startowej</strong></div>
+        <span class="btn-g soon" aria-disabled="true">Wkrótce</span>
+        <ul class="pf">
+          <li>Dostęp do skanera</li>
+          <li>Bez opłaty startowej</li>
+          <li>Przejście na Community lub Elite w każdej chwili</li>
+        </ul>
+      </article>
+      <article class="card pcard reveal d1">
+        <div class="plan">Tradevault Community</div>
+        <h3>Community</h3>
+        <p class="ptag">Wybierz edukatora i jego skaner, plus Basic Academy.</p>
+        <div class="amt"><b>$99.99</b><span>/ mies.</span></div>
+        <div class="start">Jednorazowa opłata startowa <strong>$124.99</strong></div>
+        <span class="btn-g soon" aria-disabled="true">Wkrótce</span>
+        <ul class="pf">
+          <li>Wybierz 1 edukatora: Jay, Adam, Tyler lub Andrew</li>
+          <li>Wybierz 1 skaner: Killshot, Smartshot lub Spectrum</li>
+          <li>Basic Academy: podstawy, struktura rynku, zarządzanie ryzykiem i egzekucja</li>
+          <li>Sesje na żywo z Twoim edukatorem</li>
+          <li>Telegram Tradevault Community</li>
+        </ul>
+      </article>
+      <article class="card pcard hot reveal d2">
+        <div class="plan">Tradevault Elite <span class="tag">Cały Vault</span></div>
+        <h3>Elite</h3>
+        <p class="ptag">Wszystko. Wszyscy czterej edukatorzy, wszystkie trzy skanery, całe szkolenie.</p>
+        <div class="amt"><b>$124.99</b><span>/ mies.</span></div>
+        <div class="start">Jednorazowa opłata startowa <strong>$50</strong></div>
+        <span class="btn soon" aria-disabled="true">Wkrótce</span>
+        <ul class="pf">
+          <li>Wszyscy czterej edukatorzy: Jay, Adam, Tyler i Andrew</li>
+          <li>Killshot, Smartshot i Spectrum: wszystkie trzy skanery</li>
+          <li>Każda akademia: Basic, Intermediate, Advanced, Trading Psychology i bootcamp Killshot</li>
+          <li>5 sesji na żywo w tygodniu z edukatorami handlującymi na żywo</li>
+          <li>Prywatny Telegram mentoringowy z bezpośrednim dostępem do edukatorów</li>
+          <li>Czat sygnałowy: wejścia, stop lossy i cele zysku</li>
+          <li>Copy Trader i Ambush Trade Manager</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 09 FAQ -->
+<section class="sec" id="faq">
+  <div class="W">
+    <div class="head reveal">
+      <span class="kick"><b>09</b>Pytania</span>
+      <h2>Pytania <span class="hl">i odpowiedzi.</span></h2>
+    </div>
+    <div class="faq reveal">
+      <details data-tag="Format" data-short="Przede wszystkim edukacja."><summary>Czy to serwis sygnałowy?</summary><div class="a">Nie. The Trade Vault to platforma edukacyjna i aktywna społeczność tradingowa. Członkowie mają dostęp do sygnałów i systemów copy tradingu, ale celem jest to, żebyś rozumiał każdą transakcję, a nie tylko ją kopiował.</div></details>
+      <details data-tag="Rynki" data-short="US30, Nasdaq i złoto."><summary>Jakie rynki obejmuje?</summary><div class="a">Główny nacisk kładziemy na US30 (Dow Jones), Nasdaq (NQ/NAS100) i złoto (XAU/USD). Skaner Spectrum Andrew obejmuje też Emini ES (kontrakty futures na S&amp;P 500).</div></details>
+      <details data-tag="Konfiguracja" data-short="MT5 i TradingView."><summary>Jakiej platformy potrzebuję?</summary><div class="a">MetaTrader 5 (MT5) i TradingView. Oba omawiamy w programie. Potrzebujesz też brokera, a moduł 2 pokazuje, jak go wybrać.</div></details>
+      <details data-tag="Community" data-short="Początkujący? Zacznij od Jaya."><summary>Którego edukatora wybrać w planie Community?</summary><div class="a">To zależy od rynku. Jay i Adam skupiają się na US30 z Killshot. Tyler handluje złotem i NQ ze Smartshot. Andrew obejmuje US30, ES i Nasdaq ze Spectrum. Zupełnie nowy? Zacznij od Jaya: Killshot to najbardziej sprawdzona metodologia w Vault.</div></details>
+      <details data-tag="Plany" data-short="Tak, w każdej chwili."><summary>Czy mogę później przejść na wyższy plan?</summary><div class="a">Tak. Zacznij od Tools lub Community i przejdź na Elite w dowolnym momencie z poziomu strefy członkowskiej.</div></details>
+      <details data-tag="Ryzyko" data-short="Żadnych obietnic. Nigdy."><summary>Czy zarobię pieniądze?</summary><div class="a">Tego nie obiecamy i uważaj na każdego, kto to robi. Trading wiąże się z realnym ryzykiem. The Trade Vault daje Ci sprawdzoną metodologię, prawdziwe narzędzia i edukatorów, którzy handlują na tych samych rynkach razem z Tobą. Reszta zależy od Ciebie.</div></details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="sec final">
+  <div class="W">
+    <span class="kick reveal">Twój ruch</span>
+    <h2 class="reveal d1">Przestań zgadywać. <span class="hl">Zacznij działać.</span></h2>
+    <p class="lede reveal d2">Dołącz do ponad 500 traderów, którzy zamienili przeczucie na system oparty na zasadach, z edukatorami na żywo i autorskimi narzędziami w pakiecie.</p>
+    <div class="reveal d3">
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn">Dołącz do Vault już dziś <span class="arr">→</span></a>
+        <a href="#curriculum" class="btn-g">Zobacz program</a>
+      </div>
+      <span class="note">Od $49.99 / mies.</span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="W">
+    <div class="foot-top">
+      <span class="brand"><img src="../assets/tv-icon.png" alt="" width="30" height="30" style="width:30px;height:30px"><img src="../assets/tv-logo.png" alt="The Trade Vault" width="190" height="15" style="height:15px"></span>
+      <ul class="flinks"><li><a href="https://thetradevault.co/terms.html">Regulamin</a></li><li><a href="https://thetradevault.co/privacy.html">Prywatność</a></li><li><a href="mailto:hello@thetradevault.co">Kontakt</a></li></ul>
+    </div>
+    <p class="risk">Handel kontraktami futures, kontraktami na różnice kursowe (CFD) i innymi produktami lewarowanymi wiąże się z dużym ryzykiem straty i nie jest odpowiedni dla każdego inwestora. Możesz stracić więcej niż początkowy depozyt. Wyniki historyczne nie są wskaźnikiem przyszłych rezultatów i nie zapewniamy, że jakiekolwiek konto osiągnie lub prawdopodobnie osiągnie zyski lub straty podobne do omawianych. The Trade Vault zapewnia wyłącznie treści edukacyjne i narzędzia analityczne. Nic na tej stronie nie stanowi porady inwestycyjnej, finansowej, prawnej ani podatkowej i nic tutaj nie jest rekomendacją ani zachętą do kupna lub sprzedaży jakiegokolwiek papieru wartościowego lub instrumentu pochodnego. The Trade Vault nie jest zarejestrowanym doradcą inwestycyjnym, dealerem ani doradcą ds. obrotu towarami w żadnej jurysdykcji. Ponosisz wyłączną odpowiedzialność za swoje decyzje tradingowe. Przed rozpoczęciem handlu weź pod uwagę swoje cele i sytuację oraz skonsultuj się z licencjonowanym specjalistą.</p>
+    <div class="mono fcopy">© 2026 The Trade Vault. Wszelkie prawa zastrzeżone.</div>
+  </div>
+</footer>
+
+<div class="lb" id="lb" onclick="lbClose(event)">
+  <button class="lb-close" onclick="lbClose()" aria-label="Zamknij"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  <button class="lb-prev" onclick="lbNav(-1,event)" aria-label="Poprzedni"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-next" onclick="lbNav(1,event)" aria-label="Dalej"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+  <div class="lb-ctr mono" id="lb-ctr"></div>
+</div>
+
+<script>
+// mobile menu
+const mob=document.getElementById('mob');
+document.getElementById('mob-open').onclick=()=>mob.classList.add('open');
+document.getElementById('mob-close').onclick=()=>mob.classList.remove('open');
+mob.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mob.classList.remove('open')));
+
+// reveal: rise + un-blur
+(function(){
+  var els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return}
+  var io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+  els.forEach(e=>io.observe(e));
+})();
+
+// pinned sequence (desktop only)
+(function(){
+  var seq=document.getElementById('seq'); if(!seq) return;
+  var items=[...seq.querySelectorAll('.seq-item')], dots=[...seq.querySelectorAll('.seq-dots button')],
+      desk=matchMedia('(min-width:1024px)'), cur=0;
+  function set(n){ if(n===cur) return; cur=n;
+    items.forEach((it,i)=>it.classList.toggle('on',i===n)); dots.forEach((d,i)=>d.classList.toggle('on',i===n)); }
+  function onScroll(){ if(!desk.matches) return;
+    var span=seq.offsetHeight-innerHeight, p=Math.min(1,Math.max(0,-seq.getBoundingClientRect().top/span));
+    set(Math.min(items.length-1,Math.floor(p*items.length))); }
+  dots.forEach((d,i)=>d.addEventListener('click',()=>{
+    var top=seq.getBoundingClientRect().top+scrollY, span=seq.offsetHeight-innerHeight;
+    scrollTo({top:top+span*(i+.5)/items.length,behavior:'smooth'}); }));
+  addEventListener('scroll',onScroll,{passive:true}); addEventListener('resize',onScroll); onScroll();
+})();
+
+// FAQ: question list + answer pane on desktop (accordion stays on mobile)
+(function(){
+  var faq=document.querySelector('.faq');
+  if(!faq||!matchMedia('(min-width:1024px)').matches) return;
+  var ds=[...faq.querySelectorAll('details[data-short]')]; if(!ds.length) return;
+  var wrap=document.createElement('div'), list=document.createElement('div'), pane=document.createElement('div');
+  wrap.className='faq-split'; list.className='faq-list'; pane.className='faq-pane';
+  pane.setAttribute('aria-live','polite'); list.setAttribute('role','tablist');
+  function q(d){return d.querySelector('summary').textContent.trim()}
+  function num(i){return (i<9?'0':'')+(i+1)}
+  function show(i){
+    var d=ds[i];
+    [...list.children].forEach((b,j)=>{b.classList.toggle('on',j===i);b.setAttribute('aria-selected',j===i)});
+    pane.innerHTML='<small><b>'+num(i)+'</b> / '+d.dataset.tag+'</small><h3></h3><div class="short"></div><p></p>';
+    pane.querySelector('h3').textContent=q(d);
+    pane.querySelector('.short').textContent=d.dataset.short;
+    pane.querySelector('p').textContent=d.querySelector('.a').textContent;
+    pane.classList.remove('swap'); void pane.offsetWidth; pane.classList.add('swap');
+  }
+  ds.forEach((d,i)=>{
+    var b=document.createElement('button');
+    b.type='button'; b.className='faq-q'; b.setAttribute('role','tab');
+    b.innerHTML='<small><b>'+num(i)+'</b>'+d.dataset.tag+'</small>';
+    b.appendChild(document.createTextNode(q(d)));
+    b.addEventListener('click',()=>show(i));
+    list.appendChild(b);
+  });
+  wrap.append(list,pane); faq.appendChild(wrap); faq.classList.add('has-split');
+  show(0);
+})();
+
+// curriculum
+function toggleM(el){el.classList.toggle('open')}
+function switchT(t,btn){
+  document.querySelectorAll('.tpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ttab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('t-'+t).classList.add('active');btn.classList.add('active');
+}
+
+// community slider
+let tIdx=0;
+function tSlide(dir){
+  const track=document.getElementById('ttrack');
+  const perView=innerWidth<=640?2:4;
+  const tMax=track.children.length-perView;
+  tIdx=Math.max(0,Math.min(tIdx+dir,tMax));
+  const w=track.children[0].offsetWidth+12;
+  track.style.transform=`translateX(-${tIdx*w}px)`;
+  document.getElementById('tbtnPrev').disabled=tIdx===0;
+  document.getElementById('tbtnNext').disabled=tIdx>=tMax;
+}
+
+// lightbox
+const lbSrcs=[...document.querySelectorAll('.tthumb img')].map(i=>i.getAttribute('src'));
+let lbIdx=0;
+const lbEl=document.getElementById('lb'), lbImg=document.getElementById('lb-img'), lbCtr=document.getElementById('lb-ctr');
+function lbShow(){lbImg.src=lbSrcs[lbIdx];lbCtr.textContent=`${lbIdx+1} / ${lbSrcs.length}`}
+function lbOpen(i){lbIdx=i;lbShow();lbEl.classList.add('open');document.body.style.overflow='hidden'}
+function lbClose(e){if(e&&e.target!==lbEl&&!e.target.closest('.lb-close'))return;lbEl.classList.remove('open');document.body.style.overflow=''}
+function lbNav(dir,e){if(e)e.stopPropagation();lbIdx=(lbIdx+dir+lbSrcs.length)%lbSrcs.length;lbShow()}
+document.addEventListener('keydown',e=>{if(!lbEl.classList.contains('open'))return;if(e.key==='Escape')lbClose();if(e.key==='ArrowRight')lbNav(1);if(e.key==='ArrowLeft')lbNav(-1)});
+</script>
+</body>
+</html>
