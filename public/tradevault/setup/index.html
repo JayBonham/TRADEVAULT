@@ -458,6 +458,11 @@ footer a{text-decoration:underline;text-underline-offset:3px}
 
   function load() {
     var qs = state.c ? 'c=' + encodeURIComponent(state.c) : state.email ? 'email=' + encodeURIComponent(state.email) : '';
+    // An affiliate link brought this buyer here (stored on the homepage): send it with the lookup.
+    var ref = '';
+    try { var st = JSON.parse(localStorage.getItem('tv_ref') || 'null'); if (st && Date.now() - st.t < 60 * 864e5) ref = st.c; } catch (e) {}
+    if (!ref) { var m = document.cookie.match(/(?:^|; )tv_ref=([a-z0-9_]{3,20})/); if (m) ref = m[1]; }
+    if (qs && ref) qs += '&ref=' + encodeURIComponent(ref);
     if (!qs) return show('v-find');
     show('v-load');
     fetch(API + '?' + qs).then(function (r) { return r.json(); }).then(function (d) {

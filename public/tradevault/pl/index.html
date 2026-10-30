@@ -436,6 +436,14 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .ui-rows div>*,.ui-foot>*{min-width:0;overflow-wrap:anywhere}
 @media(max-width:1023px){.seq-box{grid-template-columns:minmax(0,1fr)}}
 </style>
+<script>
+/* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
+(function(){try{var r=new URLSearchParams(location.search).get('ref');if(!r||!/^[a-z0-9_]{3,20}$/i.test(r))return;r=r.toLowerCase();
+try{localStorage.setItem('tv_ref',JSON.stringify({c:r,t:Date.now()}));}catch(e){}
+document.cookie='tv_ref='+r+'; path=/; max-age=5184000; SameSite=Lax';
+var k='tv_ref_seen_'+r;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');}catch(e){}
+fetch('https://jaybonham.com/api/tv-aff?action=click',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({code:r}),keepalive:true}).catch(function(){});}catch(e){}})();
+</script>
 </head>
 <body>
 

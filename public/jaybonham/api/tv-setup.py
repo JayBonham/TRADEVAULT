@@ -78,14 +78,27 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
-        contact = self._find(_clip((q.get("c") or [""])[0], 40), _clip((q.get("email") or [""])[0], 160).lower())
+        email = _clip((q.get("email") or [""])[0], 160).lower()
+        ref = _clip((q.get("ref") or [""])[0], 20)
+        contact = self._find(_clip((q.get("c") or [""])[0], 40), email)
         if contact is None:
+            if ref and EMAIL_RE.match(email):
+                # Here before Whop told us about the purchase: hold the affiliate's ref for it.
+                import _tv_aff
+                _tv_aff.pending_claim(email, ref)
             return
         tier = _tier(contact.get("tags"))
         if not tier:
+            if ref:
+                import _tv_aff
+                _tv_aff.pending_claim(contact.get("email") or "", ref)
             return self._json(404, {"ok": False, "error": "not_member"})
         tags = [t.lower() for t in contact.get("tags") or []]
         done = DONE_TAG in tags
+        if ref:
+            # Back from Whop in the same browser that followed an affiliate link: credit the affiliate.
+            import _tv_aff
+            _tv_aff.claim(contact.get("email") or "", ref, tier)
         self._json(200, {"ok": True, "contact": contact["id"], "first": contact.get("firstName") or "",
                          "tier": tier, "done": done,
                          "groups": groups_for(tier, _educator_key(tags)) if done else []})

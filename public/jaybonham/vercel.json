@@ -40,6 +40,9 @@
     "api/vt.py": {
       "maxDuration": 10
     },
+    "api/tv-aff.py": {
+      "maxDuration": 20
+    },
     "api/tv-members.py": {
       "maxDuration": 30
     },

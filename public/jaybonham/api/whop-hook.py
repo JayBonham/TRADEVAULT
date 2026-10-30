@@ -3,6 +3,7 @@ import hmac
 import http.client
 import json
 import os
+import sys
 from http.server import BaseHTTPRequestHandler
 
 sys_path = os.path.dirname(__file__)
@@ -89,6 +90,16 @@ class handler(BaseHTTPRequestHandler):
             if event_type in SLACK_EVENTS:
                 self._notify_slack(event_type, event.get("data", {}) or {})
 
+            # A refunded TradeVault payment earns its affiliate nothing.
+            if event_type in ("payment.refunded", "refund.created", "refund.updated"):
+                d = event.get("data", {}) or {}
+                pay = d.get("payment") if isinstance(d.get("payment"), dict) else {}
+                pay_id = d.get("payment_id") or pay.get("id") or (d.get("id") if event_type == "payment.refunded" else None)
+                if pay_id:
+                    sys.path.insert(0, sys_path)
+                    import _tv_aff
+                    _tv_aff.refund(str(pay_id))
+
             if event_type not in ("payment.succeeded", "membership.went_valid",
                                    "membership.activated", "member.created"):
                 self._json(200, {"ok": True, "skipped": event_type})
@@ -127,7 +138,23 @@ class handler(BaseHTTPRequestHandler):
                 import _tv_db
                 tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
                 _tv_db.record_purchase(ghl_result["contact"], email, tier, title)
-            self._record_affiliate_purchase(email, slug, None)
+            if "tradevault-purchased" in tags:
+                # Every TradeVault payment is logged for the TradeVault affiliate programme.
+                amount = None
+                for k in ("usd_total", "total", "final_amount", "subtotal", "amount"):
+                    try:
+                        if data.get(k) not in (None, ""):
+                            amount = float(data.get(k))
+                            break
+                    except (TypeError, ValueError):
+                        pass
+                if event_type == "payment.succeeded" and data.get("id") and amount:
+                    sys.path.insert(0, sys_path)
+                    import _tv_aff
+                    tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
+                    _tv_aff.record_payment(str(data["id"]), email, amount, title, tier)
+            else:
+                self._record_affiliate_purchase(email, slug, None)
             self._json(200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result})
 
         except Exception as e:

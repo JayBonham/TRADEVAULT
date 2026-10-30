@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Affiliates — The Trade Vault Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="../../assets/tv-icon.png">
+<link rel="stylesheet" href="../../aff.css">
+<style>
+.W{max-width:1840px}
+.tabs{display:inline-flex;gap:4px;padding:4px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.03)}
+.tabs a{padding:8px 14px;border-radius:10px;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--tx-mute)}
+.tabs a.on{background:rgba(255,255,255,.09);color:var(--tx)}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px}
+.top h1{font-size:clamp(32px,4vw,46px)}
+.sec{margin-top:28px}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.sech h2{font-size:20px}
+table{min-width:1180px}
+.nm b{display:block;font-weight:600}
+.nm span{font-size:12.5px;color:var(--tx-mute)}
+.code{font-family:var(--mono);font-size:12.5px;color:var(--acc)}
+.rate{width:64px;padding:6px 8px;border-radius:10px;border:1px solid var(--hair-2);background:rgba(255,255,255,.035);color:var(--tx);font:inherit;font-size:13.5px;text-align:right}
+.req{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 20px;align-items:center;padding:18px 20px;border-radius:18px;border:1px solid rgba(245,184,92,.4);background:rgba(245,184,92,.06)}
+.req + .req{margin-top:10px}
+.req b{font-family:var(--display);font-size:22px}
+.req .info{font-family:var(--mono);font-size:13px;color:var(--tx);overflow-wrap:anywhere}
+.req .acts{display:flex;gap:8px}
+.ok-btn{background:var(--ok);color:#06281c}
+.center{padding-block:100px;text-align:center}
+.loader{width:30px;height:30px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
+.note{font-size:13px;color:var(--tx-mute);margin-top:12px}
+</style>
+</head>
+<body>
+<header class="nav W">
+  <div class="nav-in">
+    <a href="/admin" class="brand"><img src="../../assets/tv-icon.png" alt="" width="26" height="26"><img src="../../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"><span class="sep"></span><span class="mono">Admin</span></a>
+    <div class="nav-r"><nav class="tabs"><a href="/admin">Members</a><a href="/admin/affiliates" class="on">Affiliates</a></nav><button class="btn-g" id="out" type="button">Sign out</button></div>
+  </div>
+</header>
+
+<main class="W">
+  <div class="top"><div><span class="eyebrow">The Vault · Affiliates</span><h1>Affiliates</h1><p class="muted" style="margin-top:8px">Signup page: <a href="/affiliate-signup" style="color:var(--acc)">thetradevault.co/affiliate-signup</a></p></div></div>
+
+  <div class="center" id="loading"><div class="loader"></div><span class="muted">Loading affiliates…</span></div>
+  <div class="center" id="failed" hidden><h2>Couldn't load affiliates</h2><p class="muted" id="failMsg" style="margin-top:8px"></p></div>
+
+  <div id="app" hidden>
+    <div class="stats sec">
+      <div class="stat"><span class="mono">Affiliates</span><b id="tAff">0</b><span id="tActive"></span></div>
+      <div class="stat"><span class="mono">Members referred</span><b id="tRefs">0</b><span id="tClicks"></span></div>
+      <div class="stat"><span class="mono">Sales from affiliates</span><b id="tSales">$0</b><span>All payments by referred members</span></div>
+      <div class="stat hot"><span class="mono">Owed to affiliates</span><b id="tOwed">$0</b><span id="tPayable"></span></div>
+    </div>
+
+    <section class="sec" id="reqSec" hidden>
+      <div class="sech"><h2>Payout requests</h2><span class="mono">Pay them, then mark as paid</span></div>
+      <div id="reqs"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sech"><h2>All affiliates</h2><span class="mono" id="count"></span></div>
+      <div class="tw"><table><thead><tr><th>Affiliate</th><th>Link</th><th>Joined</th><th class="r">Clicks</th><th class="r">Members</th><th class="r">Sales</th><th class="r">Pending</th><th class="r">Ready</th><th class="r">Paid</th><th class="r">Rate %</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div>
+      <p class="note">Commission is held 30 days after each payment. "Ready" is what an affiliate can request now. Refunded payments are voided automatically.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  var API = 'https://jaybonham.com/api/tv-aff';
+  var token = '';
+  try { token = localStorage.getItem('tv_token') || ''; } catch (e) {}
+  if (!token) { location.replace('/admin-login'); return; }
+  var $ = function (id) { return document.getElementById(id); };
+  var money = function (v) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  var date = function (iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); };
+  function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} location.replace('/admin-login'); }
+  $('out').addEventListener('click', signOut);
+
+  function api(method, action, body) {
+    return fetch(API + '?action=' + action, {
+      method: method,
+      headers: Object.assign({ Authorization: 'Bearer ' + token }, body ? { 'Content-Type': 'application/json' } : {}),
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      if (r.status === 401) { signOut(); throw { msg: 'Session expired' }; }
+      return r.json().then(function (d) { if (!d.ok) throw { msg: d.error }; return d; });
+    });
+  }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function load() {
+    api('GET', 'admin').then(function (d) { render(d.affiliates); })
+      .catch(function (x) { $('loading').hidden = true; $('failed').hidden = false; $('failMsg').textContent = (x && x.msg) || 'Network error'; });
+  }
+
+  function render(list) {
+    $('loading').hidden = true; $('app').hidden = false;
+    var sum = function (k) { return list.reduce(function (a, x) { return a + (x[k] || 0); }, 0); };
+    $('tAff').textContent = list.length;
+    $('tActive').textContent = list.filter(function (x) { return x.status === 'active'; }).length + ' active';
+    $('tRefs').textContent = sum('referrals');
+    $('tClicks').textContent = sum('clicks').toLocaleString() + ' link clicks';
+    $('tSales').textContent = money(sum('sales'));
+    $('tOwed').textContent = money(sum('pending'));
+    $('tPayable').textContent = money(sum('payable')) + ' ready to pay';
+    $('count').textContent = list.length + ' affiliates';
+
+    var reqs = list.filter(function (x) { return x.payout_status === 'requested'; });
+    $('reqSec').hidden = !reqs.length;
+    var box = $('reqs'); box.innerHTML = '';
+    reqs.forEach(function (a) {
+      var r = el('div', 'req');
+      var left = el('div');
+      left.appendChild(el('span', 'mono', a.name + ' · ' + a.email + ' · requested ' + date(a.payout_requested_at)));
+      left.appendChild(el('b', null, money(a.payout_requested)));
+      var info = el('div', 'info', 'Pay to: ' + (a.payout_info || 'no details given'));
+      left.appendChild(info);
+      var acts = el('div', 'acts');
+      var ok = el('button', 'btn btn-sm ok-btn', 'Mark as paid'); ok.type = 'button';
+      var no = el('button', 'btn-g btn-sm', 'Reject'); no.type = 'button';
+      ok.addEventListener('click', function () { ok.disabled = true; api('PATCH', 'paid', { id: a.id, action: 'approve' }).then(load).catch(function (x) { ok.disabled = false; alertMsg(x); }); });
+      no.addEventListener('click', function () { no.disabled = true; api('PATCH', 'paid', { id: a.id, action: 'reject' }).then(load).catch(function (x) { no.disabled = false; alertMsg(x); }); });
+      acts.appendChild(no); acts.appendChild(ok);
+      r.appendChild(left); r.appendChild(acts); box.appendChild(r);
+    });
+
+    var rows = $('rows'); rows.innerHTML = '';
+    if (!list.length) rows.innerHTML = '<tr><td colspan="11" class="empty">No affiliates yet. Share thetradevault.co/affiliate-signup to get the first.</td></tr>';
+    list.forEach(function (a) {
+      var tr = el('tr');
+      var nm = el('td', 'nm'); nm.appendChild(el('b', null, a.name)); nm.appendChild(el('span', null, a.email + (a.phone ? ' · ' + a.phone : ''))); tr.appendChild(nm);
+      tr.appendChild(el('td', 'code', '?ref=' + a.code));
+      tr.appendChild(el('td', null, date(a.created_at)));
+      tr.appendChild(el('td', 'r num', a.clicks.toLocaleString()));
+      tr.appendChild(el('td', 'r num', a.referrals));
+      tr.appendChild(el('td', 'r num', money(a.sales)));
+      tr.appendChild(el('td', 'r num', money(a.pending - a.payable)));
+      var ready = el('td', 'r num', money(a.payable)); if (a.payable > 0) ready.style.color = 'var(--ok)'; tr.appendChild(ready);
+      tr.appendChild(el('td', 'r num', money(a.paid)));
+      var rc = el('td', 'r'); var inp = el('input', 'rate'); inp.type = 'number'; inp.min = 0; inp.max = 100; inp.value = a.pct; inp.setAttribute('aria-label', 'Commission % for ' + a.name);
+      inp.addEventListener('change', function () { var v = Math.max(0, Math.min(100, parseInt(inp.value || '0', 10))); api('PATCH', 'admin', { id: a.id, pct: v }).then(function () { inp.style.borderColor = 'var(--ok)'; }).catch(alertMsg); });
+      rc.appendChild(inp); tr.appendChild(rc);
+      var st = el('td'); var b = el('button', 'btn-g btn-sm', a.status === 'active' ? 'Active · Pause' : 'Paused · Activate'); b.type = 'button';
+      if (a.status !== 'active') b.style.color = 'var(--warn)';
+      b.addEventListener('click', function () { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: a.status === 'active' ? 'paused' : 'active' }).then(load).catch(function (x) { b.disabled = false; alertMsg(x); }); });
+      st.appendChild(b); tr.appendChild(st);
+      rows.appendChild(tr);
+    });
+  }
+  function alertMsg(x) { $('failMsg').textContent = ''; var n = document.querySelector('.note'); if (n) n.textContent = 'Could not save: ' + ((x && x.msg) || 'network error'); }
+
+  load();
+})();
+</script>
+</body>
+</html>
