@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin Login — The Trade Vault</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="../assets/tv-icon.png">
+<style>
+:root{
+  --g0:#050A14; --g1:#08111F;
+  --hair:rgba(255,255,255,.08); --hair-2:rgba(255,255,255,.14);
+  --tx:#EAF0FA; --tx-dim:#B3C0D4; --tx-mute:#7F8DA3;
+  --acc:#4B9EFF; --acc-rgb:75,158,255;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --display:'Instrument Sans',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--g0)}
+body{min-height:100vh;display:grid;place-items:center;padding:32px max(20px,env(safe-area-inset-right,0px)) 32px max(20px,env(safe-area-inset-left,0px));background:transparent;color:var(--tx);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(900px 600px at 20% 10%,rgba(28,72,170,.28),transparent 70%),
+    radial-gradient(800px 600px at 85% 80%,rgba(75,158,255,.10),transparent 70%),
+    var(--g0)}
+button,input{font:inherit;color:inherit}
+@keyframes rise{from{opacity:0;transform:translateY(14px);filter:blur(6px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.box{width:100%;max-width:420px;animation:rise .8s var(--ease) both}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
+.brand img:first-child{width:30px;height:30px}
+.brand img+img{height:15px;width:auto}
+.card{padding:32px 28px 30px;border-radius:22px;background:rgba(8,17,31,.62);border:1px solid var(--hair-2);box-shadow:0 30px 90px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.kick{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:12px}
+.kick b{font-weight:500;color:var(--acc)}
+.kick b::after{content:"—";margin:0 .7em;color:var(--tx-mute)}
+h1{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:1.05;font-size:34px}
+.sub{color:var(--tx-mute);font-size:14.5px;margin-top:8px}
+form{display:grid;gap:14px;margin-top:26px}
+label{display:grid;gap:7px;font-family:var(--display);font-weight:600;font-size:14.5px}
+input{width:100%;padding:15px 16px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--hair-2);outline:0;font-size:16px;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.18)}
+.btn{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:999px;background:#fff;color:#07101F;border:0;cursor:pointer;font-family:var(--display);font-weight:600;font-size:17px;box-shadow:0 10px 40px rgba(var(--acc-rgb),.22);transition:box-shadow .2s,opacity .2s}
+.btn:hover{box-shadow:0 14px 50px rgba(var(--acc-rgb),.38)}
+.btn:disabled{opacity:.6;cursor:wait}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(7,16,31,.25);border-top-color:#07101F;animation:spin .8s linear infinite}
+.err{color:#FF8F8F;font-size:14px;min-height:1.2em}
+.foot{text-align:center;margin-top:20px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="brand"><img src="../assets/tv-icon.png" alt="" width="30" height="30"><img src="../assets/tv-logo.png" alt="The Trade Vault" width="190" height="15"></div>
+  <div class="card">
+    <span class="kick"><b>●</b>Team only</span>
+    <h1>Admin login</h1>
+    <p class="sub">Sign in to manage Vault members and scanner access.</p>
+    <form id="f" novalidate>
+      <label>Username<input id="u" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+      <label>Password<input id="p" type="password" autocomplete="current-password" required></label>
+      <p class="err" id="err" role="alert"></p>
+      <button class="btn" id="go" type="submit">Sign in</button>
+    </form>
+  </div>
+  <p class="foot">The Trade Vault · Members</p>
+</div>
+<script>
+(function () {
+  var API = 'https://jaybonham.com/api/admin-auth';
+  try { if (localStorage.getItem('tv_token')) location.replace('/admin'); } catch (e) {}
+  var f = document.getElementById('f'), go = document.getElementById('go'), err = document.getElementById('err');
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var u = document.getElementById('u').value.trim(), p = document.getElementById('p').value;
+    if (!u || !p) { err.textContent = 'Enter your username and password.'; return; }
+    err.textContent = '';
+    go.disabled = true; go.innerHTML = '<span class="spin"></span>Signing in';
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) throw 0;
+        try { localStorage.setItem('tv_token', d.token); localStorage.setItem('tv_user', d.user); } catch (x) {}
+        location.replace('/admin');
+      })
+      .catch(function () {
+        err.textContent = 'Wrong username or password.';
+        go.disabled = false; go.textContent = 'Sign in';
+      });
+  });
+})();
+</script>
+</body>
+</html>
