@@ -15,7 +15,7 @@
   settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count}
 
 GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
-tv-affiliate-paid. Commission logic and storage are in _tv_aff.py.
+tv-affiliate-paid and tv-affiliate-sale (the last two re-added each time). Commission logic and storage are in _tv_aff.py.
 """
 import json
 import os
@@ -432,7 +432,7 @@ class handler(BaseHTTPRequestHandler):
         c.commit()
         c.close()
         if act == "paid":
-            A.ghl_tag(row[1], row[2], ["tv-affiliate-paid"])
+            A.ghl_tag(row[1], row[2], ["tv-affiliate-paid"], again=True)
         self._json(200, {"ok": True})
 
     def _admin_bonus(self):

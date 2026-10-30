@@ -206,6 +206,15 @@ def _credit(cur, aff_id, row):
         INSERT INTO tv_aff_commissions (affiliate_id, whop_id, email, product, amount_usd, commission_usd, paid_at, pct)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (whop_id) DO NOTHING
     """, (aff_id, whop_id, email, product, amount, commission, paid_at, pct))
+    return cur.rowcount == 1
+
+
+def _tell_sale(cur, aff_id):
+    """GHL email trigger: the affiliate just earned commission."""
+    cur.execute("SELECT email, name FROM tv_affiliates WHERE id = %s", (aff_id,))
+    row = cur.fetchone()
+    if row:
+        ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True)
 
 
 def record_payment(whop_id, email, amount_usd, product, tier):
@@ -233,8 +242,10 @@ def record_payment(whop_id, email, amount_usd, product, tier):
         ref = cur.fetchone()
         if ref:
             cur.execute("SELECT whop_id, email, amount_usd, product, paid_at FROM tv_payments WHERE whop_id = %s", (whop_id,))
-            _credit(cur, ref[0], cur.fetchone())
+            sold = _credit(cur, ref[0], cur.fetchone())
         c.commit()
+        if ref and sold:
+            _tell_sale(cur, ref[0])
         c.close()
         return True
     except Exception as e:
@@ -276,15 +287,18 @@ def claim(email, code, tier=None):
             INSERT INTO tv_aff_referrals (email, affiliate_id, tier) VALUES (%s, %s, %s)
             ON CONFLICT (email) DO NOTHING RETURNING affiliate_id
         """, (email, aff[0], tier))
+        sold = False
         if cur.fetchone():
             cur.execute(f"""
                 SELECT whop_id, email, amount_usd, product, paid_at FROM tv_payments
                  WHERE email = %s AND NOT refunded AND paid_at > NOW() - INTERVAL '{CLAIM_WINDOW_DAYS} days'
             """, (email,))
             for row in cur.fetchall():
-                _credit(cur, aff[0], row)
+                sold = _credit(cur, aff[0], row) or sold
             log("TV_AFF_CLAIM", code, "->", email[:3] + "***")
         c.commit()
+        if sold:
+            _tell_sale(cur, aff[0])
         c.close()
         return True
     except Exception as e:
@@ -368,8 +382,9 @@ GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 
 
-def ghl_tag(email, name, tags):
-    """Best-effort: upsert the contact and add tags so GHL automations can send emails."""
+def ghl_tag(email, name, tags, again=False):
+    """Best-effort: upsert the contact and add tags so GHL automations can send emails.
+    again=True removes the tags first, so a "tag added" trigger fires every time (each sale, each payout)."""
     if not (GHL_API_KEY and email):
         return
     import http.client
@@ -384,6 +399,9 @@ def ghl_tag(email, name, tags):
         data = json.loads(r.read() or b"{}")
         cid = (data.get("contact") or {}).get("id")
         if cid:
+            if again:
+                c.request("DELETE", f"/contacts/{cid}/tags", json.dumps({"tags": tags}), headers)
+                c.getresponse().read()
             c.request("POST", f"/contacts/{cid}/tags", json.dumps({"tags": tags}), headers)
             c.getresponse().read()
         else:
