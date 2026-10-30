@@ -6,7 +6,7 @@
 var WEBINAR = {
   firstDate: '2026-11-05',          // first session (YYYY-MM-DD)
   weekday: 4,                       // 0=Sun … 4=Thu
-  hour: 19, minute: 0,              // 7:00 PM …
+  hour: 20, minute: 0,              // 8:00 PM …
   tz: 'America/New_York', tzLabel: 'ET',
   durationMin: 60,
   liveWindowMin: 75,
