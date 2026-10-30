@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Become an Affiliate — The Trade Vault</title>
-<meta name="description" content="Earn 20% recurring commission on every Trade Vault member you refer.">
+<title>Affiliate Application — The Trade Vault</title>
+<meta name="description" content="Apply to the Trade Vault affiliate programme: 20% recurring commission, rising to 30%.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -28,6 +28,15 @@ form{display:grid;gap:16px;margin-top:22px}
 .terms{margin-top:56px;padding:26px 28px}
 .terms ol{margin:14px 0 0 18px;display:grid;gap:8px;color:var(--tx-dim);font-size:14.5px}
 .done{text-align:center;padding:30px 26px}
+.ladder{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:22px}
+.ladder li{padding:14px 14px 15px;border-radius:16px;border:1px solid var(--hair);background:rgba(255,255,255,.02);min-width:0}
+.ladder b{display:block;font-family:var(--display);font-size:22px;letter-spacing:-.03em;margin:4px 0 2px}
+.ladder span{font-size:12.5px;color:var(--tx-mute);line-height:1.4;display:block}
+.ladder li.top{border-color:rgba(123,224,176,.35);background:linear-gradient(140deg,rgba(123,224,176,.1),rgba(255,255,255,.01) 60%)}
+.ladder li.top b{color:var(--ok)}
+.step{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);padding-top:6px;border-top:1px solid var(--hair);margin-top:4px}
+.inp textarea{min-height:84px}
+@media(max-width:560px){.ladder{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}.formcard{position:static}.row2{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
@@ -42,9 +51,15 @@ form{display:grid;gap:16px;margin-top:22px}
 <main class="W">
   <section class="hero">
     <div class="pitch view">
-      <span class="eyebrow">Trade Vault affiliate programme</span>
+      <span class="eyebrow">Trade Vault affiliate programme · By application</span>
       <h1>Earn <span class="hl">20% every month</span> for every member you bring in.</h1>
-      <p class="lede">Share your link. When someone joins the Vault through it, you earn 20% of what they pay, for as long as they stay a member.</p>
+      <p class="lede">Share your link. When someone joins the Vault through it, you earn 20% of what they pay, for as long as they stay a member. Bring in 25 and it goes to 30%.</p>
+      <ol class="ladder">
+        <li><span class="mono">Start</span><b>20%</b><span>Every payment, every month they stay</span></li>
+        <li><span class="mono">5 members</span><b>Payouts</b><span>Unlock withdrawals of everything you've earned</span></li>
+        <li class="top"><span class="mono">25 members</span><b>30%</b><span>On every payment from then on</span></li>
+        <li><span class="mono">Quarterly</span><b>+1%</b><span>Profit share for top affiliates</span></li>
+      </ol>
 
       <div class="card earn"><div class="tw" style="border:0;background:none">
         <table>
@@ -62,13 +77,13 @@ form{display:grid;gap:16px;margin-top:22px}
         <li><i>✓</i><span><b>Recurring commission.</b> You're paid on every renewal, not just the first sale.</span></li>
         <li><i>✓</i><span><b>60-day link.</b> If someone clicks your link and joins within 60 days, they're yours.</span></li>
         <li><i>✓</i><span><b>Live dashboard.</b> See clicks, members and commission as it happens.</span></li>
-        <li><i>✓</i><span><b>Simple payouts.</b> Request a payout any time once commission clears its 30-day hold.</span></li>
+        <li><i>✓</i><span><b>Paid in PayPal or crypto.</b> Request a payout any time once commission clears its 30-day hold.</span></li>
       </ul>
     </div>
 
     <div class="card formcard view" id="formCard">
-      <h2>Create your affiliate account</h2>
-      <p class="muted" style="font-size:14.5px">Free to join. Your link is ready the moment you sign up.</p>
+      <h2>Apply to be an affiliate</h2>
+      <p class="muted" style="font-size:14.5px">Free to apply. We review every application and email you when you're approved.</p>
       <form id="f" novalidate>
         <div class="row2">
           <div class="field"><label for="name">Your name</label><div class="inp"><input id="name" autocomplete="name" required></div></div>
@@ -77,11 +92,18 @@ form{display:grid;gap:16px;margin-top:22px}
         <div class="field"><label for="email">Email</label><div class="inp"><input id="email" type="email" autocomplete="email" required></div></div>
         <div class="field"><label for="pw">Password</label><div class="inp"><input id="pw" type="password" autocomplete="new-password" minlength="8" required></div><span class="help">At least 8 characters.</span></div>
         <div class="field"><label for="code">Your link name <small>Optional</small></label><div class="inp"><span>thetradevault.co/?ref=</span><input id="code" autocapitalize="off" spellcheck="false" maxlength="20" placeholder="yourname"></div><span class="help">3 to 20 lowercase letters, numbers or underscores. Leave blank and we'll make one.</span></div>
-        <div class="field"><label for="payout">Where should we pay you? <small>Optional</small></label><div class="inp"><input id="payout" placeholder="PayPal email, or bank details"></div><span class="help">You can add or change this later in your dashboard.</span></div>
+        <div class="step">About you</div>
+        <div class="field"><label for="socials">Where will you share your link?</label><div class="inp"><textarea id="socials" rows="2" maxlength="600" placeholder="Instagram, TikTok, YouTube, Discord, X… handles or links"></textarea></div></div>
+        <div class="field"><label for="audience">Audience size</label><div class="inp"><select id="audience">
+          <option value="">Choose one</option><option>Under 1,000</option><option>1,000 – 10,000</option><option>10,000 – 50,000</option><option>50,000 – 250,000</option><option>250,000+</option><option>Friends &amp; network only</option>
+        </select></div></div>
+        <div class="field"><label for="promote">How will you promote the Vault?</label><div class="inp"><textarea id="promote" rows="3" maxlength="600" placeholder="e.g. stories with my trades, a YouTube review, my trading Discord"></textarea></div></div>
+        <div class="step">How you get paid</div>
+        <div id="payout"></div>
         <label class="check"><input type="checkbox" id="agree"> <span>I agree to the <a href="#terms">affiliate terms</a>.</span></label>
         <p class="err" id="err" role="alert"></p>
-        <button class="btn" id="go" type="submit">Create my account <span class="arr">→</span></button>
-        <p class="help" style="text-align:center">Already an affiliate? <a href="/affiliate-login" style="color:var(--tx);text-decoration:underline">Log in</a></p>
+        <button class="btn" id="go" type="submit">Send my application <span class="arr">→</span></button>
+        <p class="help" style="text-align:center">Already applied? <a href="/affiliate-login" style="color:var(--tx);text-decoration:underline">Log in</a></p>
       </form>
     </div>
   </section>
@@ -89,9 +111,13 @@ form{display:grid;gap:16px;margin-top:22px}
   <section class="card terms" id="terms">
     <h2>Affiliate terms</h2>
     <ol>
-      <li>You earn 20% of every payment made by a member who joins through your link, including renewals, for as long as their membership stays active. We may change the rate for future payments with notice.</li>
+      <li>Joining is by application. Your link starts working once you're approved; we'll email you.</li>
+      <li>You earn 20% of every payment made by a member who joins through your link, including renewals, for as long as their membership stays active. From your 25th paying member, new payments earn 30%. We may change rates for future payments with notice.</li>
+      <li>Payouts unlock once 5 members you referred have paid. Commission you earn before then is kept and becomes payable when you reach 5.</li>
       <li>A member counts as yours if they click your link and join within 60 days, completing their setup on the same device. The most recent affiliate link they clicked wins.</li>
-      <li>Commission is held for 30 days after each payment to cover refunds and chargebacks. Refunded or charged-back payments earn no commission.</li>
+      <li>Commission is held for 30 days after each payment to cover refunds and chargebacks. Refunded or charged-back payments earn no commission and don't count towards your totals.</li>
+      <li>Payouts are sent by PayPal or crypto (USDT or USDC) to the details in your dashboard. Check them carefully: crypto sent to a wrong address or network can't be recovered.</li>
+      <li>Top affiliates may also receive a quarterly profit share at our discretion.</li>
       <li>You can't earn commission on your own membership, and you can't bid on "The Trade Vault" or educator names in paid search ads.</li>
       <li>Promote honestly. No promises of profits or guaranteed results, no spam, and no impersonating The Trade Vault or its educators. Trading carries risk; say so.</li>
       <li>We may pause an account or withhold commission for fraud or a breach of these terms. Questions: hello@thetradevault.co.</li>
@@ -101,33 +127,40 @@ form{display:grid;gap:16px;margin-top:22px}
 
 <footer><div class="W"><span class="mono">© 2026 The Trade Vault</span><span class="mono"><a href="/">thetradevault.co</a></span></div></footer>
 
+<script src="../aff-payout.js"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-aff';
   try { if (localStorage.getItem('tv_aff_token')) location.replace('/affiliate-portal'); } catch (e) {}
   var $ = function (id) { return document.getElementById(id); };
+  var picker = PayoutPicker($('payout'), 'paypal');
   $('code').addEventListener('input', function () { this.value = this.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20); });
   $('f').addEventListener('submit', function (e) {
     e.preventDefault();
     var err = $('err'), go = $('go');
     var body = { name: $('name').value.trim(), email: $('email').value.trim(), phone: $('phone').value.trim(), password: $('pw').value,
-      code: $('code').value.trim(), payout_info: $('payout').value.trim(), agree: $('agree').checked };
+      code: $('code').value.trim(), socials: $('socials').value.trim(), audience: $('audience').value, promote: $('promote').value.trim(),
+      agree: $('agree').checked };
+    var pay = picker.value(); body.payout_method = pay.payout_method; body.payout = pay.payout;
     if (!body.name || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(body.email)) { err.textContent = 'Please enter your name and a valid email.'; return; }
     if (body.password.length < 8) { err.textContent = 'Your password needs at least 8 characters.'; return; }
     if (body.code && !/^[a-z0-9_]{3,20}$/.test(body.code)) { err.textContent = 'Your link name needs 3 to 20 lowercase letters, numbers or underscores.'; return; }
+    if (!body.socials || !body.promote) { err.textContent = "Tell us where you'll share your link and how you'll promote it."; return; }
+    if (pay.payout_method === 'paypal' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(pay.payout.email)) { err.textContent = 'Enter the email address on your PayPal account.'; return; }
+    if (pay.payout_method === 'crypto' && !pay.payout.address) { err.textContent = pay.payout.network === 'BINANCE' ? 'Enter your Binance Pay ID.' : 'Paste your wallet address.'; return; }
     if (!body.agree) { err.textContent = 'Please accept the affiliate terms.'; return; }
     err.textContent = '';
-    go.disabled = true; go.innerHTML = '<span class="spin"></span>Creating your account';
+    go.disabled = true; go.innerHTML = '<span class="spin"></span>Sending your application';
     fetch(API + '?action=register', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d.ok) throw { msg: d.error };
         try { localStorage.setItem('tv_aff_token', d.token); } catch (x) {}
-        location.replace('/affiliate-portal?welcome=1');
+        location.replace('/affiliate-portal');
       })
       .catch(function (x) {
         err.textContent = (x && x.msg) || 'Something went wrong. Please try again.';
-        go.disabled = false; go.innerHTML = 'Create my account <span class="arr">→</span>';
+        go.disabled = false; go.innerHTML = 'Send my application <span class="arr">→</span>';
       });
   });
 })();

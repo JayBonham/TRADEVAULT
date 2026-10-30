@@ -25,8 +25,9 @@
 .sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .sech h2{font-size:20px}
 .money{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:12px}
-.payout{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:end}
-.payout .field{max-width:520px}
+.payout{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 28px;align-items:end}
+.payout .pp{max-width:560px}
+.payout h3{font-size:17px;margin-bottom:12px}
 .payacts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .state{grid-column:1/-1;font-size:14px;color:var(--tx-dim)}
 .how{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
@@ -34,8 +35,22 @@
 .how b{display:block;font-family:var(--display);font-size:16px;margin:6px 0 4px}
 .how p{font-size:13.5px;color:var(--tx-mute)}
 .center{padding-block:120px;text-align:center}
+.review{margin-top:26px;padding:30px 30px 28px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start;border-color:rgba(245,184,92,.35);background:linear-gradient(140deg,rgba(245,184,92,.08),rgba(255,255,255,.01) 55%),var(--g1)}
+.review .ico{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(245,184,92,.45);color:var(--warn);font-size:20px}
+.review h2{font-size:26px}
+.review p{color:var(--tx-dim);margin-top:8px;max-width:62ch}
+.review code{font-family:var(--mono);color:var(--tx)}
+.prog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bar{padding:18px 20px;border-radius:18px;border:1px solid var(--hair);background:rgba(255,255,255,.025);min-width:0}
+.bar .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.bar b{font-family:var(--display);font-size:20px;letter-spacing:-.02em}
+.bar .track{height:8px;border-radius:99px;background:rgba(255,255,255,.07);margin:12px 0 8px;overflow:hidden}
+.bar .fill{height:100%;border-radius:99px;background:var(--acc);transition:width .8s var(--ease)}
+.bar.done .fill{background:var(--ok)}
+.bar p{font-size:13px;color:var(--tx-mute)}
+.bar.done b{color:var(--ok)}
 .loader{width:32px;height:32px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
-@media(max-width:860px){.linkcard,.payout{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){.linkcard,.payout,.prog{grid-template-columns:minmax(0,1fr)}.review{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.how{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
@@ -53,10 +68,19 @@
 
   <div id="app" class="view" hidden>
     <div class="top">
-      <div><span class="eyebrow">Affiliate dashboard</span><h1>Hey <span id="fname"></span>, <span class="hl">here's how you're doing.</span></h1></div>
+      <div><span class="eyebrow">Affiliate dashboard</span><h1>Hey <span id="fname"></span>, <span class="hl" id="hl">here's how you're doing.</span></h1></div>
       <span class="pill acc" id="ratePill"></span>
     </div>
-    <div class="welcome" id="welcome" hidden><b>Your account is ready.</b> Copy your link below and share it. Every member who joins through it earns you commission every month they stay.</div>
+    <section class="card review" id="review" hidden>
+      <div class="ico">⏳</div>
+      <div>
+        <span class="eyebrow" style="color:var(--warn)">Application received</span>
+        <h2>We're reviewing your application.</h2>
+        <p>We'll email <b id="revEmail"></b> as soon as you're approved. Your link will be <code id="revLink"></code>, and it starts counting from the moment you're approved.</p>
+        <p>While you wait, check your payout details below are right.</p>
+      </div>
+    </section>
+    <div id="live">
 
     <section class="card linkcard" aria-label="Your link">
       <div style="min-width:0">
@@ -72,6 +96,14 @@
     </section>
 
     <section class="sec">
+      <div class="sech"><h2>Your level</h2><span class="mono" id="lvl"></span></div>
+      <div class="prog">
+        <div class="bar" id="barUnlock"><div class="hd"><b id="unlockT"></b><span class="mono" id="unlockN"></span></div><div class="track"><div class="fill" id="unlockF"></div></div><p id="unlockP"></p></div>
+        <div class="bar" id="barTier"><div class="hd"><b id="tierT"></b><span class="mono" id="tierN"></span></div><div class="track"><div class="fill" id="tierF"></div></div><p id="tierP"></p></div>
+      </div>
+    </section>
+
+    <section class="sec">
       <div class="sech"><h2>Performance</h2><span class="mono">All time</span></div>
       <div class="stats">
         <div class="stat"><span class="mono">Link clicks</span><b id="sClicks">0</b><span>Visits from your links</span></div>
@@ -80,20 +112,27 @@
         <div class="stat"><span class="mono">Earned</span><b id="sEarned">$0</b><span>Commission so far</span></div>
       </div>
       <div class="money">
-        <div class="stat hot"><span class="mono">Ready to pay out</span><b id="sPayable">$0</b><span>Past the 30-day hold</span></div>
+        <div class="stat hot" id="readyCard"><span class="mono" id="readyLbl">Ready to pay out</span><b id="sPayable">$0</b><span id="readySub">Past the 30-day hold</span></div>
         <div class="stat"><span class="mono">Pending</span><b id="sPending">$0</b><span>Inside the 30-day hold</span></div>
         <div class="stat"><span class="mono">Paid to you</span><b id="sPaid">$0</b><span>Total paid out</span></div>
       </div>
-      <div class="card payout">
-        <div class="field"><label for="payInfo">Where we pay you</label><div class="inp"><input id="payInfo" placeholder="PayPal email, or bank details"></div></div>
-        <div class="payacts"><button class="btn-g" id="saveInfo" type="button">Save</button><button class="btn" id="payBtn" type="button">Request payout</button></div>
-        <p class="state" id="payState"></p>
-      </div>
     </section>
+    </div>
 
     <section class="sec">
+      <div class="sech"><h2>Payouts</h2><span class="mono">PayPal or crypto</span></div>
+      <div class="card payout">
+        <div><h3>Where we pay you</h3><div id="picker"></div></div>
+        <div class="payacts"><button class="btn-g" id="saveInfo" type="button">Save details</button><button class="btn" id="payBtn" type="button">Request payout</button></div>
+        <p class="state" id="payState"></p>
+      </div>
+      <div class="tw" id="payHist" style="margin-top:12px" hidden><table><thead><tr><th>Requested</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th></tr></thead><tbody id="pays"></tbody></table></div>
+    </section>
+
+    <div id="live2">
+    <section class="sec">
       <div class="sech"><h2>Commission</h2><span class="mono" id="comCount"></span></div>
-      <div class="tw"><table><thead><tr><th>Date</th><th>Member</th><th>Plan</th><th class="r">Payment</th><th class="r">Your 20%</th><th>Status</th></tr></thead><tbody id="coms"></tbody></table></div>
+      <div class="tw"><table><thead><tr><th>Date</th><th>Member</th><th>Plan</th><th class="r">Payment</th><th class="r">Rate</th><th class="r">You earn</th><th>Status</th></tr></thead><tbody id="coms"></tbody></table></div>
     </section>
 
     <section class="sec">
@@ -106,15 +145,17 @@
       <div class="how">
         <div><span class="mono">01</span><b>Share your link</b><p>Post it anywhere: socials, YouTube, Discord, your group chats.</p></div>
         <div><span class="mono">02</span><b>They join the Vault</b><p>Anyone who clicks and joins within 60 days counts as yours.</p></div>
-        <div><span class="mono">03</span><b>You earn every month</b><p>20% of their first payment and every renewal after it.</p></div>
-        <div><span class="mono">04</span><b>Get paid</b><p>Request a payout once commission clears the 30-day hold.</p></div>
+        <div><span class="mono">03</span><b>You earn every month</b><p>20% of their first payment and every renewal, 30% from your 25th member.</p></div>
+        <div><span class="mono">04</span><b>Get paid</b><p>From 5 members, request a payout by PayPal or crypto once commission clears the 30-day hold.</p></div>
       </div>
     </section>
+    </div>
   </div>
 </main>
 
 <footer><div class="W"><span class="mono">© 2026 The Trade Vault</span><span class="mono">Questions: hello@thetradevault.co</span></div></footer>
 
+<script src="../aff-payout.js"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-aff';
@@ -123,7 +164,7 @@
   try { token = localStorage.getItem('tv_aff_token') || ''; } catch (e) {}
   if (!token) { location.replace('/affiliate-login'); return; }
   var $ = function (id) { return document.getElementById(id); };
-  var data = null;
+  var data = null, picker = null;
   var money = function (v) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
   var date = function (iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); };
   var cap = function (s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
@@ -166,37 +207,77 @@
     $('loading').hidden = true; $('app').hidden = false;
     $('fname').textContent = (d.name || '').split(' ')[0];
     $('who').textContent = d.email;
-    $('ratePill').textContent = d.pct + '% recurring';
-    $('welcome').hidden = !/welcome=1/.test(location.search);
+    var pend = d.status === 'pending', P = d.program;
+    $('ratePill').textContent = pend ? 'Under review' : d.pct + '% recurring';
+    $('ratePill').className = 'pill ' + (pend ? 'warn' : 'acc');
+    $('hl').textContent = pend ? 'thanks for applying.' : 'here\u2019s how you\u2019re doing.';
+    $('payBtn').hidden = pend;
+    $('review').hidden = !pend; $('live').hidden = pend; $('live2').hidden = pend;
+    $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
     $('link').textContent = L.main;
+
+    var u = Math.min(P.personals, P.unlock_count), t = Math.min(P.personals, P.tier_count);
+    $('barUnlock').classList.toggle('done', P.qualified);
+    $('unlockT').textContent = P.qualified ? 'Payouts unlocked' : 'Unlock payouts';
+    $('unlockN').textContent = u + ' / ' + P.unlock_count;
+    $('unlockF').style.width = (P.unlock_count ? 100 * u / P.unlock_count : 100) + '%';
+    $('unlockP').textContent = P.qualified ? 'You can withdraw commission once it clears the ' + d.hold_days + '-day hold.'
+      : (P.unlock_count - P.personals) + ' more paying member' + (P.unlock_count - P.personals === 1 ? '' : 's') + ' to unlock payouts. Everything you earn until then is kept.';
+    var top = P.personals >= P.tier_count;
+    $('barTier').classList.toggle('done', top);
+    $('tierT').textContent = top ? P.tier_pct + '% unlocked' : 'Reach ' + P.tier_pct + '%';
+    $('tierN').textContent = t + ' / ' + P.tier_count;
+    $('tierF').style.width = (100 * t / P.tier_count) + '%';
+    $('tierP').textContent = top ? 'Every new payment from your members earns ' + d.pct + '%.'
+      : (P.tier_count - P.personals) + ' more paying members and every new payment earns ' + P.tier_pct + '% instead of ' + P.base_pct + '%.';
+    $('lvl').textContent = P.personals + ' paying member' + (P.personals === 1 ? '' : 's');
+
     $('sClicks').textContent = s.clicks.toLocaleString();
     $('sRefs').textContent = s.referrals;
     $('sActive').textContent = s.active + ' active this month';
     $('sSales').textContent = money(s.sales);
     $('sEarned').textContent = money(s.pending + s.paid);
-    $('sPayable').textContent = money(s.payable);
-    $('sPending').textContent = money(s.pending - s.payable);
+    $('sPayable').textContent = money(s.ready);
+    $('readyCard').className = 'stat ' + (P.qualified ? 'hot' : '');
+    $('readyLbl').textContent = P.qualified ? 'Ready to pay out' : 'Locked';
+    $('readySub').textContent = P.qualified ? 'Past the ' + d.hold_days + '-day hold' : 'Unlocks at ' + P.unlock_count + ' paying members';
+    $('sPending').textContent = money(s.pending - s.ready - s.requested);
     $('sPaid').textContent = money(s.paid);
-    $('payInfo').value = d.payout_info || '';
-    var req = d.payout_status === 'requested';
-    $('payBtn').disabled = req || s.payable <= 0;
-    $('payState').textContent = req
-      ? 'Payout of ' + money(d.payout_requested) + ' requested. We’ll send it to the details above and mark it paid here.'
-      : s.payable > 0 ? money(s.payable) + ' is ready. Check your payout details, then request it.'
+
+    if (!picker) picker = PayoutPicker($('picker'), d.payout_method || 'paypal', d.payout);
+    var open = d.payouts.filter(function (p) { return p.status === 'requested'; })[0];
+    $('payBtn').disabled = pend || !!open || !P.qualified || s.ready <= 0;
+    $('payState').textContent = pend ? 'Payouts open once you\u2019re approved.'
+      : open ? 'Payout of ' + money(open.amount) + ' requested. We\u2019ll send it to ' + open.to + ' and mark it paid here.'
+      : !P.qualified ? 'Payouts unlock at ' + P.unlock_count + ' paying members.'
+      : s.ready > 0 ? money(s.ready) + ' is ready. Check your details, then request it.'
       : 'Commission becomes ready to pay out ' + d.hold_days + ' days after each payment.';
+
+    var pays = $('pays'); pays.innerHTML = '';
+    $('payHist').hidden = !d.payouts.length;
+    d.payouts.forEach(function (p) {
+      var tr = document.createElement('tr');
+      tr.appendChild(td(date(p.requested_at)));
+      var am = td(money(p.amount), 'r num'); am.style.fontWeight = '600'; tr.appendChild(am);
+      tr.appendChild(td(p.to));
+      tr.appendChild(pillTd({ requested: 'On its way', paid: 'Paid', rejected: 'Not sent' }[p.status] || p.status, { requested: 'warn', paid: 'ok', rejected: 'off' }[p.status] || ''));
+      tr.appendChild(td(p.reference || '—'));
+      pays.appendChild(tr);
+    });
 
     var coms = $('coms'); coms.innerHTML = '';
     $('comCount').textContent = d.commissions.length + ' payments';
-    if (!d.commissions.length) coms.innerHTML = '<tr><td colspan="6" class="empty">No commission yet. It shows here the moment one of your members pays.</td></tr>';
+    if (!d.commissions.length) coms.innerHTML = '<tr><td colspan="7" class="empty">No commission yet. It shows here the moment one of your members pays.</td></tr>';
     d.commissions.forEach(function (c) {
       var tr = document.createElement('tr');
       tr.appendChild(td(date(c.at)));
       tr.appendChild(td(c.member));
       tr.appendChild(td((c.product || '').replace(/^Tradevault\s+/i, '') || '—'));
-      tr.appendChild(td(money(c.amount), 'r num'));
+      tr.appendChild(td(c.kind === 'bonus' ? '—' : money(c.amount), 'r num'));
+      tr.appendChild(td(c.kind === 'bonus' ? 'Bonus' : (c.pct || data.program.base_pct) + '%', 'r num'));
       var cm = td(money(c.commission), 'r num'); cm.style.fontWeight = '600'; if (c.status !== 'void') cm.style.color = 'var(--ok)'; tr.appendChild(cm);
-      tr.appendChild(pillTd({ pending: 'In 30-day hold', payable: 'Ready', paid: 'Paid', void: 'Refunded' }[c.status] || c.status,
-        { pending: 'warn', payable: 'ok', paid: 'acc', void: 'off' }[c.status] || ''));
+      tr.appendChild(pillTd({ held: 'In ' + data.hold_days + '-day hold', locked: 'Locked', payable: 'Ready', requested: 'Requested', paid: 'Paid', void: 'Refunded' }[c.status] || c.status,
+        { held: 'warn', locked: 'off', payable: 'ok', requested: 'acc', paid: 'acc', void: 'off' }[c.status] || ''));
       coms.appendChild(tr);
     });
 
@@ -219,11 +300,21 @@
     b.addEventListener('click', function () { copy(links(data.code)[b.getAttribute('data-copy')], b, label); });
   });
 
+  function payoutError(v) {
+    if (v.payout_method === 'paypal' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.payout.email)) return 'Enter the email address on your PayPal account.';
+    if (v.payout_method === 'crypto' && !v.payout.address) return v.payout.network === 'BINANCE' ? 'Enter your Binance Pay ID.' : 'Paste your wallet address.';
+    return '';
+  }
+  function save() {
+    var v = picker.value(), e = payoutError(v);
+    if (e) return Promise.reject({ msg: e });
+    return api('POST', 'profile', v);
+  }
+
   $('saveInfo').addEventListener('click', function () {
-    var b = this, v = $('payInfo').value.trim();
-    if (!v) { $('payState').textContent = 'Enter your PayPal email or bank details first.'; return; }
+    var b = this;
     b.disabled = true;
-    api('POST', 'profile', { payout_info: v }).then(function () { b.textContent = 'Saved ✓'; setTimeout(function () { b.textContent = 'Save'; }, 1500); })
+    save().then(function () { b.textContent = 'Saved ✓'; $('payState').textContent = 'Payout details saved.'; setTimeout(function () { b.textContent = 'Save details'; }, 1500); })
       .catch(function (x) { $('payState').textContent = (x && x.msg) || 'Could not save. Try again.'; })
       .then(function () { b.disabled = false; });
   });
@@ -231,7 +322,7 @@
   $('payBtn').addEventListener('click', function () {
     var b = this;
     b.disabled = true; b.innerHTML = '<span class="spin"></span>Requesting';
-    api('POST', 'payout', { payout_info: $('payInfo').value.trim() })
+    save().then(function () { return api('POST', 'payout', {}); })
       .then(function () { b.textContent = 'Request payout'; load(); })
       .catch(function (x) { $('payState').textContent = (x && x.msg) || 'Could not request your payout.'; b.textContent = 'Request payout'; b.disabled = false; });
   });

@@ -12,28 +12,71 @@
 <link rel="stylesheet" href="../../aff.css">
 <style>
 .W{max-width:1840px}
-.tabs{display:inline-flex;gap:4px;padding:4px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.03)}
-.tabs a{padding:8px 14px;border-radius:10px;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--tx-mute)}
-.tabs a.on{background:rgba(255,255,255,.09);color:var(--tx)}
+.tabs{display:inline-flex;gap:4px;padding:4px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.03);flex-wrap:wrap}
+.tabs a,.tabs button{padding:8px 14px;border-radius:10px;border:0;background:none;cursor:pointer;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--tx-mute);display:inline-flex;align-items:center;gap:8px}
+.tabs .on{background:rgba(255,255,255,.09);color:var(--tx)}
+.tabs .n{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--warn);color:#2a1a02;font-family:var(--mono);font-size:11px;display:inline-grid;place-items:center}
+.tabs .n:empty{display:none}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px}
 .top h1{font-size:clamp(32px,4vw,46px)}
 .sec{margin-top:28px}
 .sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .sech h2{font-size:20px}
-table{min-width:1180px}
+.wide table{min-width:1280px}
 .nm b{display:block;font-weight:600}
 .nm span{font-size:12.5px;color:var(--tx-mute)}
 .code{font-family:var(--mono);font-size:12.5px;color:var(--acc)}
 .rate{width:64px;padding:6px 8px;border-radius:10px;border:1px solid var(--hair-2);background:rgba(255,255,255,.035);color:var(--tx);font:inherit;font-size:13.5px;text-align:right}
-.req{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 20px;align-items:center;padding:18px 20px;border-radius:18px;border:1px solid rgba(245,184,92,.4);background:rgba(245,184,92,.06)}
-.req + .req{margin-top:10px}
-.req b{font-family:var(--display);font-size:22px}
-.req .info{font-family:var(--mono);font-size:13px;color:var(--tx);overflow-wrap:anywhere}
-.req .acts{display:flex;gap:8px}
 .ok-btn{background:var(--ok);color:#06281c}
+.no-btn{color:var(--bad)}
 .center{padding-block:100px;text-align:center}
 .loader{width:30px;height:30px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
 .note{font-size:13px;color:var(--tx-mute);margin-top:12px}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:12px 18px;border-radius:12px;background:var(--g2);border:1px solid var(--hair-2);font-size:14px;z-index:60;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.toast.bad{border-color:rgba(255,143,143,.5);color:var(--bad)}
+
+/* cards for applications + payout requests */
+.items{display:grid;gap:12px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:start;padding:20px 22px;border-radius:18px;border:1px solid var(--hair-2);background:rgba(255,255,255,.025)}
+.item.warn{border-color:rgba(245,184,92,.4);background:rgba(245,184,92,.05)}
+.item h3{font-size:20px;letter-spacing:-.02em}
+.item .meta{font-size:13px;color:var(--tx-mute);margin-top:4px;overflow-wrap:anywhere}
+.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.qa div{min-width:0}
+.qa p{font-size:14px;color:var(--tx-dim);margin-top:4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.amt{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-.03em}
+.dest{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2);min-width:0}
+.dest code{flex:1;min-width:0;font-family:var(--mono);font-size:13.5px;overflow-wrap:anywhere}
+.ref{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ref .inp{flex:1;min-width:200px}
+.ref input{padding:9px 12px;font-size:14px}
+.warnline{margin-top:8px;font-size:12.5px;color:var(--warn)}
+
+/* detail drawer */
+.drawer{position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end;background:rgba(2,6,14,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.drawer .panel{width:min(760px,100%);height:100%;overflow:auto;background:var(--g1);border-left:1px solid var(--hair-2);padding:24px max(22px,env(safe-area-inset-right,0px)) 40px 26px}
+.drawer .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.drawer h2{font-size:28px}
+.drawer .tw table{min-width:560px}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.kv div{padding:12px 14px;border-radius:14px;border:1px solid var(--hair);min-width:0}
+.kv b{display:block;font-family:var(--display);font-size:19px;margin-top:4px;overflow-wrap:anywhere}
+
+/* profit share + settings */
+.forms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.fcard{padding:22px 24px}
+.fcard h3{font-size:19px}
+.fcard .help{margin-top:6px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.fgrid .full{grid-column:1/-1}
+.calc{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(123,224,176,.07);border:1px solid rgba(123,224,176,.3);font-size:14px;color:var(--tx-dim)}
+.calc b{color:var(--ok)}
+.sharelist{margin-top:14px;display:grid;gap:6px;max-height:300px;overflow:auto}
+.sharelist label{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;border:1px solid var(--hair);font-size:14px;cursor:pointer}
+.sharelist label span{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--tx-mute)}
+.sharelist input{accent-color:var(--acc)}
+@media(max-width:900px){.qa,.forms,.fgrid,.kv{grid-template-columns:minmax(0,1fr)}.item{grid-template-columns:minmax(0,1fr)}.acts{justify-content:flex-start}}
 </style>
 </head>
 <body>
@@ -45,31 +88,110 @@ table{min-width:1180px}
 </header>
 
 <main class="W">
-  <div class="top"><div><span class="eyebrow">The Vault · Affiliates</span><h1>Affiliates</h1><p class="muted" style="margin-top:8px">Signup page: <a href="/affiliate-signup" style="color:var(--acc)">thetradevault.co/affiliate-signup</a></p></div></div>
+  <div class="top">
+    <div><span class="eyebrow">The Vault · Affiliates</span><h1>Affiliate HQ</h1><p class="muted" style="margin-top:8px">Application page: <a href="/affiliate-signup" style="color:var(--acc)">thetradevault.co/affiliate-signup</a></p></div>
+    <nav class="tabs" id="tabs">
+      <button type="button" data-t="apps">Applications <span class="n" id="nApps"></span></button>
+      <button type="button" data-t="pays">Payouts <span class="n" id="nPays"></span></button>
+      <button type="button" data-t="affs">Affiliates</button>
+      <button type="button" data-t="share">Profit share</button>
+      <button type="button" data-t="set">Settings</button>
+    </nav>
+  </div>
 
   <div class="center" id="loading"><div class="loader"></div><span class="muted">Loading affiliates…</span></div>
   <div class="center" id="failed" hidden><h2>Couldn't load affiliates</h2><p class="muted" id="failMsg" style="margin-top:8px"></p></div>
 
   <div id="app" hidden>
     <div class="stats sec">
-      <div class="stat"><span class="mono">Affiliates</span><b id="tAff">0</b><span id="tActive"></span></div>
-      <div class="stat"><span class="mono">Members referred</span><b id="tRefs">0</b><span id="tClicks"></span></div>
+      <div class="stat"><span class="mono">Active affiliates</span><b id="tAff">0</b><span id="tPend"></span></div>
+      <div class="stat"><span class="mono">Paying members referred</span><b id="tRefs">0</b><span id="tClicks"></span></div>
       <div class="stat"><span class="mono">Sales from affiliates</span><b id="tSales">$0</b><span>All payments by referred members</span></div>
       <div class="stat hot"><span class="mono">Owed to affiliates</span><b id="tOwed">$0</b><span id="tPayable"></span></div>
     </div>
 
-    <section class="sec" id="reqSec" hidden>
-      <div class="sech"><h2>Payout requests</h2><span class="mono">Pay them, then mark as paid</span></div>
-      <div id="reqs"></div>
+    <!-- Applications -->
+    <section class="sec" data-p="apps">
+      <div class="sech"><h2>Applications</h2><span class="mono">Approve → their link goes live + GHL tag tv-affiliate-approved</span></div>
+      <div class="items" id="apps"></div>
+      <div class="sech" style="margin-top:28px"><h2>Recently reviewed</h2></div>
+      <div class="tw"><table><thead><tr><th>Applicant</th><th>Applied</th><th>Reviewed</th><th>Decision</th><th></th></tr></thead><tbody id="reviewed"></tbody></table></div>
     </section>
 
-    <section class="sec">
+    <!-- Payouts -->
+    <section class="sec" data-p="pays" hidden>
+      <div class="sech"><h2>Payout requests</h2><span class="mono">Send the money, then mark it paid</span></div>
+      <div class="items" id="reqs"></div>
+      <div class="sech" style="margin-top:28px"><h2>Payout history</h2><span class="mono" id="paidTotal"></span></div>
+      <div class="tw"><table style="min-width:900px"><thead><tr><th>Requested</th><th>Affiliate</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th><th>Done</th></tr></thead><tbody id="hist"></tbody></table></div>
+    </section>
+
+    <!-- Affiliates -->
+    <section class="sec" data-p="affs" hidden>
       <div class="sech"><h2>All affiliates</h2><span class="mono" id="count"></span></div>
-      <div class="tw"><table><thead><tr><th>Affiliate</th><th>Link</th><th>Joined</th><th class="r">Clicks</th><th class="r">Members</th><th class="r">Sales</th><th class="r">Pending</th><th class="r">Ready</th><th class="r">Paid</th><th class="r">Rate %</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div>
-      <p class="note">Commission is held 30 days after each payment. "Ready" is what an affiliate can request now. Refunded payments are voided automatically.</p>
+      <div class="tw wide"><table><thead><tr><th>Affiliate</th><th>Link</th><th>Joined</th><th class="r">Clicks</th><th class="r">Paying</th><th>Level</th><th class="r">Sales</th><th class="r">Held / requested</th><th class="r">Ready</th><th class="r">Paid</th><th class="r">Custom %</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      <p class="note">Rates: <span id="ruleLine"></span> Leave "Custom %" blank to follow the programme rates.</p>
+    </section>
+
+    <!-- Profit share -->
+    <section class="sec" data-p="share" hidden>
+      <div class="forms">
+        <div class="card fcard">
+          <h3>Quarterly profit share</h3>
+          <p class="help">Enter the quarter's profit and the share. Each ticked affiliate gets that amount added as a bonus, ready to pay out straight away (no hold).</p>
+          <div class="fgrid">
+            <div class="field"><label for="shProfit">Quarter profit (USD)</label><div class="inp"><span>$</span><input id="shProfit" type="number" min="0" step="0.01" inputmode="decimal"></div></div>
+            <div class="field"><label for="shPct">Share each</label><div class="inp"><input id="shPct" type="number" min="0" max="100" step="0.1" value="1"><span style="padding-right:14px">%</span></div></div>
+            <div class="field full"><label for="shNote">Label</label><div class="inp"><input id="shNote"></div></div>
+          </div>
+          <div class="calc" id="shCalc">Each affiliate gets <b>$0.00</b></div>
+          <div class="sech" style="margin:18px 0 0"><span class="mono">Who gets it</span><span><button class="btn-g btn-sm" id="shTop" type="button">Tick 30% tier</button> <button class="btn-g btn-sm" id="shAll" type="button">Tick all unlocked</button></span></div>
+          <div class="sharelist" id="shList"></div>
+          <p class="err" id="shErr" style="margin-top:10px"></p>
+          <button class="btn" id="shGo" type="button" style="margin-top:6px">Add profit share</button>
+        </div>
+        <div class="card fcard">
+          <h3>One-off bonus</h3>
+          <p class="help">Add any amount to one affiliate. It shows in their dashboard and is ready to pay out straight away.</p>
+          <div class="fgrid">
+            <div class="field full"><label for="bnAff">Affiliate</label><div class="inp"><select id="bnAff"></select></div></div>
+            <div class="field"><label for="bnAmt">Amount (USD)</label><div class="inp"><span>$</span><input id="bnAmt" type="number" min="0" step="0.01" inputmode="decimal"></div></div>
+            <div class="field"><label for="bnNote">Label</label><div class="inp"><input id="bnNote" value="Bonus"></div></div>
+          </div>
+          <p class="err" id="bnErr" style="margin-top:10px"></p>
+          <button class="btn" id="bnGo" type="button" style="margin-top:6px">Add bonus</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="sec" data-p="set" hidden>
+      <div class="card fcard" style="max-width:720px">
+        <h3>Programme rules</h3>
+        <p class="help">Changes apply to new payments from now on. Commission already earned keeps its rate.</p>
+        <div class="fgrid">
+          <div class="field"><label for="stBase">Starting commission</label><div class="inp"><input id="stBase" type="number" min="0" max="100"><span style="padding-right:14px">%</span></div></div>
+          <div class="field"><label for="stUnlock">Paying members to unlock payouts</label><div class="inp"><input id="stUnlock" type="number" min="0"></div></div>
+          <div class="field"><label for="stTierN">Paying members for the higher rate</label><div class="inp"><input id="stTierN" type="number" min="1"></div></div>
+          <div class="field"><label for="stTier">Higher rate</label><div class="inp"><input id="stTier" type="number" min="0" max="100"><span style="padding-right:14px">%</span></div></div>
+        </div>
+        <p class="help" style="margin-top:12px">Commission is held <span id="stHold"></span> days after each payment. Refunds void it.</p>
+        <p class="err" id="stErr" style="margin-top:10px"></p>
+        <button class="btn" id="stGo" type="button" style="margin-top:6px">Save rules</button>
+      </div>
     </section>
   </div>
 </main>
+
+<div class="drawer" id="drawer" hidden><div class="panel" role="dialog" aria-modal="true" aria-labelledby="dName">
+  <div class="hd"><div><span class="eyebrow">Affiliate</span><h2 id="dName"></h2><p class="muted" id="dSub" style="font-size:14px;margin-top:6px"></p></div><button class="btn-g btn-sm" id="dClose" type="button">Close</button></div>
+  <div class="kv" id="dKv"></div>
+  <div class="qa" id="dApp"></div>
+  <div class="sech sec"><h2>Members</h2><span class="mono" id="dRefN"></span></div>
+  <div class="tw"><table><thead><tr><th>Joined</th><th>Email</th><th>Plan</th><th class="r">Paid so far</th></tr></thead><tbody id="dRefs"></tbody></table></div>
+  <div class="sech sec"><h2>Commission</h2><span class="mono" id="dComN"></span></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Member</th><th>Item</th><th class="r">Payment</th><th class="r">Rate</th><th class="r">Earned</th><th>Status</th></tr></thead><tbody id="dComs"></tbody></table></div>
+</div></div>
 
 <script>
 (function () {
@@ -79,12 +201,14 @@ table{min-width:1180px}
   if (!token) { location.replace('/admin-login'); return; }
   var $ = function (id) { return document.getElementById(id); };
   var money = function (v) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
-  var date = function (iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); };
+  var date = function (iso) { var d = new Date(iso); return iso && !isNaN(d) ? d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'; };
+  var cap = function (s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
+  var D = null;
   function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} location.replace('/admin-login'); }
   $('out').addEventListener('click', signOut);
 
-  function api(method, action, body) {
-    return fetch(API + '?action=' + action, {
+  function api(method, action, body, q) {
+    return fetch(API + '?action=' + action + (q || ''), {
       method: method,
       headers: Object.assign({ Authorization: 'Bearer ' + token }, body ? { 'Content-Type': 'application/json' } : {}),
       body: body ? JSON.stringify(body) : undefined
@@ -94,69 +218,249 @@ table{min-width:1180px}
     });
   }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function btn(cls, text, fn) { var b = el('button', cls, text); b.type = 'button'; b.addEventListener('click', function () { fn(b); }); return b; }
+  function pill(text, kind) { return el('span', 'pill ' + (kind || ''), text); }
+  function toast(msg, bad) { var t = el('div', 'toast' + (bad ? ' bad' : ''), msg); document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2600); }
+  function fail(b) { return function (x) { if (b) b.disabled = false; toast('Could not save: ' + ((x && x.msg) || 'network error'), true); }; }
+  function copyBtn(text) {
+    return btn('btn-g btn-sm', 'Copy', function (b) {
+      var done = function () { b.textContent = 'Copied ✓'; setTimeout(function () { b.textContent = 'Copy'; }, 1400); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {}); });
+  }
+
+  // tabs (remembered in the URL hash)
+  function tab(t) {
+    document.querySelectorAll('#tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-t') === t); });
+    document.querySelectorAll('[data-p]').forEach(function (s) { s.hidden = s.getAttribute('data-p') !== t; });
+    try { history.replaceState(null, '', '#' + t); } catch (e) {}
+  }
+  document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { tab(b.getAttribute('data-t')); }); });
 
   function load() {
-    api('GET', 'admin').then(function (d) { render(d.affiliates); })
+    return api('GET', 'admin').then(function (d) { D = d; render(); })
       .catch(function (x) { $('loading').hidden = true; $('failed').hidden = false; $('failMsg').textContent = (x && x.msg) || 'Network error'; });
   }
 
-  function render(list) {
+  function render() {
+    var A = D.affiliates, P = D.payouts, S = D.settings;
     $('loading').hidden = true; $('app').hidden = false;
-    var sum = function (k) { return list.reduce(function (a, x) { return a + (x[k] || 0); }, 0); };
-    $('tAff').textContent = list.length;
-    $('tActive').textContent = list.filter(function (x) { return x.status === 'active'; }).length + ' active';
-    $('tRefs').textContent = sum('referrals');
+    var active = A.filter(function (a) { return a.status === 'active'; });
+    var pending = A.filter(function (a) { return a.status === 'pending'; });
+    var open = P.filter(function (p) { return p.status === 'requested'; });
+    var sum = function (k, list) { return (list || A).reduce(function (n, x) { return n + (x[k] || 0); }, 0); };
+    $('tAff').textContent = active.length;
+    $('tPend').textContent = pending.length + ' application' + (pending.length === 1 ? '' : 's') + ' waiting';
+    $('tRefs').textContent = sum('personals');
     $('tClicks').textContent = sum('clicks').toLocaleString() + ' link clicks';
     $('tSales').textContent = money(sum('sales'));
     $('tOwed').textContent = money(sum('pending'));
-    $('tPayable').textContent = money(sum('payable')) + ' ready to pay';
-    $('count').textContent = list.length + ' affiliates';
+    $('tPayable').textContent = money(sum('ready', A.filter(function (a) { return a.qualified; }))) + ' ready to pay';
+    $('nApps').textContent = pending.length || '';
+    $('nPays').textContent = open.length || '';
 
-    var reqs = list.filter(function (x) { return x.payout_status === 'requested'; });
-    $('reqSec').hidden = !reqs.length;
-    var box = $('reqs'); box.innerHTML = '';
-    reqs.forEach(function (a) {
-      var r = el('div', 'req');
-      var left = el('div');
-      left.appendChild(el('span', 'mono', a.name + ' · ' + a.email + ' · requested ' + date(a.payout_requested_at)));
-      left.appendChild(el('b', null, money(a.payout_requested)));
-      var info = el('div', 'info', 'Pay to: ' + (a.payout_info || 'no details given'));
-      left.appendChild(info);
-      var acts = el('div', 'acts');
-      var ok = el('button', 'btn btn-sm ok-btn', 'Mark as paid'); ok.type = 'button';
-      var no = el('button', 'btn-g btn-sm', 'Reject'); no.type = 'button';
-      ok.addEventListener('click', function () { ok.disabled = true; api('PATCH', 'paid', { id: a.id, action: 'approve' }).then(load).catch(function (x) { ok.disabled = false; alertMsg(x); }); });
-      no.addEventListener('click', function () { no.disabled = true; api('PATCH', 'paid', { id: a.id, action: 'reject' }).then(load).catch(function (x) { no.disabled = false; alertMsg(x); }); });
-      acts.appendChild(no); acts.appendChild(ok);
-      r.appendChild(left); r.appendChild(acts); box.appendChild(r);
+    renderApps(pending, A);
+    renderPays(open, P);
+    renderAffs(A, S);
+    renderShare(A, S);
+    renderSettings(S);
+  }
+
+  function qa(app) {
+    var box = el('div', 'qa');
+    [['Where they’ll share', app.socials], ['Audience', app.audience], ['How they’ll promote', app.promote]].forEach(function (q) {
+      var d = el('div'); d.appendChild(el('span', 'mono', q[0])); d.appendChild(el('p', null, q[1] || '—')); box.appendChild(d);
     });
+    return box;
+  }
 
+  function renderApps(pending, A) {
+    var box = $('apps'); box.innerHTML = '';
+    if (!pending.length) box.appendChild(el('div', 'card empty', 'No applications waiting. New ones from /affiliate-signup land here.'));
+    pending.forEach(function (a) {
+      var it = el('div', 'item warn'), left = el('div');
+      left.appendChild(el('span', 'mono', 'Applied ' + date(a.created_at)));
+      left.appendChild(el('h3', null, a.name));
+      left.appendChild(el('p', 'meta', a.email + (a.phone ? ' · ' + a.phone : '') + ' · wants ?ref=' + a.code + ' · paid by ' + (a.payout_to || 'not set')));
+      left.appendChild(qa(a.application || {}));
+      var acts = el('div', 'acts');
+      acts.appendChild(btn('btn-g btn-sm no-btn', 'Reject', function (b) { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: 'rejected' }).then(function () { toast(a.name + ' rejected'); load(); }).catch(fail(b)); }));
+      acts.appendChild(btn('btn btn-sm ok-btn', 'Approve', function (b) { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: 'active' }).then(function () { toast(a.name + ' approved: their link is live'); load(); }).catch(fail(b)); }));
+      it.appendChild(left); it.appendChild(acts); box.appendChild(it);
+    });
+    var rev = A.filter(function (a) { return a.reviewed_at; }).sort(function (x, y) { return y.reviewed_at < x.reviewed_at ? -1 : 1; }).slice(0, 15);
+    var tb = $('reviewed'); tb.innerHTML = '';
+    if (!rev.length) tb.innerHTML = '<tr><td colspan="5" class="empty">Nothing reviewed yet.</td></tr>';
+    rev.forEach(function (a) {
+      var tr = el('tr'), nm = el('td', 'nm'); nm.appendChild(el('b', null, a.name)); nm.appendChild(el('span', null, a.email)); tr.appendChild(nm);
+      tr.appendChild(el('td', null, date(a.created_at))); tr.appendChild(el('td', null, date(a.reviewed_at)));
+      var st = el('td'); st.appendChild(pill(a.status === 'rejected' ? 'Rejected' : 'Approved', a.status === 'rejected' ? 'off' : 'ok')); tr.appendChild(st);
+      var act = el('td', 'r');
+      if (a.status === 'rejected') act.appendChild(btn('btn-g btn-sm', 'Approve instead', function (b) { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: 'active' }).then(load).catch(fail(b)); }));
+      tr.appendChild(act); tb.appendChild(tr);
+    });
+  }
+
+  function renderPays(open, P) {
+    var box = $('reqs'); box.innerHTML = '';
+    if (!open.length) box.appendChild(el('div', 'card empty', 'No payout requests right now.'));
+    open.forEach(function (p) {
+      var it = el('div', 'item warn'), left = el('div');
+      left.appendChild(el('span', 'mono', p.name + ' · ' + p.email + ' · requested ' + date(p.requested_at)));
+      left.appendChild(el('div', 'amt', money(p.amount)));
+      var d = p.details || {}, addr = p.method === 'paypal' ? d.email : d.address;
+      var dest = el('div', 'dest'); dest.appendChild(pill(p.method === 'paypal' ? 'PayPal' : (d.coin || '') + ' · ' + (d.network === 'BINANCE' ? 'Binance Pay' : d.network), 'acc'));
+      dest.appendChild(el('code', null, addr || p.to || 'no details')); if (addr) dest.appendChild(copyBtn(addr));
+      left.appendChild(dest);
+      if (p.method === 'crypto' && d.network !== 'BINANCE') left.appendChild(el('p', 'warnline', 'Send ' + (d.coin || 'USDT') + ' on ' + d.network + ' only. Any other network loses the funds.'));
+      var ref = el('div', 'ref'), wrap = el('div', 'inp'), inp = el('input'); inp.placeholder = p.method === 'paypal' ? 'PayPal transaction ID (optional)' : 'Transaction hash (optional)';
+      wrap.appendChild(inp); ref.appendChild(wrap); left.appendChild(ref);
+      var acts = el('div', 'acts');
+      acts.appendChild(btn('btn-g btn-sm no-btn', 'Reject', function (b) { b.disabled = true; api('PATCH', 'payouts', { id: p.id, action: 'reject', reference: inp.value }).then(function () { toast('Request rejected; the money goes back to their balance'); load(); }).catch(fail(b)); }));
+      acts.appendChild(btn('btn btn-sm ok-btn', 'Mark as paid', function (b) { b.disabled = true; api('PATCH', 'payouts', { id: p.id, action: 'paid', reference: inp.value }).then(function () { toast(money(p.amount) + ' to ' + p.name + ' marked paid'); load(); }).catch(fail(b)); }));
+      it.appendChild(left); it.appendChild(acts); box.appendChild(it);
+    });
+    var done = P.filter(function (p) { return p.status !== 'requested'; });
+    $('paidTotal').textContent = money(done.filter(function (p) { return p.status === 'paid'; }).reduce(function (n, p) { return n + p.amount; }, 0)) + ' paid in total';
+    var tb = $('hist'); tb.innerHTML = '';
+    if (!done.length) tb.innerHTML = '<tr><td colspan="7" class="empty">No payouts yet.</td></tr>';
+    done.forEach(function (p) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, date(p.requested_at)));
+      var nm = el('td', 'nm'); nm.appendChild(el('b', null, p.name)); nm.appendChild(el('span', null, p.email)); tr.appendChild(nm);
+      tr.appendChild(el('td', 'r num', money(p.amount)));
+      tr.appendChild(el('td', null, p.to));
+      var st = el('td'); st.appendChild(pill(p.status === 'paid' ? 'Paid' : 'Rejected', p.status === 'paid' ? 'ok' : 'off')); tr.appendChild(st);
+      tr.appendChild(el('td', 'code', p.reference || '—'));
+      tr.appendChild(el('td', null, date(p.decided_at)));
+      tb.appendChild(tr);
+    });
+  }
+
+  function level(a, S) {
+    if (a.personals >= S.tier_count) return pill(S.tier_pct + '% tier', 'ok');
+    if (a.qualified) return pill('Unlocked', 'acc');
+    return pill(a.personals + '/' + S.unlock_count + ' to unlock', 'off');
+  }
+
+  function renderAffs(A, S) {
+    $('ruleLine').textContent = S.base_pct + '% to start; payouts unlock at ' + S.unlock_count + ' paying members; ' + S.tier_pct + '% from ' + S.tier_count + ' paying members.';
+    var list = A.filter(function (a) { return a.status === 'active' || a.status === 'paused'; });
+    $('count').textContent = list.length + ' affiliates';
     var rows = $('rows'); rows.innerHTML = '';
-    if (!list.length) rows.innerHTML = '<tr><td colspan="11" class="empty">No affiliates yet. Share thetradevault.co/affiliate-signup to get the first.</td></tr>';
+    if (!list.length) rows.innerHTML = '<tr><td colspan="13" class="empty">No approved affiliates yet.</td></tr>';
     list.forEach(function (a) {
       var tr = el('tr');
-      var nm = el('td', 'nm'); nm.appendChild(el('b', null, a.name)); nm.appendChild(el('span', null, a.email + (a.phone ? ' · ' + a.phone : ''))); tr.appendChild(nm);
+      var nm = el('td', 'nm'); nm.appendChild(el('b', null, a.name)); nm.appendChild(el('span', null, a.email)); tr.appendChild(nm);
       tr.appendChild(el('td', 'code', '?ref=' + a.code));
       tr.appendChild(el('td', null, date(a.created_at)));
       tr.appendChild(el('td', 'r num', a.clicks.toLocaleString()));
-      tr.appendChild(el('td', 'r num', a.referrals));
+      tr.appendChild(el('td', 'r num', a.personals));
+      var lv = el('td'); lv.appendChild(level(a, S)); tr.appendChild(lv);
       tr.appendChild(el('td', 'r num', money(a.sales)));
-      tr.appendChild(el('td', 'r num', money(a.pending - a.payable)));
-      var ready = el('td', 'r num', money(a.payable)); if (a.payable > 0) ready.style.color = 'var(--ok)'; tr.appendChild(ready);
+      tr.appendChild(el('td', 'r num', money(a.pending - a.ready)));
+      var ready = el('td', 'r num', money(a.ready)); if (a.ready > 0) ready.style.color = a.qualified ? 'var(--ok)' : 'var(--tx-mute)'; if (!a.qualified && a.ready > 0) ready.title = 'Locked until ' + S.unlock_count + ' paying members'; tr.appendChild(ready);
       tr.appendChild(el('td', 'r num', money(a.paid)));
-      var rc = el('td', 'r'); var inp = el('input', 'rate'); inp.type = 'number'; inp.min = 0; inp.max = 100; inp.value = a.pct; inp.setAttribute('aria-label', 'Commission % for ' + a.name);
-      inp.addEventListener('change', function () { var v = Math.max(0, Math.min(100, parseInt(inp.value || '0', 10))); api('PATCH', 'admin', { id: a.id, pct: v }).then(function () { inp.style.borderColor = 'var(--ok)'; }).catch(alertMsg); });
+      var rc = el('td', 'r'), inp = el('input', 'rate'); inp.type = 'number'; inp.min = 0; inp.max = 100; inp.placeholder = a.pct; inp.value = a.custom_pct == null ? '' : a.custom_pct;
+      inp.setAttribute('aria-label', 'Custom commission % for ' + a.name);
+      inp.addEventListener('change', function () { var v = inp.value === '' ? null : Math.max(0, Math.min(100, parseInt(inp.value, 10))); api('PATCH', 'admin', { id: a.id, custom_pct: v }).then(function () { toast('Rate saved'); load(); }).catch(fail()); });
       rc.appendChild(inp); tr.appendChild(rc);
-      var st = el('td'); var b = el('button', 'btn-g btn-sm', a.status === 'active' ? 'Active · Pause' : 'Paused · Activate'); b.type = 'button';
+      var st = el('td'), b = btn('btn-g btn-sm', a.status === 'active' ? 'Active · Pause' : 'Paused · Activate', function () { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: a.status === 'active' ? 'paused' : 'active' }).then(load).catch(fail(b)); });
       if (a.status !== 'active') b.style.color = 'var(--warn)';
-      b.addEventListener('click', function () { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: a.status === 'active' ? 'paused' : 'active' }).then(load).catch(function (x) { b.disabled = false; alertMsg(x); }); });
       st.appendChild(b); tr.appendChild(st);
+      var v = el('td'); v.appendChild(btn('btn-g btn-sm', 'View', function () { openDrawer(a); })); tr.appendChild(v);
       rows.appendChild(tr);
     });
   }
-  function alertMsg(x) { $('failMsg').textContent = ''; var n = document.querySelector('.note'); if (n) n.textContent = 'Could not save: ' + ((x && x.msg) || 'network error'); }
 
-  load();
+  // detail drawer
+  function openDrawer(a) {
+    $('dName').textContent = a.name;
+    $('dSub').textContent = a.email + (a.phone ? ' · ' + a.phone : '') + ' · ?ref=' + a.code + ' · joined ' + date(a.created_at);
+    var kv = $('dKv'); kv.innerHTML = '';
+    [['Rate now', a.pct + '%' + (a.custom_pct != null ? ' (custom)' : '')], ['Paying members', a.personals + (a.qualified ? ' · unlocked' : ' · locked')], ['Paid out', money(a.paid)],
+     ['Ready', money(a.ready)], ['Held / requested', money(a.pending - a.ready)], ['Paid to', a.payout_to || '—']].forEach(function (k) {
+      var d = el('div'); d.appendChild(el('span', 'mono', k[0])); d.appendChild(el('b', null, k[1])); kv.appendChild(d);
+    });
+    var app = $('dApp'); app.replaceWith(a.application && a.application.socials ? qa(a.application) : el('div', 'qa')); app = document.querySelector('.panel .qa'); app.id = 'dApp';
+    $('dRefs').innerHTML = '<tr><td colspan="4" class="empty">Loading…</td></tr>'; $('dComs').innerHTML = '';
+    $('drawer').hidden = false; document.body.style.overflow = 'hidden';
+    api('GET', 'detail', null, '&id=' + a.id).then(function (d) {
+      $('dRefN').textContent = d.referrals.length + ' members'; $('dComN').textContent = d.commissions.length + ' entries';
+      var r = $('dRefs'); r.innerHTML = '';
+      if (!d.referrals.length) r.innerHTML = '<tr><td colspan="4" class="empty">No members yet.</td></tr>';
+      d.referrals.forEach(function (m) { var tr = el('tr'); tr.appendChild(el('td', null, date(m.joined))); tr.appendChild(el('td', null, m.email)); tr.appendChild(el('td', null, cap(m.tier) || '—')); tr.appendChild(el('td', 'r num', money(m.paid))); r.appendChild(tr); });
+      var c = $('dComs'); c.innerHTML = '';
+      if (!d.commissions.length) c.innerHTML = '<tr><td colspan="7" class="empty">No commission yet.</td></tr>';
+      d.commissions.forEach(function (m) {
+        var tr = el('tr'); tr.appendChild(el('td', null, date(m.at))); tr.appendChild(el('td', null, m.kind === 'bonus' ? 'Bonus' : m.email));
+        tr.appendChild(el('td', null, (m.product || '').replace(/^Tradevault\s+/i, ''))); tr.appendChild(el('td', 'r num', m.kind === 'bonus' ? '—' : money(m.amount)));
+        tr.appendChild(el('td', 'r num', m.kind === 'bonus' ? '—' : (m.pct || '') + '%')); tr.appendChild(el('td', 'r num', money(m.commission)));
+        var st = el('td'); st.appendChild(pill({ held: 'Held', ready: 'Ready', requested: 'Requested', paid: 'Paid', void: 'Refunded' }[m.status] || m.status, { held: 'warn', ready: 'ok', requested: 'acc', paid: 'acc', void: 'off' }[m.status])); tr.appendChild(st);
+        c.appendChild(tr);
+      });
+    }).catch(fail());
+  }
+  function closeDrawer() { $('drawer').hidden = true; document.body.style.overflow = ''; }
+  $('dClose').addEventListener('click', closeDrawer);
+  $('drawer').addEventListener('click', function (e) { if (e.target === this) closeDrawer(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+
+  // profit share + bonus
+  function quarter() { var d = new Date(), q = Math.floor(d.getMonth() / 3); q = q === 0 ? 4 : q; return 'Profit share Q' + q + ' ' + (q === 4 && d.getMonth() < 3 ? d.getFullYear() - 1 : d.getFullYear()); }
+  $('shNote').value = quarter();
+  function shAmount() { return Math.round((parseFloat($('shProfit').value) || 0) * (parseFloat($('shPct').value) || 0)) / 100; }
+  function shCalc() {
+    var n = document.querySelectorAll('#shList input:checked').length, each = shAmount();
+    $('shCalc').innerHTML = ''; $('shCalc').append('Each affiliate gets '); $('shCalc').appendChild(el('b', null, money(each)));
+    $('shCalc').append(' · ' + n + ' ticked · ' + money(each * n) + ' in total');
+  }
+  ['shProfit', 'shPct'].forEach(function (id) { $(id).addEventListener('input', shCalc); });
+  function renderShare(A, S) {
+    var list = $('shList'); list.innerHTML = '';
+    var act = A.filter(function (a) { return a.status === 'active'; });
+    if (!act.length) list.appendChild(el('p', 'help', 'No active affiliates yet.'));
+    act.forEach(function (a) {
+      var l = el('label'), c = el('input'); c.type = 'checkbox'; c.value = a.id; c.dataset.top = a.personals >= S.tier_count ? '1' : ''; c.dataset.q = a.qualified ? '1' : '';
+      c.addEventListener('change', shCalc);
+      l.appendChild(c); l.append(a.name); l.appendChild(el('span', null, a.personals + ' paying')); list.appendChild(l);
+    });
+    var sel = $('bnAff'); sel.innerHTML = '<option value="">Choose an affiliate</option>';
+    act.forEach(function (a) { var o = el('option', null, a.name + ' · ' + a.email); o.value = a.id; sel.appendChild(o); });
+    shCalc();
+  }
+  $('shTop').addEventListener('click', function () { document.querySelectorAll('#shList input').forEach(function (c) { c.checked = !!c.dataset.top; }); shCalc(); });
+  $('shAll').addEventListener('click', function () { document.querySelectorAll('#shList input').forEach(function (c) { c.checked = !!c.dataset.q; }); shCalc(); });
+  $('shGo').addEventListener('click', function () {
+    var b = this, ids = [].map.call(document.querySelectorAll('#shList input:checked'), function (c) { return c.value; }), amt = shAmount(), note = $('shNote').value.trim() || 'Profit share';
+    if (!(amt > 0) || !ids.length) { $('shErr').textContent = 'Enter the profit and tick at least one affiliate.'; return; }
+    $('shErr').textContent = ''; b.disabled = true;
+    Promise.all(ids.map(function (id) { return api('POST', 'bonus', { id: id, amount: amt, note: note }); }))
+      .then(function () { toast(money(amt) + ' added to ' + ids.length + ' affiliate' + (ids.length === 1 ? '' : 's')); $('shProfit').value = ''; b.disabled = false; load(); })
+      .catch(fail(b));
+  });
+  $('bnGo').addEventListener('click', function () {
+    var b = this, id = $('bnAff').value, amt = parseFloat($('bnAmt').value);
+    if (!id || !(amt > 0)) { $('bnErr').textContent = 'Pick an affiliate and an amount.'; return; }
+    $('bnErr').textContent = ''; b.disabled = true;
+    api('POST', 'bonus', { id: id, amount: amt, note: $('bnNote').value.trim() || 'Bonus' })
+      .then(function () { toast(money(amt) + ' bonus added'); $('bnAmt').value = ''; b.disabled = false; load(); }).catch(fail(b));
+  });
+
+  // settings
+  function renderSettings(S) {
+    $('stBase').value = S.base_pct; $('stUnlock').value = S.unlock_count; $('stTierN').value = S.tier_count; $('stTier').value = S.tier_pct; $('stHold').textContent = D.hold_days;
+  }
+  $('stGo').addEventListener('click', function () {
+    var b = this, v = { base_pct: +$('stBase').value, unlock_count: +$('stUnlock').value, tier_count: +$('stTierN').value, tier_pct: +$('stTier').value };
+    if ([v.base_pct, v.tier_pct].some(function (x) { return !(x >= 0 && x <= 100); }) || !(v.tier_count >= 1) || !(v.unlock_count >= 0)) { $('stErr').textContent = 'Rates are 0 to 100%, member counts are whole numbers.'; return; }
+    $('stErr').textContent = ''; b.disabled = true;
+    api('PATCH', 'settings', v).then(function () { toast('Rules saved'); b.disabled = false; load(); }).catch(fail(b));
+  });
+
+  window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (document.querySelector('[data-p="' + h + '"]')) tab(h); });
+  var start = (location.hash || '').slice(1);
+  tab(['apps', 'pays', 'affs', 'share', 'set'].indexOf(start) >= 0 ? start : 'apps');
+  load().then(function () { if (!start && D && !D.affiliates.some(function (a) { return a.status === 'pending'; }) && D.payouts.some(function (p) { return p.status === 'requested'; })) tab('pays'); });
 })();
 </script>
 </body>

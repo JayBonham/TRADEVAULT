@@ -1,16 +1,21 @@
 """TradeVault affiliate API (pages live on thetradevault.co). Route: /api/tv-aff?action=<action>
 
-  register  POST   name, email, password, code?, payout_info?  -> {token, code}
-  login     POST   email, password                               -> {token, code}
-  me        GET    (Bearer affiliate token)  profile, stats, referrals, commissions
-  click     POST   code                      count a visit from an affiliate link
-  payout    POST   (Bearer affiliate token)  request payout of commissions past the 30-day hold
-  profile   POST   (Bearer affiliate token)  {payout_info} save where to be paid
-  admin     GET    (Bearer admin token)      every affiliate with stats
-            PATCH  (Bearer admin token)      {id, commission_pct?, status?}
-  paid      PATCH  (Bearer admin token)      {id, action: approve|reject} on a payout request
+  register   POST   application: name, email, password, code?, socials, audience, promote,
+                    payout_method, payout {..}           -> {token} (status 'pending')
+  login      POST   email, password                       -> {token}
+  me         GET    (Bearer affiliate token)  status, progress, stats, referrals, commissions, payouts
+  click      POST   code                      count a visit from an affiliate link
+  payout     POST   (Bearer affiliate token)  request payout of everything ready
+  profile    POST   (Bearer affiliate token)  {payout_method, payout} save where to be paid
+  admin      GET    (Bearer admin token)      affiliates, payouts, settings
+             PATCH  (Bearer admin token)      {id, status?, custom_pct?}   status: active|paused|rejected
+  detail     GET    (Bearer admin token)      ?id= one affiliate's members and commission
+  payouts    PATCH  (Bearer admin token)      {id, action: paid|reject, reference?}
+  bonus      POST   (Bearer admin token)      {id, amount, note}  e.g. quarterly profit share
+  settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count}
 
-Commission logic and storage are in _tv_aff.py.
+GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
+tv-affiliate-paid. Commission logic and storage are in _tv_aff.py.
 """
 import json
 import os
@@ -24,7 +29,18 @@ import _tv_aff as A
 from _auth import verify_token
 
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
-HOLD = f"INTERVAL '{A.HOLD_DAYS} days'"
+READY = A.ready_sql()
+
+
+def _iso(v):
+    return v.isoformat() if v else None
+
+
+def _details(raw):
+    try:
+        return json.loads(raw) if raw else {}
+    except ValueError:
+        return {"text": raw}
 
 
 class handler(BaseHTTPRequestHandler):
@@ -41,6 +57,8 @@ class handler(BaseHTTPRequestHandler):
             return self._me()
         if a == "admin":
             return self._admin_get()
+        if a == "detail":
+            return self._admin_detail()
         self._json(404, {"error": "unknown action"})
 
     def do_POST(self):
@@ -55,14 +73,18 @@ class handler(BaseHTTPRequestHandler):
             return self._payout()
         if a == "profile":
             return self._profile()
+        if a == "bonus":
+            return self._admin_bonus()
         self._json(404, {"error": "unknown action"})
 
     def do_PATCH(self):
         a = self._action()
         if a == "admin":
             return self._admin_patch()
-        if a == "paid":
-            return self._admin_paid()
+        if a == "payouts":
+            return self._admin_payout()
+        if a == "settings":
+            return self._admin_settings()
         self._json(404, {"error": "unknown action"})
 
     # ---------- affiliate ----------
@@ -73,45 +95,54 @@ class handler(BaseHTTPRequestHandler):
         phone = (b.get("phone") or "").strip()[:40]
         password = b.get("password") or ""
         code = (b.get("code") or "").strip().lower()
-        payout = (b.get("payout_info") or "").strip()[:300]
+        app = {k: (str(b.get(k) or "").strip()[:600]) for k in ("socials", "audience", "promote")}
         if not name or not EMAIL_RE.match(email):
             return self._json(400, {"error": "Please enter your name and a valid email."})
         if len(password) < 8:
             return self._json(400, {"error": "Your password needs at least 8 characters."})
         if code and not A.CODE_RE.match(code):
             return self._json(400, {"error": "Your link name can use 3 to 20 lowercase letters, numbers or underscores."})
+        if not app["socials"] or not app["promote"]:
+            return self._json(400, {"error": "Tell us where you'll share your link and how you'll promote it."})
+        try:
+            method, details = A.clean_payout(b.get("payout_method"), b.get("payout"))
+        except ValueError as e:
+            return self._json(400, {"error": str(e)})
         if not b.get("agree"):
             return self._json(400, {"error": "Please accept the affiliate terms."})
         ph, salt = A.hash_password(password)
         try:
             c = A.conn()
             cur = c.cursor()
+            cfg = A.settings(cur)
             for attempt in range(3):
                 try:
                     cur.execute("""
-                        INSERT INTO tv_affiliates (name, email, phone, code, password_hash, password_salt, payout_info, commission_pct)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, code
-                    """, (name, email, phone or None, code or A.new_code(), ph, salt, payout or None, A.DEFAULT_PCT))
+                        INSERT INTO tv_affiliates (name, email, phone, code, password_hash, password_salt, payout_method, payout_info,
+                                                   commission_pct, status, application)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s) RETURNING id, code
+                    """, (name, email, phone or None, code or A.new_code(), ph, salt, method, details, cfg["base_pct"], json.dumps(app)))
                     row = cur.fetchone()
                     c.commit()
                     c.close()
+                    A.ghl_tag(email, name, ["tv-affiliate-applied"])
                     return self._json(200, {"ok": True, "token": A.sign(row[0]), "code": row[1], "name": name})
                 except Exception as e:
                     c.rollback()
                     msg = str(e)
                     if "tv_affiliates_email_key" in msg:
                         c.close()
-                        return self._json(409, {"error": "That email already has an affiliate account. Log in instead."})
+                        return self._json(409, {"error": "That email has already applied. Log in instead."})
                     if "tv_affiliates_code_key" in msg and code:
                         c.close()
                         return self._json(409, {"error": "That link name is taken. Try another."})
                     if "tv_affiliates_code_key" not in msg:
                         raise
             c.close()
-            self._json(500, {"error": "Could not create your account. Please try again."})
+            self._json(500, {"error": "Could not send your application. Please try again."})
         except Exception as e:
             A.log("TV_AFF_REGISTER_ERR:", e)
-            self._json(500, {"error": "Could not create your account. Please try again."})
+            self._json(500, {"error": "Could not send your application. Please try again."})
 
     def _login(self):
         b = self._body()
@@ -128,8 +159,10 @@ class handler(BaseHTTPRequestHandler):
             return self._json(500, {"error": "Login is unavailable right now."})
         if not row or not A.check_password(password, row[3], row[4]):
             return self._json(401, {"error": "Wrong email or password."})
-        if row[5] != "active":
+        if row[5] == "paused":
             return self._json(403, {"error": "This affiliate account is paused. Email hello@thetradevault.co."})
+        if row[5] == "rejected":
+            return self._json(403, {"error": "Your application wasn't approved this time. Questions: hello@thetradevault.co."})
         self._json(200, {"ok": True, "token": A.sign(row[0]), "code": row[2], "name": row[1]})
 
     def _me(self):
@@ -139,17 +172,22 @@ class handler(BaseHTTPRequestHandler):
         try:
             c = A.conn()
             cur = c.cursor()
-            cur.execute("""SELECT id, name, email, code, commission_pct, status, payout_info, clicks, payout_status,
-                                  payout_requested_amt, created_at FROM tv_affiliates WHERE id = %s""", (aff,))
+            cur.execute("""SELECT id, name, email, code, status, payout_method, payout_info, clicks, created_at
+                             FROM tv_affiliates WHERE id = %s""", (aff,))
             p = cur.fetchone()
-            if not p:
+            if not p or p[4] in ("paused", "rejected"):
                 c.close()
                 return self._json(401, {"error": "not logged in"})
+            cfg = A.settings(cur)
+            count = A.personals(cur, aff)
+            pct = A.rate(cur, aff, cfg, count)
+            qualified = count >= cfg["unlock_count"]
             cur.execute(f"""
                 SELECT COALESCE(SUM(commission_usd) FILTER (WHERE status = 'pending'), 0),
-                       COALESCE(SUM(commission_usd) FILTER (WHERE status = 'pending' AND paid_at < NOW() - {HOLD}), 0),
+                       COALESCE(SUM(commission_usd) FILTER (WHERE status = 'pending' AND payout_id IS NULL AND {READY}), 0),
                        COALESCE(SUM(commission_usd) FILTER (WHERE status = 'paid'), 0),
-                       COALESCE(SUM(amount_usd) FILTER (WHERE status <> 'void'), 0)
+                       COALESCE(SUM(amount_usd) FILTER (WHERE status <> 'void'), 0),
+                       COALESCE(SUM(commission_usd) FILTER (WHERE status = 'pending' AND payout_id IS NOT NULL), 0)
                   FROM tv_aff_commissions WHERE affiliate_id = %s
             """, (aff,))
             s = cur.fetchone()
@@ -160,20 +198,30 @@ class handler(BaseHTTPRequestHandler):
             """, (aff,))
             refs = [{"member": A.mask(r[0]), "tier": r[1], "joined": r[2].isoformat(), "active": bool(r[3])} for r in cur.fetchall()]
             cur.execute(f"""
-                SELECT email, product, amount_usd, commission_usd, status, paid_at, paid_at < NOW() - {HOLD}
+                SELECT email, product, amount_usd, commission_usd, status, paid_at, {READY}, kind, pct, payout_id
                   FROM tv_aff_commissions WHERE affiliate_id = %s ORDER BY paid_at DESC LIMIT 200
             """, (aff,))
-            coms = [{"member": A.mask(r[0]), "product": r[1], "amount": float(r[2]), "commission": float(r[3]),
-                     "status": r[4] if r[4] != "pending" else ("payable" if r[6] else "pending"), "at": r[5].isoformat()}
-                    for r in cur.fetchall()]
+            coms = []
+            for r in cur.fetchall():
+                st = r[4]
+                if st == "pending":
+                    st = "requested" if r[9] else ("held" if not r[6] else ("payable" if qualified else "locked"))
+                coms.append({"member": A.mask(r[0]) if r[7] != "bonus" else "Bonus", "product": r[1], "amount": float(r[2]),
+                             "commission": float(r[3]), "status": st, "at": r[5].isoformat(), "kind": r[7], "pct": r[8]})
+            cur.execute("""SELECT id, amount_usd, method, details, status, reference, requested_at, decided_at
+                             FROM tv_aff_payouts WHERE affiliate_id = %s ORDER BY requested_at DESC LIMIT 50""", (aff,))
+            pays = [{"id": r[0], "amount": float(r[1]), "method": r[2], "to": A.payout_label(r[2], r[3]), "status": r[4],
+                     "reference": r[5] or "", "requested_at": _iso(r[6]), "decided_at": _iso(r[7])} for r in cur.fetchall()]
             c.close()
             self._json(200, {
-                "ok": True, "name": p[1], "email": p[2], "code": p[3], "pct": p[4], "status": p[5],
-                "payout_info": p[6] or "", "payout_status": p[8], "payout_requested": float(p[9] or 0),
-                "hold_days": A.HOLD_DAYS,
+                "ok": True, "name": p[1], "email": p[2], "code": p[3], "status": p[4], "pct": pct,
+                "payout_method": p[5] or "", "payout": _details(p[6]), "hold_days": A.HOLD_DAYS,
+                "program": {"personals": count, "unlock_count": cfg["unlock_count"], "qualified": qualified,
+                            "base_pct": cfg["base_pct"], "tier_pct": cfg["tier_pct"], "tier_count": cfg["tier_count"]},
                 "stats": {"clicks": p[7], "referrals": len(refs), "active": sum(1 for r in refs if r["active"]),
-                          "pending": float(s[0]), "payable": float(s[1]), "paid": float(s[2]), "sales": float(s[3])},
-                "referrals": refs, "commissions": coms,
+                          "pending": float(s[0]), "ready": float(s[1]), "paid": float(s[2]), "sales": float(s[3]),
+                          "requested": float(s[4])},
+                "referrals": refs, "commissions": coms, "payouts": pays,
             })
         except Exception as e:
             A.log("TV_AFF_ME_ERR:", e)
@@ -196,25 +244,36 @@ class handler(BaseHTTPRequestHandler):
         aff = self._aff()
         if not aff:
             return
-        info = (self._body().get("payout_info") or "").strip()[:300]
         try:
             c = A.conn()
             cur = c.cursor()
-            cur.execute("SELECT payout_status, payout_info FROM tv_affiliates WHERE id = %s", (aff,))
-            st, saved = cur.fetchone()
-            if st == "requested":
+            cur.execute("SELECT status, payout_method, payout_info FROM tv_affiliates WHERE id = %s", (aff,))
+            st, method, details = cur.fetchone()
+            if st != "active":
                 c.close()
-                return self._json(409, {"error": "You already have a payout request in progress."})
-            if not (info or saved):
+                return self._json(403, {"error": "Payouts open once your application is approved."})
+            cfg = A.settings(cur)
+            if A.personals(cur, aff) < cfg["unlock_count"]:
                 c.close()
-                return self._json(400, {"error": "Add your payout details (PayPal email or bank details) first."})
-            cur.execute(f"SELECT COALESCE(SUM(commission_usd), 0) FROM tv_aff_commissions WHERE affiliate_id = %s AND status = 'pending' AND paid_at < NOW() - {HOLD}", (aff,))
+                return self._json(400, {"error": f"Payouts unlock once you've referred {cfg['unlock_count']} paying members."})
+            if method not in ("paypal", "crypto"):
+                c.close()
+                return self._json(400, {"error": "Add your PayPal or crypto details first."})
+            cur.execute("SELECT 1 FROM tv_aff_payouts WHERE affiliate_id = %s AND status = 'requested'", (aff,))
+            if cur.fetchone():
+                c.close()
+                return self._json(409, {"error": "You already have a payout on its way."})
+            cur.execute(f"""SELECT COALESCE(SUM(commission_usd), 0) FROM tv_aff_commissions
+                             WHERE affiliate_id = %s AND status = 'pending' AND payout_id IS NULL AND {READY}""", (aff,))
             amount = float(cur.fetchone()[0])
             if amount <= 0:
                 c.close()
-                return self._json(400, {"error": f"Nothing is ready to pay out yet. Commission becomes payable {A.HOLD_DAYS} days after each payment."})
-            cur.execute("""UPDATE tv_affiliates SET payout_status = 'requested', payout_requested_at = NOW(), payout_requested_amt = %s,
-                                  payout_info = COALESCE(NULLIF(%s, ''), payout_info) WHERE id = %s""", (amount, info, aff))
+                return self._json(400, {"error": f"Nothing is ready yet. Commission clears {A.HOLD_DAYS} days after each payment."})
+            cur.execute("""INSERT INTO tv_aff_payouts (affiliate_id, amount_usd, method, details) VALUES (%s, %s, %s, %s) RETURNING id""",
+                        (aff, amount, method, details))
+            pid = cur.fetchone()[0]
+            cur.execute(f"""UPDATE tv_aff_commissions SET payout_id = %s
+                             WHERE affiliate_id = %s AND status = 'pending' AND payout_id IS NULL AND {READY}""", (pid, aff))
             c.commit()
             c.close()
             self._json(200, {"ok": True, "amount": amount})
@@ -226,12 +285,14 @@ class handler(BaseHTTPRequestHandler):
         aff = self._aff()
         if not aff:
             return
-        info = (self._body().get("payout_info") or "").strip()[:300]
-        if not info:
-            return self._json(400, {"error": "Enter your PayPal email or bank details."})
+        b = self._body()
+        try:
+            method, details = A.clean_payout(b.get("payout_method"), b.get("payout"))
+        except ValueError as e:
+            return self._json(400, {"error": str(e)})
         c = A.conn()
         cur = c.cursor()
-        cur.execute("UPDATE tv_affiliates SET payout_info = %s WHERE id = %s", (info, aff))
+        cur.execute("UPDATE tv_affiliates SET payout_method = %s, payout_info = %s WHERE id = %s", (method, details, aff))
         c.commit()
         c.close()
         self._json(200, {"ok": True})
@@ -243,67 +304,174 @@ class handler(BaseHTTPRequestHandler):
         try:
             c = A.conn()
             cur = c.cursor()
+            cfg = A.settings(cur)
             cur.execute(f"""
-                SELECT a.id, a.name, a.email, a.phone, a.code, a.commission_pct, a.status, a.payout_info, a.clicks,
-                       a.payout_status, a.payout_requested_amt, a.payout_requested_at, a.created_at,
+                SELECT a.id, a.name, a.email, a.phone, a.code, a.custom_pct, a.status, a.payout_method, a.payout_info, a.clicks,
+                       a.created_at, a.application, a.reviewed_at,
                        (SELECT COUNT(*) FROM tv_aff_referrals r WHERE r.affiliate_id = a.id),
-                       COALESCE((SELECT SUM(amount_usd) FROM tv_aff_commissions m WHERE m.affiliate_id = a.id AND m.status <> 'void'), 0),
+                       (SELECT COUNT(*) FROM tv_aff_referrals r WHERE r.affiliate_id = a.id
+                           AND EXISTS (SELECT 1 FROM tv_payments p WHERE p.email = r.email AND NOT p.refunded)),
+                       COALESCE((SELECT SUM(amount_usd) FROM tv_aff_commissions m WHERE m.affiliate_id = a.id AND m.status <> 'void' AND m.kind = 'commission'), 0),
                        COALESCE((SELECT SUM(commission_usd) FROM tv_aff_commissions m WHERE m.affiliate_id = a.id AND m.status = 'pending'), 0),
-                       COALESCE((SELECT SUM(commission_usd) FROM tv_aff_commissions m WHERE m.affiliate_id = a.id AND m.status = 'pending' AND m.paid_at < NOW() - {HOLD}), 0),
+                       COALESCE((SELECT SUM(commission_usd) FROM tv_aff_commissions m WHERE m.affiliate_id = a.id AND m.status = 'pending' AND m.payout_id IS NULL AND {READY}), 0),
                        COALESCE((SELECT SUM(commission_usd) FROM tv_aff_commissions m WHERE m.affiliate_id = a.id AND m.status = 'paid'), 0)
                   FROM tv_affiliates a ORDER BY a.created_at DESC
             """)
-            rows = cur.fetchall()
+            affs = []
+            for r in cur.fetchall():
+                count = r[14]
+                pct = r[5] if r[5] is not None else (cfg["tier_pct"] if count >= cfg["tier_count"] else cfg["base_pct"])
+                affs.append({"id": r[0], "name": r[1], "email": r[2], "phone": r[3], "code": r[4], "custom_pct": r[5], "pct": pct,
+                             "status": r[6], "payout_method": r[7] or "", "payout_to": A.payout_label(r[7], r[8]), "clicks": r[9],
+                             "created_at": _iso(r[10]), "application": _details(r[11]), "reviewed_at": _iso(r[12]),
+                             "referrals": r[13], "personals": count, "qualified": count >= cfg["unlock_count"],
+                             "sales": float(r[15]), "pending": float(r[16]), "ready": float(r[17]), "paid": float(r[18])})
+            cur.execute("""SELECT p.id, p.affiliate_id, a.name, a.email, p.amount_usd, p.method, p.details, p.status, p.reference,
+                                  p.requested_at, p.decided_at
+                             FROM tv_aff_payouts p JOIN tv_affiliates a ON a.id = p.affiliate_id
+                            ORDER BY (p.status = 'requested') DESC, p.requested_at DESC LIMIT 300""")
+            pays = [{"id": r[0], "affiliate_id": r[1], "name": r[2], "email": r[3], "amount": float(r[4]), "method": r[5],
+                     "details": _details(r[6]), "to": A.payout_label(r[5], r[6]), "status": r[7], "reference": r[8] or "",
+                     "requested_at": _iso(r[9]), "decided_at": _iso(r[10])} for r in cur.fetchall()]
             c.close()
-            out = [{"id": r[0], "name": r[1], "email": r[2], "phone": r[3], "code": r[4], "pct": r[5], "status": r[6],
-                    "payout_info": r[7] or "", "clicks": r[8], "payout_status": r[9], "payout_requested": float(r[10] or 0),
-                    "payout_requested_at": r[11].isoformat() if r[11] else None, "created_at": r[12].isoformat(),
-                    "referrals": r[13], "sales": float(r[14]), "pending": float(r[15]), "payable": float(r[16]), "paid": float(r[17])}
-                   for r in rows]
-            self._json(200, {"ok": True, "affiliates": out})
+            self._json(200, {"ok": True, "affiliates": affs, "payouts": pays, "settings": cfg, "hold_days": A.HOLD_DAYS})
         except Exception as e:
             A.log("TV_AFF_ADMIN_ERR:", e)
+            self._json(500, {"error": str(e)})
+
+    def _admin_detail(self):
+        if not self._admin():
+            return
+        try:
+            aff = int((parse_qs(urlparse(self.path).query).get("id") or ["0"])[0])
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("""
+                SELECT r.email, r.tier, r.created_at,
+                       COALESCE((SELECT SUM(amount_usd) FROM tv_payments p WHERE p.email = r.email AND NOT p.refunded), 0)
+                  FROM tv_aff_referrals r WHERE r.affiliate_id = %s ORDER BY r.created_at DESC
+            """, (aff,))
+            refs = [{"email": r[0], "tier": r[1], "joined": _iso(r[2]), "paid": float(r[3])} for r in cur.fetchall()]
+            cur.execute(f"""SELECT email, product, amount_usd, commission_usd, status, paid_at, {READY}, kind, pct, payout_id
+                              FROM tv_aff_commissions WHERE affiliate_id = %s ORDER BY paid_at DESC""", (aff,))
+            coms = [{"email": r[0], "product": r[1], "amount": float(r[2]), "commission": float(r[3]), "at": _iso(r[5]),
+                     "status": r[4] if r[4] != "pending" else ("requested" if r[9] else ("ready" if r[6] else "held")),
+                     "kind": r[7], "pct": r[8]} for r in cur.fetchall()]
+            c.close()
+            self._json(200, {"ok": True, "referrals": refs, "commissions": coms})
+        except Exception as e:
+            A.log("TV_AFF_DETAIL_ERR:", e)
             self._json(500, {"error": str(e)})
 
     def _admin_patch(self):
         if not self._admin():
             return
         b = self._body()
+        aff = int(b.get("id") or 0)
         sets, vals = [], []
-        if "pct" in b:
-            pct = int(b["pct"])
-            if not 0 <= pct <= 100:
-                return self._json(400, {"error": "Commission must be 0 to 100%."})
-            sets.append("commission_pct = %s")
-            vals.append(pct)
-        if b.get("status") in ("active", "paused"):
+        if "custom_pct" in b:
+            v = b["custom_pct"]
+            if v in (None, ""):
+                sets.append("custom_pct = NULL")
+            else:
+                v = int(v)
+                if not 0 <= v <= 100:
+                    return self._json(400, {"error": "Commission must be 0 to 100%."})
+                sets.append("custom_pct = %s")
+                vals.append(v)
+        status = b.get("status")
+        if status in ("active", "paused", "rejected"):
             sets.append("status = %s")
-            vals.append(b["status"])
-        if not sets or not b.get("id"):
+            vals.append(status)
+        if not sets or not aff:
             return self._json(400, {"error": "Nothing to update."})
         c = A.conn()
         cur = c.cursor()
-        cur.execute(f"UPDATE tv_affiliates SET {', '.join(sets)} WHERE id = %s", vals + [int(b["id"])])
+        cur.execute("SELECT status, email, name FROM tv_affiliates WHERE id = %s", (aff,))
+        before = cur.fetchone()
+        if not before:
+            c.close()
+            return self._json(404, {"error": "No such affiliate."})
+        if status in ("active", "rejected") and before[0] == "pending":
+            sets.append("reviewed_at = NOW()")
+        cur.execute(f"UPDATE tv_affiliates SET {', '.join(sets)} WHERE id = %s", vals + [aff])
+        c.commit()
+        c.close()
+        if before[0] == "pending" and status == "active":
+            A.ghl_tag(before[1], before[2], ["tv-affiliate-approved"])
+        elif before[0] == "pending" and status == "rejected":
+            A.ghl_tag(before[1], before[2], ["tv-affiliate-rejected"])
+        self._json(200, {"ok": True})
+
+    def _admin_payout(self):
+        if not self._admin():
+            return
+        b = self._body()
+        pid, act = int(b.get("id") or 0), b.get("action")
+        ref = (b.get("reference") or "").strip()[:200]
+        if not pid or act not in ("paid", "reject"):
+            return self._json(400, {"error": "id and action required"})
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("""SELECT p.affiliate_id, a.email, a.name FROM tv_aff_payouts p JOIN tv_affiliates a ON a.id = p.affiliate_id
+                        WHERE p.id = %s AND p.status = 'requested'""", (pid,))
+        row = cur.fetchone()
+        if not row:
+            c.close()
+            return self._json(409, {"error": "That payout was already handled."})
+        if act == "paid":
+            # Pays what's still reserved: anything refunded since the request dropped out.
+            cur.execute("SELECT COALESCE(SUM(commission_usd), 0) FROM tv_aff_commissions WHERE payout_id = %s AND status = 'pending'", (pid,))
+            amount = float(cur.fetchone()[0])
+            cur.execute("UPDATE tv_aff_commissions SET status = 'paid' WHERE payout_id = %s AND status = 'pending'", (pid,))
+            cur.execute("UPDATE tv_aff_payouts SET status = 'paid', amount_usd = %s, reference = %s, decided_at = NOW() WHERE id = %s",
+                        (amount, ref or None, pid))
+        else:
+            cur.execute("UPDATE tv_aff_commissions SET payout_id = NULL WHERE payout_id = %s AND status = 'pending'", (pid,))
+            cur.execute("UPDATE tv_aff_payouts SET status = 'rejected', reference = %s, decided_at = NOW() WHERE id = %s", (ref or None, pid))
+        c.commit()
+        c.close()
+        if act == "paid":
+            A.ghl_tag(row[1], row[2], ["tv-affiliate-paid"])
+        self._json(200, {"ok": True})
+
+    def _admin_bonus(self):
+        if not self._admin():
+            return
+        b = self._body()
+        aff = int(b.get("id") or 0)
+        note = (b.get("note") or "Bonus").strip()[:80]
+        try:
+            amount = round(float(b.get("amount") or 0), 2)
+        except ValueError:
+            amount = 0
+        if not aff or not 0 < amount <= 100000:
+            return self._json(400, {"error": "Pick an affiliate and an amount."})
+        import secrets
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("""INSERT INTO tv_aff_commissions (affiliate_id, whop_id, email, product, amount_usd, commission_usd, paid_at, kind)
+                       SELECT id, %s, '', %s, 0, %s, NOW(), 'bonus' FROM tv_affiliates WHERE id = %s""",
+                    ("bonus-" + secrets.token_hex(6), note, amount, aff))
         c.commit()
         c.close()
         self._json(200, {"ok": True})
 
-    def _admin_paid(self):
+    def _admin_settings(self):
         if not self._admin():
             return
         b = self._body()
-        aff, act = int(b.get("id") or 0), b.get("action")
-        if not aff or act not in ("approve", "reject"):
-            return self._json(400, {"error": "id and action required"})
+        limits = {"base_pct": (0, 100), "tier_pct": (0, 100), "tier_count": (1, 10000), "unlock_count": (0, 10000)}
         c = A.conn()
         cur = c.cursor()
-        if act == "approve":
-            # Pays what was requested: commission past the hold at request time.
-            cur.execute("SELECT payout_requested_at FROM tv_affiliates WHERE id = %s", (aff,))
-            at = cur.fetchone()[0]
-            cur.execute(f"""UPDATE tv_aff_commissions SET status = 'paid'
-                             WHERE affiliate_id = %s AND status = 'pending' AND paid_at < COALESCE(%s, NOW()) - {HOLD}""", (aff, at))
-        cur.execute("UPDATE tv_affiliates SET payout_status = 'none', payout_requested_amt = NULL, payout_requested_at = NULL WHERE id = %s", (aff,))
+        for k, (lo, hi) in limits.items():
+            if k in b:
+                v = int(b[k])
+                if not lo <= v <= hi:
+                    c.close()
+                    return self._json(400, {"error": f"{k} must be {lo} to {hi}."})
+                cur.execute("""INSERT INTO tv_aff_settings (key, value) VALUES (%s, %s)
+                               ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value""", (k, str(v)))
         c.commit()
         c.close()
         self._json(200, {"ok": True})
@@ -314,7 +482,7 @@ class handler(BaseHTTPRequestHandler):
 
     def _body(self):
         try:
-            n = min(int(self.headers.get("Content-Length", 0)), 8000)
+            n = min(int(self.headers.get("Content-Length", 0)), 12000)
             return json.loads(self.rfile.read(n) or b"{}")
         except Exception:
             return {}
