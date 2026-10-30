@@ -32,6 +32,26 @@ PLAN_TAGS = {
 }
 
 
+def purchase_tags(slug, title):
+    """Tags from the Whop product title, so new products tag themselves.
+    e.g. "Sniper Elite - $999 Deposit" -> purchased, purchased-deposit, purchased-elite"""
+    t = title.lower()
+    if "tradevault" in t:
+        tags = ["tradevault-purchased"]
+        for key in ("tools", "community", "elite"):
+            if key in t:
+                tags.append("tradevault-" + key)
+        return tags
+    tags = list(PLAN_TAGS.get(slug, ["purchased"]))
+    if "deposit" in t:
+        tags.append("purchased-deposit")
+    for key, tag in (("fast start", "purchased-fast-start"), ("accelerator", "purchased-accelerator"),
+                     ("elite", "purchased-elite")):
+        if key in t and tag not in tags:
+            tags.append(tag)
+    return tags
+
+
 class handler(BaseHTTPRequestHandler):
 
     def log_message(self, *args):
@@ -72,17 +92,22 @@ class handler(BaseHTTPRequestHandler):
                 self._json(200, {"ok": True, "skipped": event_type})
                 return
 
-            data  = event.get("data", {})
+            data  = event.get("data", {}) or {}
             # membership.activated nests user under data.user; member.created may use data directly
             user  = data.get("user") or data.get("customer") or {}
-            plan  = data.get("plan") or data.get("product") or {}
+            plan  = data.get("plan") or {}
+            prod  = data.get("product") or {}
+            bill  = data.get("billing_address") or {}
+            user, plan, prod, bill = [x if isinstance(x, dict) else {} for x in (user, plan, prod, bill)]
 
-            email = (user.get("email") or data.get("email") or "").strip().lower()
-            name  = (user.get("name") or user.get("username") or
+            email = (user.get("email") or data.get("email") or data.get("user_email") or "").strip().lower()
+            name  = (user.get("name") or bill.get("name") or user.get("username") or
                      user.get("display_name") or "").strip()
-            phone = (user.get("phone_number") or "").strip()
-            slug  = (plan.get("slug") or plan.get("id") or
-                     data.get("plan_id") or data.get("product_slug") or "").strip()
+            phone = (user.get("phone_number") or data.get("phone") or "").strip()
+            slug  = str(plan.get("slug") or plan.get("id") or
+                        data.get("plan_id") or data.get("product_slug") or "").strip()
+            title = str(prod.get("title") or prod.get("name") or
+                        plan.get("title") or plan.get("name") or "").strip()
 
             if not email:
                 self._json(400, {"error": "no email in payload"})
@@ -91,7 +116,7 @@ class handler(BaseHTTPRequestHandler):
             parts = name.split(" ", 1)
             first = parts[0] if parts else ""
             last  = parts[1] if len(parts) > 1 else ""
-            tags  = PLAN_TAGS.get(slug, ["purchased"])
+            tags  = purchase_tags(slug, title)
 
             ghl_result = self._ghl_upsert(email, first, last, phone, tags)
             self._record_affiliate_purchase(email, slug, None)
@@ -160,12 +185,12 @@ class handler(BaseHTTPRequestHandler):
             print("SLACK_PAYMENT_ERR:", e, file=sys.stderr)
 
     def _ghl_upsert(self, email, first, last, phone, tags):
+        """Upsert the contact, then ADD tags (never removes existing ones like pdf-optin)."""
         import sys
         if not GHL_API_KEY:
             print("GHL_UPSERT: no GHL_API_KEY set", file=sys.stderr)
             return {"error": "no api key"}
 
-        # GHL API v2
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + GHL_API_KEY,
@@ -174,45 +199,29 @@ class handler(BaseHTTPRequestHandler):
         host = "services.leadconnectorhq.com"
 
         try:
-            import urllib.parse
-            # Search for existing contact by email
-            conn = http.client.HTTPSConnection(host)
-            conn.request(
-                "GET",
-                "/contacts/?locationId=" + GHL_LOCATION + "&query=" + urllib.parse.quote(email),
-                headers=headers,
-            )
-            res  = conn.getresponse()
-            body = res.read()
-            data = json.loads(body)
-            contacts = data.get("contacts", [])
-            print("GHL_SEARCH:", res.status, len(contacts), "contacts", file=sys.stderr)
-
-            payload = {
-                "locationId": GHL_LOCATION,
-                "email": email,
-                "firstName": first,
-                "lastName": last,
-                "tags": tags,
-            }
+            payload = {"locationId": GHL_LOCATION, "email": email, "source": "Whop purchase"}
+            if first:
+                payload["firstName"] = first
+            if last:
+                payload["lastName"] = last
             if phone:
                 payload["phone"] = phone
 
-            if contacts:
-                cid = contacts[0]["id"]
-                conn2 = http.client.HTTPSConnection(host)
-                conn2.request("PUT", "/contacts/" + cid, json.dumps(payload), headers)
-                res2  = conn2.getresponse()
-                body2 = res2.read()
-                print("GHL_UPDATE:", res2.status, body2[:300], file=sys.stderr)
-                return {"status": res2.status, "body": body2.decode()[:300]}
-            else:
-                conn3 = http.client.HTTPSConnection(host)
-                conn3.request("POST", "/contacts/", json.dumps(payload), headers)
-                res3  = conn3.getresponse()
-                body3 = res3.read()
-                print("GHL_CREATE:", res3.status, body3[:300], file=sys.stderr)
-                return {"status": res3.status, "body": body3.decode()[:300]}
+            conn = http.client.HTTPSConnection(host, timeout=10)
+            conn.request("POST", "/contacts/upsert", json.dumps(payload), headers)
+            res  = conn.getresponse()
+            body = res.read()
+            print("GHL_UPSERT:", res.status, body[:300], file=sys.stderr)
+            cid = ((json.loads(body or b"{}").get("contact") or {}).get("id")) if res.status < 300 else None
+            if not cid:
+                return {"status": res.status, "body": body.decode()[:300]}
+
+            conn2 = http.client.HTTPSConnection(host, timeout=10)
+            conn2.request("POST", "/contacts/" + cid + "/tags", json.dumps({"tags": tags}), headers)
+            res2  = conn2.getresponse()
+            body2 = res2.read()
+            print("GHL_TAGS:", res2.status, body2[:300], file=sys.stderr)
+            return {"status": res2.status, "contact": cid}
         except Exception as e:
             print("GHL_UPSERT_ERR:", e, file=sys.stderr)
             return {"error": str(e)}
