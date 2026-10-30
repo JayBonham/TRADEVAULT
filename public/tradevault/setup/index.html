@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Set Up Your Vault — The Trade Vault</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="../assets/tv-icon.png">
+<style>
+:root{
+  --g0:#050A14; --g1:#08111F; --g2:#0E1A2E;
+  --hair:rgba(255,255,255,.08); --hair-2:rgba(255,255,255,.14);
+  --tx:#EAF0FA; --tx-dim:#B3C0D4; --tx-mute:#7F8DA3;
+  --acc:#4B9EFF; --acc-soft:rgba(75,158,255,.12); --acc-rgb:75,158,255;
+  --ok:#7BE0B0; --warn:#F5B85C;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --max:1120px;
+  --display:'Instrument Sans',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--g0)}
+body{background:transparent;color:var(--tx);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip;min-height:100vh;display:flex;flex-direction:column}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(900px 600px at 12% 8%,rgba(28,72,170,.24),transparent 70%),
+    radial-gradient(800px 600px at 92% 45%,rgba(75,158,255,.09),transparent 70%),
+    radial-gradient(1000px 700px at 30% 100%,rgba(18,44,120,.22),transparent 70%),
+    var(--g0)}
+main{flex:1}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+::selection{background:var(--acc);color:#fff}
+@keyframes blink{50%{opacity:.25}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px);filter:blur(6px)}}
+
+.W{max-width:calc(var(--max) + 2 * 24px);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height:1.02;text-wrap:balance}
+h1{font-size:clamp(40px,5.6vw,72px)}
+h2{font-size:clamp(28px,3.4vw,40px)}
+.hl{color:var(--acc)}
+.kick{display:block;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-mute);margin-bottom:18px}
+.kick b{font-weight:500;color:var(--acc)}
+.kick b::after{content:"—";margin:0 .7em;color:var(--tx-mute)}
+.lede{color:var(--tx-dim);max-width:58ch;margin-top:18px}
+.mono{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.view{animation:rise .8s var(--ease) both}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:16px 34px;border-radius:999px;background:#fff;color:#07101F;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em;border:0;cursor:pointer;
+  box-shadow:0 10px 40px rgba(var(--acc-rgb),.22),inset 0 -2px 0 rgba(0,0,0,.08);transition:box-shadow .2s,transform .2s,opacity .2s}
+.btn:hover{box-shadow:0 14px 50px rgba(var(--acc-rgb),.38);transform:translateY(-1px)}
+.btn .arr{color:var(--acc)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-g{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:14px 26px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--hair-2);font-family:var(--display);font-weight:600;font-size:16px;cursor:pointer;transition:background .2s}
+.btn-g:hover{background:rgba(255,255,255,.07)}
+
+/* nav */
+.nav{position:fixed;top:14px;left:0;right:0;z-index:200;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.nav-in{max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 18px;min-height:60px;border-radius:18px;
+  background:rgba(8,17,31,.62);border:1px solid var(--hair-2);box-shadow:0 10px 40px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.brand img:first-child{width:26px;height:26px;object-fit:contain}
+.brand img+img{height:13px;width:auto;opacity:.92}
+.pill{display:inline-flex;align-items:center;gap:9px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--hair-2);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-dim);white-space:nowrap}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:blink 2s infinite}
+
+/* hero */
+.top{padding-top:clamp(128px,17vh,168px);padding-bottom:clamp(36px,5vh,56px)}
+.top h1{max-width:14ch}
+.plan-chip{display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:10px 16px;border-radius:14px;background:var(--acc-soft);border:1px solid rgba(var(--acc-rgb),.35);font-size:14.5px;color:var(--tx-dim)}
+.plan-chip b{font-family:var(--display);font-weight:600;color:var(--tx)}
+
+/* steps */
+.step{padding-block:clamp(40px,6vh,64px);border-top:1px solid var(--hair)}
+.step-h{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.step-h p{color:var(--tx-mute);font-size:15px;max-width:46ch}
+.step-h .kick{margin-bottom:12px}
+
+/* choice cards (radio inside label) */
+.pick{position:relative;display:flex;flex-direction:column;min-width:0;background:rgba(255,255,255,.025);border:1px solid var(--hair);border-radius:20px;overflow:hidden;cursor:pointer;transition:background .25s,border-color .25s,box-shadow .25s,transform .25s var(--ease)}
+.pick:hover{background:rgba(255,255,255,.045);border-color:var(--hair-2)}
+.pick input{position:absolute;opacity:0;pointer-events:none}
+.pick:has(input:focus-visible){outline:2px solid var(--acc);outline-offset:3px}
+.pick:has(input:checked){border-color:var(--acc);background:rgba(var(--acc-rgb),.07);box-shadow:0 0 0 1px var(--acc),0 20px 60px rgba(var(--acc-rgb),.16)}
+.pick .ck{position:absolute;top:14px;right:14px;z-index:3;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(5,10,20,.65);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .2s,border-color .2s}
+.pick .ck svg{opacity:0;transition:opacity .2s}
+.pick:has(input:checked) .ck{background:var(--acc);border-color:var(--acc)}
+.pick:has(input:checked) .ck svg{opacity:1}
+.pick .bd{padding:18px 20px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pick h3{font-size:23px}
+.pick .role{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+.pick p{color:var(--tx-dim);font-size:14.5px;line-height:1.55}
+.pick .uses{margin-top:auto;padding-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
+.pick .uses b{font-weight:500;color:var(--tx-dim)}
+
+.edus{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.edus .ph{position:relative;aspect-ratio:4/4.4;overflow:hidden;background:linear-gradient(170deg,#0B1628,#0E1D35)}
+.edus .ph img{width:100%;height:100%;object-fit:cover;filter:saturate(.85);transition:transform 1s var(--ease)}
+.edus .pick:hover .ph img{transform:scale(1.04)}
+.edus .ph img.zoom{transform:scale(1.75);transform-origin:50% 8%}
+.edus .pick:hover .ph img.zoom{transform:scale(1.82)}
+.edus .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(5,10,20,.85))}
+
+.scans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.scans .shot{aspect-ratio:16/10;overflow:hidden;background:var(--g1);border-bottom:1px solid var(--hair)}
+.scans .shot img{width:100%;height:100%;object-fit:cover}
+.scans .mk{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.match{display:none;position:absolute;top:14px;left:14px;z-index:3;padding:5px 11px;border-radius:999px;background:rgba(5,10,20,.7);border:1px solid rgba(var(--acc-rgb),.5);font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pick.is-match .match{display:block}
+
+/* includes (tools / elite) */
+.incl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.incl .card{background:rgba(255,255,255,.025);border:1px solid var(--hair);border-radius:20px;overflow:hidden;min-width:0}
+.incl .shot{aspect-ratio:16/10;overflow:hidden;border-bottom:1px solid var(--hair)}
+.incl .shot img{width:100%;height:100%;object-fit:cover}
+.incl .bd{padding:16px 20px 20px}
+.incl h3{font-size:21px}
+.incl .mk{margin-top:4px}
+
+/* fields */
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:860px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.field label{font-family:var(--display);font-weight:600;font-size:16px}
+.field label small{font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);margin-left:8px}
+.inp{display:flex;align-items:center;gap:0;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--hair-2);transition:border-color .2s,box-shadow .2s}
+.inp:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.18)}
+.inp span{padding-left:16px;color:var(--tx-mute);font-family:var(--mono);font-size:15px}
+.inp input{flex:1;min-width:0;background:none;border:0;outline:0;padding:16px 16px 16px 6px;font-size:16px}
+.inp input::placeholder{color:#55647A}
+.field .help{font-size:13.5px;color:var(--tx-mute);line-height:1.5}
+
+/* confirm */
+.confirm{margin-top:40px;padding:26px 26px 28px;border-radius:22px;background:rgba(255,255,255,.03);border:1px solid var(--hair-2);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px 28px;align-items:center}
+.sum{display:flex;flex-wrap:wrap;gap:10px 28px}
+.sum div{min-width:0}
+.sum .mono{display:block;margin-bottom:4px}
+.sum b{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em}
+.sum b.empty{color:var(--tx-mute);font-weight:500}
+.confirm .lock{grid-column:1/-1;font-size:13.5px;color:var(--tx-mute);border-top:1px solid var(--hair);padding-top:16px}
+.confirm .lock a{color:var(--tx-dim);text-decoration:underline;text-underline-offset:3px}
+.err{grid-column:1/-1;color:#FF8F8F;font-size:14.5px}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid rgba(7,16,31,.25);border-top-color:#07101F;animation:spin .8s linear infinite}
+
+/* center states */
+.center{padding-top:clamp(140px,20vh,200px);padding-bottom:80px;text-align:center}
+.center h1{margin:0 auto;max-width:14ch}
+.center .lede{margin:18px auto 0}
+.center .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.lookup{display:flex;gap:10px;max-width:520px;margin:32px auto 0}
+.lookup .inp{flex:1}
+.lookup .inp input{padding-left:16px}
+.chk{width:68px;height:68px;border-radius:50%;margin:0 auto 26px;display:grid;place-items:center;background:var(--acc-soft);border:1px solid rgba(var(--acc-rgb),.45);box-shadow:0 0 60px rgba(var(--acc-rgb),.3)}
+.next{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:48px;text-align:left}
+.next .card{padding:22px 22px 24px;border-radius:20px;background:rgba(255,255,255,.025);border:1px solid var(--hair);min-width:0}
+.next .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+.next h3{font-size:20px;margin-bottom:8px}
+.next p{color:var(--tx-dim);font-size:14.5px}
+.picked{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:22px}
+.picked span{padding:7px 14px;border-radius:999px;border:1px solid var(--hair-2);background:rgba(255,255,255,.03);font-size:14px;color:var(--tx-dim)}
+.picked b{color:var(--tx);font-weight:600}
+.loader{width:34px;height:34px;margin:0 auto;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
+
+footer{border-top:1px solid var(--hair);padding-block:32px 40px;margin-top:40px}
+footer .W{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer a{text-decoration:underline;text-underline-offset:3px}
+
+@media(max-width:1023px){
+  .edus{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .scans,.incl,.next{grid-template-columns:minmax(0,1fr)}
+  .scans .shot,.incl .shot{aspect-ratio:16/8}
+  .fields{grid-template-columns:minmax(0,1fr)}
+  .confirm{grid-template-columns:minmax(0,1fr);padding:22px 20px 24px}
+  .confirm .btn{width:100%}
+  .lookup{flex-direction:column}
+  .lookup .btn{width:100%}
+}
+@media(max-width:480px){
+  .edus{gap:10px}
+  .edus .bd{padding:14px 14px 16px}
+  .edus h3{font-size:19px}
+  .edus p{display:none}
+  .pill{font-size:9px;letter-spacing:.12em;padding:7px 12px}
+  .brand img+img{height:11px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a href="/" class="brand" aria-label="The Trade Vault">
+      <img src="../assets/tv-icon.png" alt="" width="26" height="26">
+      <img src="../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13">
+    </a>
+    <span class="pill"><span class="dot"></span>Member setup</span>
+  </div>
+</header>
+
+<main>
+
+<!-- loading -->
+<section class="center W" id="v-load">
+  <div class="loader" aria-label="Loading"></div>
+</section>
+
+<!-- find membership by email -->
+<section class="center W view" id="v-find" hidden>
+  <span class="kick"><b>01</b>Welcome to the Vault</span>
+  <h1>Let's set up <span class="hl">your Vault.</span></h1>
+  <p class="lede">Enter the email you used at checkout and we'll find your membership.</p>
+  <form class="lookup" id="findForm" novalidate>
+    <div class="inp"><input type="email" id="f-email" placeholder="you@email.com" autocomplete="email" required aria-label="Checkout email"></div>
+    <button class="btn" type="submit" id="findBtn">Continue <span class="arr">→</span></button>
+  </form>
+  <p class="lede" id="findMsg" hidden style="color:var(--warn)"></p>
+</section>
+
+<!-- setup form -->
+<form id="v-setup" class="view" hidden novalidate>
+  <section class="top">
+    <div class="W">
+      <span class="kick"><b>✓</b>Welcome to the Vault</span>
+      <h1>Let's set up <span class="hl">your Vault<span data-fname></span>.</span></h1>
+      <p class="lede" id="setupLede"></p>
+      <div class="plan-chip"><span class="mono" style="color:var(--acc)">Your plan</span><b id="planName"></b></div>
+    </div>
+  </section>
+
+  <!-- community: educator -->
+  <section class="step" data-tier="community">
+    <div class="W">
+      <div class="step-h">
+        <div><span class="kick"><b>01</b>Your educator</span><h2>Who do you want to learn from?</h2></div>
+        <p>You'll join their live sessions and learn their method. Completely new? Start with Jay.</p>
+      </div>
+      <div class="edus">
+        <label class="pick">
+          <input type="radio" name="educator" value="jay" data-scanner="killshot">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="ph"><img class="zoom" src="../assets/jay-bonham-2.webp" alt="" loading="lazy"></div>
+          <div class="bd">
+            <div class="role">Founder · US30 Sniper</div>
+            <h3>Jay Bonham</h3>
+            <p>UKNF-regulated trader and Liquidity Provider. Built the Killshot methodology from years of active trading on US30.</p>
+            <div class="uses">Trades with <b>Killshot</b></div>
+          </div>
+        </label>
+        <label class="pick">
+          <input type="radio" name="educator" value="adam" data-scanner="killshot">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="ph"><img src="../assets/adam-haase.webp" alt="" loading="lazy" style="object-position:center 18%"></div>
+          <div class="bd">
+            <div class="role">Killshot Specialist · Polish Community</div>
+            <h3>Adam Haase</h3>
+            <p>Trading since 2019. Combines Killshot with Price Action across US30, NAS100 and Gold.</p>
+            <div class="uses">Trades with <b>Killshot</b></div>
+          </div>
+        </label>
+        <label class="pick">
+          <input type="radio" name="educator" value="tyler" data-scanner="smartshot">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="ph"><img src="../assets/tyler-collins-cut.webp" alt="" loading="lazy" style="object-position:center 8%"></div>
+          <div class="bd">
+            <div class="role">Gold &amp; NQ Specialist</div>
+            <h3>Tyler Collins</h3>
+            <p>9 years trading futures, forex, crypto and commodities. Now focused on Gold and NQ with Smart Money Concepts.</p>
+            <div class="uses">Trades with <b>Smartshot</b></div>
+          </div>
+        </label>
+        <label class="pick">
+          <input type="radio" name="educator" value="andrew" data-scanner="spectrum">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="ph"><img src="../assets/andrew-bridges.jpg" alt="" loading="lazy" style="object-position:center 15%"></div>
+          <div class="bd">
+            <div class="role">Technical Specialist</div>
+            <h3>Andrew Bridges</h3>
+            <p>15 years in financial markets. Institutional methodology from fund risk and strategy desks on DAX, Gold and ES.</p>
+            <div class="uses">Trades with <b>Spectrum</b></div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- community: scanner -->
+  <section class="step" data-tier="community">
+    <div class="W">
+      <div class="step-h">
+        <div><span class="kick"><b>02</b>Your scanner</span><h2>Which scanner do you want?</h2></div>
+        <p>Most members pick the scanner their educator trades with, so the live sessions match your charts.</p>
+      </div>
+      <div class="scans">
+        <label class="pick" data-scan="killshot">
+          <input type="radio" name="scanner" value="killshot">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="match">Your educator's scanner</span>
+          <div class="shot"><img src="../assets/killshot-graphic.webp" alt="" loading="lazy"></div>
+          <div class="bd"><div class="mk">US30</div><h3>Killshot</h3>
+            <p>The original rules-based US30 scanner. EMA structure, Point of Control levels and signal stars flag high-probability entries with defined risk.</p></div>
+        </label>
+        <label class="pick" data-scan="smartshot">
+          <input type="radio" name="scanner" value="smartshot">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="match">Your educator's scanner</span>
+          <div class="shot"><img src="../assets/smartshot-graphic.webp" alt="" loading="lazy"></div>
+          <div class="bd"><div class="mk">Gold &amp; NQ</div><h3>Smartshot</h3>
+            <p>Built on Smart Money Concepts. Maps liquidity and structure on higher timeframes, then signals lower-timeframe entries. A+ and B+ setups only.</p></div>
+        </label>
+        <label class="pick" data-scan="spectrum">
+          <input type="radio" name="scanner" value="spectrum">
+          <span class="ck"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="match">Your educator's scanner</span>
+          <div class="shot"><img src="../assets/spectrum-graphic.webp" alt="" loading="lazy"></div>
+          <div class="bd"><div class="mk">US30 · ES · NQ</div><h3>Spectrum</h3>
+            <p>Built on market auction theory and session volume analysis. Uses liquidity inducement to find high-probability entries across index instruments.</p></div>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- tools / elite: what's included -->
+  <section class="step" data-tier="tools elite">
+    <div class="W">
+      <div class="step-h">
+        <div><span class="kick"><b>01</b>Your scanners</span><h2>All three scanners. <span class="hl">Included.</span></h2></div>
+        <p id="inclNote"></p>
+      </div>
+      <div class="incl">
+        <div class="card"><div class="shot"><img src="../assets/killshot-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Killshot</h3><div class="mono mk">US30</div></div></div>
+        <div class="card"><div class="shot"><img src="../assets/smartshot-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Smartshot</h3><div class="mono mk">Gold &amp; NQ</div></div></div>
+        <div class="card"><div class="shot"><img src="../assets/spectrum-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Spectrum</h3><div class="mono mk">US30 · ES · NQ</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- details -->
+  <section class="step">
+    <div class="W">
+      <div class="step-h">
+        <div><span class="kick"><b id="detailsNum">03</b>Your details</span><h2>Where should we send access?</h2></div>
+        <p>Scanners are added to your TradingView account by our team, usually within 24 hours.</p>
+      </div>
+      <div class="fields">
+        <div class="field">
+          <label for="tv">TradingView username</label>
+          <div class="inp"><span>@</span><input id="tv" name="tradingview" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="yourname" maxlength="40" required></div>
+          <div class="help">The name on your TradingView profile, not your email. On tradingview.com, click your avatar (top right) to see it.</div>
+        </div>
+        <div class="field">
+          <label for="tg">Telegram username <small>Optional</small></label>
+          <div class="inp"><span>@</span><input id="tg" name="telegram" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="yourname" maxlength="40"></div>
+          <div class="help">Helps us match you in the Telegram group. Find it in Telegram under Settings.</div>
+        </div>
+      </div>
+
+      <div class="confirm">
+        <div class="sum">
+          <div data-tier="community"><span class="mono">Educator</span><b id="sEdu" class="empty">Not chosen</b></div>
+          <div data-tier="community"><span class="mono">Scanner</span><b id="sScan" class="empty">Not chosen</b></div>
+          <div><span class="mono">TradingView</span><b id="sTv" class="empty">Not added</b></div>
+        </div>
+        <button class="btn" type="submit" id="goBtn" disabled>Confirm my setup <span class="arr">→</span></button>
+        <p class="err" id="err" role="alert" hidden></p>
+        <p class="lock" id="lockNote">Your educator and scanner are locked in once you confirm. Need to change something later? Email <a href="mailto:hello@thetradevault.co">hello@thetradevault.co</a>.</p>
+      </div>
+    </div>
+  </section>
+</form>
+
+<!-- done -->
+<section class="center W view" id="v-done" hidden>
+  <div class="chk"><svg width="28" height="28" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#4B9EFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <span class="kick"><b>✓</b>Setup complete</span>
+  <h1>You're all set<span data-fname></span>. <span class="hl">Welcome in.</span></h1>
+  <div class="picked" id="picked"></div>
+  <div class="next">
+    <div class="card"><div class="n">Next 01</div><h3>Scanner access</h3><p>We'll add your scanner<span data-plural>s</span> to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts.</p></div>
+    <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p>Your onboarding email has your Academy login and Telegram invite. Not there? Check spam or promotions.</p></div>
+    <div class="card"><div class="n">Next 03</div><h3>Start the training</h3><p id="nextTrain">Begin with the Academy, then join the live sessions to see the scanners traded in real time.</p></div>
+  </div>
+</section>
+
+<!-- already done -->
+<section class="center W view" id="v-already" hidden>
+  <div class="chk"><svg width="28" height="28" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8.3l2.6 2.6L12 5.5" fill="none" stroke="#4B9EFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <span class="kick"><b>✓</b>Already set up</span>
+  <h1>Your Vault is <span class="hl">already set up.</span></h1>
+  <p class="lede">We have your choices on file. Need to change something? Email <a href="mailto:hello@thetradevault.co" style="text-decoration:underline">hello@thetradevault.co</a> and we'll sort it.</p>
+</section>
+
+<!-- not found -->
+<section class="center W view" id="v-none" hidden>
+  <span class="kick"><b>!</b>Membership not found</span>
+  <h1>We can't find <span class="hl">your membership yet.</span></h1>
+  <p class="lede">If you've just paid, give it a minute for your purchase to come through, then try again. Still stuck? Email <a href="mailto:hello@thetradevault.co" style="text-decoration:underline">hello@thetradevault.co</a> with your checkout email.</p>
+  <div class="row"><button class="btn" type="button" id="retryBtn">Try again <span class="arr">→</span></button><button class="btn-g" type="button" id="otherBtn">Use a different email</button></div>
+</section>
+
+</main>
+
+<footer>
+  <div class="W">
+    <span class="mono">© 2026 The Trade Vault</span>
+    <span class="mono">Help: <a href="mailto:hello@thetradevault.co">hello@thetradevault.co</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var API = 'https://jaybonham.com/api/tv-setup';
+  var PLANS = { tools: 'Tradevault Tools', community: 'Tradevault Community', elite: 'Tradevault Elite' };
+  var q = new URLSearchParams(location.search);
+  var state = { c: q.get('c') || '', email: q.get('email') || '', tier: '' };
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $('v-setup');
+
+  function show(id) {
+    ['v-load', 'v-find', 'v-setup', 'v-done', 'v-already', 'v-none'].forEach(function (v) { $(v).hidden = v !== id; });
+    window.scrollTo(0, 0);
+  }
+  function setName(first) {
+    var n = (first || '').trim().split(' ')[0].slice(0, 24);
+    document.querySelectorAll('[data-fname]').forEach(function (el) { el.textContent = n ? ', ' + n : ''; });
+  }
+
+  function load() {
+    var qs = state.c ? 'c=' + encodeURIComponent(state.c) : state.email ? 'email=' + encodeURIComponent(state.email) : '';
+    if (!qs) return show('v-find');
+    show('v-load');
+    fetch(API + '?' + qs).then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.ok) return show('v-none');
+      state.c = d.contact; state.tier = d.tier;
+      setName(d.first);
+      if (d.done) return show('v-already');
+      setup(d.tier);
+    }).catch(function () { show('v-none'); });
+  }
+
+  function setup(tier) {
+    document.querySelectorAll('[data-tier]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-tier').split(' ').indexOf(tier) < 0;
+    });
+    $('planName').textContent = PLANS[tier];
+    $('detailsNum').textContent = tier === 'community' ? '03' : '02';
+    $('setupLede').textContent = tier === 'community'
+      ? 'Two quick choices: your educator and your scanner. Then tell us your TradingView username so we can switch on your access.'
+      : 'One quick step: tell us your TradingView username so we can switch on your scanner access.';
+    $('inclNote').textContent = tier === 'elite'
+      ? 'Elite includes every scanner, every educator and every Academy. Nothing to choose: you get the full Vault.'
+      : 'Tools includes Killshot, Smartshot and Spectrum, plus the scanner bootcamps that teach you to read every signal.';
+    $('lockNote').hidden = tier !== 'community';
+    show('v-setup');
+    sync();
+  }
+
+  function val(name) { var el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+  function label(name) { var el = form.querySelector('input[name="' + name + '"]:checked'); return el ? el.closest('.pick').querySelector('h3').textContent : ''; }
+  function setSum(id, text, empty) { var b = $(id); b.textContent = text || empty; b.classList.toggle('empty', !text); }
+
+  function sync() {
+    var tv = $('tv').value.trim().replace(/^@/, '');
+    setSum('sEdu', label('educator'), 'Not chosen');
+    setSum('sScan', label('scanner'), 'Not chosen');
+    setSum('sTv', tv ? '@' + tv : '', 'Not added');
+    var ok = /^[A-Za-z0-9_.\-]{2,40}$/.test(tv) && (state.tier !== 'community' || (val('educator') && val('scanner')));
+    $('goBtn').disabled = !ok;
+  }
+
+  // picking an educator highlights (and pre-selects, if none yet) their scanner
+  form.addEventListener('change', function (e) {
+    if (e.target.name === 'educator') {
+      var match = e.target.getAttribute('data-scanner');
+      document.querySelectorAll('[data-scan]').forEach(function (p) { p.classList.toggle('is-match', p.getAttribute('data-scan') === match); });
+      if (!val('scanner')) form.querySelector('input[name="scanner"][value="' + match + '"]').checked = true;
+    }
+    sync();
+  });
+  form.addEventListener('input', function (e) {
+    if (e.target.id === 'tv' || e.target.id === 'tg') e.target.value = e.target.value.replace(/^@+/, '').replace(/\s/g, '');
+    sync();
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = $('goBtn'), err = $('err');
+    if (btn.disabled) return;
+    err.hidden = true;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span>Saving';
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // simple request: no CORS preflight
+      body: JSON.stringify({ c: state.c, educator: val('educator'), scanner: val('scanner'),
+        tradingview: $('tv').value.trim(), telegram: $('tg').value.trim() })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok) return done(d);
+      if (d.error === 'already_done') return show('v-already');
+      throw { msg: d.error && d.error.length > 20 ? d.error : '' };
+    }).catch(function (x) {
+      err.textContent = (x && x.msg) || 'Something went wrong. Please try again.';
+      err.hidden = false;
+      btn.innerHTML = 'Confirm my setup <span class="arr">→</span>';
+      sync();
+    });
+  });
+
+  function done(d) {
+    var chips = [];
+    if (state.tier === 'community') chips.push(['Educator', d.educator], ['Scanner', d.scanner]);
+    else chips.push(['Plan', PLANS[state.tier]], ['Scanners', 'All three']);
+    chips.push(['TradingView', '@' + $('tv').value.trim().replace(/^@/, '')]);
+    $('picked').innerHTML = '';
+    chips.forEach(function (c) {
+      var s = document.createElement('span'), b = document.createElement('b');
+      s.textContent = c[0] + ': '; b.textContent = c[1]; s.appendChild(b); $('picked').appendChild(s);
+    });
+    document.querySelectorAll('[data-plural]').forEach(function (el) { el.hidden = state.tier === 'community'; });
+    if (state.tier === 'community') $('nextTrain').textContent = 'Begin the Basic Academy, then join ' + d.educator.split(' ')[0] + "'s live sessions to see " + d.scanner + ' traded in real time.';
+    show('v-done');
+  }
+
+  $('findForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var em = $('f-email').value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { $('findMsg').textContent = 'Please enter a valid email.'; $('findMsg').hidden = false; return; }
+    state.email = em; state.c = '';
+    load();
+  });
+  $('retryBtn').addEventListener('click', load);
+  $('otherBtn').addEventListener('click', function () { state.c = ''; state.email = ''; $('findMsg').hidden = true; show('v-find'); });
+
+  load();
+})();
+</script>
+</body>
+</html>

@@ -40,6 +40,9 @@
     "api/vt.py": {
       "maxDuration": 10
     },
+    "api/tv-setup.py": {
+      "maxDuration": 20
+    },
     "api/jb-webinar.py": {
       "maxDuration": 15
     }
