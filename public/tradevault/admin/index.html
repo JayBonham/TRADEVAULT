@@ -207,7 +207,7 @@ footer{padding-block:32px 40px}
     </table>
     <div class="state" id="state"><div class="loader"></div>Loading members from GHL…</div>
   </div>
-  <p class="legend" id="legend">Click <b>Assign</b> once you've added their TradingView username to the scanner. They move to Assigned and get the "access is live" email automatically.</p>
+  <p class="legend" id="legend">Click <b>Completed</b> once you've added their TradingView username to the scanner. They move to Assigned and get the "access is live" email automatically.</p>
 </main>
 
 <footer class="W"><span class="mono">© 2026 The Trade Vault · Admin</span></footer>
@@ -354,7 +354,7 @@ footer{padding-block:32px 40px}
       b.className = 'act wait'; b.textContent = 'Waiting on setup'; b.disabled = true; b.style.cursor = 'not-allowed'; b.style.opacity = 1;
       b.title = 'No TradingView username yet. They get reminder emails automatically.';
     } else {
-      b.className = 'act go'; b.textContent = 'Assign →';
+      b.className = 'act go'; b.textContent = 'Completed ✓';
       b.addEventListener('click', function () { set(m, true, b); });
     }
     return b;
