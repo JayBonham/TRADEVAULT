@@ -322,6 +322,8 @@ footer{padding-block:32px 40px}
       var c6 = el('td'); c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
       var c7 = el('td'); c7.appendChild(m.tradingview ? copyBtn(m.tradingview) : dash());
       var c8 = el('td'); c8.appendChild(m.telegram ? el('span', 'em', '@' + m.telegram) : dash());
+      var g = m.groups || [];
+      if (g.length) { var gs = el('div', 'sub', g.length > 2 ? 'Approve in all ' + g.length + ' groups' : 'Approve in: ' + g.join(' + ')); gs.title = g.join('\n'); c8.appendChild(gs); }
       var c9 = el('td'); c9.appendChild(actBtn(m));
       [c1, c2, c3, c4, c5, c6, c7, c8, c9].forEach(function (c) { tr.appendChild(c); });
       body.appendChild(tr);

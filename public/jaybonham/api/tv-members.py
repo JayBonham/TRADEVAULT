@@ -16,6 +16,7 @@ from http.server import BaseHTTPRequestHandler
 sys.path.insert(0, os.path.dirname(__file__))
 from _auth import verify_token
 import _tv_db
+from _tv_groups import groups_for
 
 GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
@@ -139,6 +140,7 @@ def _member(c, ids, db):
         "tradingview": row.get("tradingview") or vals.get("tradingview_username", ""),
         "telegram": row.get("telegram") or vals.get("telegram_username", ""),
         "joined": row.get("purchased_at") or c.get("dateAdded") or "",
+        "groups": [g["name"] for g in groups_for(tier, next((k for k in EDUCATORS if "tv-educator-" + k in tags), ""))],
     }
 
 

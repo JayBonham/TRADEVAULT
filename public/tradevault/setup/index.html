@@ -168,6 +168,15 @@ h2{font-size:clamp(28px,3.4vw,40px)}
 .picked{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:22px}
 .picked span{padding:7px 14px;border-radius:999px;border:1px solid var(--hair-2);background:rgba(255,255,255,.03);font-size:14px;color:var(--tx-dim)}
 .picked b{color:var(--tx);font-weight:600}
+.tgbox{max-width:780px;margin:40px auto 0;text-align:left;padding:24px 24px 26px;border-radius:22px;background:rgba(var(--acc-rgb),.06);border:1px solid rgba(var(--acc-rgb),.3)}
+.tgbox h3{font-size:22px}
+.tgbox p{color:var(--tx-dim);font-size:14.5px;margin-top:6px}
+.tgbox p b{color:var(--tx)}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:18px}
+.grp{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:rgba(5,10,20,.55);border:1px solid var(--hair-2);transition:border-color .2s,background .2s;min-width:0}
+.grp:hover{border-color:var(--acc);background:rgba(var(--acc-rgb),.08)}
+.grp span{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:15.5px}
+.grp em{font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);white-space:nowrap}
 .loader{width:34px;height:34px;margin:0 auto;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
 
 footer{border-top:1px solid var(--hair);padding-block:32px 40px;margin-top:40px}
@@ -359,10 +368,10 @@ footer a{text-decoration:underline;text-underline-offset:3px}
           <div class="inp"><span>@</span><input id="tv" name="tradingview" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="yourname" maxlength="40" required></div>
           <div class="help">The name on your TradingView profile, not your email. On tradingview.com, click your avatar (top right) to see it.</div>
         </div>
-        <div class="field">
-          <label for="tg">Telegram username <small>Optional</small></label>
+        <div class="field" id="tgField">
+          <label for="tg">Telegram username</label>
           <div class="inp"><span>@</span><input id="tg" name="telegram" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="yourname" maxlength="40"></div>
-          <div class="help">Helps us match you in the Telegram group. Find it in Telegram under Settings.</div>
+          <div class="help">Our Telegram groups are members only, and we approve join requests using this username. Find it in Telegram under Settings.</div>
         </div>
       </div>
 
@@ -371,6 +380,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
           <div data-tier="community"><span class="mono">Educator</span><b id="sEdu" class="empty">Not chosen</b></div>
           <div data-tier="community"><span class="mono">Scanner</span><b id="sScan" class="empty">Not chosen</b></div>
           <div><span class="mono">TradingView</span><b id="sTv" class="empty">Not added</b></div>
+          <div id="sTgWrap"><span class="mono">Telegram</span><b id="sTg" class="empty">Not added</b></div>
         </div>
         <button class="btn" type="submit" id="goBtn" disabled>Confirm my setup <span class="arr">→</span></button>
         <p class="err" id="err" role="alert" hidden></p>
@@ -386,9 +396,14 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   <span class="kick"><b>✓</b>Setup complete</span>
   <h1>You're all set<span data-fname></span>. <span class="hl">Welcome in.</span></h1>
   <div class="picked" id="picked"></div>
+  <div class="tgbox" id="tgBox" hidden>
+    <h3>Join your Telegram group<span data-gplural>s</span></h3>
+    <p>Tap to request to join. Groups are members only, so we approve each request. Request from <b data-tgname></b> so we can match you.</p>
+    <div class="groups" data-groups></div>
+  </div>
   <div class="next">
     <div class="card"><div class="n">Next 01</div><h3>Scanner access</h3><p>We'll add your scanner<span data-plural>s</span> to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts.</p></div>
-    <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p>Your onboarding email has your Academy login and Telegram invite. Not there? Check spam or promotions.</p></div>
+    <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p>Whop emails you your Academy login, and we'll email your Telegram link<span data-gplural>s</span> too. Not there? Check spam or promotions.</p></div>
     <div class="card"><div class="n">Next 03</div><h3>Start the training</h3><p id="nextTrain">Begin with the Academy, then join the live sessions to see the scanners traded in real time.</p></div>
   </div>
 </section>
@@ -399,6 +414,11 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   <span class="kick"><b>✓</b>Already set up</span>
   <h1>Your Vault is <span class="hl">already set up.</span></h1>
   <p class="lede">We have your choices on file. Need to change something? Email <a href="mailto:hello@thetradevault.co" style="text-decoration:underline">hello@thetradevault.co</a> and we'll sort it.</p>
+  <div class="tgbox" id="tgBox2" hidden>
+    <h3>Your Telegram group<span data-gplural>s</span></h3>
+    <p>Request to join from the Telegram username you gave us. We approve members only.</p>
+    <div class="groups" data-groups></div>
+  </div>
 </section>
 
 <!-- not found -->
@@ -444,7 +464,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
       if (!d.ok) return show('v-none');
       state.c = d.contact; state.tier = d.tier;
       setName(d.first);
-      if (d.done) return show('v-already');
+      if (d.done) { groups($('tgBox2'), d.groups); return show('v-already'); }
       setup(d.tier);
     }).catch(function () { show('v-none'); });
   }
@@ -462,6 +482,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
       ? 'Elite includes every scanner, every educator and every Academy. Nothing to choose: you get the full Vault.'
       : 'Tools includes Killshot, Smartshot and Spectrum, plus the scanner bootcamps that teach you to read every signal.';
     $('lockNote').hidden = tier !== 'community';
+    $('tgField').hidden = $('sTgWrap').hidden = tier === 'tools';
     show('v-setup');
     sync();
   }
@@ -475,7 +496,10 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     setSum('sEdu', label('educator'), 'Not chosen');
     setSum('sScan', label('scanner'), 'Not chosen');
     setSum('sTv', tv ? '@' + tv : '', 'Not added');
-    var ok = /^[A-Za-z0-9_.\-]{2,40}$/.test(tv) && (state.tier !== 'community' || (val('educator') && val('scanner')));
+    var tg = $('tg').value.trim();
+    setSum('sTg', tg ? '@' + tg : '', 'Not added');
+    var handle = /^[A-Za-z0-9_.\-]{2,40}$/;
+    var ok = handle.test(tv) && (state.tier === 'tools' || handle.test(tg)) && (state.tier !== 'community' || (val('educator') && val('scanner')));
     $('goBtn').disabled = !ok;
   }
 
@@ -528,8 +552,24 @@ footer a{text-decoration:underline;text-underline-offset:3px}
       s.textContent = c[0] + ': '; b.textContent = c[1]; s.appendChild(b); $('picked').appendChild(s);
     });
     document.querySelectorAll('[data-plural]').forEach(function (el) { el.hidden = state.tier === 'community'; });
+    $('tgBox').querySelector('[data-tgname]').textContent = '@' + $('tg').value.trim();
+    groups($('tgBox'), d.groups);
     if (state.tier === 'community') $('nextTrain').textContent = 'Begin the Basic Academy, then join ' + d.educator.split(' ')[0] + "'s live sessions to see " + d.scanner + ' traded in real time.';
     show('v-done');
+  }
+
+  function groups(box, list) {
+    list = list || [];
+    box.hidden = !list.length;
+    document.querySelectorAll('[data-gplural]').forEach(function (el) { el.hidden = list.length < 2; });
+    var wrap = box.querySelector('[data-groups]'); wrap.innerHTML = '';
+    list.forEach(function (g) {
+      var a = document.createElement('a'); a.className = 'grp'; a.href = g.url; a.target = '_blank'; a.rel = 'noopener';
+      a.insertAdjacentHTML('beforeend', '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4B9EFF" d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.3 13 1.5 11.5c-1-.3-1-1 .2-1.5L20.6 2.8c.9-.3 1.6.2 1.3 1.5z"/></svg>');
+      var n = document.createElement('span'); n.textContent = g.name; a.appendChild(n);
+      var e = document.createElement('em'); e.textContent = 'Request to join \u2192'; a.appendChild(e);
+      wrap.appendChild(a);
+    });
   }
 
   $('findForm').addEventListener('submit', function (e) {

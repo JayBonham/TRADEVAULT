@@ -18,6 +18,7 @@ from http.server import BaseHTTPRequestHandler
 
 sys.path.insert(0, os.path.dirname(__file__))
 import _tv_db
+from _tv_groups import groups_for
 
 GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
@@ -28,6 +29,8 @@ EDUCATORS = {"jay": "Jay Bonham", "adam": "Adam Haase", "tyler": "Tyler Collins"
 SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spectrum"}
 TIERS = (("tradevault-elite", "elite"), ("tradevault-community", "community"), ("tradevault-tools", "tools"))
 DONE_TAG = "tv-setup-complete"
+def _educator_key(tags):
+    return next((k for k in EDUCATORS if "tv-educator-" + k in tags), "")
 CID_RE = re.compile(r"^[A-Za-z0-9]{10,40}$")
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 HANDLE_RE = re.compile(r"^[A-Za-z0-9_.\-]{2,40}$")
@@ -81,8 +84,11 @@ class handler(BaseHTTPRequestHandler):
         tier = _tier(contact.get("tags"))
         if not tier:
             return self._json(404, {"ok": False, "error": "not_member"})
+        tags = [t.lower() for t in contact.get("tags") or []]
+        done = DONE_TAG in tags
         self._json(200, {"ok": True, "contact": contact["id"], "first": contact.get("firstName") or "",
-                         "tier": tier, "done": DONE_TAG in [t.lower() for t in contact.get("tags") or []]})
+                         "tier": tier, "done": done,
+                         "groups": groups_for(tier, _educator_key(tags)) if done else []})
 
     def do_POST(self):
         try:
@@ -105,6 +111,8 @@ class handler(BaseHTTPRequestHandler):
         tg = _clip(b.get("telegram"), 40).lstrip("@")
         if not HANDLE_RE.match(tv):
             return self._json(400, {"ok": False, "error": "Please enter your TradingView username."})
+        if tier != "tools" and not tg:
+            return self._json(400, {"ok": False, "error": "Please enter your Telegram username so we can approve you."})
         if tg and not HANDLE_RE.match(tg):
             return self._json(400, {"ok": False, "error": "That Telegram username doesn't look right."})
 
@@ -135,7 +143,8 @@ class handler(BaseHTTPRequestHandler):
         if status >= 300:
             return self._json(502, {"ok": False, "error": "We couldn't save that. Please try again."})
         log("TV_SETUP", cid, tier, educator or "-", scanner or "-")
-        self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name})
+        self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name,
+                         "groups": groups_for(tier, educator)})
 
     # ── helpers ──────────────────────────────────────────────
     def _find(self, cid, email):
