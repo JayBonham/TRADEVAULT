@@ -39,7 +39,7 @@ button,input{font:inherit;color:inherit}
 @keyframes out{to{opacity:0;transform:translateX(24px)}}
 @keyframes blink{50%{opacity:.25}}
 
-.W{max-width:1360px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.W{max-width:1840px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 .mono{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
 
 /* nav */
@@ -91,9 +91,9 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height
 
 /* table */
 .tbl-wrap{margin-top:16px;border-radius:20px;border:1px solid var(--hair);background:rgba(8,17,31,.55);overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;min-width:1120px}
-th{position:sticky;top:0;text-align:left;padding:14px 16px;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);background:rgba(14,26,46,.95);border-bottom:1px solid var(--hair-2);white-space:nowrap}
-td{padding:14px 16px;border-bottom:1px solid var(--hair);vertical-align:middle;white-space:nowrap}
+table{width:100%;border-collapse:collapse;min-width:1040px}
+th{position:sticky;top:0;text-align:left;padding:14px 10px;font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);background:rgba(14,26,46,.95);border-bottom:1px solid var(--hair-2);white-space:nowrap}
+td{padding:13px 10px;border-bottom:1px solid var(--hair);vertical-align:middle;white-space:nowrap}
 tbody tr{transition:background .15s;animation:rise .4s var(--ease) both}
 tbody tr:hover{background:rgba(255,255,255,.025)}
 tbody tr:last-child td{border-bottom:0}
@@ -102,6 +102,7 @@ th:last-child,td:last-child{text-align:right;position:sticky;right:0;background:
 th:last-child{background:rgba(14,26,46,.98)}
 .nm{font-weight:600;font-size:15px}
 .sub{font-size:12.5px;color:var(--tx-mute);margin-top:2px}
+td .sub.wrap{white-space:normal;max-width:170px;line-height:1.35}
 .em{color:var(--tx-dim);font-size:14px}
 .dash{color:#4A586D}
 .tier{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--hair-2);color:var(--tx-dim)}
@@ -323,7 +324,7 @@ footer{padding-block:32px 40px}
       var c7 = el('td'); c7.appendChild(m.tradingview ? copyBtn(m.tradingview) : dash());
       var c8 = el('td'); c8.appendChild(m.telegram ? el('span', 'em', '@' + m.telegram) : dash());
       var g = m.groups || [];
-      if (g.length) { var gs = el('div', 'sub', g.length > 2 ? 'Approve in all ' + g.length + ' groups' : 'Approve in: ' + g.join(' + ')); gs.title = g.join('\n'); c8.appendChild(gs); }
+      if (g.length) { var gs = el('div', 'sub wrap', g.length > 2 ? 'Approve in all ' + g.length + ' groups' : 'Approve in: ' + g.join(' + ')); gs.title = g.join('\n'); c8.appendChild(gs); }
       var c9 = el('td'); c9.appendChild(actBtn(m));
       [c1, c2, c3, c4, c5, c6, c7, c8, c9].forEach(function (c) { tr.appendChild(c); });
       body.appendChild(tr);
