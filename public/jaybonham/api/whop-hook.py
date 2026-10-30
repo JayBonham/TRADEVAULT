@@ -5,6 +5,8 @@ import json
 import os
 from http.server import BaseHTTPRequestHandler
 
+sys_path = os.path.dirname(__file__)
+
 WHOP_SECRET  = os.environ.get("WHOP_WEBHOOK_SECRET", "")
 GHL_API_KEY  = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
@@ -119,6 +121,12 @@ class handler(BaseHTTPRequestHandler):
             tags  = purchase_tags(slug, title)
 
             ghl_result = self._ghl_upsert(email, first, last, phone, tags)
+            if "tradevault-purchased" in tags and ghl_result.get("contact"):
+                import sys
+                sys.path.insert(0, sys_path)
+                import _tv_db
+                tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
+                _tv_db.record_purchase(ghl_result["contact"], email, tier, title)
             self._record_affiliate_purchase(email, slug, None)
             self._json(200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result})
 

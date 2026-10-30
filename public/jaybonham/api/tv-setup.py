@@ -16,6 +16,9 @@ import sys
 import urllib.parse
 from http.server import BaseHTTPRequestHandler
 
+sys.path.insert(0, os.path.dirname(__file__))
+import _tv_db
+
 GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 GHL_HOST = "services.leadconnectorhq.com"
@@ -126,6 +129,7 @@ class handler(BaseHTTPRequestHandler):
             "TradingView: " + tv,
             "Telegram: @" + tg if tg else "",
         ]))})
+        _tv_db.record_setup(cid, (contact.get("email") or "").lower(), tier, edu_name, scan_name, tv, tg)
         # tags last: automations fire on them, so fields and note are already in place
         status, _ = _ghl("POST", "/contacts/" + cid + "/tags", {"tags": new_tags})
         if status >= 300:
@@ -163,7 +167,7 @@ class handler(BaseHTTPRequestHandler):
         return None
 
     def _fields(self, cid, values):
-        """Fill the GHL custom fields that exist (matched by key); missing ones are skipped."""
+        """Fill the GHL custom fields, by id when the field list is readable, else by key."""
         try:
             status, data = _ghl("GET", "/locations/" + GHL_LOCATION + "/customFields?model=contact")
             ids = {}
@@ -171,9 +175,11 @@ class handler(BaseHTTPRequestHandler):
                 key = (f.get("fieldKey") or "").split(".")[-1].lower()
                 if key in values:
                     ids[key] = f.get("id")
-            fields = [{"id": ids[k], "field_value": v} for k, v in values.items() if v and ids.get(k)]
+            fields = [{"id": ids[k], "field_value": v} if ids.get(k) else {"key": k, "field_value": v}
+                      for k, v in values.items() if v]
             if fields:
-                _ghl("PUT", "/contacts/" + cid, {"customFields": fields})
+                status, _ = _ghl("PUT", "/contacts/" + cid, {"customFields": fields})
+                log("TV_SETUP_FIELDS:", status, len(ids), "ids")
         except Exception as e:
             log("TV_SETUP_FIELDS_ERR:", e)
 

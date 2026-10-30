@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _auth import verify_token
+import _tv_db
 
 GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
@@ -91,7 +92,27 @@ def _field_ids():
     return ids
 
 
-def _member(c, ids):
+NOTE_KEYS = {"educator": "educator", "scanner": "scanner", "tradingview": "tradingview", "telegram": "telegram"}
+
+
+def _from_note(cid):
+    """Setup answers from the note tv-setup leaves on the contact (for rows the DB doesn't have)."""
+    status, data, _ = _ghl("GET", "/contacts/" + cid + "/notes")
+    for n in data.get("notes") or []:
+        body = n.get("body") or ""
+        if not body.startswith("TradeVault setup"):
+            continue
+        out = {}
+        for line in body.splitlines()[1:]:
+            k, _, v = line.partition(":")
+            k = NOTE_KEYS.get(k.strip().lower())
+            if k:
+                out[k] = v.strip().lstrip("@")
+        return out
+    return {}
+
+
+def _member(c, ids, db):
     tags = [t.lower() for t in c.get("tags") or []]
     vals = {}
     for f in c.get("customFields") or []:
@@ -99,16 +120,25 @@ def _member(c, ids):
         if key:
             v = f.get("value", f.get("field_value"))
             vals[key] = v if isinstance(v, str) else ("" if v is None else str(v))
+    row = db.get(c.get("id")) or {}
     tier = next((t for tag, t in TIERS if tag in tags), "")
-    educator = vals.get("tv_educator") or next((n for k, n in EDUCATORS.items() if "tv-educator-" + k in tags), "")
-    scanner = vals.get("tv_scanner") or next((n for k, n in SCANNERS.items() if "tv-scanner-" + k in tags), "")
+    setup = DONE_TAG in tags
+    educator = (row.get("educator") or vals.get("tv_educator") or
+                next((n for k, n in EDUCATORS.items() if "tv-educator-" + k in tags), ""))
+    scanner = (row.get("scanner") or vals.get("tv_scanner") or
+               next((n for k, n in SCANNERS.items() if "tv-scanner-" + k in tags), ""))
+    if setup and tier == "elite":
+        educator, scanner = educator or "All educators", scanner or "All scanners"
+    elif setup and tier == "tools":
+        scanner = scanner or "All scanners"
     name = (c.get("contactName") or " ".join(filter(None, [c.get("firstName"), c.get("lastName")])) or "").strip()
     return {
         "id": c.get("id"), "name": name.title() if name.islower() else name, "email": c.get("email") or "",
-        "tier": tier, "setup": DONE_TAG in tags, "assigned": ASSIGNED_TAG in tags,
+        "tier": tier, "setup": setup, "assigned": ASSIGNED_TAG in tags,
         "educator": educator, "scanner": scanner,
-        "tradingview": vals.get("tradingview_username", ""), "telegram": vals.get("telegram_username", ""),
-        "joined": c.get("dateAdded") or "",
+        "tradingview": row.get("tradingview") or vals.get("tradingview_username", ""),
+        "telegram": row.get("telegram") or vals.get("telegram_username", ""),
+        "joined": row.get("purchased_at") or c.get("dateAdded") or "",
     }
 
 
@@ -138,7 +168,19 @@ class handler(BaseHTTPRequestHandler):
             if contacts is None:
                 return self._json(502, {"ok": False, "error": err or "GHL search failed"})
             ids = _field_ids()
-            members = [_member(c, ids) for c in contacts]
+            db = _tv_db.all_members()
+            members = [_member(c, ids, db) for c in contacts]
+            # set up before the DB copy existed: read their note once, then keep it in the DB
+            for m in [m for m in members if m["setup"] and not m["tradingview"]][:25]:
+                got = _from_note(m["id"])
+                if got.get("tradingview"):
+                    for k in ("tradingview", "telegram"):
+                        m[k] = got.get(k, "")
+                    if m["tier"] == "community":
+                        m["educator"] = got.get("educator") or m["educator"]
+                        m["scanner"] = got.get("scanner") or m["scanner"]
+                    _tv_db.record_setup(m["id"], m["email"].lower(), m["tier"], m["educator"],
+                                        m["scanner"], m["tradingview"], m["telegram"])
             members.sort(key=lambda m: m["joined"], reverse=True)
             self._json(200, {"ok": True, "members": members})
         except Exception as e:
