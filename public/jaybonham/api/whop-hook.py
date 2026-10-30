@@ -13,6 +13,13 @@ GHL_API_KEY  = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 SLACK_WEBHOOK_PAYMENTS = os.environ.get("SLACK_WEBHOOK_PAYMENTS", "")
 
+# Signatures are checked and logged on every event; rejecting bad ones is switched on
+# once a real Whop event has been seen to pass (GET /api/whop-hook?sig=1).
+ENFORCE_SIG = False
+SIG_TABLE = """CREATE TABLE IF NOT EXISTS whop_sig_log (
+    id BIGSERIAL PRIMARY KEY, at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    event TEXT, scheme TEXT, headers TEXT)"""
+
 PLAN_PRICES = {
     "sniper-basic-ed":    999.0,
     "sniper-accelerator": 5999.0,
@@ -61,30 +68,58 @@ class handler(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        if "sig=1" in self.path:
+            # Recent signature results (no secrets) so the check can be confirmed before enforcing.
+            rows = []
+            try:
+                sys.path.insert(0, sys_path)
+                import _tv_aff
+                c = _tv_aff.conn(); cur = c.cursor()
+                cur.execute(SIG_TABLE)
+                cur.execute("SELECT at, event, scheme, headers FROM whop_sig_log ORDER BY id DESC LIMIT 10")
+                rows = [{"at": r[0].isoformat(), "event": r[1], "scheme": r[2], "headers": r[3]} for r in cur.fetchall()]
+                c.commit(); c.close()
+            except Exception as e:
+                rows = [{"error": str(e)[:200]}]
+            self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
+            return
         self._json(200, {"ok": True, "service": "whop-webhook"})
+
+    def _log_sig(self, event_type, scheme):
+        try:
+            sys.path.insert(0, sys_path)
+            import _tv_aff
+            c = _tv_aff.conn(); cur = c.cursor()
+            cur.execute(SIG_TABLE)
+            names = ",".join(sorted(k.lower() for k in self.headers.keys() if "sig" in k.lower() or k.lower().startswith("webhook")))
+            cur.execute("INSERT INTO whop_sig_log (event, scheme, headers) VALUES (%s, %s, %s)",
+                        (event_type[:60], scheme or "none", names[:300]))
+            cur.execute("DELETE FROM whop_sig_log WHERE id < (SELECT MAX(id) - 50 FROM whop_sig_log)")
+            c.commit(); c.close()
+        except Exception as e:
+            print("sig log failed:", e, file=sys.stderr)
 
     def do_POST(self):
         try:
             length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(length)
 
-            # Signature verification — skipped temporarily for debugging
-            # sig = (self.headers.get("whop-signature") or
-            #        self.headers.get("Whop-Signature") or "")
-            # if WHOP_SECRET and sig:
-            #     expected = hmac.new(
-            #         WHOP_SECRET.encode(), raw_body, hashlib.sha256
-            #     ).hexdigest()
-            #     bare = sig.split("=")[-1]
-            #     if not hmac.compare_digest(expected, bare):
-            #         self._json(401, {"error": "invalid signature"})
-            #         return
+            sys.path.insert(0, sys_path)
+            import _whop_sig
+            scheme = _whop_sig.check(dict(self.headers.items()), raw_body, WHOP_SECRET)
+            try:
+                peek = json.loads(raw_body).get("event", "") or json.loads(raw_body).get("type", "")
+            except Exception:
+                peek = ""
+            self._log_sig(str(peek), scheme)
+            if ENFORCE_SIG and not scheme:
+                self._json(401, {"error": "invalid signature"})
+                return
 
             event = json.loads(raw_body)
             event_type = event.get("event", "")
 
             # Debug: return full payload so we can inspect it
-            import sys
             print("WHOP EVENT:", event_type, json.dumps(event)[:500], file=sys.stderr)
 
             if event_type in SLACK_EVENTS:
@@ -133,7 +168,6 @@ class handler(BaseHTTPRequestHandler):
 
             ghl_result = self._ghl_upsert(email, first, last, phone, tags)
             if "tradevault-purchased" in tags and ghl_result.get("contact"):
-                import sys
                 sys.path.insert(0, sys_path)
                 import _tv_db
                 tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
@@ -162,7 +196,6 @@ class handler(BaseHTTPRequestHandler):
 
     def _notify_slack(self, event_type, data):
         """Post a payment line to #payment-confirmations-us30. Never breaks the webhook."""
-        import sys
         if not SLACK_WEBHOOK_PAYMENTS:
             return
         try:
@@ -221,7 +254,6 @@ class handler(BaseHTTPRequestHandler):
 
     def _ghl_upsert(self, email, first, last, phone, tags):
         """Upsert the contact, then ADD tags (never removes existing ones like pdf-optin)."""
-        import sys
         if not GHL_API_KEY:
             print("GHL_UPSERT: no GHL_API_KEY set", file=sys.stderr)
             return {"error": "no api key"}
@@ -316,7 +348,6 @@ class handler(BaseHTTPRequestHandler):
             cur.close()
             conn.close()
         except Exception as e:
-            import sys
             print("AFF_PURCHASE_ERR:", e, file=sys.stderr)
 
     def _json(self, status, body):
