@@ -274,7 +274,7 @@ footer{padding-block:32px 40px}
           total += d.synced.length; failed += d.failed.length; noEmail = d.no_email;
           if (d.remaining > 0 && ++rounds < 10) return round();
           toast(d.found ? 'Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments in Whop' + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email' : '')
-                        : 'Whop sync found no TradeVault payments. Send this to Alex: ' + Object.keys(d.seen || {}).join('; ') + ' · ' + (d.sample || '') + ' · ' + (d.msample || '') + ' · ' + (d.lookup_errors || []).join(' / '));
+                        : 'Whop sync found no TradeVault payments' + ((d.lookup_errors || []).length ? ': ' + d.lookup_errors[0] : '.'));
         });
     }
     // then: setup answers onto Whop memberships (for the trading portal) + ended memberships

@@ -89,7 +89,6 @@ class handler(BaseHTTPRequestHandler):
         q = parse_qs(urlparse(self.path).query)
         tier = (q.get("plan") or [""])[0].strip().lower()
         code = (q.get("ref") or [""])[0].strip().lower()
-        self.debug = (q.get("debug") or [""])[0] == "1"  # ?debug=1: JSON instead of a redirect, to see why it fell back
         if tier not in PRODUCTS:
             return self._go(STORE)
         fallback = PRODUCTS[tier][1]
@@ -124,13 +123,8 @@ class handler(BaseHTTPRequestHandler):
             return self._go(fallback, str(e)[:400])
 
     def _go(self, url, why=""):
-        if getattr(self, "debug", False):
-            body = json.dumps({"url": url, "fallback_reason": why}).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(body)
-            return
+        if why:
+            log("TV_CHECKOUT_FALLBACK:", why[:300])
         self.send_response(302)
         self.send_header("Location", url)
         self.send_header("Cache-Control", "no-store")

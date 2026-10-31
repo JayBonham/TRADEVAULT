@@ -146,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-9", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-10", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -184,40 +184,6 @@ class handler(BaseHTTPRequestHandler):
                 return cache[path]
         return ""
 
-    def _title_for(self, p, cache, errs):
-        """Product title for a payment listed without one: payment, then plan, then membership lookups."""
-        def title_of(obj):
-            obj = obj if isinstance(obj, dict) else {}
-            for k in ("product", "access_pass"):
-                v = obj.get(k)
-                if isinstance(v, dict) and (v.get("title") or v.get("name")):
-                    return str(v.get("title") or v.get("name"))
-            return ""
-        plan = p.get("plan") if isinstance(p.get("plan"), dict) else {}
-        memb = p.get("membership") if isinstance(p.get("membership"), dict) else {}
-        if plan.get("id") and ("plan:" + plan["id"]) in cache:
-            return cache["plan:" + plan["id"]]
-        tries = [("/api/v1/payments/" + str(p["id"]), None)] if p.get("id") else []
-        if plan.get("id"):
-            tries.append(("/api/v1/plans/" + plan["id"], "plan:" + plan["id"]))
-        if memb.get("id"):
-            tries.append(("/api/v1/memberships/" + memb["id"], None))
-        for path, key in tries:
-            if key and key in cache:
-                return cache[key]
-            try:
-                t = title_of(self._whop_get(path))
-            except Exception as e:
-                errs.append(path.split("/")[3] + ": " + str(e)[:160])
-                t = ""
-            if key:
-                cache[key] = t
-            if t:
-                if plan.get("id"):
-                    cache["plan:" + plan["id"]] = t
-                return t
-        return ""
-
     def _backfill(self):
         """Admin only: re-run every paid TradeVault payment from the Whop API through _purchase.
         Safe to repeat: GHL tags are added, members upsert, payments are keyed on the Whop payment id."""
@@ -232,7 +198,7 @@ class handler(BaseHTTPRequestHandler):
             return
         started = time.time()
         try:
-            pays, after, seen, scope, raw, sample, cache, errs = [], "", {}, None, "", "", {}, []
+            pays, after, scope, cache, errs = [], "", None, {}, []
             for _ in range(30):
                 q = "first=100" + ("&after=" + after if after else "")
                 if scope is None:
@@ -241,24 +207,13 @@ class handler(BaseHTTPRequestHandler):
                         page = self._whop_get("/api/v1/payments?" + scope + q)
                         if page.get("data"):
                             break
-                    raw = json.dumps(page)[:400]
                 else:
                     page = self._whop_get("/api/v1/payments?" + scope + q)
                 for p in page.get("data") or []:
-                    if not sample:
-                        sample = json.dumps(p)[:1500]
+                    title = tv_title(p)
+                    if not title:
+                        continue
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
-                    items = [li for li in (p.get("line_items") or []) if isinstance(li, dict)]
-                    title = (str(prod.get("title") or prod.get("name") or "") or
-                             next((str(li.get("product_title") or li.get("label") or "") for li in items
-                                   if li.get("product_title") or li.get("label")), "")).strip()
-                    route = str(prod.get("route") or "")
-                    k = "%s | %s" % (title or route or prod.get("id") or "?", p.get("status"))
-                    seen[k] = seen.get(k, 0) + 1
-                    if "tradevault" not in title.lower().replace(" ", ""):
-                        title = TV_ROUTES.get(route, "")
-                        if not title:
-                            continue
                     p["product"] = dict(prod, title=title)
                     paid = p.get("status") == "paid" or (not p.get("status") and
                                                          (p.get("paid_at") or str(p.get("substatus") or "") == "succeeded"))
@@ -301,17 +256,8 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 failed.append({"id": p.get("id"), "error": str(e)[:200]})
         left = len(todo) - len(done) - len(failed) - no_email
-        msample = ""
-        if not pays:
-            for path in ("/api/v1/memberships?account_id=" + WHOP_COMPANY + "&first=2", "/api/v1/memberships?company_id=" + WHOP_COMPANY + "&first=2", "/api/v1/memberships?first=2"):
-                try:
-                    msample = path.split("?")[1][:12] + " " + json.dumps(self._whop_get(path))[:1200]
-                    if '"data": []' not in msample:
-                        break
-                except Exception as e:
-                    msample = path.split("?")[1][:12] + " ERR " + str(e)[:200]
-        self._json(200, {"ok": True, "sample": sample, "msample": msample, "lookup_errors": errs[:3], "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
-                         "failed": failed, "no_email": no_email, "remaining": left})
+        self._json(200, {"ok": True, "found": len(pays), "already": len(have), "synced": done,
+                         "failed": failed, "no_email": no_email, "remaining": left, "lookup_errors": errs[:3]})
 
     def _audit(self):
         """Admin only: check every affiliate credit against Whop. Fixes what is unambiguous
@@ -578,8 +524,7 @@ class handler(BaseHTTPRequestHandler):
             if event_type.startswith(("payment.", "membership.", "member.", "refund.")):
                 self._keep(event_type, raw_body)
 
-            # Debug: return full payload so we can inspect it
-            print("WHOP EVENT:", event_type, json.dumps(event)[:500], file=sys.stderr)
+            print("WHOP EVENT:", event_type, str((event.get("data") or {}).get("id") or "")[:40], file=sys.stderr)
 
             if event_type in SLACK_EVENTS:
                 self._notify_slack(event_type, event.get("data", {}) or {})

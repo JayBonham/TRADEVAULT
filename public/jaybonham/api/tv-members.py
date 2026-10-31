@@ -7,8 +7,6 @@ POST {action: "assign"|"unassign"|"revoked", c}
         moves the card and emails the member. unassign removes the tag (no email is unsent).
         revoked: their Whop membership ended (ended=true, set by whop-hook) and they've been taken
         out of the scanners; removes the tag and records it, so they leave "Remove access".
-TEST_EMAILS (Alex's and Brandt's test purchases) are taken off the board on the next load: their TradeVault
-tags are stripped in GHL and their DB row deleted. The GHL contacts themselves are kept.
 """
 import http.client
 import json
@@ -35,8 +33,6 @@ SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spect
 FIELD_KEYS = ("tv_educator", "tv_scanner", "tradingview_username", "telegram_username")
 CID_RE = re.compile(r"^[A-Za-z0-9]{10,40}$")
 PAGE = 100
-TEST_EMAILS = {"alex@carriesoave.ca", "alexkemppp@gmail.com", "alex@alexktaylor.com",
-               "brandt.linkowski+prodtest@gmail.com"}
 
 
 def log(*a):
@@ -186,13 +182,6 @@ class handler(BaseHTTPRequestHandler):
                 if c and MEMBER_TAG in [t.lower() for t in c.get("tags") or []]:
                     contacts.append(c)
             members = [_member(c, ids, db) for c in contacts]
-            for m in [m for m in members if m["email"].lower() in TEST_EMAILS]:
-                status, _, _ = _ghl("DELETE", "/contacts/" + m["id"] + "/tags",
-                                    {"tags": [MEMBER_TAG, ASSIGNED_TAG, DONE_TAG] + [t for t, _ in TIERS]})
-                if status < 300:
-                    _tv_db.remove(m["id"])
-                    log("TV_MEMBERS removed test purchase", m["id"])
-            members = [m for m in members if m["email"].lower() not in TEST_EMAILS]
             # set up before the DB copy existed: read their note once, then keep it in the DB
             for m in [m for m in members if m["setup"] and not m["tradingview"]][:25]:
                 got = _from_note(m["id"])
