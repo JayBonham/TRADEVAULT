@@ -123,8 +123,14 @@ class handler(BaseHTTPRequestHandler):
         try:
             pays, after = [], ""
             for _ in range(30):
-                page = self._whop_get("/api/v1/payments?company_id=" + WHOP_COMPANY + "&first=100" +
-                                      ("&after=" + after if after else ""))
+                q = "&first=100" + ("&after=" + after if after else "")
+                try:
+                    page = self._whop_get("/api/v1/payments?account_id=" + WHOP_COMPANY + q)
+                except RuntimeError as e:
+                    # Older API versions filter by company_id instead.
+                    if "400" not in str(e):
+                        raise
+                    page = self._whop_get("/api/v1/payments?company_id=" + WHOP_COMPANY + q)
                 for p in page.get("data") or []:
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
                     if "tradevault" in str(prod.get("title") or "").lower().replace(" ", "") \
