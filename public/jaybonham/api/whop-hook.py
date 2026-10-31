@@ -110,6 +110,40 @@ class handler(BaseHTTPRequestHandler):
             raise RuntimeError("Whop API %s: %s" % (res.status, body[:300].decode("utf-8", "replace")))
         return json.loads(body or b"{}")
 
+    def _title_for(self, p, cache, errs):
+        """Product title for a payment listed without one: payment, then plan, then membership lookups."""
+        def title_of(obj):
+            obj = obj if isinstance(obj, dict) else {}
+            for k in ("product", "access_pass"):
+                v = obj.get(k)
+                if isinstance(v, dict) and (v.get("title") or v.get("name")):
+                    return str(v.get("title") or v.get("name"))
+            return ""
+        plan = p.get("plan") if isinstance(p.get("plan"), dict) else {}
+        memb = p.get("membership") if isinstance(p.get("membership"), dict) else {}
+        if plan.get("id") and ("plan:" + plan["id"]) in cache:
+            return cache["plan:" + plan["id"]]
+        tries = [("/api/v1/payments/" + str(p["id"]), None)] if p.get("id") else []
+        if plan.get("id"):
+            tries.append(("/api/v1/plans/" + plan["id"], "plan:" + plan["id"]))
+        if memb.get("id"):
+            tries.append(("/api/v1/memberships/" + memb["id"], None))
+        for path, key in tries:
+            if key and key in cache:
+                return cache[key]
+            try:
+                t = title_of(self._whop_get(path))
+            except Exception as e:
+                errs.append(path.split("/")[3] + ": " + str(e)[:160])
+                t = ""
+            if key:
+                cache[key] = t
+            if t:
+                if plan.get("id"):
+                    cache["plan:" + plan["id"]] = t
+                return t
+        return ""
+
     def _backfill(self):
         """Admin only: re-run every paid TradeVault payment from the Whop API through _purchase.
         Safe to repeat: GHL tags are added, members upsert, payments are keyed on the Whop payment id."""
@@ -124,7 +158,7 @@ class handler(BaseHTTPRequestHandler):
             return
         started = time.time()
         try:
-            pays, after, seen, scope, raw = [], "", {}, None, ""
+            pays, after, seen, scope, raw, sample, cache, errs = [], "", {}, None, "", "", {}, []
             for _ in range(30):
                 q = "first=100" + ("&after=" + after if after else "")
                 if scope is None:
@@ -137,8 +171,10 @@ class handler(BaseHTTPRequestHandler):
                 else:
                     page = self._whop_get("/api/v1/payments?" + scope + q)
                 for p in page.get("data") or []:
+                    if not sample:
+                        sample = json.dumps({k: p.get(k) for k in ("product", "plan", "membership", "status")})[:300]
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
-                    title = str(prod.get("title") or prod.get("name") or "")
+                    title = str(prod.get("title") or prod.get("name") or "") or self._title_for(p, cache, errs)
                     route = str(prod.get("route") or "")
                     k = "%s | %s" % (title or route or prod.get("id") or "?", p.get("status"))
                     seen[k] = seen.get(k, 0) + 1
@@ -146,7 +182,7 @@ class handler(BaseHTTPRequestHandler):
                         title = TV_ROUTES.get(route, "")
                         if not title:
                             continue
-                        p["product"] = dict(prod, title=title)
+                    p["product"] = dict(prod, title=title)
                     paid = p.get("status") == "paid" or str(p.get("substatus") or "") == "succeeded" or \
                         (p.get("paid_at") and p.get("status") not in ("void", "draft", "open", "uncollectible"))
                     if paid and p.get("id") and not p.get("refunded_at") and \
@@ -182,7 +218,7 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 failed.append({"id": p.get("id"), "error": str(e)[:200]})
         left = len(todo) - len(done) - len(failed) - no_email
-        self._json(200, {"ok": True, "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
+        self._json(200, {"ok": True, "sample": sample, "lookup_errors": errs[:3], "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
                          "failed": failed, "no_email": no_email, "remaining": left})
 
     def _keep(self, event_type, raw_body):
