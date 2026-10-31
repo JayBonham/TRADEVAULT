@@ -109,7 +109,7 @@ class handler(BaseHTTPRequestHandler):
                 log("TV_CHECKOUT: no plan id for", tier)
                 return self._go(fallback, "no plan id for " + tier)
             cfg = _whop("POST", "/api/v1/checkout_configurations", {
-                "mode": "payment", "plan_id": pid, "redirect_url": REDIRECT,
+                "mode": "payment", "variant_id": pid, "plan_id": pid, "redirect_url": REDIRECT,
                 "metadata": {"tv_ref": code, "tv_tier": tier}})
             url = cfg.get("purchase_url") or ""
             if url.startswith("/"):
