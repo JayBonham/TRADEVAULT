@@ -2,11 +2,11 @@
 GET  -> {ok, members:[{id, name, email, tier, setup, assigned, educator, scanner,
                        tradingview, telegram, joined}]}
         everyone tagged tradevault-purchased (set by the Whop webhook), read live from GHL.
-POST {action: "assign"|"unassign"|"remove", c}
+POST {action: "assign"|"unassign", c}
         assign adds tv-access-granted; the GHL "Access Granted" workflow triggers on that tag,
         moves the card and emails the member. unassign removes the tag (no email is unsent).
-        remove takes the contact off the board (test purchases): strips the TradeVault tags and
-        deletes the DB row. The GHL contact itself is kept.
+TEST_EMAILS (Alex's test purchases) are taken off the board on the next load: their TradeVault
+tags are stripped in GHL and their DB row deleted. The GHL contacts themselves are kept.
 """
 import http.client
 import json
@@ -33,6 +33,7 @@ SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spect
 FIELD_KEYS = ("tv_educator", "tv_scanner", "tradingview_username", "telegram_username")
 CID_RE = re.compile(r"^[A-Za-z0-9]{10,40}$")
 PAGE = 100
+TEST_EMAILS = {"alex@carriesoave.ca", "alexkemppp@gmail.com", "alex@alexktaylor.com"}
 
 
 def log(*a):
@@ -181,6 +182,13 @@ class handler(BaseHTTPRequestHandler):
                 if c and MEMBER_TAG in [t.lower() for t in c.get("tags") or []]:
                     contacts.append(c)
             members = [_member(c, ids, db) for c in contacts]
+            for m in [m for m in members if m["email"].lower() in TEST_EMAILS]:
+                status, _, _ = _ghl("DELETE", "/contacts/" + m["id"] + "/tags",
+                                    {"tags": [MEMBER_TAG, ASSIGNED_TAG, DONE_TAG] + [t for t, _ in TIERS]})
+                if status < 300:
+                    _tv_db.remove(m["id"])
+                    log("TV_MEMBERS removed test purchase", m["id"])
+            members = [m for m in members if m["email"].lower() not in TEST_EMAILS]
             # set up before the DB copy existed: read their note once, then keep it in the DB
             for m in [m for m in members if m["setup"] and not m["tradingview"]][:25]:
                 got = _from_note(m["id"])
@@ -208,16 +216,8 @@ class handler(BaseHTTPRequestHandler):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
         action = b.get("action")
-        if not CID_RE.match(cid) or action not in ("assign", "unassign", "remove"):
+        if not CID_RE.match(cid) or action not in ("assign", "unassign"):
             return self._json(400, {"ok": False, "error": "Invalid request"})
-        if action == "remove":
-            tags = [MEMBER_TAG, ASSIGNED_TAG, DONE_TAG] + [t for t, _ in TIERS]
-            status, _, raw = _ghl("DELETE", "/contacts/" + cid + "/tags", {"tags": tags})
-            if status >= 300:
-                return self._json(502, {"ok": False, "error": "GHL %s: %s" % (status, raw[:200].decode(errors="replace"))})
-            _tv_db.remove(cid)
-            log("TV_MEMBERS remove", cid)
-            return self._json(200, {"ok": True})
         method = "POST" if action == "assign" else "DELETE"
         status, _, raw = _ghl(method, "/contacts/" + cid + "/tags", {"tags": [ASSIGNED_TAG]})
         if status >= 300:

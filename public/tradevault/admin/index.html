@@ -125,9 +125,6 @@ td .sub.wrap{white-space:normal;max-width:170px;line-height:1.35}
 .act.undo:hover{color:var(--tx);background:rgba(255,255,255,.05)}
 .act.sure{background:var(--warn);color:#1A1205}
 .act:disabled{opacity:.6;cursor:wait}
-.rm{display:block;margin:6px auto 0;padding:2px 6px;border:0;background:none;cursor:pointer;font-size:12px;color:var(--tx-mute)}
-.rm:hover{color:var(--bad,#FF8F8F)}
-.rm.sure{color:var(--bad,#FF8F8F);font-weight:600}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .8s linear infinite}
 
 .state{padding:70px 20px;text-align:center;color:var(--tx-mute)}
@@ -350,7 +347,7 @@ footer{padding-block:32px 40px}
       var c8 = el('td'); c8.appendChild(m.telegram ? el('span', 'em', '@' + m.telegram) : dash());
       var g = m.groups || [];
       if (g.length) { var gs = el('div', 'sub wrap', g.length > 2 ? 'Approve in all ' + g.length + ' groups' : 'Approve in: ' + g.join(' + ')); gs.title = g.join('\n'); c8.appendChild(gs); }
-      var c9 = el('td'); c9.appendChild(actBtn(m)); c9.appendChild(rmBtn(m));
+      var c9 = el('td'); c9.appendChild(actBtn(m));
       [c1, c2, c3, c4, c5, c6, c7, c8, c9].forEach(function (c) { tr.appendChild(c); });
       body.appendChild(tr);
     });
@@ -383,22 +380,6 @@ footer{padding-block:32px 40px}
       b.className = 'act go'; b.textContent = 'Completed ✓';
       b.addEventListener('click', function () { set(m, true, b); });
     }
-    return b;
-  }
-
-  /* Remove: for test purchases. Takes the TradeVault tags off in GHL; the contact stays. */
-  function rmBtn(m) {
-    var b = el('button', 'rm', 'Remove'); b.type = 'button';
-    b.title = 'Take off the board (test purchases). Removes the TradeVault tags in GHL; the contact stays.';
-    b.addEventListener('click', function () {
-      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = 'Remove ' + (m.email || 'member') + '?'; setTimeout(function () { b.classList.remove('sure'); b.textContent = 'Remove'; }, 4000); return; }
-      if (busy[m.id]) return; busy[m.id] = true; b.disabled = true; b.textContent = 'Removing…';
-      api('POST', { action: 'remove', c: m.id }).then(function () {
-        members = members.filter(function (x) { return x.id !== m.id; }); render();
-        toast((m.name || m.email) + ' removed from the board.');
-      }).catch(function (x) { toast('Couldn’t remove: ' + (x.msg || 'network error')); render(); })
-        .then(function () { busy[m.id] = false; });
-    });
     return b;
   }
 
