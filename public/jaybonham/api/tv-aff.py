@@ -14,7 +14,8 @@
   bonus      POST   (Bearer admin token)      {id, amount, note}  e.g. quarterly profit share
   assign     POST   (Bearer admin token)      {id, email}  credit a buyer the link didn't catch
   unlink     POST   (Bearer admin token)      {id, email}  take a buyer off this affiliate (unpaid commission goes)
-  settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count}
+  settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count, unlock_wait_days}
+  view_as    POST   (Bearer admin token)      {id}  -> {token}: read-only 2-hour token for "Login as"
 
 GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
 tv-affiliate-paid and tv-affiliate-sale (the last two re-added each time). Commission logic and storage are in _tv_aff.py.
@@ -23,6 +24,7 @@ import json
 import os
 import re
 import sys
+import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
@@ -77,6 +79,8 @@ class handler(BaseHTTPRequestHandler):
             return self._profile()
         if a == "bonus":
             return self._admin_bonus()
+        if a == "view_as":
+            return self._admin_view_as()
         if a == "unlink":
             return self._admin_unlink()
         if a == "assign":
@@ -172,7 +176,7 @@ class handler(BaseHTTPRequestHandler):
         self._json(200, {"ok": True, "token": A.sign(row[0]), "code": row[2], "name": row[1]})
 
     def _me(self):
-        aff = self._aff()
+        aff = self._aff(view_ok=True)
         if not aff:
             return
         try:
@@ -188,6 +192,9 @@ class handler(BaseHTTPRequestHandler):
             count = A.personals(cur, aff)
             pct = A.rate(cur, aff, cfg, count)
             qualified = count >= cfg["unlock_count"]
+            unlocked = A.unlocked_at(cur, aff, cfg) if qualified else None
+            opens = A.payout_from(cur, aff, cfg) if qualified else None
+            can_pay = bool(opens) and opens.timestamp() <= time.time()
             cur.execute(f"""
                 SELECT COALESCE(SUM(commission_usd) FILTER (WHERE status = 'pending'), 0),
                        COALESCE(SUM(commission_usd) FILTER (WHERE status = 'pending' AND payout_id IS NULL AND {READY}), 0),
@@ -211,7 +218,7 @@ class handler(BaseHTTPRequestHandler):
             for r in cur.fetchall():
                 st = r[4]
                 if st == "pending":
-                    st = "requested" if r[9] else ("held" if not r[6] else ("payable" if qualified else "locked"))
+                    st = "requested" if r[9] else ("held" if not r[6] else ("payable" if can_pay else "locked"))
                 coms.append({"member": A.mask(r[0]) if r[7] != "bonus" else "Bonus", "product": r[1], "amount": float(r[2]),
                              "commission": float(r[3]), "status": st, "at": r[5].isoformat(), "kind": r[7], "pct": r[8]})
             cur.execute("""SELECT id, amount_usd, method, details, status, reference, requested_at, decided_at
@@ -222,7 +229,10 @@ class handler(BaseHTTPRequestHandler):
             self._json(200, {
                 "ok": True, "name": p[1], "email": p[2], "code": p[3], "status": p[4], "pct": pct,
                 "payout_method": p[5] or "", "payout": _details(p[6]), "hold_days": A.HOLD_DAYS,
+                "view_only": bool(self.view_only),
                 "program": {"personals": count, "unlock_count": cfg["unlock_count"], "qualified": qualified,
+                            "unlocked_at": _iso(unlocked), "payout_from": _iso(opens), "can_payout": can_pay,
+                            "unlock_wait_days": cfg["unlock_wait_days"],
                             "base_pct": cfg["base_pct"], "tier_pct": cfg["tier_pct"], "tier_count": cfg["tier_count"]},
                 "stats": {"clicks": p[7], "referrals": len(refs), "active": sum(1 for r in refs if r["active"]),
                           "pending": float(s[0]), "ready": float(s[1]), "paid": float(s[2]), "sales": float(s[3]),
@@ -262,6 +272,10 @@ class handler(BaseHTTPRequestHandler):
             if A.personals(cur, aff) < cfg["unlock_count"]:
                 c.close()
                 return self._json(400, {"error": f"Payouts unlock once you've referred {cfg['unlock_count']} paying members."})
+            opens = A.payout_from(cur, aff, cfg)
+            if not opens or opens.timestamp() > time.time():
+                c.close()
+                return self._json(400, {"error": "Your first payout opens on " + (opens.strftime("%-d %B") if opens else "a later date") + "."})
             if method not in ("paypal", "crypto"):
                 c.close()
                 return self._json(400, {"error": "Add your PayPal or crypto details first."})
@@ -331,7 +345,8 @@ class handler(BaseHTTPRequestHandler):
                              "status": r[6], "payout_method": r[7] or "", "payout_to": A.payout_label(r[7], r[8]), "clicks": r[9],
                              "created_at": _iso(r[10]), "application": _details(r[11]), "reviewed_at": _iso(r[12]),
                              "referrals": r[13], "personals": count, "qualified": count >= cfg["unlock_count"],
-                             "sales": float(r[15]), "pending": float(r[16]), "ready": float(r[17]), "paid": float(r[18])})
+                             "sales": float(r[15]), "pending": float(r[16]), "ready": float(r[17]), "paid": float(r[18]),
+                             "payout_from": _iso(A.payout_from(cur, r[0], cfg)) if count >= cfg["unlock_count"] else ""})
             cur.execute("""SELECT p.id, p.affiliate_id, a.name, a.email, p.amount_usd, p.method, p.details, p.status, p.reference,
                                   p.requested_at, p.decided_at
                              FROM tv_aff_payouts p JOIN tv_affiliates a ON a.id = p.affiliate_id
@@ -504,6 +519,21 @@ class handler(BaseHTTPRequestHandler):
         c.close()
         self._json(200, {"ok": True, "payments": n})
 
+    def _admin_view_as(self):
+        """Admin "Login as": a read-only token for this affiliate's dashboard."""
+        if not self._admin():
+            return
+        aff = int(self._body().get("id") or 0)
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("SELECT 1 FROM tv_affiliates WHERE id = %s", (aff,))
+        found = cur.fetchone()
+        c.close()
+        if not found:
+            return self._json(404, {"error": "Affiliate not found."})
+        A.log("TV_AFF_VIEW_AS", aff)
+        self._json(200, {"ok": True, "token": A.sign(aff, view=True)})
+
     def _admin_unlink(self):
         """Take a buyer off this affiliate (e.g. a self-referral under a second email)."""
         if not self._admin():
@@ -526,7 +556,8 @@ class handler(BaseHTTPRequestHandler):
         if not self._admin():
             return
         b = self._body()
-        limits = {"base_pct": (0, 100), "tier_pct": (0, 100), "tier_count": (1, 10000), "unlock_count": (0, 10000)}
+        limits = {"base_pct": (0, 100), "tier_pct": (0, 100), "tier_count": (1, 10000), "unlock_count": (0, 10000),
+                  "unlock_wait_days": (0, 365)}
         c = A.conn()
         cur = c.cursor()
         for k, (lo, hi) in limits.items():
@@ -556,10 +587,18 @@ class handler(BaseHTTPRequestHandler):
         h = self.headers.get("Authorization", "")
         return h[7:].strip() if h.startswith("Bearer ") else ""
 
-    def _aff(self):
+    def _aff(self, view_ok=False):
+        """The affiliate behind the Bearer token. Admin "Login as" tokens only work where view_ok."""
+        self.view_only = False
         aff = A.verify(self._bearer())
+        if not aff and view_ok:
+            aff = A.verify(self._bearer(), view=True)
+            self.view_only = bool(aff)
         if not aff:
-            self._json(401, {"error": "not logged in"})
+            if not view_ok and A.verify(self._bearer(), view=True):
+                self._json(403, {"error": "You're viewing as this affiliate: it's read-only."})
+            else:
+                self._json(401, {"error": "not logged in"})
         return aff
 
     def _admin(self):

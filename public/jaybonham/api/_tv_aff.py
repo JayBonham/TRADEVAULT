@@ -15,7 +15,8 @@ Programme rules (numbers live in tv_aff_settings, editable from /admin/affiliate
   - Joining is an application: new affiliates are 'pending' until approved; their link
     does nothing until then.
   - A "personal" is a referred member with at least one non-refunded payment.
-  - Commission builds from the first personal but can't be paid out until UNLOCK personals.
+  - Commission builds from the first personal but can't be paid out until UNLOCK personals,
+    and the first payout request opens unlock_wait_days after the day they unlocked.
   - From TIER personals on, new payments earn TIER_PCT instead of BASE_PCT
     (a custom rate set by admin overrides both).
   - An affiliate's own purchases are never credited to another affiliate (no one sits under
@@ -39,7 +40,7 @@ from _aff_db import hash_password, check_password  # same PBKDF2 scheme as Jay's
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 SECRET = os.environ.get("AFF_SESSION_SECRET", "changeme-aff-secret") + ":tv"
 DEFAULT_PCT = 20
-SETTINGS = {"base_pct": 20, "tier_pct": 30, "tier_count": 25, "unlock_count": 5}
+SETTINGS = {"base_pct": 20, "tier_pct": 30, "tier_count": 25, "unlock_count": 5, "unlock_wait_days": 30}
 CLAIM_WINDOW_DAYS = 14
 HOLD_DAYS = 30
 TOKEN_TTL = 60 * 60 * 24 * 30
@@ -141,16 +142,22 @@ def conn():
 
 # ---------- tokens (Bearer, stored by the portal page) ----------
 
-def sign(aff_id: int) -> str:
-    payload = base64.urlsafe_b64encode(json.dumps({"a": aff_id, "e": int(time.time()) + TOKEN_TTL}).encode()).decode().rstrip("=")
-    sig = hmac.new(SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+VIEW_TTL = 60 * 60 * 2
+
+
+def sign(aff_id: int, view=False) -> str:
+    """view=True: admin "Login as" token, read-only and short-lived (signed with its own key)."""
+    key = SECRET + (":view" if view else "")
+    payload = base64.urlsafe_b64encode(json.dumps({"a": aff_id, "e": int(time.time()) + (VIEW_TTL if view else TOKEN_TTL)}).encode()).decode().rstrip("=")
+    sig = hmac.new(key.encode(), payload.encode(), hashlib.sha256).hexdigest()
     return f"{payload}.{sig}"
 
 
-def verify(token: str):
+def verify(token: str, view=False):
     try:
+        key = SECRET + (":view" if view else "")
         payload, sig = token.rsplit(".", 1)
-        if not hmac.compare_digest(sig, hmac.new(SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()):
+        if not hmac.compare_digest(sig, hmac.new(key.encode(), payload.encode(), hashlib.sha256).hexdigest()):
             return None
         data = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
         return int(data["a"]) if data.get("e", 0) > time.time() else None
@@ -185,6 +192,30 @@ def personals(cur, aff_id):
     cur.execute("""SELECT COUNT(*) FROM tv_aff_referrals r WHERE r.affiliate_id = %s
                      AND EXISTS (SELECT 1 FROM tv_payments p WHERE p.email = r.email AND NOT p.refunded)""", (aff_id,))
     return int(cur.fetchone()[0])
+
+
+def unlocked_at(cur, aff_id, cfg):
+    """When the affiliate reached unlock_count personals (a member counts from their first
+    non-refunded payment, or from when they became the referral if that was later); None if not yet."""
+    n = cfg["unlock_count"]
+    if n <= 0:
+        cur.execute("SELECT created_at FROM tv_affiliates WHERE id = %s", (aff_id,))
+        row = cur.fetchone()
+        return row[0] if row else None
+    cur.execute("""SELECT at FROM (
+                       SELECT GREATEST(MIN(p.paid_at), MIN(r.created_at)) AS at FROM tv_aff_referrals r
+                         JOIN tv_payments p ON p.email = r.email AND NOT p.refunded
+                        WHERE r.affiliate_id = %s GROUP BY r.email) x
+                    ORDER BY at OFFSET %s LIMIT 1""", (aff_id, n - 1))
+    row = cur.fetchone()
+    return row[0] if row else None
+
+
+def payout_from(cur, aff_id, cfg):
+    """First moment a payout can be requested (unlock + wait), or None if not unlocked."""
+    import datetime
+    at = unlocked_at(cur, aff_id, cfg)
+    return at + datetime.timedelta(days=cfg["unlock_wait_days"]) if at else None
 
 
 def rate(cur, aff_id, cfg=None, count=None):

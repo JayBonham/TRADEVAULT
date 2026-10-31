@@ -36,6 +36,7 @@
 .how p{font-size:13.5px;color:var(--tx-mute)}
 .center{padding-block:120px;text-align:center}
 .review{margin-top:26px;padding:30px 30px 28px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start;border-color:rgba(245,184,92,.35);background:linear-gradient(140deg,rgba(245,184,92,.08),rgba(255,255,255,.01) 55%),var(--g1)}
+.asbar{position:sticky;top:0;z-index:50;padding:10px max(16px,env(safe-area-inset-left,0px));text-align:center;background:var(--warn);color:#1A1205;font-size:14px;font-weight:600}
 .review .ico{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(245,184,92,.45);color:var(--warn);font-size:20px}
 .review h2{font-size:26px}
 .review p{color:var(--tx-dim);margin-top:8px;max-width:62ch}
@@ -55,6 +56,7 @@
 </style>
 </head>
 <body>
+<div class="asbar" id="asbar" hidden>Admin view: you're seeing <span id="asName"></span>'s dashboard. Read-only, nothing here can be changed.</div>
 <header class="nav W">
   <div class="nav-in">
     <a href="/" class="brand"><img src="../assets/tv-icon.png" alt="" width="26" height="26"><img src="../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"><span class="sep"></span><span class="mono">Affiliates</span></a>
@@ -160,8 +162,15 @@
 (function () {
   var API = 'https://jaybonham.com/api/tv-aff';
   var SITE = 'https://thetradevault.co';
-  var token = '';
-  try { token = localStorage.getItem('tv_aff_token') || ''; } catch (e) {}
+  var token = '', viewAs = false;
+  // Admin "Login as" arrives as #as=<read-only token>; it lives in this tab only, never in the affiliate's saved login.
+  var m = location.hash.match(/^#as=(.+)$/);
+  try {
+    if (m) { sessionStorage.setItem('tv_aff_as', decodeURIComponent(m[1])); history.replaceState(null, '', location.pathname); }
+    token = sessionStorage.getItem('tv_aff_as') || '';
+  } catch (e) { if (m) token = decodeURIComponent(m[1]); }
+  viewAs = !!token;
+  if (!token) { try { token = localStorage.getItem('tv_aff_token') || ''; } catch (e) {} }
   if (!token) { location.replace('/affiliate-login'); return; }
   var $ = function (id) { return document.getElementById(id); };
   var data = null, picker = null;
@@ -169,7 +178,10 @@
   var date = function (iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); };
   var cap = function (s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
 
-  function signOut() { try { localStorage.removeItem('tv_aff_token'); } catch (e) {} location.replace('/affiliate-login'); }
+  function signOut() {
+    if (viewAs) { try { sessionStorage.removeItem('tv_aff_as'); } catch (e) {} location.replace('/admin/affiliates'); return; }
+    try { localStorage.removeItem('tv_aff_token'); } catch (e) {} location.replace('/affiliate-login');
+  }
   $('out').addEventListener('click', signOut);
 
   function api(method, action, body) {
@@ -207,6 +219,7 @@
     $('loading').hidden = true; $('app').hidden = false;
     $('fname').textContent = (d.name || '').split(' ')[0];
     $('who').textContent = d.email;
+    if (viewAs) { $('asbar').hidden = false; $('asName').textContent = d.name; $('out').textContent = 'Close admin view'; }
     var pend = d.status === 'pending', P = d.program;
     $('ratePill').textContent = pend ? 'Under review' : d.pct + '% recurring';
     $('ratePill').className = 'pill ' + (pend ? 'warn' : 'acc');
@@ -221,7 +234,9 @@
     $('unlockT').textContent = P.qualified ? 'Payouts unlocked' : 'Unlock payouts';
     $('unlockN').textContent = u + ' / ' + P.unlock_count;
     $('unlockF').style.width = (P.unlock_count ? 100 * u / P.unlock_count : 100) + '%';
-    $('unlockP').textContent = P.qualified ? 'You can withdraw commission once it clears the ' + d.hold_days + '-day hold.'
+    var opens = P.payout_from ? date(P.payout_from) : '';
+    $('unlockP').textContent = P.qualified ? (P.can_payout ? 'You can withdraw commission once it clears the ' + d.hold_days + '-day hold.'
+        : 'Unlocked! Your first payout opens on ' + opens + ', ' + P.unlock_wait_days + ' days after you unlocked. Keep stacking until then.')
       : (P.unlock_count - P.personals) + ' more paying member' + (P.unlock_count - P.personals === 1 ? '' : 's') + ' to unlock payouts. Everything you earn until then is kept.';
     var top = P.personals >= P.tier_count;
     $('barTier').classList.toggle('done', top);
@@ -238,18 +253,19 @@
     $('sSales').textContent = money(s.sales);
     $('sEarned').textContent = money(s.pending + s.paid);
     $('sPayable').textContent = money(s.ready);
-    $('readyCard').className = 'stat ' + (P.qualified ? 'hot' : '');
-    $('readyLbl').textContent = P.qualified ? 'Ready to pay out' : 'Locked';
-    $('readySub').textContent = P.qualified ? 'Past the ' + d.hold_days + '-day hold' : 'Unlocks at ' + P.unlock_count + ' paying members';
+    $('readyCard').className = 'stat ' + (P.can_payout ? 'hot' : '');
+    $('readyLbl').textContent = P.can_payout ? 'Ready to pay out' : P.qualified ? 'Unlocked' : 'Locked';
+    $('readySub').textContent = !P.qualified ? 'Unlocks at ' + P.unlock_count + ' paying members' : P.can_payout ? 'Past the ' + d.hold_days + '-day hold' : 'First payout opens ' + opens;
     $('sPending').textContent = money(s.pending - s.ready - s.requested);
     $('sPaid').textContent = money(s.paid);
 
     if (!picker) picker = PayoutPicker($('picker'), d.payout_method || 'paypal', d.payout);
     var open = d.payouts.filter(function (p) { return p.status === 'requested'; })[0];
-    $('payBtn').disabled = pend || !!open || !P.qualified || s.ready <= 0;
+    $('payBtn').disabled = viewAs || pend || !!open || !P.can_payout || s.ready <= 0;
     $('payState').textContent = pend ? 'Payouts open once you\u2019re approved.'
       : open ? 'Payout of ' + money(open.amount) + ' requested. We\u2019ll send it to ' + open.to + ' and mark it paid here.'
       : !P.qualified ? 'Payouts unlock at ' + P.unlock_count + ' paying members.'
+      : !P.can_payout ? 'Your first payout opens on ' + opens + '.'
       : s.ready > 0 ? money(s.ready) + ' is ready. Check your details, then request it.'
       : 'Commission becomes ready to pay out ' + d.hold_days + ' days after each payment.';
 

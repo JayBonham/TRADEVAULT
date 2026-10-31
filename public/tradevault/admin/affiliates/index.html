@@ -186,6 +186,7 @@
           <div class="field"><label for="stBase">Starting commission</label><div class="inp"><input id="stBase" type="number" min="0" max="100"><span style="padding-right:14px">%</span></div></div>
           <div class="field"><label for="stUnlock">Paying members to unlock payouts</label><div class="inp"><input id="stUnlock" type="number" min="0"></div></div>
           <div class="field"><label for="stTierN">Paying members for the higher rate</label><div class="inp"><input id="stTierN" type="number" min="1"></div></div>
+          <div class="field"><label for="stWait">Days after unlocking before the first payout</label><div class="inp"><input id="stWait" type="number" min="0" max="365"><span style="padding-right:14px">days</span></div></div>
           <div class="field"><label for="stTier">Higher rate</label><div class="inp"><input id="stTier" type="number" min="0" max="100"><span style="padding-right:14px">%</span></div></div>
         </div>
         <p class="help" style="margin-top:12px">Commission is held <span id="stHold"></span> days after each payment. Refunds void it.</p>
@@ -391,14 +392,27 @@
     });
   }
 
+  /* "Login as": their dashboard in a new tab, read-only (the token can't request payouts or edit details). */
+  function viewAs(a, b) {
+    var w = window.open('about:blank', '_blank'); // opened now, inside the click, so it isn't blocked as a pop-up
+    b.disabled = true;
+    api('POST', 'view_as', { id: a.id }).then(function (d) {
+      if (w) w.location = '/affiliate-portal/#as=' + encodeURIComponent(d.token); else location.href = '/affiliate-portal/#as=' + encodeURIComponent(d.token);
+    }).catch(function (x) { if (w) w.close(); fail(b)(x); }).then(function () { b.disabled = false; });
+  }
+
   function level(a, S) {
     if (a.personals >= S.tier_count) return pill(S.tier_pct + '% tier', 'ok');
+    if (a.qualified && a.payout_from && new Date(a.payout_from) > new Date()) {
+      var p = pill('Unlocked · payouts ' + new Date(a.payout_from).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }), 'acc');
+      p.title = 'Hit ' + S.unlock_count + ' paying members; first payout request opens ' + S.unlock_wait_days + ' days later'; return p;
+    }
     if (a.qualified) return pill('Unlocked', 'acc');
     return pill(a.personals + '/' + S.unlock_count + ' to unlock', 'off');
   }
 
   function renderAffs(A, S) {
-    $('ruleLine').textContent = S.base_pct + '% to start; payouts unlock at ' + S.unlock_count + ' paying members; ' + S.tier_pct + '% from ' + S.tier_count + ' paying members.';
+    $('ruleLine').textContent = S.base_pct + '% to start; payouts unlock at ' + S.unlock_count + ' paying members, first payout ' + S.unlock_wait_days + ' days after unlocking; ' + S.tier_pct + '% from ' + S.tier_count + ' paying members.';
     var list = A.filter(function (a) { return a.status === 'active' || a.status === 'paused'; });
     $('count').textContent = list.length + ' affiliates';
     var rows = $('rows'); rows.innerHTML = '';
@@ -422,7 +436,8 @@
       var st = el('td'), b = btn('btn-g btn-sm', a.status === 'active' ? 'Active · Pause' : 'Paused · Activate', function () { b.disabled = true; api('PATCH', 'admin', { id: a.id, status: a.status === 'active' ? 'paused' : 'active' }).then(load).catch(fail(b)); });
       if (a.status !== 'active') b.style.color = 'var(--warn)';
       st.appendChild(b); tr.appendChild(st);
-      var v = el('td'); v.appendChild(btn('btn-g btn-sm', 'View', function () { openDrawer(a); })); tr.appendChild(v);
+      var v = el('td'); v.style.whiteSpace = 'nowrap'; v.appendChild(btn('btn-g btn-sm', 'View', function () { openDrawer(a); }));
+      v.appendChild(document.createTextNode(' ')); v.appendChild(btn('btn-g btn-sm', 'Login as', function (b) { viewAs(a, b); })); tr.appendChild(v);
       rows.appendChild(tr);
     });
   }
@@ -527,11 +542,11 @@
 
   // settings
   function renderSettings(S) {
-    $('stBase').value = S.base_pct; $('stUnlock').value = S.unlock_count; $('stTierN').value = S.tier_count; $('stTier').value = S.tier_pct; $('stHold').textContent = D.hold_days;
+    $('stBase').value = S.base_pct; $('stUnlock').value = S.unlock_count; $('stTierN').value = S.tier_count; $('stTier').value = S.tier_pct; $('stWait').value = S.unlock_wait_days; $('stHold').textContent = D.hold_days;
   }
   $('stGo').addEventListener('click', function () {
-    var b = this, v = { base_pct: +$('stBase').value, unlock_count: +$('stUnlock').value, tier_count: +$('stTierN').value, tier_pct: +$('stTier').value };
-    if ([v.base_pct, v.tier_pct].some(function (x) { return !(x >= 0 && x <= 100); }) || !(v.tier_count >= 1) || !(v.unlock_count >= 0)) { $('stErr').textContent = 'Rates are 0 to 100%, member counts are whole numbers.'; return; }
+    var b = this, v = { base_pct: +$('stBase').value, unlock_count: +$('stUnlock').value, tier_count: +$('stTierN').value, tier_pct: +$('stTier').value, unlock_wait_days: +$('stWait').value };
+    if ([v.base_pct, v.tier_pct].some(function (x) { return !(x >= 0 && x <= 100); }) || !(v.tier_count >= 1) || !(v.unlock_count >= 0) || !(v.unlock_wait_days >= 0 && v.unlock_wait_days <= 365)) { $('stErr').textContent = 'Rates are 0 to 100%, member counts are whole numbers.'; return; }
     $('stErr').textContent = ''; b.disabled = true;
     api('PATCH', 'settings', v).then(function () { toast('Rules saved'); b.disabled = false; load(); }).catch(fail(b));
   });
