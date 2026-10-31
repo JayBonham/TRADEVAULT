@@ -170,9 +170,9 @@ class handler(BaseHTTPRequestHandler):
         if not row or not A.check_password(password, row[3], row[4]):
             return self._json(401, {"error": "Wrong email or password."})
         if row[5] == "paused":
-            return self._json(403, {"error": "This affiliate account is paused. Email hello@thetradevault.co."})
+            return self._json(403, {"error": "This affiliate account is paused. Email support@thetradevault.co."})
         if row[5] == "rejected":
-            return self._json(403, {"error": "Your application wasn't approved this time. Questions: hello@thetradevault.co."})
+            return self._json(403, {"error": "Your application wasn't approved this time. Questions: support@thetradevault.co."})
         self._json(200, {"ok": True, "token": A.sign(row[0]), "code": row[2], "name": row[1]})
 
     def _me(self):
