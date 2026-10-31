@@ -12,6 +12,7 @@
   detail     GET    (Bearer admin token)      ?id= one affiliate's members and commission
   payouts    PATCH  (Bearer admin token)      {id, action: paid|reject, reference?}
   bonus      POST   (Bearer admin token)      {id, amount, note}  e.g. quarterly profit share
+  assign     POST   (Bearer admin token)      {id, email}  credit a buyer the link didn't catch
   settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count}
 
 GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
@@ -75,6 +76,8 @@ class handler(BaseHTTPRequestHandler):
             return self._profile()
         if a == "bonus":
             return self._admin_bonus()
+        if a == "assign":
+            return self._admin_assign()
         self._json(404, {"error": "unknown action"})
 
     def do_PATCH(self):
@@ -456,6 +459,44 @@ class handler(BaseHTTPRequestHandler):
         c.commit()
         c.close()
         self._json(200, {"ok": True})
+
+    def _admin_assign(self):
+        if not self._admin():
+            return
+        b = self._body()
+        aff = int(b.get("id") or 0)
+        email = (b.get("email") or "").strip().lower()[:160]
+        if not aff or not EMAIL_RE.match(email):
+            return self._json(400, {"error": "Enter the buyer's checkout email."})
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("SELECT code, email, status FROM tv_affiliates WHERE id = %s", (aff,))
+        row = cur.fetchone()
+        if not row:
+            c.close()
+            return self._json(404, {"error": "Affiliate not found."})
+        if row[2] != "active":
+            c.close()
+            return self._json(400, {"error": "Activate this affiliate first."})
+        if row[1] == email:
+            c.close()
+            return self._json(400, {"error": "That's the affiliate's own email: self-purchases don't count."})
+        cur.execute("""SELECT a.id, a.name FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id
+                        WHERE r.email = %s""", (email,))
+        other = cur.fetchone()
+        if other and other[0] != aff:
+            c.close()
+            return self._json(409, {"error": "Already credited to " + other[1] + "."})
+        cur.execute("SELECT tier FROM tv_payments WHERE email = %s ORDER BY paid_at DESC LIMIT 1", (email,))
+        tier = (cur.fetchone() or [None])[0]
+        c.close()
+        A.claim(email, row[0], tier)
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("SELECT COUNT(*) FROM tv_aff_commissions WHERE affiliate_id = %s AND email = %s", (aff, email))
+        n = cur.fetchone()[0]
+        c.close()
+        self._json(200, {"ok": True, "payments": n})
 
     def _admin_settings(self):
         if not self._admin():

@@ -49,6 +49,9 @@
     "api/tv-setup.py": {
       "maxDuration": 20
     },
+    "api/tv-checkout.py": {
+      "maxDuration": 15
+    },
     "api/jb-webinar.py": {
       "maxDuration": 15
     }

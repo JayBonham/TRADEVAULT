@@ -420,6 +420,11 @@ class handler(BaseHTTPRequestHandler):
                 import _tv_aff
                 tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
                 _tv_aff.record_payment(str(data["id"]), email, amount, title, tier, paid_at)
+                # Checkout opened through /api/tv-checkout carries the affiliate code: credit it now,
+                # whatever browser the buyer paid in and whether or not they reach /setup.
+                meta = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+                if meta.get("tv_ref"):
+                    _tv_aff.claim(email, str(meta["tv_ref"]), tier)
         else:
             self._record_affiliate_purchase(email, slug, None)
         return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}

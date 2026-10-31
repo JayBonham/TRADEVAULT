@@ -54,6 +54,7 @@
 .warnline{margin-top:8px;font-size:12.5px;color:var(--warn)}
 
 /* detail drawer */
+.assign{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}.assign .inp{flex:1;min-width:200px}.assign+.help{margin-top:6px}
 .drawer{position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end;background:rgba(2,6,14,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .drawer .panel{width:min(760px,100%);height:100%;overflow:auto;background:var(--g1);border-left:1px solid var(--hair-2);padding:24px max(22px,env(safe-area-inset-right,0px)) 40px 26px}
 .drawer .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -189,6 +190,8 @@
   <div class="qa" id="dApp"></div>
   <div class="sech sec"><h2>Members</h2><span class="mono" id="dRefN"></span></div>
   <div class="tw"><table><thead><tr><th>Joined</th><th>Email</th><th>Plan</th><th class="r">Paid so far</th></tr></thead><tbody id="dRefs"></tbody></table></div>
+  <form class="assign" id="dAssign"><div class="inp"><input id="dAssignEmail" type="email" placeholder="Buyer's Whop email" aria-label="Buyer's Whop email" required></div><button class="btn-g btn-sm" type="submit">Credit to this affiliate</button></form>
+  <p class="help">Bought through this affiliate but not listed? Add their checkout email: they become this affiliate's member and their payments from the last 14 days earn commission.</p>
   <div class="sech sec"><h2>Commission</h2><span class="mono" id="dComN"></span></div>
   <div class="tw"><table><thead><tr><th>Date</th><th>Member</th><th>Item</th><th class="r">Payment</th><th class="r">Rate</th><th class="r">Earned</th><th>Status</th></tr></thead><tbody id="dComs"></tbody></table></div>
 </div></div>
@@ -373,7 +376,20 @@
   }
 
   // detail drawer
+  var drawerAff = null;
+  $('dAssign').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var b = this.querySelector('button'), em = $('dAssignEmail').value.trim().toLowerCase();
+    if (!drawerAff || !em) return;
+    b.disabled = true;
+    api('POST', 'assign', { id: drawerAff.id, email: em }).then(function (d) {
+      toast(em + ' credited to ' + drawerAff.name + (d.payments ? ' · ' + d.payments + ' payment' + (d.payments === 1 ? '' : 's') : ' · no payments yet'));
+      $('dAssignEmail').value = ''; b.disabled = false; load(); openDrawer(drawerAff);
+    }).catch(fail(b));
+  });
+
   function openDrawer(a) {
+    drawerAff = a;
     $('dName').textContent = a.name;
     $('dSub').textContent = a.email + (a.phone ? ' · ' + a.phone : '') + ' · ?ref=' + a.code + ' · joined ' + date(a.created_at);
     var kv = $('dKv'); kv.innerHTML = '';

@@ -439,6 +439,12 @@ try{localStorage.setItem('tv_ref',JSON.stringify({c:r,t:Date.now()}));}catch(e){
 document.cookie='tv_ref='+r+'; path=/; max-age=5184000; SameSite=Lax';
 var k='tv_ref_seen_'+r;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');}catch(e){}
 fetch('https://jaybonham.com/api/tv-aff?action=click',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({code:r}),keepalive:true}).catch(function(){});}catch(e){}})();
+/* Visitors from an affiliate link check out through /api/tv-checkout, which tags the Whop payment with the code. */
+document.addEventListener('DOMContentLoaded',function(){try{var r='';try{var s=JSON.parse(localStorage.getItem('tv_ref')||'null');if(s&&Date.now()-s.t<60*864e5)r=s.c;}catch(e){}
+if(!r){var m=document.cookie.match(/(?:^|; )tv_ref=([a-z0-9_]{3,20})/);if(m)r=m[1];}if(!r)return;
+var P={'sniper-tools':'tools','sniper-community-3c':'community','sniper-elite-3d':'elite'};
+document.querySelectorAll('a[href^="https://whop.com/sniper-academy-603f/"]').forEach(function(a){var k=a.getAttribute('href').split('/')[4];
+if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encodeURIComponent(r);});}catch(e){}});
 </script>
 </head>
 <body>
