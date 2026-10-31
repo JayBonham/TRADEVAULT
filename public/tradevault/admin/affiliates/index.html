@@ -34,6 +34,17 @@
 .note{font-size:13px;color:var(--tx-mute);margin-top:12px}
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:12px 18px;border-radius:12px;background:var(--g2);border:1px solid var(--hair-2);font-size:14px;z-index:60;box-shadow:0 20px 50px rgba(0,0,0,.4)}
 .toast.bad{border-color:rgba(255,143,143,.5);color:var(--bad)}
+/* "Check against Whop" audit report */
+.audit{display:grid;gap:14px;margin-bottom:18px;padding:20px 22px;border-radius:18px;border:1px solid var(--hair-2);background:rgba(255,255,255,.025)}
+.audit h3{font-size:16px}
+.audit ul{display:grid;gap:6px;margin:0;padding-left:18px;font-size:13.5px}
+.audit .fix li{color:var(--ok)}
+.audit .iss li{color:var(--warn)}
+.audit .aa{display:grid;gap:8px;padding-top:12px;border-top:1px solid var(--hair)}
+.audit .ab{display:grid;gap:3px;font-size:13px}
+.audit .ab b{font-weight:600}
+.audit .ab .flag{color:var(--warn)}
+.audit .ab .pl{font-family:var(--mono);font-size:12px;color:var(--tx-mute)}
 
 /* cards for applications + payout requests */
 .items{display:grid;gap:12px}
@@ -129,7 +140,8 @@
 
     <!-- Affiliates -->
     <section class="sec" data-p="affs" hidden>
-      <div class="sech"><h2>All affiliates</h2><span class="mono" id="count"></span></div>
+      <div class="sech"><h2>All affiliates</h2><span style="display:inline-flex;gap:12px;align-items:center"><span class="mono" id="count"></span><button class="btn-g btn-sm" id="auditBtn" type="button">Check against Whop</button></span></div>
+      <div class="audit" id="audit" hidden></div>
       <div class="tw wide"><table><thead><tr><th>Affiliate</th><th>Link</th><th>Joined</th><th class="r">Clicks</th><th class="r">Paying</th><th>Level</th><th class="r">Sales</th><th class="r">Held / requested</th><th class="r">Ready</th><th class="r">Paid</th><th class="r">Custom %</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
       <p class="note">Rates: <span id="ruleLine"></span> Leave "Custom %" blank to follow the programme rates.</p>
     </section>
@@ -238,6 +250,46 @@
     try { history.replaceState(null, '', '#' + t); } catch (e) {}
   }
   document.querySelectorAll('#tabs button').forEach(function (b) { b.addEventListener('click', function () { tab(b.getAttribute('data-t')); }); });
+
+  /* Every credited payment re-checked against Whop; safe fixes are applied server-side. */
+  $('auditBtn').addEventListener('click', function () {
+    var b = $('auditBtn'), box = $('audit');
+    b.disabled = true; b.textContent = 'Checking Whop…';
+    fetch('https://jaybonham.com/api/whop-hook?audit=1', { headers: { Authorization: 'Bearer ' + token } })
+      .then(function (r) { if (r.status === 401) { signOut(); throw { msg: 'Session expired' }; } return r.json(); })
+      .then(function (d) {
+        if (!d.ok) throw { msg: d.error };
+        box.textContent = '';
+        box.appendChild(el('h3', '', 'Checked ' + d.whop_payments + ' TradeVault payments in Whop (' + d.whop_paid + ' paid, ' + d.tagged_checkouts + ' through an affiliate checkout)'));
+        function list(cls, title, items, none) {
+          var w = el('div', cls); w.appendChild(el('p', 'mono', title));
+          if (!items.length) { w.appendChild(el('p', 'muted', none)); return w; }
+          var ul = el('ul'); items.forEach(function (t) { ul.appendChild(el('li', '', t)); }); w.appendChild(ul); return w;
+        }
+        box.appendChild(list('fix', 'Fixed just now', d.fixes, 'Nothing needed fixing.'));
+        var iss = d.issues.slice();
+        if (d.unsynced) iss.unshift(d.unsynced + ' paid TradeVault payment' + (d.unsynced === 1 ? ' isn\'t' : 's aren\'t') + ' recorded yet: press Sync Whop on the Members page, then check again.');
+        box.appendChild(list('iss', 'Needs a look', iss, 'No problems: every credited payment matches Whop.'));
+        d.affiliates.forEach(function (a) {
+          var w = el('div', 'aa');
+          w.appendChild(el('p', '', a.name + ' (?ref=' + a.code + ') · ' + money(a.sales) + ' sales · ' + money(a.commission) + ' commission'));
+          a.buyers.forEach(function (bu) {
+            var r = el('div', 'ab');
+            r.appendChild(el('b', '', bu.email + (bu.name ? ' · ' + bu.name : '')));
+            bu.flags.forEach(function (f) { r.appendChild(el('span', 'flag', '⚠ ' + f)); });
+            bu.payments.forEach(function (p) {
+              r.appendChild(el('span', 'pl', date(p.date) + ' · ' + (p.product || '—') + ' · ' + money(p.amount) + ' → ' + money(p.commission) + ' (' + (p.pct || '?') + '%, ' + p.status + ') · Whop: ' + p.whop));
+            });
+            w.appendChild(r);
+          });
+          box.appendChild(w);
+        });
+        box.hidden = false;
+        if (d.fixes.length) load();
+      })
+      .catch(function (x) { toast('Check failed: ' + ((x && x.msg) || 'network error'), true); })
+      .then(function () { b.disabled = false; b.textContent = 'Check against Whop'; });
+  });
 
   function load() {
     return api('GET', 'admin').then(function (d) { D = d; render(); })

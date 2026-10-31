@@ -62,6 +62,18 @@ def money(v):
         return None
 
 
+def tv_title(p):
+    """The TradeVault product title of a Whop payment (API 2026-10-27 shapes), or "" if it isn't one."""
+    prod = p.get("product") if isinstance(p.get("product"), dict) else {}
+    items = [li for li in (p.get("line_items") or []) if isinstance(li, dict)]
+    title = (str(prod.get("title") or prod.get("name") or "") or
+             next((str(li.get("product_title") or li.get("label") or "") for li in items
+                   if li.get("product_title") or li.get("label")), "")).strip()
+    if "tradevault" in title.lower().replace(" ", ""):
+        return title
+    return TV_ROUTES.get(str(prod.get("route") or ""), "")
+
+
 def find_email(obj, depth=0):
     if depth > 4:
         return ""
@@ -113,6 +125,9 @@ class handler(BaseHTTPRequestHandler):
         if "backfill=1" in self.path:
             self._backfill()
             return
+        if "audit=1" in self.path:
+            self._audit()
+            return
         if "sig=1" in self.path:
             # Recent signature results (no secrets) so the check can be confirmed before enforcing.
             rows = []
@@ -128,7 +143,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-6", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-7", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -294,6 +309,138 @@ class handler(BaseHTTPRequestHandler):
                     msample = path.split("?")[1][:12] + " ERR " + str(e)[:200]
         self._json(200, {"ok": True, "sample": sample, "msample": msample, "lookup_errors": errs[:3], "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
                          "failed": failed, "no_email": no_email, "remaining": left})
+
+    def _audit(self):
+        """Admin only: check every affiliate credit against Whop. Fixes what is unambiguous
+        (refunds Whop has but we missed, tagged checkouts and later payments not yet credited)
+        and reports the rest (amount mismatches, payments Whop doesn't know, possible self-referrals)."""
+        sys.path.insert(0, sys_path)
+        from _auth import verify_token
+        auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer ") or not verify_token(auth[7:]):
+            self._json(401, {"ok": False, "error": "Unauthorized"})
+            return
+        if not WHOP_API_KEY:
+            self._json(500, {"ok": False, "error": "WHOP_API_KEY is not set in Vercel"})
+            return
+        whop, after = {}, ""
+        try:
+            for _ in range(30):
+                page = self._whop_get("/api/v1/payments?account_id=" + WHOP_COMPANY + "&first=100" + ("&after=" + after if after else ""))
+                for p in page.get("data") or []:
+                    if not (p.get("id") and tv_title(p)):
+                        continue
+                    sub = str(p.get("substatus") or "")
+                    refunded = bool(p.get("refunded_at")) or p.get("status") == "refunded" or sub in ("refunded", "auto_refunded")
+                    user = p.get("user") if isinstance(p.get("user"), dict) else {}
+                    meta = p.get("metadata") if isinstance(p.get("metadata"), dict) else {}
+                    whop[str(p["id"])] = {
+                        "paid": p.get("status") == "paid" and not refunded, "refunded": refunded,
+                        "status": sub or p.get("status") or "?", "amount": money(p.get("usd_total")) or money(p.get("total")) or money(p.get("subtotal")),
+                        "part_refund": money(p.get("refunded_amount")) or 0, "ref": str(meta.get("tv_ref") or "").lower(),
+                        "name": str(user.get("name") or user.get("username") or ""), "title": tv_title(p)}
+                info = page.get("page_info") or {}
+                after = info.get("end_cursor") or ""
+                if not (info.get("has_next_page") and after):
+                    break
+        except Exception as e:
+            self._json(502, {"ok": False, "error": str(e)[:300]})
+            return
+
+        import _tv_aff
+        fixes, issues = [], []
+        c = _tv_aff.conn(); cur = c.cursor()
+        cur.execute("SELECT id, code, name, email, status FROM tv_affiliates")
+        affs = {r[0]: {"code": r[1], "name": r[2], "email": r[3].lower(), "status": r[4]} for r in cur.fetchall()}
+        by_code = {a["code"]: i for i, a in affs.items()}
+        aff_emails = {a["email"]: a for a in affs.values()}
+        cur.execute("SELECT whop_id, email, amount_usd, refunded, paid_at, tier FROM tv_payments")
+        pays = {r[0]: {"email": r[1], "amount": float(r[2]), "refunded": r[3], "paid_at": r[4], "tier": r[5]} for r in cur.fetchall()}
+
+        # 1. Refunds Whop has that we never heard about: mark the payment refunded, void its commission.
+        for wid, p in pays.items():
+            w = whop.get(wid)
+            if w and w["refunded"] and not p["refunded"]:
+                _tv_aff.refund(wid)
+                p["refunded"] = True
+                fixes.append("Refund found in Whop: %s %s, commission voided" % (p["email"], "$%.2f" % p["amount"]))
+            if w and w["amount"] and abs(w["amount"] - p["amount"]) > 0.01:
+                issues.append("Amount differs for %s: we have $%.2f, Whop says $%.2f" % (p["email"], p["amount"], w["amount"]))
+            if w and w["part_refund"] and not w["refunded"]:
+                issues.append("Part refund of $%.2f in Whop for %s: check its commission" % (w["part_refund"], p["email"]))
+
+        # 2. Checkouts tagged with an affiliate code whose sale isn't credited yet.
+        cur.execute("SELECT email, affiliate_id, created_at FROM tv_aff_referrals")
+        refs = {r[0]: {"aff": r[1], "at": r[2]} for r in cur.fetchall()}
+        unsynced = sum(1 for wid, w in whop.items() if w["paid"] and wid not in pays)
+        for wid, w in whop.items():
+            if not (w["paid"] and w["ref"]):
+                continue
+            if wid not in pays:
+                continue  # counted in unsynced: Sync Whop on the members board records it, and the hook credits it
+            email, aid = pays[wid]["email"], by_code.get(w["ref"])
+            if aid is None:
+                issues.append("%s checked out with unknown code '%s'" % (email, w["ref"]))
+            elif email in refs and refs[email]["aff"] != aid:
+                issues.append("%s checked out with %s's link but is credited to %s" % (email, affs[aid]["name"], affs[refs[email]["aff"]]["name"]))
+            elif email not in refs:
+                if _tv_aff.claim(email, w["ref"], pays[wid]["tier"]):
+                    fixes.append("%s credited to %s (their checkout carried the code)" % (email, affs[aid]["name"]))
+                    refs[email] = {"aff": aid, "at": None}
+                else:
+                    issues.append("%s checked out with %s's link but couldn't be credited (affiliate paused, or their own email)" % (email, affs[aid]["name"]))
+
+        # 3. Referred members' payments that never earned commission (from 14 days before the referral on).
+        cur.execute(f"""SELECT p.whop_id, p.email, p.amount_usd, p.product, p.paid_at, r.affiliate_id FROM tv_payments p
+                         JOIN tv_aff_referrals r ON r.email = p.email JOIN tv_affiliates a ON a.id = r.affiliate_id
+                        WHERE NOT p.refunded AND a.status = 'active' AND p.paid_at > r.created_at - INTERVAL '{_tv_aff.CLAIM_WINDOW_DAYS} days'
+                          AND NOT EXISTS (SELECT 1 FROM tv_aff_commissions m WHERE m.whop_id = p.whop_id)""")
+        for wid, email, amount, product, paid_at, aid in cur.fetchall():
+            if _tv_aff._credit(cur, aid, (wid, email, amount, product, paid_at)):
+                fixes.append("Missing commission added: %s $%.2f for %s" % (email, float(amount), affs[aid]["name"]))
+        c.commit()
+        cur.execute("SELECT whop_id, affiliate_id, email, amount_usd, commission_usd, status, pct FROM tv_aff_commissions WHERE kind = 'commission'")
+        coms = {r[0]: {"aff": r[1], "email": r[2], "amount": float(r[3]), "commission": float(r[4]), "status": r[5], "pct": r[6]} for r in cur.fetchall()}
+        c.close()
+
+        # 4. Every credited payment, checked against Whop, grouped by affiliate.
+        out = {}
+        for wid, m in coms.items():
+            w, p = whop.get(wid), pays.get(wid, {})
+            a = affs.get(m["aff"], {"name": "?", "code": "?", "email": ""})
+            if m["status"] != "void":
+                if not w:
+                    issues.append("%s: payment %s ($%.2f, %s) isn't in Whop's TradeVault payments" % (a["name"], wid, m["amount"], m["email"]))
+                elif not w["paid"]:
+                    issues.append("%s: payment for %s is '%s' in Whop, not paid" % (a["name"], m["email"], w["status"]))
+            row = out.setdefault(m["aff"], {"name": a["name"], "code": a["code"], "sales": 0.0, "commission": 0.0, "buyers": {}})
+            b = row["buyers"].setdefault(m["email"], {"email": m["email"], "name": (w or {}).get("name", ""), "flags": [], "payments": []})
+            b["payments"].append({"date": p["paid_at"].isoformat() if p.get("paid_at") else "", "product": (w or {}).get("title", ""),
+                                  "amount": m["amount"], "commission": m["commission"], "pct": m["pct"],
+                                  "status": m["status"], "whop": (w or {}).get("status", "not found")})
+            if m["status"] != "void":
+                row["sales"] += m["amount"]
+                row["commission"] += m["commission"]
+        # Possible self-referrals: buyer is an affiliate, or their name/email looks like the affiliate's.
+        def squash(x):
+            return "".join(ch for ch in (x or "").lower() if ch.isalnum())
+        for aid, row in out.items():
+            a = affs.get(aid, {})
+            marks = {squash(a.get("code")), squash(a.get("name")), squash((a.get("email") or "").split("@")[0])}
+            marks |= {squash(t) for t in (a.get("name") or "").split() if len(t) >= 4}
+            marks = {mk for mk in marks if len(mk) >= 4}
+            for b in row["buyers"].values():
+                local, nm = squash(b["email"].split("@")[0]), squash(b["name"])
+                if b["email"] in aff_emails:
+                    b["flags"].append("is an affiliate too (" + aff_emails[b["email"]]["name"] + ")")
+                if any(mk and (mk in local or mk in nm or (len(nm) >= 4 and nm in mk)) for mk in marks):
+                    b["flags"].append("name/email looks like the affiliate's own: check it isn't them")
+            row["buyers"] = sorted(row["buyers"].values(), key=lambda b: b["email"])
+            row["sales"], row["commission"] = round(row["sales"], 2), round(row["commission"], 2)
+        self._json(200, {"ok": True, "whop_payments": len(whop), "whop_paid": sum(1 for w in whop.values() if w["paid"]),
+                         "tagged_checkouts": sum(1 for w in whop.values() if w["paid"] and w["ref"]), "unsynced": unsynced,
+                         "fixes": fixes, "issues": issues,
+                         "affiliates": sorted(out.values(), key=lambda r: -r["commission"])})
 
     def _keep(self, event_type, raw_body):
         try:
