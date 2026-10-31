@@ -12,6 +12,8 @@ WHOP_SECRET  = os.environ.get("WHOP_WEBHOOK_SECRET", "")
 GHL_API_KEY  = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 SLACK_WEBHOOK_PAYMENTS = os.environ.get("SLACK_WEBHOOK_PAYMENTS", "")
+WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
+WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 
 # Signatures are checked and logged on every event; rejecting bad ones is switched on
 # once a real Whop event has been seen to pass (GET /api/whop-hook?sig=1).
@@ -71,7 +73,13 @@ class handler(BaseHTTPRequestHandler):
     def log_message(self, *args):
         pass
 
+    def do_OPTIONS(self):
+        self._json(204, None)
+
     def do_GET(self):
+        if "backfill=1" in self.path:
+            self._backfill()
+            return
         if "sig=1" in self.path:
             # Recent signature results (no secrets) so the check can be confirmed before enforcing.
             rows = []
@@ -88,6 +96,54 @@ class handler(BaseHTTPRequestHandler):
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
         self._json(200, {"ok": True, "service": "whop-webhook"})
+
+    def _whop_get(self, path):
+        conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
+        conn.request("GET", path, headers={"Authorization": "Bearer " + WHOP_API_KEY, "Accept": "application/json"})
+        res = conn.getresponse()
+        body = res.read()
+        if res.status >= 300:
+            raise RuntimeError("Whop API %s: %s" % (res.status, body[:300].decode("utf-8", "replace")))
+        return json.loads(body or b"{}")
+
+    def _backfill(self):
+        """Admin only: re-run every paid TradeVault payment from the Whop API through _purchase.
+        Safe to repeat: GHL tags are added, members upsert, payments are keyed on the Whop payment id."""
+        sys.path.insert(0, sys_path)
+        from _auth import verify_token
+        auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer ") or not verify_token(auth[7:]):
+            self._json(401, {"ok": False, "error": "Unauthorized"})
+            return
+        if not WHOP_API_KEY:
+            self._json(500, {"ok": False, "error": "WHOP_API_KEY is not set in Vercel"})
+            return
+        done, skipped, failed = [], 0, []
+        try:
+            after = ""
+            for _ in range(30):
+                page = self._whop_get("/api/v1/payments?company_id=" + WHOP_COMPANY + "&first=100" +
+                                      ("&after=" + after if after else ""))
+                for p in page.get("data") or []:
+                    prod = p.get("product") if isinstance(p.get("product"), dict) else {}
+                    title = str(prod.get("title") or "")
+                    if "tradevault" not in title.lower().replace(" ", "") or p.get("status") != "paid" \
+                            or str(p.get("substatus") or "") in ("refunded", "auto_refunded"):
+                        skipped += 1
+                        continue
+                    try:
+                        _, out = self._purchase("payment.succeeded", p)
+                        done.append({"email": out.get("email"), "product": title, "ok": bool((out.get("ghl") or {}).get("contact"))})
+                    except Exception as e:
+                        failed.append({"id": p.get("id"), "error": str(e)[:200]})
+                info = page.get("page_info") or {}
+                after = info.get("end_cursor") or ""
+                if not (info.get("has_next_page") and after):
+                    break
+        except Exception as e:
+            self._json(502, {"ok": False, "error": str(e)[:300], "synced": done})
+            return
+        self._json(200, {"ok": True, "synced": done, "skipped": skipped, "failed": failed})
 
     def _keep(self, event_type, raw_body):
         try:
@@ -158,61 +214,64 @@ class handler(BaseHTTPRequestHandler):
                 self._json(200, {"ok": True, "skipped": event_type})
                 return
 
-            data  = event.get("data", {}) or {}
-            # membership.activated nests user under data.user; member.created may use data directly
-            user  = data.get("user") or data.get("customer") or {}
-            plan  = data.get("plan") or {}
-            prod  = data.get("product") or {}
-            bill  = data.get("billing_address") or {}
-            memb  = data.get("member") or {}
-            user, plan, prod, bill, memb = [x if isinstance(x, dict) else {} for x in (user, plan, prod, bill, memb)]
-
-            email = (user.get("email") or memb.get("email") or data.get("email") or data.get("user_email") or "").strip().lower()
-            name  = (user.get("name") or bill.get("name") or user.get("username") or
-                     user.get("display_name") or "").strip()
-            phone = (user.get("phone_number") or memb.get("phone") or data.get("phone") or "").strip()
-            slug  = str(plan.get("slug") or plan.get("id") or
-                        data.get("plan_id") or data.get("product_slug") or "").strip()
-            title = str(prod.get("title") or prod.get("name") or
-                        plan.get("title") or plan.get("name") or "").strip()
-
-            if not email:
-                # v1 membership events can omit the email; payment.succeeded carries it. 200 so Whop doesn't retry.
-                self._json(200, {"ok": True, "skipped": "no email", "event": event_type})
-                return
-
-            parts = name.split(" ", 1)
-            first = parts[0] if parts else ""
-            last  = parts[1] if len(parts) > 1 else ""
-            tags  = purchase_tags(slug, title)
-
-            ghl_result = self._ghl_upsert(email, first, last, phone, tags)
-            if "tradevault-purchased" in tags and ghl_result.get("contact"):
-                sys.path.insert(0, sys_path)
-                import _tv_db
-                tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
-                _tv_db.record_purchase(ghl_result["contact"], email, tier, title)
-            if "tradevault-purchased" in tags:
-                # Every TradeVault payment is logged for the TradeVault affiliate programme.
-                amount = None
-                for k in ("usd_total", "total", "final_amount", "subtotal", "amount"):
-                    try:
-                        if data.get(k) not in (None, ""):
-                            amount = float(data.get(k))
-                            break
-                    except (TypeError, ValueError):
-                        pass
-                if event_type == "payment.succeeded" and data.get("id") and amount:
-                    sys.path.insert(0, sys_path)
-                    import _tv_aff
-                    tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
-                    _tv_aff.record_payment(str(data["id"]), email, amount, title, tier)
-            else:
-                self._record_affiliate_purchase(email, slug, None)
-            self._json(200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result})
+            status, out = self._purchase(event_type, event.get("data", {}) or {})
+            self._json(status, out)
 
         except Exception as e:
             self._json(500, {"error": str(e)})
+
+    def _purchase(self, event_type, data):
+        """Tag the buyer in GHL and record the purchase (members board + affiliate commission)."""
+        # membership.activated nests user under data.user; member.created may use data directly
+        user  = data.get("user") or data.get("customer") or {}
+        plan  = data.get("plan") or {}
+        prod  = data.get("product") or {}
+        bill  = data.get("billing_address") or {}
+        memb  = data.get("member") or {}
+        user, plan, prod, bill, memb = [x if isinstance(x, dict) else {} for x in (user, plan, prod, bill, memb)]
+
+        email = (user.get("email") or memb.get("email") or data.get("email") or data.get("user_email") or "").strip().lower()
+        name  = (user.get("name") or bill.get("name") or user.get("username") or
+                 user.get("display_name") or "").strip()
+        phone = (user.get("phone_number") or memb.get("phone") or data.get("phone") or "").strip()
+        slug  = str(plan.get("slug") or plan.get("id") or
+                    data.get("plan_id") or data.get("product_slug") or "").strip()
+        title = str(prod.get("title") or prod.get("name") or
+                    plan.get("title") or plan.get("name") or "").strip()
+
+        if not email:
+            # v1 membership events can omit the email; payment.succeeded carries it. 200 so Whop doesn't retry.
+            return 200, {"ok": True, "skipped": "no email", "event": event_type}
+
+        parts = name.split(" ", 1)
+        first = parts[0] if parts else ""
+        last  = parts[1] if len(parts) > 1 else ""
+        tags  = purchase_tags(slug, title)
+
+        ghl_result = self._ghl_upsert(email, first, last, phone, tags)
+        if "tradevault-purchased" in tags and ghl_result.get("contact"):
+            sys.path.insert(0, sys_path)
+            import _tv_db
+            tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
+            _tv_db.record_purchase(ghl_result["contact"], email, tier, title)
+        if "tradevault-purchased" in tags:
+            # Every TradeVault payment is logged for the TradeVault affiliate programme.
+            amount = None
+            for k in ("usd_total", "total", "final_amount", "subtotal", "amount"):
+                try:
+                    if data.get(k) not in (None, ""):
+                        amount = float(data.get(k))
+                        break
+                except (TypeError, ValueError):
+                    pass
+            if event_type == "payment.succeeded" and data.get("id") and amount:
+                sys.path.insert(0, sys_path)
+                import _tv_aff
+                tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
+                _tv_aff.record_payment(str(data["id"]), email, amount, title, tier)
+        else:
+            self._record_affiliate_purchase(email, slug, None)
+        return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}
 
     def _notify_slack(self, event_type, data):
         """Post a payment line to #payment-confirmations-us30. Never breaks the webhook."""
@@ -371,8 +430,11 @@ class handler(BaseHTTPRequestHandler):
             print("AFF_PURCHASE_ERR:", e, file=sys.stderr)
 
     def _json(self, status, body):
-        payload = json.dumps(body).encode()
+        payload = json.dumps(body).encode() if body is not None else b""
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
         self.wfile.write(payload)
