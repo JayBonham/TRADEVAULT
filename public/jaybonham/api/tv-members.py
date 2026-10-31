@@ -171,6 +171,13 @@ class handler(BaseHTTPRequestHandler):
                 return self._json(502, {"ok": False, "error": err or "GHL search failed"})
             ids = _field_ids()
             db = _tv_db.all_members()
+            # GHL's search index lags a few minutes behind new tags: fetch recorded buyers it hasn't caught up on.
+            seen = {c.get("id") for c in contacts}
+            for cid in [k for k in db if k not in seen][:40]:
+                status, data, _ = _ghl("GET", "/contacts/" + cid)
+                c = data.get("contact") if status < 300 else None
+                if c and MEMBER_TAG in [t.lower() for t in c.get("tags") or []]:
+                    contacts.append(c)
             members = [_member(c, ids, db) for c in contacts]
             # set up before the DB copy existed: read their note once, then keep it in the DB
             for m in [m for m in members if m["setup"] and not m["tradingview"]][:25]:
