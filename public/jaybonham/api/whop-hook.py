@@ -99,7 +99,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-4", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-5", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -172,7 +172,7 @@ class handler(BaseHTTPRequestHandler):
                     page = self._whop_get("/api/v1/payments?" + scope + q)
                 for p in page.get("data") or []:
                     if not sample:
-                        sample = json.dumps({k: p.get(k) for k in ("product", "plan", "membership", "status")})[:300]
+                        sample = json.dumps(p)[:1500]
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
                     title = str(prod.get("title") or prod.get("name") or "") or self._title_for(p, cache, errs)
                     route = str(prod.get("route") or "")
@@ -218,7 +218,16 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 failed.append({"id": p.get("id"), "error": str(e)[:200]})
         left = len(todo) - len(done) - len(failed) - no_email
-        self._json(200, {"ok": True, "sample": sample, "lookup_errors": errs[:3], "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
+        msample = ""
+        if not pays:
+            for path in ("/api/v1/memberships?account_id=" + WHOP_COMPANY + "&first=2", "/api/v1/memberships?company_id=" + WHOP_COMPANY + "&first=2", "/api/v1/memberships?first=2"):
+                try:
+                    msample = path.split("?")[1][:12] + " " + json.dumps(self._whop_get(path))[:1200]
+                    if '"data": []' not in msample:
+                        break
+                except Exception as e:
+                    msample = path.split("?")[1][:12] + " ERR " + str(e)[:200]
+        self._json(200, {"ok": True, "sample": sample, "msample": msample, "lookup_errors": errs[:3], "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
                          "failed": failed, "no_email": no_email, "remaining": left})
 
     def _keep(self, event_type, raw_body):

@@ -133,7 +133,7 @@ td .sub.wrap{white-space:normal;max-width:170px;line-height:1.35}
 .state.err h3{color:#FF8F8F}
 .state code{display:block;margin:14px auto 0;max-width:640px;font-family:var(--mono);font-size:12px;color:var(--tx-mute);white-space:pre-wrap;word-break:break-word}
 
-.toast{position:fixed;left:16px;right:16px;margin:0 auto;width:fit-content;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateY(20px);opacity:0;pointer-events:none;z-index:100;display:flex;align-items:center;gap:14px;padding:12px 14px 12px 18px;border-radius:14px;background:#0E1A2E;border:1px solid var(--hair-2);box-shadow:0 20px 60px rgba(0,0,0,.5);font-size:14px;transition:all .3s var(--ease)}
+.toast{max-height:70vh;overflow:auto;word-break:break-word;user-select:text;max-width:min(1100px,calc(100vw - 32px));position:fixed;left:16px;right:16px;margin:0 auto;width:fit-content;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateY(20px);opacity:0;pointer-events:none;z-index:100;display:flex;align-items:center;gap:14px;padding:12px 14px 12px 18px;border-radius:14px;background:#0E1A2E;border:1px solid var(--hair-2);box-shadow:0 20px 60px rgba(0,0,0,.5);font-size:14px;transition:all .3s var(--ease)}
 .toast.on{opacity:1;transform:none;pointer-events:auto}
 .toast button{border:0;background:none;color:var(--acc);font-weight:600;cursor:pointer;padding:4px 6px}
 .legend{margin-top:14px;font-size:13px;color:var(--tx-mute)}
@@ -269,7 +269,7 @@ footer{padding-block:32px 40px}
           total += d.synced.length; failed += d.failed.length; noEmail = d.no_email;
           if (d.remaining > 0 && ++rounds < 10) return round();
           var seen = Object.keys(d.seen || {}).map(function (k) { return k + ' ×' + d.seen[k]; }).join('; ');
-          toast('Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments found, ' + d.already + ' already in. Whop sent: ' + (seen || 'nothing ' + (d.raw || '')) + (total ? '' : ' · sample: ' + (d.sample || '') + (d.lookup_errors && d.lookup_errors.length ? ' · lookup: ' + d.lookup_errors.join(' / ') : '')) + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email (check API key has member email permission)' : ''));
+          toast('Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments found, ' + d.already + ' already in. Whop sent: ' + (seen || 'nothing ' + (d.raw || '')) + (total ? '' : ' · scope: ' + d.scope + ' · sample: ' + (d.sample || '') + ' · memberships: ' + (d.msample || '') + (d.lookup_errors && d.lookup_errors.length ? ' · lookup: ' + d.lookup_errors.join(' / ') : '')) + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email (check API key has member email permission)' : ''));
         });
     }
     round().then(function () { return load(true); })
@@ -403,7 +403,7 @@ footer{padding-block:32px 40px}
   var tt;
   function toast(msg, undo) {
     $('toastMsg').textContent = msg; $('toastUndo').hidden = !undo;
-    $('toast').classList.add('on'); clearTimeout(tt); tt = setTimeout(function () { $("toast").classList.remove("on"); }, msg.length > 120 ? 30000 : 6000);
+    $('toast').classList.add('on'); clearTimeout(tt); tt = setTimeout(function () { $("toast").classList.remove("on"); }, msg.length > 120 ? 120000 : 6000);
   }
   $('toastUndo').addEventListener('click', function () {
     if (!lastUndo) return; var m = lastUndo; lastUndo = null; $('toast').classList.remove('on');
