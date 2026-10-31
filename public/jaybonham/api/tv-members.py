@@ -2,9 +2,11 @@
 GET  -> {ok, members:[{id, name, email, tier, setup, assigned, educator, scanner,
                        tradingview, telegram, joined}]}
         everyone tagged tradevault-purchased (set by the Whop webhook), read live from GHL.
-POST {action: "assign"|"unassign", c}
+POST {action: "assign"|"unassign"|"remove", c}
         assign adds tv-access-granted; the GHL "Access Granted" workflow triggers on that tag,
         moves the card and emails the member. unassign removes the tag (no email is unsent).
+        remove takes the contact off the board (test purchases): strips the TradeVault tags and
+        deletes the DB row. The GHL contact itself is kept.
 """
 import http.client
 import json
@@ -206,8 +208,16 @@ class handler(BaseHTTPRequestHandler):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
         action = b.get("action")
-        if not CID_RE.match(cid) or action not in ("assign", "unassign"):
+        if not CID_RE.match(cid) or action not in ("assign", "unassign", "remove"):
             return self._json(400, {"ok": False, "error": "Invalid request"})
+        if action == "remove":
+            tags = [MEMBER_TAG, ASSIGNED_TAG, DONE_TAG] + [t for t, _ in TIERS]
+            status, _, raw = _ghl("DELETE", "/contacts/" + cid + "/tags", {"tags": tags})
+            if status >= 300:
+                return self._json(502, {"ok": False, "error": "GHL %s: %s" % (status, raw[:200].decode(errors="replace"))})
+            _tv_db.remove(cid)
+            log("TV_MEMBERS remove", cid)
+            return self._json(200, {"ok": True})
         method = "POST" if action == "assign" else "DELETE"
         status, _, raw = _ghl(method, "/contacts/" + cid + "/tags", {"tags": [ASSIGNED_TAG]})
         if status >= 300:

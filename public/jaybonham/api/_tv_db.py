@@ -72,6 +72,21 @@ def record_setup(contact_id, email, tier, educator, scanner, tradingview, telegr
         return False
 
 
+def remove(contact_id):
+    """Drop a member's board record (test purchases); a real payment later records them again."""
+    if not (DATABASE_URL and contact_id):
+        return False
+    try:
+        conn, cur = _conn()
+        cur.execute("DELETE FROM tv_members WHERE contact_id = %s", (contact_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print("TV_DB_REMOVE_ERR:", e, file=sys.stderr)
+        return False
+
+
 def all_members():
     """{contact_id: {...}} for every row; {} if the DB is unavailable."""
     if not DATABASE_URL:
