@@ -52,6 +52,35 @@ PLAN_TAGS = {
 }
 
 
+def money(v):
+    """Whop amounts: a number, a numeric string, or (API 2026-10-27+) {"amount": "174.99", ...}."""
+    if isinstance(v, dict):
+        v = v.get("amount")
+    try:
+        return float(v) if v not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
+def find_email(obj, depth=0):
+    if depth > 4:
+        return ""
+    if isinstance(obj, dict):
+        e = obj.get("email")
+        if isinstance(e, str) and "@" in e:
+            return e
+        for v in obj.values():
+            e = find_email(v, depth + 1)
+            if e:
+                return e
+    elif isinstance(obj, list):
+        for v in obj:
+            e = find_email(v, depth + 1)
+            if e:
+                return e
+    return ""
+
+
 def purchase_tags(slug, title):
     """Tags from the Whop product title, so new products tag themselves.
     e.g. "Sniper Elite - $999 Deposit" -> purchased, purchased-deposit, purchased-elite"""
@@ -99,7 +128,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-5", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-6", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -109,6 +138,33 @@ class handler(BaseHTTPRequestHandler):
         if res.status >= 300:
             raise RuntimeError("Whop API %s: %s" % (res.status, body[:300].decode("utf-8", "replace")))
         return json.loads(body or b"{}")
+
+    def _email_for(self, p, cache, errs):
+        """Payments from API 2026-10-27 carry only member_id / user id: fetch the email."""
+        user = p.get("user") if isinstance(p.get("user"), dict) else {}
+        tries = []
+        if p.get("member_id"):
+            tries.append("/api/v1/members/" + str(p["member_id"]))
+        if user.get("id"):
+            tries.append("/api/v1/users/" + str(user["id"]))
+        if p.get("membership_id"):
+            tries.append("/api/v1/memberships/" + str(p["membership_id"]))
+        for path in tries:
+            if path in cache:
+                if cache[path]:
+                    return cache[path]
+                continue
+            try:
+                got = self._whop_get(path)
+                cache[path] = find_email(got)
+                if not cache[path]:
+                    errs.append(path.split("/")[3] + " no email: " + json.dumps(got)[:300])
+            except Exception as e:
+                cache[path] = ""
+                errs.append(path.split("/")[3] + ": " + str(e)[:160])
+            if cache[path]:
+                return cache[path]
+        return ""
 
     def _title_for(self, p, cache, errs):
         """Product title for a payment listed without one: payment, then plan, then membership lookups."""
@@ -174,7 +230,10 @@ class handler(BaseHTTPRequestHandler):
                     if not sample:
                         sample = json.dumps(p)[:1500]
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
-                    title = str(prod.get("title") or prod.get("name") or "") or self._title_for(p, cache, errs)
+                    items = [li for li in (p.get("line_items") or []) if isinstance(li, dict)]
+                    title = (str(prod.get("title") or prod.get("name") or "") or
+                             next((str(li.get("product_title") or li.get("label") or "") for li in items
+                                   if li.get("product_title") or li.get("label")), "")).strip()
                     route = str(prod.get("route") or "")
                     k = "%s | %s" % (title or route or prod.get("id") or "?", p.get("status"))
                     seen[k] = seen.get(k, 0) + 1
@@ -183,10 +242,12 @@ class handler(BaseHTTPRequestHandler):
                         if not title:
                             continue
                     p["product"] = dict(prod, title=title)
-                    paid = p.get("status") == "paid" or str(p.get("substatus") or "") == "succeeded" or \
-                        (p.get("paid_at") and p.get("status") not in ("void", "draft", "open", "uncollectible"))
+                    paid = p.get("status") == "paid" or (not p.get("status") and
+                                                         (p.get("paid_at") or str(p.get("substatus") or "") == "succeeded"))
                     if paid and p.get("id") and not p.get("refunded_at") and \
                             str(p.get("substatus") or "") not in ("refunded", "auto_refunded"):
+                        if not p.get("usd_total"):
+                            p["usd_total"] = money(p.get("total")) or money(p.get("subtotal"))
                         pays.append(p)
                 info = page.get("page_info") or {}
                 after = info.get("end_cursor") or ""
@@ -209,6 +270,10 @@ class handler(BaseHTTPRequestHandler):
             if time.time() - started > 45:
                 break
             try:
+                if not find_email(p.get("user")):
+                    email = self._email_for(p, cache, errs)
+                    if email:
+                        p["user"] = dict(p.get("user") if isinstance(p.get("user"), dict) else {}, email=email)
                 _, out = self._purchase("payment.succeeded", p)
                 if not out.get("email"):
                     no_email += 1
@@ -347,12 +412,9 @@ class handler(BaseHTTPRequestHandler):
             # Every TradeVault payment is logged for the TradeVault affiliate programme.
             amount = None
             for k in ("usd_total", "total", "final_amount", "subtotal", "amount"):
-                try:
-                    if data.get(k) not in (None, ""):
-                        amount = float(data.get(k))
-                        break
-                except (TypeError, ValueError):
-                    pass
+                amount = money(data.get(k))
+                if amount:
+                    break
             if event_type == "payment.succeeded" and data.get("id") and amount:
                 sys.path.insert(0, sys_path)
                 import _tv_aff
@@ -387,13 +449,9 @@ class handler(BaseHTTPRequestHandler):
 
             amount = None
             for k in ("total", "final_amount", "usd_total", "subtotal", "amount", "amount_after_fees"):
-                v = data.get(k)
-                try:
-                    if v not in (None, ""):
-                        amount = float(v)
-                        break
-                except (TypeError, ValueError):
-                    pass
+                amount = money(data.get(k))
+                if amount is not None:
+                    break
             if amount is None:
                 amount = PLAN_PRICES.get(slug)
             currency = (data.get("currency") or "usd").upper()
