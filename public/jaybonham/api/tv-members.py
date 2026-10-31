@@ -7,7 +7,7 @@ POST {action: "assign"|"unassign"|"revoked", c}
         moves the card and emails the member. unassign removes the tag (no email is unsent).
         revoked: their Whop membership ended (ended=true, set by whop-hook) and they've been taken
         out of the scanners; removes the tag and records it, so they leave "Remove access".
-TEST_EMAILS (Alex's test purchases) are taken off the board on the next load: their TradeVault
+TEST_EMAILS (Alex's and Brandt's test purchases) are taken off the board on the next load: their TradeVault
 tags are stripped in GHL and their DB row deleted. The GHL contacts themselves are kept.
 """
 import http.client
@@ -35,7 +35,8 @@ SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spect
 FIELD_KEYS = ("tv_educator", "tv_scanner", "tradingview_username", "telegram_username")
 CID_RE = re.compile(r"^[A-Za-z0-9]{10,40}$")
 PAGE = 100
-TEST_EMAILS = {"alex@carriesoave.ca", "alexkemppp@gmail.com", "alex@alexktaylor.com"}
+TEST_EMAILS = {"alex@carriesoave.ca", "alexkemppp@gmail.com", "alex@alexktaylor.com",
+               "brandt.linkowski+prodtest@gmail.com"}
 
 
 def log(*a):
