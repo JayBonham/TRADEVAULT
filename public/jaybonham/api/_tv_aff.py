@@ -217,7 +217,7 @@ def _tell_sale(cur, aff_id):
         ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True)
 
 
-def record_payment(whop_id, email, amount_usd, product, tier):
+def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None):
     """Log a TradeVault payment; credit its affiliate if the buyer is already a referral."""
     if not (DATABASE_URL and whop_id and email) or not amount_usd or amount_usd <= 0:
         return False
@@ -225,9 +225,9 @@ def record_payment(whop_id, email, amount_usd, product, tier):
         c = conn()
         cur = c.cursor()
         cur.execute("""
-            INSERT INTO tv_payments (whop_id, email, amount_usd, product, tier)
-            VALUES (%s, %s, %s, %s, %s) ON CONFLICT (whop_id) DO NOTHING
-        """, (whop_id, email, amount_usd, product, tier))
+            INSERT INTO tv_payments (whop_id, email, amount_usd, product, tier, paid_at)
+            VALUES (%s, %s, %s, %s, %s, COALESCE(%s::timestamptz, NOW())) ON CONFLICT (whop_id) DO NOTHING
+        """, (whop_id, email, amount_usd, product, tier, paid_at))
         c.commit()
         # Arrived at setup with a ref before this payment reached us: turn that into a referral now.
         cur.execute("DELETE FROM tv_aff_claims WHERE email = %s AND created_at > NOW() - INTERVAL '2 days' RETURNING code", (email,))

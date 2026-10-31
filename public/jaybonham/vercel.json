@@ -14,7 +14,7 @@
       "maxDuration": 15
     },
     "api/whop-hook.py": {
-      "maxDuration": 15
+      "maxDuration": 60
     },
     "api/jb-apply.py": {
       "maxDuration": 10

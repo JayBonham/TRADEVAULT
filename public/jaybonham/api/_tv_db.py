@@ -31,18 +31,18 @@ def _conn():
     return conn, cur
 
 
-def record_purchase(contact_id, email, tier, product):
+def record_purchase(contact_id, email, tier, product, paid_at=None):
     if not (DATABASE_URL and contact_id):
         return False
     try:
         conn, cur = _conn()
         cur.execute("""
             INSERT INTO tv_members (contact_id, email, tier, product, purchased_at)
-            VALUES (%s, %s, %s, %s, NOW())
+            VALUES (%s, %s, %s, %s, COALESCE(%s::timestamptz, NOW()))
             ON CONFLICT (contact_id) DO UPDATE SET
               email = EXCLUDED.email, tier = EXCLUDED.tier, product = EXCLUDED.product,
-              purchased_at = COALESCE(tv_members.purchased_at, EXCLUDED.purchased_at)
-        """, (contact_id, email, tier, product))
+              purchased_at = LEAST(tv_members.purchased_at, EXCLUDED.purchased_at)
+        """, (contact_id, email, tier, product, paid_at))
         conn.commit()
         conn.close()
         return True

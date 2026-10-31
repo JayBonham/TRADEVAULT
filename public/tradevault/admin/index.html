@@ -258,14 +258,20 @@ footer{padding-block:32px 40px}
   $('refresh').addEventListener('click', function () { load(); });
 
   $('sync').addEventListener('click', function () {
-    var btn = $('sync'); btn.disabled = true; btn.textContent = 'Syncing…';
-    fetch('https://jaybonham.com/api/whop-hook?backfill=1', { headers: { 'Authorization': 'Bearer ' + token } })
-      .then(function (r) { if (r.status === 401) { signOut(); throw { msg: 'Session expired' }; } return r.json(); })
-      .then(function (d) {
-        if (!d.ok) throw { msg: d.error || 'Sync failed' };
-        toast('Synced ' + d.synced.length + ' Whop purchases' + (d.failed.length ? ', ' + d.failed.length + ' failed' : ''));
-        return load(true);
-      })
+    var btn = $('sync'), total = 0, failed = 0, noEmail = 0, rounds = 0;
+    btn.disabled = true;
+    function round() {
+      btn.textContent = 'Syncing… ' + total;
+      return fetch('https://jaybonham.com/api/whop-hook?backfill=1', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function (r) { if (r.status === 401) { signOut(); throw { msg: 'Session expired' }; } return r.json(); })
+        .then(function (d) {
+          if (!d.ok) throw { msg: d.error || 'Sync failed' };
+          total += d.synced.length; failed += d.failed.length; noEmail = d.no_email;
+          if (d.remaining > 0 && ++rounds < 10) return round();
+          toast('Whop sync done: ' + total + ' added' + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email (check API key has member email permission)' : ''));
+        });
+    }
+    round().then(function () { return load(true); })
       .catch(function (x) { toast('Sync failed: ' + (x.msg || 'network error')); })
       .then(function () { btn.disabled = false; btn.textContent = 'Sync Whop'; });
   });

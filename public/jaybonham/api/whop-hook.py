@@ -4,6 +4,7 @@ import http.client
 import json
 import os
 import sys
+import time
 from http.server import BaseHTTPRequestHandler
 
 sys_path = os.path.dirname(__file__)
@@ -118,32 +119,49 @@ class handler(BaseHTTPRequestHandler):
         if not WHOP_API_KEY:
             self._json(500, {"ok": False, "error": "WHOP_API_KEY is not set in Vercel"})
             return
-        done, skipped, failed = [], 0, []
+        started = time.time()
         try:
-            after = ""
+            pays, after = [], ""
             for _ in range(30):
                 page = self._whop_get("/api/v1/payments?company_id=" + WHOP_COMPANY + "&first=100" +
                                       ("&after=" + after if after else ""))
                 for p in page.get("data") or []:
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
-                    title = str(prod.get("title") or "")
-                    if "tradevault" not in title.lower().replace(" ", "") or p.get("status") != "paid" \
-                            or str(p.get("substatus") or "") in ("refunded", "auto_refunded"):
-                        skipped += 1
-                        continue
-                    try:
-                        _, out = self._purchase("payment.succeeded", p)
-                        done.append({"email": out.get("email"), "product": title, "ok": bool((out.get("ghl") or {}).get("contact"))})
-                    except Exception as e:
-                        failed.append({"id": p.get("id"), "error": str(e)[:200]})
+                    if "tradevault" in str(prod.get("title") or "").lower().replace(" ", "") \
+                            and p.get("status") == "paid" and p.get("id"):
+                        pays.append(p)
                 info = page.get("page_info") or {}
                 after = info.get("end_cursor") or ""
                 if not (info.get("has_next_page") and after):
                     break
         except Exception as e:
-            self._json(502, {"ok": False, "error": str(e)[:300], "synced": done})
+            self._json(502, {"ok": False, "error": str(e)[:300]})
             return
-        self._json(200, {"ok": True, "synced": done, "skipped": skipped, "failed": failed})
+
+        # Payments already in tv_payments were handled when they happened; oldest first so the latest tier wins.
+        import _tv_aff
+        c = _tv_aff.conn(); cur = c.cursor()
+        cur.execute("SELECT whop_id FROM tv_payments WHERE whop_id = ANY(%s)", ([str(p["id"]) for p in pays],))
+        have = {r[0] for r in cur.fetchall()}
+        c.close()
+        todo = sorted((p for p in pays if str(p["id"]) not in have), key=lambda p: str(p.get("paid_at") or p.get("created_at") or ""))
+
+        done, failed, no_email = [], [], 0
+        for p in todo:
+            if time.time() - started > 45:
+                break
+            try:
+                _, out = self._purchase("payment.succeeded", p)
+                if not out.get("email"):
+                    no_email += 1
+                    continue
+                done.append({"email": out["email"], "product": (p.get("product") or {}).get("title"),
+                             "paid_at": p.get("paid_at"), "ghl": bool((out.get("ghl") or {}).get("contact"))})
+            except Exception as e:
+                failed.append({"id": p.get("id"), "error": str(e)[:200]})
+        left = len(todo) - len(done) - len(failed) - no_email
+        self._json(200, {"ok": True, "found": len(pays), "already": len(have), "synced": done,
+                         "failed": failed, "no_email": no_email, "remaining": left})
 
     def _keep(self, event_type, raw_body):
         try:
@@ -247,13 +265,17 @@ class handler(BaseHTTPRequestHandler):
         first = parts[0] if parts else ""
         last  = parts[1] if len(parts) > 1 else ""
         tags  = purchase_tags(slug, title)
+        paid_at = data.get("paid_at") or data.get("created_at") or None
+        if isinstance(paid_at, (int, float)):
+            import datetime
+            paid_at = datetime.datetime.fromtimestamp(paid_at, datetime.timezone.utc).isoformat()
 
         ghl_result = self._ghl_upsert(email, first, last, phone, tags)
         if "tradevault-purchased" in tags and ghl_result.get("contact"):
             sys.path.insert(0, sys_path)
             import _tv_db
             tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
-            _tv_db.record_purchase(ghl_result["contact"], email, tier, title)
+            _tv_db.record_purchase(ghl_result["contact"], email, tier, title, paid_at)
         if "tradevault-purchased" in tags:
             # Every TradeVault payment is logged for the TradeVault affiliate programme.
             amount = None
@@ -268,7 +290,7 @@ class handler(BaseHTTPRequestHandler):
                 sys.path.insert(0, sys_path)
                 import _tv_aff
                 tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
-                _tv_aff.record_payment(str(data["id"]), email, amount, title, tier)
+                _tv_aff.record_payment(str(data["id"]), email, amount, title, tier, paid_at)
         else:
             self._record_affiliate_purchase(email, slug, None)
         return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}
