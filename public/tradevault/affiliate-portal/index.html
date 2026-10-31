@@ -12,9 +12,9 @@
 <link rel="stylesheet" href="../aff.css">
 <style>
 /* countdown to the first payout */
-.cd{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:16px;padding:16px 18px;border-radius:16px;border:1px solid rgba(75,158,255,.3);background:rgba(75,158,255,.07)}
-.cd .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);flex-basis:100%}
-.cd .u{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:10px 8px;border-radius:12px;background:rgba(5,10,20,.55);border:1px solid var(--hair-2)}
+.cd{display:flex;flex-wrap:wrap;gap:8px}
+.cd .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);flex-basis:100%;text-align:center;margin-bottom:4px}
+.cd .u{flex:1;display:flex;flex-direction:column;align-items:center;min-width:56px;padding:12px 6px;border-radius:12px;background:rgba(75,158,255,.08);border:1px solid rgba(75,158,255,.28)}
 .cd .u b{font-family:var(--display);font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:var(--tx)}
 .cd .u span{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);margin-top:6px}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px}
@@ -31,11 +31,16 @@
 .sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .sech h2{font-size:20px}
 .money{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:12px}
-.payout{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 28px;align-items:end}
+.payout{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px 28px;align-items:stretch}
+.payout .pl{display:flex;flex-direction:column;min-width:0}
+.payout .pl .btn-g{align-self:flex-start;margin-top:14px}
+.payout .pr{display:flex;flex-direction:column;gap:14px;justify-content:center;padding:20px;border-radius:18px;border:1px solid var(--hair);background:rgba(5,10,20,.45)}
+.payout .pr .btn{width:100%}
+.payout .pr .btn:disabled{cursor:not-allowed}
+@media (max-width:760px){.payout{grid-template-columns:minmax(0,1fr)}}
 .payout .pp{max-width:560px}
 .payout h3{font-size:17px;margin-bottom:12px}
-.payacts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.state{grid-column:1/-1;font-size:14px;color:var(--tx-dim)}
+.state{font-size:14px;color:var(--tx-dim);text-align:center}
 .how{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .how div{padding:18px;border-radius:18px;border:1px solid var(--hair);background:rgba(255,255,255,.02)}
 .how b{display:block;font-family:var(--display);font-size:16px;margin:6px 0 4px}
@@ -130,12 +135,14 @@
     <section class="sec">
       <div class="sech"><h2>Payouts</h2><span class="mono">PayPal or crypto</span></div>
       <div class="card payout">
-        <div><h3>Where we pay you</h3><div id="picker"></div></div>
-        <div class="payacts"><button class="btn-g" id="saveInfo" type="button">Save details</button><button class="btn" id="payBtn" type="button">Request payout</button></div>
+        <div class="pl"><h3>Where we pay you</h3><div id="picker"></div><button class="btn-g" id="saveInfo" type="button">Save details</button></div>
+        <div class="pr">
         <div class="cd" id="cd" hidden><span class="lbl">Your first payout opens in</span>
           <div class="u"><b id="cdD">0</b><span>days</span></div><div class="u"><b id="cdH">00</b><span>hours</span></div>
           <div class="u"><b id="cdM">00</b><span>mins</span></div><div class="u"><b id="cdS">00</b><span>secs</span></div></div>
+        <button class="btn" id="payBtn" type="button">Request payout</button>
         <p class="state" id="payState"></p>
+        </div>
       </div>
       <div class="tw" id="payHist" style="margin-top:12px" hidden><table><thead><tr><th>Requested</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th></tr></thead><tbody id="pays"></tbody></table></div>
     </section>
