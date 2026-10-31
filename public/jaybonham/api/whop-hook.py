@@ -391,7 +391,16 @@ class handler(BaseHTTPRequestHandler):
                     fixes.append("%s credited to %s (their checkout carried the code)" % (email, affs[aid]["name"]))
                     refs[email] = {"aff": aid, "at": None}
                 else:
-                    issues.append("%s checked out with %s's link but couldn't be credited (affiliate paused, or their own email)" % (email, affs[aid]["name"]))
+                    issues.append("%s checked out with %s's link but couldn't be credited (affiliate paused, their own email, or the buyer is an affiliate)" % (email, affs[aid]["name"]))
+
+        # 2b. Affiliates are never credited under another affiliate (Jay's rule): take them off.
+        cur.execute("""SELECT r.email, a.name, b.name FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id
+                         JOIN tv_affiliates b ON lower(b.email) = r.email AND b.status <> 'rejected'""")
+        for email, under, who in cur.fetchall():
+            n = _tv_aff.unlink(cur, email)
+            fixes.append("%s (affiliate %s) taken off %s: affiliates can't be under another affiliate (%d commission removed)" % (email, who, under, n))
+            refs.pop(email, None)
+        c.commit()
 
         # 3. Referred members' payments that never earned commission (from 14 days before the referral on).
         cur.execute(f"""SELECT p.whop_id, p.email, p.amount_usd, p.product, p.paid_at, r.affiliate_id FROM tv_payments p

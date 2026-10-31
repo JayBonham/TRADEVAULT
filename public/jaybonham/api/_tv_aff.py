@@ -18,6 +18,8 @@ Programme rules (numbers live in tv_aff_settings, editable from /admin/affiliate
   - Commission builds from the first personal but can't be paid out until UNLOCK personals.
   - From TIER personals on, new payments earn TIER_PCT instead of BASE_PCT
     (a custom rate set by admin overrides both).
+  - An affiliate's own purchases are never credited to another affiliate (no one sits under
+    another affiliate); _credit and claim enforce it.
   - Bonuses (e.g. the quarterly profit share) are added by admin and skip the hold.
   - Payouts go by PayPal or crypto; each request reserves the commission it covers.
 """
@@ -196,9 +198,26 @@ def rate(cur, aff_id, cfg=None, count=None):
     return cfg["tier_pct"] if count >= cfg["tier_count"] else cfg["base_pct"]
 
 
+def is_affiliate(cur, email):
+    """True if this email belongs to an affiliate (anyone not rejected)."""
+    cur.execute("SELECT 1 FROM tv_affiliates WHERE lower(email) = %s AND status <> 'rejected'", ((email or "").lower(),))
+    return cur.fetchone() is not None
+
+
+def unlink(cur, email):
+    """Take a buyer off their affiliate: the referral goes, and so does commission not yet paid or
+    requested. Returns the number of commission rows removed."""
+    cur.execute("DELETE FROM tv_aff_referrals WHERE email = %s", (email,))
+    cur.execute("""DELETE FROM tv_aff_commissions WHERE email = %s AND kind = 'commission'
+                   AND status = 'pending' AND payout_id IS NULL""", (email,))
+    return cur.rowcount
+
+
 def _credit(cur, aff_id, row):
     """row: (whop_id, email, amount_usd, product, paid_at). Idempotent per payment."""
     whop_id, email, amount, product, paid_at = row
+    if is_affiliate(cur, email):
+        return False
     pct = rate(cur, aff_id)
     commission = round(float(amount) * pct / 100, 2)
     if commission <= 0:
@@ -282,7 +301,7 @@ def claim(email, code, tier=None):
         cur = c.cursor()
         cur.execute("SELECT id, email FROM tv_affiliates WHERE code = %s AND status = 'active'", (code,))
         aff = cur.fetchone()
-        if not aff or aff[1] == email:  # unknown code, or someone referring themselves
+        if not aff or aff[1] == email or is_affiliate(cur, email):  # unknown code, self, or another affiliate
             c.close()
             return False
         cur.execute("""

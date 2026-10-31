@@ -13,6 +13,7 @@
   payouts    PATCH  (Bearer admin token)      {id, action: paid|reject, reference?}
   bonus      POST   (Bearer admin token)      {id, amount, note}  e.g. quarterly profit share
   assign     POST   (Bearer admin token)      {id, email}  credit a buyer the link didn't catch
+  unlink     POST   (Bearer admin token)      {id, email}  take a buyer off this affiliate (unpaid commission goes)
   settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count}
 
 GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
@@ -76,6 +77,8 @@ class handler(BaseHTTPRequestHandler):
             return self._profile()
         if a == "bonus":
             return self._admin_bonus()
+        if a == "unlink":
+            return self._admin_unlink()
         if a == "assign":
             return self._admin_assign()
         self._json(404, {"error": "unknown action"})
@@ -481,6 +484,9 @@ class handler(BaseHTTPRequestHandler):
         if row[1] == email:
             c.close()
             return self._json(400, {"error": "That's the affiliate's own email: self-purchases don't count."})
+        if A.is_affiliate(cur, email):
+            c.close()
+            return self._json(400, {"error": "That buyer is an affiliate: affiliates can't be credited to another affiliate."})
         cur.execute("""SELECT a.id, a.name FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id
                         WHERE r.email = %s""", (email,))
         other = cur.fetchone()
@@ -497,6 +503,24 @@ class handler(BaseHTTPRequestHandler):
         n = cur.fetchone()[0]
         c.close()
         self._json(200, {"ok": True, "payments": n})
+
+    def _admin_unlink(self):
+        """Take a buyer off this affiliate (e.g. a self-referral under a second email)."""
+        if not self._admin():
+            return
+        b = self._body()
+        aff = int(b.get("id") or 0)
+        email = (b.get("email") or "").strip().lower()[:160]
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("SELECT 1 FROM tv_aff_referrals WHERE email = %s AND affiliate_id = %s", (email, aff))
+        if not cur.fetchone():
+            c.close()
+            return self._json(404, {"error": "That buyer isn't under this affiliate."})
+        n = A.unlink(cur, email)
+        c.commit()
+        c.close()
+        self._json(200, {"ok": True, "removed": n})
 
     def _admin_settings(self):
         if not self._admin():

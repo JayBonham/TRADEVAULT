@@ -201,7 +201,7 @@
   <div class="kv" id="dKv"></div>
   <div class="qa" id="dApp"></div>
   <div class="sech sec"><h2>Members</h2><span class="mono" id="dRefN"></span></div>
-  <div class="tw"><table><thead><tr><th>Joined</th><th>Email</th><th>Plan</th><th class="r">Paid so far</th></tr></thead><tbody id="dRefs"></tbody></table></div>
+  <div class="tw"><table><thead><tr><th>Joined</th><th>Email</th><th>Plan</th><th class="r">Paid so far</th><th></th></tr></thead><tbody id="dRefs"></tbody></table></div>
   <form class="assign" id="dAssign"><div class="inp"><input id="dAssignEmail" type="email" placeholder="Buyer's Whop email" aria-label="Buyer's Whop email" required></div><button class="btn-g btn-sm" type="submit">Credit to this affiliate</button></form>
   <p class="help">Bought through this affiliate but not listed? Add their checkout email: they become this affiliate's member and their payments from the last 14 days earn commission.</p>
   <div class="sech sec"><h2>Commission</h2><span class="mono" id="dComN"></span></div>
@@ -455,8 +455,19 @@
     api('GET', 'detail', null, '&id=' + a.id).then(function (d) {
       $('dRefN').textContent = d.referrals.length + ' members'; $('dComN').textContent = d.commissions.length + ' entries';
       var r = $('dRefs'); r.innerHTML = '';
-      if (!d.referrals.length) r.innerHTML = '<tr><td colspan="4" class="empty">No members yet.</td></tr>';
-      d.referrals.forEach(function (m) { var tr = el('tr'); tr.appendChild(el('td', null, date(m.joined))); tr.appendChild(el('td', null, m.email)); tr.appendChild(el('td', null, cap(m.tier) || '—')); tr.appendChild(el('td', 'r num', money(m.paid))); r.appendChild(tr); });
+      if (!d.referrals.length) r.innerHTML = '<tr><td colspan="5" class="empty">No members yet.</td></tr>';
+      d.referrals.forEach(function (m) {
+        var tr = el('tr'); tr.appendChild(el('td', null, date(m.joined))); tr.appendChild(el('td', null, m.email)); tr.appendChild(el('td', null, cap(m.tier) || '—')); tr.appendChild(el('td', 'r num', money(m.paid)));
+        // Take a buyer off (e.g. the affiliate buying under a second email): click twice to confirm
+        var td = el('td', 'r'); td.appendChild(btn('btn-g btn-sm no-btn', 'Remove', function (b) {
+          if (b.textContent === 'Remove') { b.textContent = 'Sure?'; setTimeout(function () { b.textContent = 'Remove'; }, 3000); return; }
+          b.disabled = true;
+          api('POST', 'unlink', { id: a.id, email: m.email }).then(function (x) {
+            toast(m.email + ' taken off ' + a.name + (x.removed ? ' · ' + x.removed + ' commission removed' : '')); load(); openDrawer(a);
+          }).catch(fail(b));
+        })); tr.appendChild(td);
+        r.appendChild(tr);
+      });
       var c = $('dComs'); c.innerHTML = '';
       if (!d.commissions.length) c.innerHTML = '<tr><td colspan="7" class="empty">No commission yet.</td></tr>';
       d.commissions.forEach(function (m) {
