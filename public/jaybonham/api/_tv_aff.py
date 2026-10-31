@@ -320,9 +320,10 @@ def refund(whop_id):
         log("TV_AFF_REFUND_ERR:", e)
 
 
-def claim(email, code, tier=None):
+def claim(email, code, tier=None, all_payments=False):
     """The buyer arrived at setup carrying an affiliate code: make them that affiliate's referral
-    (first claim wins) and credit their recent payments."""
+    (first claim wins) and credit their recent payments. all_payments (admin assign): credit every
+    non-refunded payment, not just the last CLAIM_WINDOW_DAYS."""
     email = (email or "").strip().lower()
     code = (code or "").strip().lower()
     if not (DATABASE_URL and email and CODE_RE.match(code)):
@@ -341,9 +342,10 @@ def claim(email, code, tier=None):
         """, (email, aff[0], tier))
         sold = False
         if cur.fetchone():
+            window = "" if all_payments else f"AND paid_at > NOW() - INTERVAL '{CLAIM_WINDOW_DAYS} days'"
             cur.execute(f"""
                 SELECT whop_id, email, amount_usd, product, paid_at FROM tv_payments
-                 WHERE email = %s AND NOT refunded AND paid_at > NOW() - INTERVAL '{CLAIM_WINDOW_DAYS} days'
+                 WHERE email = %s AND NOT refunded {window}
             """, (email,))
             for row in cur.fetchall():
                 sold = _credit(cur, aff[0], row) or sold

@@ -511,7 +511,7 @@ class handler(BaseHTTPRequestHandler):
         cur.execute("SELECT tier FROM tv_payments WHERE email = %s ORDER BY paid_at DESC LIMIT 1", (email,))
         tier = (cur.fetchone() or [None])[0]
         c.close()
-        A.claim(email, row[0], tier)
+        A.claim(email, row[0], tier, all_payments=True)
         c = A.conn()
         cur = c.cursor()
         cur.execute("SELECT COUNT(*) FROM tv_aff_commissions WHERE affiliate_id = %s AND email = %s", (aff, email))
