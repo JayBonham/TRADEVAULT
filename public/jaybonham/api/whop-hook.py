@@ -15,6 +15,9 @@ GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 SLACK_WEBHOOK_PAYMENTS = os.environ.get("SLACK_WEBHOOK_PAYMENTS", "")
 WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
 WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
+# Store routes of the TradeVault products, for payments that arrive without a product title.
+TV_ROUTES = {"sniper-tools": "Tradevault Tools", "sniper-community-3c": "Tradevault Community",
+             "sniper-elite-3d": "Tradevault Elite"}
 
 # Signatures are checked and logged on every event; rejecting bad ones is switched on
 # once a real Whop event has been seen to pass (GET /api/whop-hook?sig=1).
@@ -121,7 +124,7 @@ class handler(BaseHTTPRequestHandler):
             return
         started = time.time()
         try:
-            pays, after = [], ""
+            pays, after, seen = [], "", {}
             for _ in range(30):
                 q = "&first=100" + ("&after=" + after if after else "")
                 try:
@@ -133,8 +136,19 @@ class handler(BaseHTTPRequestHandler):
                     page = self._whop_get("/api/v1/payments?company_id=" + WHOP_COMPANY + q)
                 for p in page.get("data") or []:
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
-                    if "tradevault" in str(prod.get("title") or "").lower().replace(" ", "") \
-                            and p.get("status") == "paid" and p.get("id"):
+                    title = str(prod.get("title") or prod.get("name") or "")
+                    route = str(prod.get("route") or "")
+                    k = "%s | %s" % (title or route or prod.get("id") or "?", p.get("status"))
+                    seen[k] = seen.get(k, 0) + 1
+                    if "tradevault" not in title.lower().replace(" ", ""):
+                        title = TV_ROUTES.get(route, "")
+                        if not title:
+                            continue
+                        p["product"] = dict(prod, title=title)
+                    paid = p.get("status") == "paid" or str(p.get("substatus") or "") == "succeeded" or \
+                        (p.get("paid_at") and p.get("status") not in ("void", "draft", "open", "uncollectible"))
+                    if paid and p.get("id") and not p.get("refunded_at") and \
+                            str(p.get("substatus") or "") not in ("refunded", "auto_refunded"):
                         pays.append(p)
                 info = page.get("page_info") or {}
                 after = info.get("end_cursor") or ""
@@ -166,7 +180,7 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 failed.append({"id": p.get("id"), "error": str(e)[:200]})
         left = len(todo) - len(done) - len(failed) - no_email
-        self._json(200, {"ok": True, "found": len(pays), "already": len(have), "synced": done,
+        self._json(200, {"ok": True, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
                          "failed": failed, "no_email": no_email, "remaining": left})
 
     def _keep(self, event_type, raw_body):
