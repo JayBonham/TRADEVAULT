@@ -89,6 +89,7 @@ class handler(BaseHTTPRequestHandler):
         q = parse_qs(urlparse(self.path).query)
         tier = (q.get("plan") or [""])[0].strip().lower()
         code = (q.get("ref") or [""])[0].strip().lower()
+        self.debug = (q.get("debug") or [""])[0] == "1"  # ?debug=1: JSON instead of a redirect, to see why it fell back
         if tier not in PRODUCTS:
             return self._go(STORE)
         fallback = PRODUCTS[tier][1]
@@ -100,13 +101,13 @@ class handler(BaseHTTPRequestHandler):
             cur.execute("SELECT 1 FROM tv_affiliates WHERE code = %s AND status = 'active'", (code,))
             if not cur.fetchone():
                 c.close()
-                return self._go(fallback)
+                return self._go(fallback, "affiliate not active")
             pid = plan_id(cur, tier)
             c.commit()
             c.close()
             if not pid:
                 log("TV_CHECKOUT: no plan id for", tier)
-                return self._go(fallback)
+                return self._go(fallback, "no plan id for " + tier)
             cfg = _whop("POST", "/api/v1/checkout_configurations", {
                 "mode": "payment", "plan_id": pid, "redirect_url": REDIRECT,
                 "metadata": {"tv_ref": code, "tv_tier": tier}})
@@ -115,14 +116,21 @@ class handler(BaseHTTPRequestHandler):
                 url = "https://whop.com" + url
             if not url.startswith("https://"):
                 log("TV_CHECKOUT: no purchase_url", json.dumps(cfg)[:300])
-                return self._go(fallback)
+                return self._go(fallback, "no purchase_url: " + json.dumps(cfg)[:300])
             log("TV_CHECKOUT", tier, code, cfg.get("id"))
             return self._go(url)
         except Exception as e:
             log("TV_CHECKOUT_ERR:", e)
-            return self._go(fallback)
+            return self._go(fallback, str(e)[:400])
 
-    def _go(self, url):
+    def _go(self, url, why=""):
+        if getattr(self, "debug", False):
+            body = json.dumps({"url": url, "fallback_reason": why}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+            return
         self.send_response(302)
         self.send_header("Location", url)
         self.send_header("Cache-Control", "no-store")
