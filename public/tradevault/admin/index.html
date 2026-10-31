@@ -269,7 +269,7 @@ footer{padding-block:32px 40px}
           total += d.synced.length; failed += d.failed.length; noEmail = d.no_email;
           if (d.remaining > 0 && ++rounds < 10) return round();
           var seen = Object.keys(d.seen || {}).map(function (k) { return k + ' ×' + d.seen[k]; }).join('; ');
-          toast('Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments found, ' + d.already + ' already in. Whop sent: ' + (seen || 'nothing') + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email (check API key has member email permission)' : ''));
+          toast('Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments found, ' + d.already + ' already in. Whop sent: ' + (seen || 'nothing ' + (d.raw || '')) + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email (check API key has member email permission)' : ''));
         });
     }
     round().then(function () { return load(true); })
@@ -403,7 +403,7 @@ footer{padding-block:32px 40px}
   var tt;
   function toast(msg, undo) {
     $('toastMsg').textContent = msg; $('toastUndo').hidden = !undo;
-    $('toast').classList.add('on'); clearTimeout(tt); tt = setTimeout(function () { $('toast').classList.remove('on'); }, 6000);
+    $('toast').classList.add('on'); clearTimeout(tt); tt = setTimeout(function () { $("toast").classList.remove("on"); }, msg.length > 120 ? 30000 : 6000);
   }
   $('toastUndo').addEventListener('click', function () {
     if (!lastUndo) return; var m = lastUndo; lastUndo = null; $('toast').classList.remove('on');

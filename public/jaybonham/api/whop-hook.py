@@ -124,16 +124,18 @@ class handler(BaseHTTPRequestHandler):
             return
         started = time.time()
         try:
-            pays, after, seen = [], "", {}
+            pays, after, seen, scope, raw = [], "", {}, None, ""
             for _ in range(30):
-                q = "&first=100" + ("&after=" + after if after else "")
-                try:
-                    page = self._whop_get("/api/v1/payments?account_id=" + WHOP_COMPANY + q)
-                except RuntimeError as e:
-                    # Older API versions filter by company_id instead.
-                    if "400" not in str(e):
-                        raise
-                    page = self._whop_get("/api/v1/payments?company_id=" + WHOP_COMPANY + q)
+                q = "first=100" + ("&after=" + after if after else "")
+                if scope is None:
+                    # A company key may only list its own company's payments: try with and without the filter.
+                    for scope in ("account_id=" + WHOP_COMPANY + "&", ""):
+                        page = self._whop_get("/api/v1/payments?" + scope + q)
+                        if page.get("data"):
+                            break
+                    raw = json.dumps(page)[:400]
+                else:
+                    page = self._whop_get("/api/v1/payments?" + scope + q)
                 for p in page.get("data") or []:
                     prod = p.get("product") if isinstance(p.get("product"), dict) else {}
                     title = str(prod.get("title") or prod.get("name") or "")
@@ -180,7 +182,7 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 failed.append({"id": p.get("id"), "error": str(e)[:200]})
         left = len(todo) - len(done) - len(failed) - no_email
-        self._json(200, {"ok": True, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
+        self._json(200, {"ok": True, "scope": scope, "raw": "" if seen else raw, "seen": seen, "found": len(pays), "already": len(have), "synced": done,
                          "failed": failed, "no_email": no_email, "remaining": left})
 
     def _keep(self, event_type, raw_body):
