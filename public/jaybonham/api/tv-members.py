@@ -2,9 +2,11 @@
 GET  -> {ok, members:[{id, name, email, tier, setup, assigned, educator, scanner,
                        tradingview, telegram, joined}]}
         everyone tagged tradevault-purchased (set by the Whop webhook), read live from GHL.
-POST {action: "assign"|"unassign", c}
+POST {action: "assign"|"unassign"|"revoked", c}
         assign adds tv-access-granted; the GHL "Access Granted" workflow triggers on that tag,
         moves the card and emails the member. unassign removes the tag (no email is unsent).
+        revoked: their Whop membership ended (ended=true, set by whop-hook) and they've been taken
+        out of the scanners; removes the tag and records it, so they leave "Remove access".
 TEST_EMAILS (Alex's test purchases) are taken off the board on the next load: their TradeVault
 tags are stripped in GHL and their DB row deleted. The GHL contacts themselves are kept.
 """
@@ -143,6 +145,7 @@ def _member(c, ids, db):
         "tradingview": row.get("tradingview") or vals.get("tradingview_username", ""),
         "telegram": row.get("telegram") or vals.get("telegram_username", ""),
         "joined": row.get("purchased_at") or c.get("dateAdded") or "",
+        "ended": bool(row.get("ended_at")), "ended_at": row.get("ended_at") or "",
         "groups": [g["name"] for g in groups_for(tier, next((k for k in EDUCATORS if "tv-educator-" + k in tags), ""))],
     }
 
@@ -216,12 +219,14 @@ class handler(BaseHTTPRequestHandler):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
         action = b.get("action")
-        if not CID_RE.match(cid) or action not in ("assign", "unassign"):
+        if not CID_RE.match(cid) or action not in ("assign", "unassign", "revoked"):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         method = "POST" if action == "assign" else "DELETE"
         status, _, raw = _ghl(method, "/contacts/" + cid + "/tags", {"tags": [ASSIGNED_TAG]})
         if status >= 300:
             return self._json(502, {"ok": False, "error": "GHL %s: %s" % (status, raw[:200].decode(errors="replace"))})
+        if action == "revoked":
+            _tv_db.set_removed(cid)
         log("TV_MEMBERS", action, cid)
         self._json(200, {"ok": True})
 

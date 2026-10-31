@@ -128,6 +128,9 @@ class handler(BaseHTTPRequestHandler):
         if "audit=1" in self.path:
             self._audit()
             return
+        if "members=1" in self.path:
+            self._members_sync()
+            return
         if "sig=1" in self.path:
             # Recent signature results (no secrets) so the check can be confirmed before enforcing.
             rows = []
@@ -143,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-7", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-8", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -442,6 +445,82 @@ class handler(BaseHTTPRequestHandler):
                          "fixes": fixes, "issues": issues,
                          "affiliates": sorted(out.values(), key=lambda r: -r["commission"])})
 
+    def _membership_change(self, data, valid):
+        """A TradeVault membership ended (or is valid again). Ended counts only when none of the
+        member's other TradeVault memberships is still valid, so an upgrade doesn't flag anyone."""
+        try:
+            sys.path.insert(0, sys_path)
+            import _tv_aff
+            import _tv_db
+            import _tv_whop
+            mid = str(data.get("id") or "")
+            c = _tv_aff.conn(); cur = c.cursor()
+            cur.execute("SELECT email FROM tv_payments WHERE membership_id = %s LIMIT 1", (mid,))
+            row = cur.fetchone()
+            email = row[0] if row else ""
+            if not email and tv_title(data):
+                memb = data.get("member") if isinstance(data.get("member"), dict) else {}
+                email = (find_email(data) or self._email_for(
+                    {"member_id": memb.get("id") or data.get("member_id"), "user": data.get("user")}, {}, [])).lower()
+            cur.execute("SELECT contact_id FROM tv_members WHERE lower(email) = %s", (email,))
+            row = cur.fetchone()
+            others = [m for m in _tv_whop.membership_ids(cur, email) if m != mid] if row and not valid else []
+            c.commit()
+            c.close()  # before _tv_db writes tv_members on its own connection
+            if not (email and row):
+                return
+            if valid:
+                _tv_db.set_ended(row[0], False)
+            else:
+                still = any(str(_tv_whop.whop("GET", "/api/v1/memberships/" + m).get("status") or "") in _tv_whop.VALID
+                            for m in others)
+                if not still:
+                    _tv_db.set_ended(row[0], True)
+            print("TV_MEMBERSHIP", "valid" if valid else "ended", email[:3] + "***", file=sys.stderr)
+        except Exception as e:
+            print("TV_MEMBERSHIP_ERR:", e, file=sys.stderr)
+
+    def _members_sync(self):
+        """Admin only (Sync Whop on the members board): write every member's setup answers onto their
+        Whop memberships and mark members whose memberships have all ended. ?from=N continues a run."""
+        sys.path.insert(0, sys_path)
+        from _auth import verify_token
+        auth = self.headers.get("Authorization", "")
+        if not auth.startswith("Bearer ") or not verify_token(auth[7:]):
+            self._json(401, {"ok": False, "error": "Unauthorized"})
+            return
+        if not WHOP_API_KEY:
+            self._json(500, {"ok": False, "error": "WHOP_API_KEY is not set in Vercel"})
+            return
+        import re
+        import _tv_aff
+        import _tv_db
+        import _tv_whop
+        m = re.search(r"from=(\d+)", self.path)
+        start, started = int(m.group(1)) if m else 0, time.time()
+        rows = sorted(_tv_db.all_members().items())
+        out = {"ok": True, "total": len(rows), "written": 0, "ended": 0, "errors": 0, "no_whop": []}
+        c = _tv_aff.conn(); cur = c.cursor()
+        i = start
+        while i < len(rows) and time.time() - started < 40:
+            cid, row = rows[i]
+            r = _tv_whop.sync(cur, row)
+            c.commit()
+            out["written"] += r["written"]
+            out["errors"] += r["errors"]
+            if not r["memberships"]:
+                out["no_whop"].append(row.get("email"))
+            elif r["valid"] is False and not r["errors"]:
+                if not row.get("ended_at"):
+                    _tv_db.set_ended(cid, True)
+                    out["ended"] += 1
+            elif r["valid"] and row.get("ended_at"):
+                _tv_db.set_ended(cid, False)
+            i += 1
+        c.close()
+        out["next"] = i if i < len(rows) else None
+        self._json(200, out)
+
     def _keep(self, event_type, raw_body):
         try:
             sys.path.insert(0, sys_path)
@@ -506,6 +585,12 @@ class handler(BaseHTTPRequestHandler):
                     import _tv_aff
                     _tv_aff.refund(str(pay_id))
 
+            # Membership ended / came back: drives "Remove access" on the members board.
+            if event_type in ("membership.deactivated", "membership.went_invalid",
+                              "membership.activated", "membership.went_valid"):
+                self._membership_change(event.get("data", {}) or {},
+                                        event_type in ("membership.activated", "membership.went_valid"))
+
             if event_type not in ("payment.succeeded", "membership.went_valid",
                                    "membership.activated", "member.created"):
                 self._json(200, {"ok": True, "skipped": event_type})
@@ -566,7 +651,10 @@ class handler(BaseHTTPRequestHandler):
                 sys.path.insert(0, sys_path)
                 import _tv_aff
                 tier = next((t.split("-", 1)[1] for t in tags if t in ("tradevault-tools", "tradevault-community", "tradevault-elite")), "")
-                _tv_aff.record_payment(str(data["id"]), email, amount, title, tier, paid_at)
+                mem = data.get("membership")
+                mem_id = data.get("membership_id") or (mem.get("id") if isinstance(mem, dict) else mem)
+                _tv_aff.record_payment(str(data["id"]), email, amount, title, tier, paid_at,
+                                       str(mem_id) if mem_id else None)
                 # Checkout opened through /api/tv-checkout carries the affiliate code: credit it now,
                 # whatever browser the buyer paid in and whether or not they reach /setup.
                 meta = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}

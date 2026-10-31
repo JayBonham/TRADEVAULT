@@ -7,6 +7,8 @@ POST {c, educator, scanner, tradingview, telegram}
      Writes to GHL: tags tv-setup-complete (+ tv-educator-<x>, tv-scanner-<x> for Community),
      custom fields tv_educator / tv_scanner / tradingview_username / telegram_username
      (when they exist in GHL), and a note with the full choice. Choices lock once made.
+     The answers are also written onto the buyer's Whop membership metadata (_tv_whop), which is
+     where the trading portal reads them.
 """
 import http.client
 import json
@@ -155,6 +157,8 @@ class handler(BaseHTTPRequestHandler):
         status, _ = _ghl("POST", "/contacts/" + cid + "/tags", {"tags": new_tags})
         if status >= 300:
             return self._json(502, {"ok": False, "error": "We couldn't save that. Please try again."})
+        self._to_whop({"email": (contact.get("email") or "").lower(), "tier": tier, "educator": edu_name,
+                       "scanner": scan_name, "tradingview": tv, "telegram": tg})
         log("TV_SETUP", cid, tier, educator or "-", scanner or "-")
         self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name,
                          "groups": groups_for(tier, educator)})
@@ -187,6 +191,21 @@ class handler(BaseHTTPRequestHandler):
             return None
         self._json(404, {"ok": False, "error": "not_found"})
         return None
+
+    def _to_whop(self, row):
+        """Best-effort: a miss here is filled in by Sync Whop on the members board."""
+        try:
+            import datetime
+            import _tv_aff
+            import _tv_whop
+            row["setup_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+            c = _tv_aff.conn()
+            cur = c.cursor()
+            log("TV_SETUP_WHOP:", json.dumps(_tv_whop.sync(cur, row)))
+            c.commit()
+            c.close()
+        except Exception as e:
+            log("TV_SETUP_WHOP_ERR:", e)
 
     def _fields(self, cid, values):
         """Fill the GHL custom fields, by id when the field list is readable, else by key."""

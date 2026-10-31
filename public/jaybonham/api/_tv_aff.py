@@ -115,6 +115,7 @@ def conn():
             ALTER TABLE tv_aff_commissions ADD COLUMN IF NOT EXISTS kind      TEXT NOT NULL DEFAULT 'commission';
             ALTER TABLE tv_aff_commissions ADD COLUMN IF NOT EXISTS pct       INTEGER;
             ALTER TABLE tv_aff_commissions ADD COLUMN IF NOT EXISTS payout_id BIGINT;
+            ALTER TABLE tv_payments ADD COLUMN IF NOT EXISTS membership_id TEXT;
             CREATE TABLE IF NOT EXISTS tv_aff_payouts (
                 id           BIGSERIAL PRIMARY KEY,
                 affiliate_id BIGINT NOT NULL REFERENCES tv_affiliates(id),
@@ -217,7 +218,7 @@ def _tell_sale(cur, aff_id):
         ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True)
 
 
-def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None):
+def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None, membership_id=None):
     """Log a TradeVault payment; credit its affiliate if the buyer is already a referral."""
     if not (DATABASE_URL and whop_id and email) or not amount_usd or amount_usd <= 0:
         return False
@@ -225,9 +226,10 @@ def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None):
         c = conn()
         cur = c.cursor()
         cur.execute("""
-            INSERT INTO tv_payments (whop_id, email, amount_usd, product, tier, paid_at)
-            VALUES (%s, %s, %s, %s, %s, COALESCE(%s::timestamptz, NOW())) ON CONFLICT (whop_id) DO NOTHING
-        """, (whop_id, email, amount_usd, product, tier, paid_at))
+            INSERT INTO tv_payments (whop_id, email, amount_usd, product, tier, paid_at, membership_id)
+            VALUES (%s, %s, %s, %s, %s, COALESCE(%s::timestamptz, NOW()), %s)
+            ON CONFLICT (whop_id) DO UPDATE SET membership_id = COALESCE(tv_payments.membership_id, EXCLUDED.membership_id)
+        """, (whop_id, email, amount_usd, product, tier, paid_at, membership_id))
         c.commit()
         # Arrived at setup with a ref before this payment reached us: turn that into a referral now.
         cur.execute("DELETE FROM tv_aff_claims WHERE email = %s AND created_at > NOW() - INTERVAL '2 days' RETURNING code", (email,))

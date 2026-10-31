@@ -80,6 +80,9 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height
 .tab em{font-style:normal;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--tx-dim)}
 .tab[aria-selected="true"]{background:rgba(255,255,255,.08);color:var(--tx)}
 .tab[aria-selected="true"] em{background:var(--acc);color:#fff}
+.tab em.hot{background:var(--warn);color:#1A1205}
+.act.rv{background:var(--warn);color:#1A1205}
+.sub.end{color:var(--warn)}
 .tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .search{display:flex;align-items:center;gap:8px;padding:0 14px;min-height:42px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--hair-2);min-width:240px}
 .search:focus-within{border-color:var(--acc)}
@@ -189,6 +192,7 @@ footer{padding-block:32px 40px}
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-tab="new">New members <em id="cNew">0</em></button>
       <button class="tab" role="tab" aria-selected="false" data-tab="assigned">Assigned <em id="cAss">0</em></button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="remove" title="Whop membership ended or cancelled: take them out of the scanners">Remove access <em id="cRm">0</em></button>
     </div>
     <div class="tools">
       <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7F8DA3" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search name, email, TradingView…" aria-label="Search members"></label>
@@ -211,6 +215,7 @@ footer{padding-block:32px 40px}
     <div class="state" id="state"><div class="loader"></div>Loading members from GHL…</div>
   </div>
   <p class="legend" id="legend">Click <b>Completed</b> once you've added their TradingView username to the scanner. They move to Assigned and get the "access is live" email automatically.</p>
+  <p class="legend" id="legendRm" hidden>Their Whop membership has ended or been cancelled. Take their TradingView username out of the scanner(s), then click <b>Access removed</b>. If they buy again they come back to New members.</p>
 </main>
 
 <footer class="W"><span class="mono">© 2026 The Trade Vault · Admin</span></footer>
@@ -272,7 +277,20 @@ footer{padding-block:32px 40px}
                         : 'Whop sync found no TradeVault payments. Send this to Alex: ' + Object.keys(d.seen || {}).join('; ') + ' · ' + (d.sample || '') + ' · ' + (d.msample || '') + ' · ' + (d.lookup_errors || []).join(' / '));
         });
     }
-    round().then(function () { return load(true); })
+    // then: setup answers onto Whop memberships (for the trading portal) + ended memberships
+    var wrote = 0, ended = 0, errs = 0, noWhop = [];
+    function memRound(from) {
+      btn.textContent = 'Updating Whop…';
+      return fetch('https://jaybonham.com/api/whop-hook?members=1&from=' + from, { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ok) throw { msg: d.error || 'Whop update failed' };
+          wrote += d.written; ended += d.ended; errs += d.errors; noWhop = noWhop.concat(d.no_whop || []);
+          if (d.next != null && ++rounds < 30) return memRound(d.next);
+          toast('Whop updated: ' + wrote + ' membership' + (wrote === 1 ? '' : 's') + ' given setup details' + (ended ? ', ' + ended + ' ended (see Remove access)' : '') + (errs ? ', ' + errs + ' Whop errors (the Whop API key may need the member:manage permission)' : '') + (noWhop.length ? '. No Whop payment found for: ' + noWhop.join(', ') : ''));
+        });
+    }
+    round().then(function () { rounds = 0; return memRound(0); }).then(function () { return load(true); })
       .catch(function (x) { toast('Sync failed: ' + (x.msg || 'network error')); })
       .then(function () { btn.disabled = false; btn.textContent = 'Sync Whop'; });
   });
@@ -295,22 +313,26 @@ footer{padding-block:32px 40px}
   function dash() { return el('span', 'dash', '—'); }
 
   function stats() {
-    var ready = 0, wait = 0, done = 0, t = { tools: 0, community: 0, elite: 0 };
+    var ready = 0, wait = 0, done = 0, rm = 0, live = 0, t = { tools: 0, community: 0, elite: 0 };
     members.forEach(function (m) {
+      if (m.ended) { if (m.assigned) rm++; return; }
+      live++;
       if (m.assigned) done++; else if (m.setup) ready++; else wait++;
       if (t[m.tier] != null) t[m.tier]++;
     });
-    $('sReady').textContent = ready; $('sWait').textContent = wait; $('sDone').textContent = done; $('sAll').textContent = members.length;
+    $('sReady').textContent = ready; $('sWait').textContent = wait; $('sDone').textContent = done; $('sAll').textContent = live;
     $('sTiers').innerHTML = '';
     ['tools', 'community', 'elite'].forEach(function (k) { var s = el('span', null, TIER[k] + ' '); s.appendChild(el('i', null, t[k])); $('sTiers').appendChild(s); });
-    $('sDoneSub').textContent = members.length ? Math.round(done / members.length * 100) + '% of members live' : ' ';
+    $('sDoneSub').textContent = live ? Math.round(done / live * 100) + '% of members live' : ' ';
     $('cNew').textContent = ready + wait; $('cAss').textContent = done;
+    $('cRm').textContent = rm; $('cRm').classList.toggle('hot', rm > 0);
   }
 
   function visible() {
     var needle = q.toLowerCase();
     return members.filter(function (m) {
-      if ((tab === 'assigned') !== m.assigned) return false;
+      // ended members only matter while they still have access; then they're out of every tab
+      if ((m.ended ? (m.assigned ? 'remove' : '') : m.assigned ? 'assigned' : 'new') !== tab) return false;
       if (tier && m.tier !== tier) return false;
       if (needle && [m.name, m.email, m.tradingview, m.telegram, m.educator, m.scanner].join(' ').toLowerCase().indexOf(needle) < 0) return false;
       return true;
@@ -324,20 +346,21 @@ footer{padding-block:32px 40px}
     stats();
     var list = visible(), body = $('rows');
     body.innerHTML = '';
-    $('actH').textContent = tab === 'new' ? 'Access' : 'Assigned';
+    $('actH').textContent = tab === 'new' ? 'Access' : tab === 'remove' ? 'Remove' : 'Assigned';
     $('legend').hidden = tab !== 'new';
+    $('legendRm').hidden = tab !== 'remove';
     var s = $('state');
     if (!list.length) {
       s.hidden = false; s.className = 'state';
       s.innerHTML = '';
-      s.appendChild(el('h3', null, q || tier ? 'No matches' : tab === 'new' ? 'All caught up' : 'No one assigned yet'));
-      s.appendChild(document.createTextNode(q || tier ? 'Try a different search or plan.' : tab === 'new' ? 'Every member has their access. New sign-ups appear here automatically.' : 'Members you assign will move here.'));
+      s.appendChild(el('h3', null, q || tier ? 'No matches' : tab === 'new' ? 'All caught up' : tab === 'remove' ? 'No one to remove' : 'No one assigned yet'));
+      s.appendChild(document.createTextNode(q || tier ? 'Try a different search or plan.' : tab === 'new' ? 'Every member has their access. New sign-ups appear here automatically.' : tab === 'remove' ? 'When a Whop membership ends or is cancelled, the member shows up here so you can take them out of the scanners.' : 'Members you assign will move here.'));
       return;
     }
     s.hidden = true;
     list.forEach(function (m, i) {
       var tr = el('tr'); tr.style.animationDelay = Math.min(i * 18, 300) + 'ms'; tr.dataset.id = m.id;
-      var c1 = el('td'); c1.appendChild(el('div', 'nm', m.name || '(no name)')); c1.appendChild(el('div', 'sub', 'Joined ' + (date(m.joined) || '—')));
+      var c1 = el('td'); c1.appendChild(el('div', 'nm', m.name || '(no name)')); c1.appendChild(m.ended ? el('div', 'sub end', 'Membership ended ' + (date(m.ended_at) || '')) : el('div', 'sub', 'Joined ' + (date(m.joined) || '—')));
       var c2 = el('td'); c2.appendChild(m.email ? el('span', 'em', m.email) : dash());
       var c3 = el('td'); c3.appendChild(m.tier ? el('span', 'tier ' + m.tier, TIER[m.tier]) : dash());
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
@@ -366,7 +389,17 @@ footer{padding-block:32px 40px}
 
   function actBtn(m) {
     var b = el('button', 'act'); b.type = 'button';
-    if (m.assigned) {
+    if (m.ended && m.assigned) {
+      b.className = 'act rv'; b.textContent = 'Access removed ✓';
+      b.title = 'Click once their TradingView username is out of the scanner(s)';
+      b.addEventListener('click', function () {
+        if (busy[m.id]) return; busy[m.id] = true; b.disabled = true; b.innerHTML = '<span class="spin"></span>';
+        api('POST', { action: 'revoked', c: m.id }).then(function () {
+          m.assigned = false; render(); toast((m.name || m.email) + ' marked as removed.');
+        }).catch(function (x) { toast('Couldn’t update: ' + (x.msg || 'network error')); render(); })
+          .then(function () { busy[m.id] = false; });
+      });
+    } else if (m.assigned) {
       b.className = 'act undo'; b.textContent = 'Undo';
       b.title = 'Move back to New members (does not unsend the email)';
       b.addEventListener('click', function () {
