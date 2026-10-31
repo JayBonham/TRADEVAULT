@@ -19,6 +19,10 @@ ENFORCE_SIG = False
 SIG_TABLE = """CREATE TABLE IF NOT EXISTS whop_sig_log (
     id BIGSERIAL PRIMARY KEY, at TIMESTAMPTZ NOT NULL DEFAULT now(),
     event TEXT, scheme TEXT, headers TEXT)"""
+# Raw payment/membership events, kept so a handler bug can be fixed and the events replayed.
+EVENT_TABLE = """CREATE TABLE IF NOT EXISTS whop_events (
+    id BIGSERIAL PRIMARY KEY, at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    event TEXT, body TEXT)"""
 
 PLAN_PRICES = {
     "sniper-basic-ed":    999.0,
@@ -85,6 +89,17 @@ class handler(BaseHTTPRequestHandler):
             return
         self._json(200, {"ok": True, "service": "whop-webhook"})
 
+    def _keep(self, event_type, raw_body):
+        try:
+            sys.path.insert(0, sys_path)
+            import _tv_aff
+            c = _tv_aff.conn(); cur = c.cursor()
+            cur.execute(EVENT_TABLE)
+            cur.execute("INSERT INTO whop_events (event, body) VALUES (%s, %s)", (event_type[:60], raw_body.decode("utf-8", "replace")))
+            c.commit(); c.close()
+        except Exception as e:
+            print("event keep failed:", e, file=sys.stderr)
+
     def _log_sig(self, event_type, scheme):
         try:
             sys.path.insert(0, sys_path)
@@ -117,7 +132,10 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             event = json.loads(raw_body)
-            event_type = event.get("event", "")
+            # Whop v1 webhooks name the event in "type"; older ones used "event".
+            event_type = event.get("type") or event.get("event") or ""
+            if event_type.startswith(("payment.", "membership.", "member.", "refund.")):
+                self._keep(event_type, raw_body)
 
             # Debug: return full payload so we can inspect it
             print("WHOP EVENT:", event_type, json.dumps(event)[:500], file=sys.stderr)
@@ -146,19 +164,21 @@ class handler(BaseHTTPRequestHandler):
             plan  = data.get("plan") or {}
             prod  = data.get("product") or {}
             bill  = data.get("billing_address") or {}
-            user, plan, prod, bill = [x if isinstance(x, dict) else {} for x in (user, plan, prod, bill)]
+            memb  = data.get("member") or {}
+            user, plan, prod, bill, memb = [x if isinstance(x, dict) else {} for x in (user, plan, prod, bill, memb)]
 
-            email = (user.get("email") or data.get("email") or data.get("user_email") or "").strip().lower()
+            email = (user.get("email") or memb.get("email") or data.get("email") or data.get("user_email") or "").strip().lower()
             name  = (user.get("name") or bill.get("name") or user.get("username") or
                      user.get("display_name") or "").strip()
-            phone = (user.get("phone_number") or data.get("phone") or "").strip()
+            phone = (user.get("phone_number") or memb.get("phone") or data.get("phone") or "").strip()
             slug  = str(plan.get("slug") or plan.get("id") or
                         data.get("plan_id") or data.get("product_slug") or "").strip()
             title = str(prod.get("title") or prod.get("name") or
                         plan.get("title") or plan.get("name") or "").strip()
 
             if not email:
-                self._json(400, {"error": "no email in payload"})
+                # v1 membership events can omit the email; payment.succeeded carries it. 200 so Whop doesn't retry.
+                self._json(200, {"ok": True, "skipped": "no email", "event": event_type})
                 return
 
             parts = name.split(" ", 1)
