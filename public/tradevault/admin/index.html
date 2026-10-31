@@ -268,8 +268,8 @@ footer{padding-block:32px 40px}
           if (!d.ok) throw { msg: d.error || 'Sync failed' };
           total += d.synced.length; failed += d.failed.length; noEmail = d.no_email;
           if (d.remaining > 0 && ++rounds < 10) return round();
-          var seen = Object.keys(d.seen || {}).map(function (k) { return k + ' ×' + d.seen[k]; }).join('; ');
-          toast('Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments found, ' + d.already + ' already in. Whop sent: ' + (seen || 'nothing ' + (d.raw || '')) + (total ? '' : ' · scope: ' + d.scope + ' · sample: ' + (d.sample || '') + ' · memberships: ' + (d.msample || '') + (d.lookup_errors && d.lookup_errors.length ? ' · lookup: ' + d.lookup_errors.join(' / ') : '')) + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email (check API key has member email permission)' : ''));
+          toast(d.found ? 'Whop sync done: ' + total + ' added, ' + d.found + ' TradeVault payments in Whop' + (failed ? ', ' + failed + ' failed' : '') + (noEmail ? ', ' + noEmail + ' had no email' : '')
+                        : 'Whop sync found no TradeVault payments. Send this to Alex: ' + Object.keys(d.seen || {}).join('; ') + ' · ' + (d.sample || '') + ' · ' + (d.msample || '') + ' · ' + (d.lookup_errors || []).join(' / '));
         });
     }
     round().then(function () { return load(true); })
