@@ -21,7 +21,7 @@ TV_ROUTES = {"sniper-tools": "Tradevault Tools", "sniper-community-3c": "Tradeva
 
 # Signatures are checked and logged on every event; rejecting bad ones is switched on
 # once a real Whop event has been seen to pass (GET /api/whop-hook?sig=1).
-ENFORCE_SIG = False
+ENFORCE_SIG = True
 SIG_TABLE = """CREATE TABLE IF NOT EXISTS whop_sig_log (
     id BIGSERIAL PRIMARY KEY, at TIMESTAMPTZ NOT NULL DEFAULT now(),
     event TEXT, scheme TEXT, headers TEXT)"""
@@ -146,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-8", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-9", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
