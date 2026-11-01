@@ -146,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-10", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-11", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -303,8 +303,14 @@ class handler(BaseHTTPRequestHandler):
         affs = {r[0]: {"code": r[1], "name": r[2], "email": r[3].lower(), "status": r[4]} for r in cur.fetchall()}
         by_code = {a["code"]: i for i, a in affs.items()}
         aff_emails = {a["email"]: a for a in affs.values()}
-        cur.execute("SELECT whop_id, email, amount_usd, refunded, paid_at, tier FROM tv_payments")
-        pays = {r[0]: {"email": r[1], "amount": float(r[2]), "refunded": r[3], "paid_at": r[4], "tier": r[5]} for r in cur.fetchall()}
+        cur.execute("SELECT whop_id, email, amount_usd, refunded, paid_at, tier, name FROM tv_payments")
+        pays = {r[0]: {"email": r[1], "amount": float(r[2]), "refunded": r[3], "paid_at": r[4], "tier": r[5], "name": r[6]} for r in cur.fetchall()}
+
+        # 0. Buyer names for the admin (payments recorded before names were kept).
+        named = [(w["name"][:120], wid) for wid, w in whop.items() if w["name"] and wid in pays and not pays[wid]["name"]]
+        if named:
+            cur.executemany("UPDATE tv_payments SET name = %s WHERE whop_id = %s", named)
+            c.commit()
 
         # 1. Refunds Whop has that we never heard about: mark the payment refunded, void its commission.
         for wid, p in pays.items():
@@ -608,7 +614,7 @@ class handler(BaseHTTPRequestHandler):
                 mem = data.get("membership")
                 mem_id = data.get("membership_id") or (mem.get("id") if isinstance(mem, dict) else mem)
                 _tv_aff.record_payment(str(data["id"]), email, amount, title, tier, paid_at,
-                                       str(mem_id) if mem_id else None)
+                                       str(mem_id) if mem_id else None, name)
                 # Checkout opened through /api/tv-checkout carries the affiliate code: credit it now,
                 # whatever browser the buyer paid in and whether or not they reach /setup.
                 meta = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}

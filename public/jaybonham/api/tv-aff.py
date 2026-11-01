@@ -369,10 +369,11 @@ class handler(BaseHTTPRequestHandler):
             cur = c.cursor()
             cur.execute("""
                 SELECT r.email, r.tier, r.created_at,
-                       COALESCE((SELECT SUM(amount_usd) FROM tv_payments p WHERE p.email = r.email AND NOT p.refunded), 0)
+                       COALESCE((SELECT SUM(amount_usd) FROM tv_payments p WHERE p.email = r.email AND NOT p.refunded), 0),
+                       (SELECT name FROM tv_payments p WHERE p.email = r.email AND name IS NOT NULL ORDER BY paid_at DESC LIMIT 1)
                   FROM tv_aff_referrals r WHERE r.affiliate_id = %s ORDER BY r.created_at DESC
             """, (aff,))
-            refs = [{"email": r[0], "tier": r[1], "joined": _iso(r[2]), "paid": float(r[3])} for r in cur.fetchall()]
+            refs = [{"email": r[0], "tier": r[1], "joined": _iso(r[2]), "paid": float(r[3]), "name": r[4] or ""} for r in cur.fetchall()]
             cur.execute(f"""SELECT email, product, amount_usd, commission_usd, status, paid_at, {READY}, kind, pct, payout_id
                               FROM tv_aff_commissions WHERE affiliate_id = %s ORDER BY paid_at DESC""", (aff,))
             coms = [{"email": r[0], "product": r[1], "amount": float(r[2]), "commission": float(r[3]), "at": _iso(r[5]),
