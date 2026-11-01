@@ -209,7 +209,14 @@ class handler(BaseHTTPRequestHandler):
                        (SELECT COUNT(*) FROM tv_payments p WHERE p.email = r.email AND NOT p.refunded AND p.paid_at > NOW() - INTERVAL '35 days') > 0
                   FROM tv_aff_referrals r WHERE r.affiliate_id = %s ORDER BY r.created_at DESC LIMIT 200
             """, (aff,))
-            refs = [{"member": A.mask(r[0]), "tier": r[1], "joined": r[2].isoformat(), "active": bool(r[3])} for r in cur.fetchall()]
+            refs = cur.fetchall()
+            # Affiliates see their members' names (from Whop); the email stays masked when there's no name.
+            cur.execute("""SELECT DISTINCT ON (p.email) p.email, p.name FROM tv_payments p
+                             JOIN tv_aff_referrals r ON r.email = p.email AND r.affiliate_id = %s
+                            WHERE p.name IS NOT NULL ORDER BY p.email, p.paid_at DESC""", (aff,))
+            names = dict(cur.fetchall())
+            who = lambda e: names.get(e) or A.mask(e)
+            refs = [{"member": who(r[0]), "tier": r[1], "joined": r[2].isoformat(), "active": bool(r[3])} for r in refs]
             cur.execute(f"""
                 SELECT email, product, amount_usd, commission_usd, status, paid_at, {READY}, kind, pct, payout_id
                   FROM tv_aff_commissions WHERE affiliate_id = %s ORDER BY paid_at DESC LIMIT 200
@@ -219,7 +226,7 @@ class handler(BaseHTTPRequestHandler):
                 st = r[4]
                 if st == "pending":
                     st = "requested" if r[9] else ("held" if not r[6] else ("payable" if can_pay else "locked"))
-                coms.append({"member": A.mask(r[0]) if r[7] != "bonus" else "Bonus", "product": r[1], "amount": float(r[2]),
+                coms.append({"member": who(r[0]) if r[7] != "bonus" else "Bonus", "product": r[1], "amount": float(r[2]),
                              "commission": float(r[3]), "status": st, "at": r[5].isoformat(), "kind": r[7], "pct": r[8]})
             cur.execute("""SELECT id, amount_usd, method, details, status, reference, requested_at, decided_at
                              FROM tv_aff_payouts WHERE affiliate_id = %s ORDER BY requested_at DESC LIMIT 50""", (aff,))

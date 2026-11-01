@@ -380,7 +380,7 @@ def pending_claim(email, code):
 
 
 def mask(email):
-    """jo***@gmail.com — affiliates see that a sale happened, not who bought."""
+    """jo***@gmail.com — shown to affiliates when we have no name for the buyer."""
     if not email or "@" not in email:
         return "member"
     user, dom = email.split("@", 1)
