@@ -64,6 +64,8 @@
 .loader{width:32px;height:32px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
 @media(max-width:860px){.linkcard,.payout,.prog{grid-template-columns:minmax(0,1fr)}.review{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.how{grid-template-columns:minmax(0,1fr)}}
+td.who b{display:block;font-weight:500}
+td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
 </style>
 </head>
 <body>
@@ -227,6 +229,9 @@
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () { window.prompt && window.prompt('Copy your link', text); });
   }
 
+  // name (from Whop) over the masked email; just the email when there's no name
+  function who(x) { var c = document.createElement('td'); c.className = 'who'; var b = document.createElement('b'); b.textContent = x.member || x.email || 'member'; c.appendChild(b);
+    if (x.member && x.email) { var s = document.createElement('span'); s.textContent = x.email; c.appendChild(s); } return c; }
   function td(text, cls) { var c = document.createElement('td'); if (cls) c.className = cls; c.textContent = text; return c; }
   function pillTd(text, kind) { var c = document.createElement('td'), s = document.createElement('span'); s.className = 'pill ' + kind; s.textContent = text; c.appendChild(s); return c; }
 
@@ -322,7 +327,7 @@
     d.commissions.forEach(function (c) {
       var tr = document.createElement('tr');
       tr.appendChild(td(date(c.at)));
-      tr.appendChild(td(c.member));
+      tr.appendChild(who(c));
       tr.appendChild(td((c.product || '').replace(/^Tradevault\s+/i, '') || '—'));
       tr.appendChild(td(c.kind === 'bonus' ? '—' : money(c.amount), 'r num'));
       tr.appendChild(td(c.kind === 'bonus' ? 'Bonus' : (c.pct || data.program.base_pct) + '%', 'r num'));
@@ -338,7 +343,7 @@
     d.referrals.forEach(function (r) {
       var tr = document.createElement('tr');
       tr.appendChild(td(date(r.joined)));
-      tr.appendChild(td(r.member));
+      tr.appendChild(who(r));
       tr.appendChild(td(cap(r.tier) || '—'));
       tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
       refs.appendChild(tr);
