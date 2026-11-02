@@ -4,6 +4,8 @@ GET ?lesson=ID    -> {ok, lesson:{id, title, type, content, embed_type, embed_id
         stream is the Mux HLS URL built from the lesson's video asset (signed when Whop signs it).
 Needs the Whop API key to have courses:read. Test only: the portal's real Academy will live in the portal.
 """
+import hashlib
+import hmac
 import json
 import os
 import re
@@ -16,6 +18,8 @@ from _auth import verify_token
 from _tv_whop import whop
 
 WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
+# One-off structure export for building the portal Academy (key held by the developer; only its hash is here).
+EXPORT_HASH = "e2a3f8199a7b57cba4f29961ee6142e29d3ab89ea085299c742c418d44f887a2"
 ID_RE = re.compile(r"^[A-Za-z0-9_]{4,60}$")
 
 
@@ -59,10 +63,13 @@ class handler(BaseHTTPRequestHandler):
         self._json(204, None)
 
     def do_GET(self):
+        q = parse_qs(urlparse(self.path).query)
+        key = self.headers.get("X-Export-Key", "")
+        if key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), EXPORT_HASH):
+            return self._export(q)
         auth = self.headers.get("Authorization", "")
         if not auth.startswith("Bearer ") or not verify_token(auth[7:]):
             return self._json(401, {"ok": False, "error": "Unauthorized"})
-        q = parse_qs(urlparse(self.path).query)
         try:
             lid = (q.get("lesson") or [""])[0]
             if lid:
@@ -90,13 +97,35 @@ class handler(BaseHTTPRequestHandler):
             log("TV_ACADEMY_ERR:", e)
             self._json(502, {"ok": False, "error": str(e)[:400]})
 
+    def _export(self, q):
+        """?course=ID: chapters with their lessons (and each lesson in full when &full=1); else the course list."""
+        try:
+            cid = (q.get("course") or [""])[0]
+            lid = (q.get("lesson") or [""])[0]
+            if lid and ID_RE.match(lid):
+                return self._json(200, {"ok": True, "lesson": whop("GET", "/api/v1/course_lessons/" + lid)})
+            if not cid:
+                return self._json(200, {"ok": True, "courses": _all("/api/v1/courses?account_id=" + WHOP_COMPANY)})
+            if not ID_RE.match(cid):
+                return self._json(400, {"ok": False})
+            full = (q.get("full") or [""])[0] == "1"
+            chapters = sorted(_all("/api/v1/course_chapters?course_id=" + cid), key=lambda c: c.get("order") or 0)
+            for ch in chapters:
+                ch["lessons"] = sorted(_all("/api/v1/course_lessons?chapter_id=" + str(ch.get("id"))), key=lambda l: l.get("order") or 0)
+                if full:
+                    ch["lessons"] = [whop("GET", "/api/v1/course_lessons/" + str(l.get("id"))) for l in ch["lessons"]]
+            self._json(200, {"ok": True, "chapters": chapters})
+        except Exception as e:
+            log("TV_ACADEMY_EXPORT_ERR:", e)
+            self._json(502, {"ok": False, "error": str(e)[:400]})
+
     def _json(self, status, body):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Export-Key")
         self.end_headers()
         if body is not None:
             self.wfile.write(json.dumps(body).encode())

@@ -16,6 +16,9 @@
     "api/whop-hook.py": {
       "maxDuration": 60
     },
+    "api/tv-academy.py": {
+      "maxDuration": 60
+    },
     "api/jb-apply.py": {
       "maxDuration": 10
     },
