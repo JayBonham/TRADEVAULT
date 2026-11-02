@@ -580,7 +580,8 @@ class handler(BaseHTTPRequestHandler):
         if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)):
             return self._json(401, {"error": "Unauthorized"})
         import http.client
-        email = str(self._body().get("email") or "").strip().lower()
+        b = self._body()
+        email = str(b.get("email") or "").strip().lower()
         h = {"Authorization": "Bearer " + A.GHL_API_KEY, "Version": "2021-07-28", "Accept": "application/json"}
         c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=10)
         c.request("GET", f"/locations/{A.GHL_LOCATION}/customFields?model=contact", headers=h)
@@ -589,13 +590,19 @@ class handler(BaseHTTPRequestHandler):
         fields = [{k: f.get(k) for k in ("id", "name", "fieldKey", "dataType")} for f in raw.get("customFields") or []
                   if "sale" in (f.get("fieldKey") or "").lower() or "sale" in (f.get("name") or "").lower()]
         out = {"ok": True, "fields_status": r.status, "fields": fields, "cache": A._ghl_field_ids}
+        code = str(b.get("code") or "").strip().lower()
+        if code and not email:
+            cc = A.conn(); cur = cc.cursor()
+            cur.execute("SELECT email FROM tv_affiliates WHERE code = %s", (code,))
+            row = cur.fetchone(); cc.close()
+            email = row[0] if row else ""
         if email:
             c.request("GET", f"/contacts/search/duplicate?locationId={A.GHL_LOCATION}&email={email}", headers=h)
             r = c.getresponse()
             ct = (json.loads(r.read() or b"{}").get("contact") or {})
             out["contact"] = {"id": ct.get("id"), "customFields": ct.get("customFields"), "tags": ct.get("tags")}
         # a field create attempt, to see GHL's answer
-        if self._body().get("try_create"):
+        if b.get("try_create"):
             c.request("POST", f"/locations/{A.GHL_LOCATION}/customFields",
                       json.dumps({"name": "TV Sale Probe", "dataType": "TEXT", "model": "contact"}), {**h, "Content-Type": "application/json"})
             r = c.getresponse()
