@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Academy Test — The Trade Vault Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="../../assets/tv-icon.png">
+<link rel="stylesheet" href="/aff.css">
+<style>
+.wrap{max-width:1280px;margin:0 auto;padding:40px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px))}
+h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.1}
+.sub{color:var(--tx-dim);margin-top:8px;max-width:70ch}
+.grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;margin-top:32px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.side{padding:12px;max-height:80vh;overflow:auto}
+.course{padding:12px 10px 6px;font-family:var(--display);font-weight:600}
+.course small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);font-weight:500}
+.ls{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;padding:8px 10px;border-radius:10px;background:none;border:0;cursor:pointer;color:var(--tx-dim);font-size:14px}
+.ls:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+.ls.on{background:rgba(var(--acc-rgb),.14);color:var(--tx)}
+.ls i{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--tx-mute);min-width:44px;text-transform:uppercase}
+.stage{padding:20px;min-width:0}
+video{width:100%;aspect-ratio:16/9;max-width:100%;background:#000;border-radius:14px;display:block}
+.embed{width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:#000}
+h2{font-family:var(--display);font-size:22px;margin-top:18px}
+.res{margin-top:14px;padding:12px 14px;border-radius:12px;font-size:14px;border:1px solid var(--hair-2)}
+.res.ok{border-color:rgba(123,224,176,.45);color:var(--ok)}
+.res.bad{border-color:rgba(255,143,143,.45);color:var(--bad)}
+.content{margin-top:14px;color:var(--tx-dim);white-space:pre-wrap;font-size:14.5px}
+.att a{color:var(--acc)}
+details{margin-top:18px}
+summary{cursor:pointer;color:var(--tx-mute);font-size:13px}
+pre{margin-top:8px;padding:12px;border-radius:10px;background:var(--g0);border:1px solid var(--hair);font-size:12px;overflow:auto;max-height:360px;color:var(--tx-dim)}
+.empty{color:var(--tx-mute);padding:24px 10px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <span class="eyebrow">Admin · test only</span>
+  <h1>Academy test</h1>
+  <p class="sub">Your Whop courses, pulled through the Whop API and played in our own player instead of Whop's. Pick a lesson: a green line means the video streams from Whop's video host with no re-upload.</p>
+  <div class="grid">
+    <div class="card side" id="side"><p class="empty">Loading courses from Whop…</p></div>
+    <div class="card stage" id="stage"><p class="empty">Pick a lesson on the left.</p></div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+<script>
+(function () {
+  var API = 'https://jaybonham.com/api/tv-academy', token = '';
+  try { token = localStorage.getItem('tv_token') || ''; } catch (e) {}
+  if (!token) { location.replace('/admin-login'); return; }
+  var hls = null;
+  function el(t, c, txt) { var e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; }
+  function get(q) {
+    return fetch(API + (q || ''), { headers: { 'Authorization': 'Bearer ' + token } }).then(function (r) {
+      if (r.status === 401) { location.replace('/admin-login'); throw new Error('signed out'); }
+      return r.json();
+    }).then(function (d) { if (!d.ok) throw new Error(d.error || 'Request failed'); return d; });
+  }
+  function res(cls, text) { var r = el('div', 'res ' + cls, text); document.getElementById('stage').appendChild(r); return r; }
+
+  get().then(function (d) {
+    var side = document.getElementById('side'); side.innerHTML = '';
+    if (!d.courses.length) side.appendChild(el('p', 'empty', 'Whop returned no courses for this account.'));
+    d.courses.forEach(function (c) {
+      var h = el('div', 'course', c.title || c.id); h.appendChild(el('small', null, c.lessons.length + ' lessons' + (c.visibility === 'hidden' ? ' · hidden' : ''))); side.appendChild(h);
+      c.lessons.forEach(function (l) {
+        var b = el('button', 'ls'); b.type = 'button'; b.appendChild(el('i', null, l.type || '')); b.appendChild(document.createTextNode(l.title || l.id));
+        b.onclick = function () { [].forEach.call(document.querySelectorAll('.ls.on'), function (x) { x.classList.remove('on'); }); b.classList.add('on'); open(l.id); };
+        side.appendChild(b);
+      });
+    });
+  }).catch(function (e) {
+    var side = document.getElementById('side'); side.innerHTML = '';
+    side.appendChild(el('p', 'res bad', 'Couldn\'t load courses: ' + e.message + (/40[13]/.test(e.message) ? ' (the Whop API key probably needs the courses:read permission)' : '')));
+  });
+
+  function open(id) {
+    var st = document.getElementById('stage'); st.innerHTML = '<p class="empty">Loading lesson…</p>';
+    if (hls) { hls.destroy(); hls = null; }
+    get('?lesson=' + encodeURIComponent(id)).then(function (d) {
+      var l = d.lesson; st.innerHTML = '';
+      if (l.stream) {
+        var v = el('video'); v.controls = true; v.playsInline = true; if (l.poster) v.poster = l.poster; st.appendChild(v);
+        st.appendChild(el('h2', null, l.title));
+        var r = res('', 'Checking the stream…');
+        var good = function () { r.className = 'res ok'; r.textContent = '✓ Stream loaded from Whop\'s video host (Mux). Press play to watch it here.'; };
+        var bad = function (why) { r.className = 'res bad'; r.textContent = '✗ The stream didn\'t load: ' + why; };
+        if (window.Hls && Hls.isSupported()) {
+          hls = new Hls(); hls.loadSource(l.stream); hls.attachMedia(v);
+          hls.on(Hls.Events.MANIFEST_PARSED, good);
+          hls.on(Hls.Events.ERROR, function (_, e) { if (e.fatal) bad((e.response && e.response.code ? 'HTTP ' + e.response.code + ' · ' : '') + e.details); });
+        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+          v.src = l.stream; v.addEventListener('loadedmetadata', good); v.addEventListener('error', function () { bad('the browser refused it'); });
+        } else bad('this browser can\'t play HLS');
+      } else if (l.embed_type && l.embed_id) {
+        var src = l.embed_type === 'youtube' ? 'https://www.youtube.com/embed/' + l.embed_id : 'https://www.loom.com/embed/' + l.embed_id;
+        var f = el('iframe', 'embed'); f.src = src; f.allowFullscreen = true; st.appendChild(f);
+        st.appendChild(el('h2', null, l.title));
+        res('ok', '✓ This lesson is a ' + l.embed_type + ' embed: it plays anywhere with no Whop involved.');
+      } else {
+        st.appendChild(el('h2', null, l.title));
+        res('', 'No video on this lesson (' + (l.type || 'unknown type') + ').');
+      }
+      if (l.content) st.appendChild(el('div', 'content', l.content));
+      if (l.attachments.length) {
+        var a = el('p', 'content att'); a.appendChild(document.createTextNode('Attachments: '));
+        l.attachments.forEach(function (x, i) { var k = el('a', null, x.name || 'file'); k.href = x.url; k.target = '_blank'; k.rel = 'noopener'; if (i) a.appendChild(document.createTextNode(' · ')); a.appendChild(k); });
+        st.appendChild(a);
+      }
+      var det = el('details'); det.appendChild(el('summary', null, 'What Whop sent (for the dev)')); det.appendChild(el('pre', null, JSON.stringify(d.raw, null, 2))); st.appendChild(det);
+    }).catch(function (e) { st.innerHTML = ''; res('bad', 'Couldn\'t load the lesson: ' + e.message); });
+  }
+})();
+</script>
+</body>
+</html>
