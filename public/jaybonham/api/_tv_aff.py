@@ -261,12 +261,27 @@ def _credit(cur, aff_id, row):
     return cur.rowcount == 1
 
 
-def _tell_sale(cur, aff_id):
-    """GHL email trigger: the affiliate just earned commission."""
+def _tell_sale(cur, aff_id, buyer):
+    """GHL email trigger: the affiliate just earned commission. The sale's details go on the
+    affiliate's contact first, for the email to show: {{contact.tv_sale_member}},
+    {{contact.tv_sale_plan}}, {{contact.tv_sale_amount}}, {{contact.tv_sale_commission}}."""
     cur.execute("SELECT email, name FROM tv_affiliates WHERE id = %s", (aff_id,))
     row = cur.fetchone()
-    if row:
-        ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True)
+    if not row:
+        return
+    cur.execute("""SELECT c.product, c.amount_usd, c.commission_usd,
+                          (SELECT name FROM tv_payments p WHERE p.email = c.email AND name IS NOT NULL ORDER BY paid_at DESC LIMIT 1)
+                     FROM tv_aff_commissions c
+                    WHERE c.affiliate_id = %s AND c.email = %s AND c.kind = 'commission'
+                    ORDER BY c.created_at DESC LIMIT 1""", (aff_id, buyer))
+    sale = cur.fetchone()
+    fields = {}
+    if sale:
+        product, amount, commission, name = sale
+        fields = {"tv_sale_member": name or mask(buyer),
+                  "tv_sale_plan": re.sub(r"(?i)^trade\s?vault\s+", "", product or "").strip() or "TradeVault",
+                  "tv_sale_amount": "$%.2f" % float(amount), "tv_sale_commission": "$%.2f" % float(commission)}
+    ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True, fields=fields)
 
 
 def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None, membership_id=None, name=None):
@@ -299,7 +314,7 @@ def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None, memb
             sold = _credit(cur, ref[0], cur.fetchone())
         c.commit()
         if ref and sold:
-            _tell_sale(cur, ref[0])
+            _tell_sale(cur, ref[0], email)
         c.close()
         return True
     except Exception as e:
@@ -354,7 +369,7 @@ def claim(email, code, tier=None, all_payments=False):
             log("TV_AFF_CLAIM", code, "->", email[:3] + "***")
         c.commit()
         if sold:
-            _tell_sale(cur, aff[0])
+            _tell_sale(cur, aff[0], email)
         c.close()
         return True
     except Exception as e:
@@ -438,9 +453,34 @@ GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 
 
-def ghl_tag(email, name, tags, again=False):
+_ghl_field_ids = {}
+
+
+def _ghl_fields(c, headers, keys):
+    """Ids of the contact custom fields named by key (tv_sale_member, ...), creating any that are missing."""
+    want = [k for k in keys if k not in _ghl_field_ids]
+    if want:
+        c.request("GET", f"/locations/{GHL_LOCATION}/customFields?model=contact", headers=headers)
+        r = c.getresponse()
+        for f in json.loads(r.read() or b"{}").get("customFields") or []:
+            _ghl_field_ids[(f.get("fieldKey") or "").split(".")[-1]] = f.get("id")
+        for k in [k for k in want if k not in _ghl_field_ids]:
+            label = " ".join(w.upper() if w == "tv" else w.capitalize() for w in k.split("_"))  # tv_sale_member -> TV Sale Member
+            c.request("POST", f"/locations/{GHL_LOCATION}/customFields",
+                      json.dumps({"name": label, "dataType": "TEXT", "model": "contact"}), headers)
+            r = c.getresponse()
+            made = json.loads(r.read() or b"{}").get("customField") or {}
+            if made.get("id"):
+                _ghl_field_ids[(made.get("fieldKey") or k).split(".")[-1]] = made["id"]
+            else:
+                log("TV_AFF_GHL_FIELD:", k, r.status)
+    return {k: _ghl_field_ids[k] for k in keys if _ghl_field_ids.get(k)}
+
+
+def ghl_tag(email, name, tags, again=False, fields=None):
     """Best-effort: upsert the contact and add tags so GHL automations can send emails.
-    again=True removes the tags first, so a "tag added" trigger fires every time (each sale, each payout)."""
+    again=True removes the tags first, so a "tag added" trigger fires every time (each sale, each payout).
+    fields: {custom field key: value} written on the contact before the tag, for the email to use."""
     if not (GHL_API_KEY and email):
         return
     import http.client
@@ -449,8 +489,14 @@ def ghl_tag(email, name, tags, again=False):
     try:
         first, _, last = (name or "").strip().partition(" ")
         c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=6)
-        c.request("POST", "/contacts/upsert", json.dumps({"locationId": GHL_LOCATION, "email": email,
-                                                          "firstName": first, "lastName": last}), headers)
+        body = {"locationId": GHL_LOCATION, "email": email, "firstName": first, "lastName": last}
+        if fields:
+            try:
+                ids = _ghl_fields(c, headers, list(fields))
+                body["customFields"] = [{"id": ids[k], "field_value": v} for k, v in fields.items() if k in ids]
+            except Exception as e:
+                log("TV_AFF_GHL_FIELDS_ERR:", e)
+        c.request("POST", "/contacts/upsert", json.dumps(body), headers)
         r = c.getresponse()
         data = json.loads(r.read() or b"{}")
         cid = (data.get("contact") or {}).get("id")
