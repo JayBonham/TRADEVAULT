@@ -593,7 +593,7 @@ class handler(BaseHTTPRequestHandler):
         raw = json.loads(r.read() or b"{}")
         fields = [{k: f.get(k) for k in ("id", "name", "fieldKey", "dataType")} for f in raw.get("customFields") or []
                   if "sale" in (f.get("fieldKey") or "").lower() or "sale" in (f.get("name") or "").lower()]
-        out = {"ok": True, "fields_status": r.status, "fields": fields, "cache": A._ghl_field_ids}
+        out = {"ok": True, "fields_status": r.status, "fields": fields}
         code = str(b.get("code") or "").strip().lower()
         if code and not email:
             cc = A.conn(); cur = cc.cursor()
