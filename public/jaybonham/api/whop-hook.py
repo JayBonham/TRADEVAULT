@@ -146,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-11", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-12", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -532,8 +532,12 @@ class handler(BaseHTTPRequestHandler):
 
             print("WHOP EVENT:", event_type, str((event.get("data") or {}).get("id") or "")[:40], file=sys.stderr)
 
+            # #payment-confirmations-us30 is for Sniper sales only: TradeVault payments stay out of it.
             if event_type in SLACK_EVENTS:
-                self._notify_slack(event_type, event.get("data", {}) or {})
+                d = event.get("data", {}) or {}
+                pay = d.get("payment") if isinstance(d.get("payment"), dict) else {}
+                if not (tv_title(d) or tv_title(pay)):
+                    self._notify_slack(event_type, d)
 
             # A refunded TradeVault payment earns its affiliate nothing.
             if event_type in ("payment.refunded", "refund.created", "refund.updated"):
@@ -646,6 +650,8 @@ class handler(BaseHTTPRequestHandler):
             email = (user.get("email") or data.get("email") or data.get("user_email") or "").strip()
             slug  = str(plan.get("slug") or plan.get("id") or data.get("plan_id") or "").strip()
             product = (prod.get("title") or prod.get("name") or plan.get("title") or plan.get("name") or slug or "Unknown product")
+            if "tradevault" in product.lower().replace(" ", ""):
+                return
 
             amount = None
             for k in ("total", "final_amount", "usd_total", "subtotal", "amount", "amount_after_fees"):
