@@ -284,7 +284,7 @@ def sale_fields(cur, aff_id=None, buyer=None):
     if not sale:
         return {}
     product, amount, commission, email, name = sale
-    return {"tv_sale_member": name or mask(email),
+    return {"tv_sale_member": " ".join((name or "").split()) or mask(email),
             "tv_sale_plan": re.sub(r"(?i)^trade\s?vault\s+", "", product or "").strip() or "TradeVault",
             "tv_sale_amount": "$%.2f" % float(amount), "tv_sale_commission": "$%.2f" % float(commission)}
 
