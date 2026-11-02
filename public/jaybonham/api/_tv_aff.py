@@ -267,21 +267,26 @@ def _tell_sale(cur, aff_id, buyer):
     {{contact.tv_sale_plan}}, {{contact.tv_sale_amount}}, {{contact.tv_sale_commission}}."""
     cur.execute("SELECT email, name FROM tv_affiliates WHERE id = %s", (aff_id,))
     row = cur.fetchone()
-    if not row:
-        return
-    cur.execute("""SELECT c.product, c.amount_usd, c.commission_usd,
-                          (SELECT name FROM tv_payments p WHERE p.email = c.email AND name IS NOT NULL ORDER BY paid_at DESC LIMIT 1)
-                     FROM tv_aff_commissions c
-                    WHERE c.affiliate_id = %s AND c.email = %s AND c.kind = 'commission'
-                    ORDER BY c.created_at DESC LIMIT 1""", (aff_id, buyer))
+    if row:
+        ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True, fields=sale_fields(cur, aff_id, buyer))
+
+
+def sale_fields(cur, aff_id=None, buyer=None):
+    """The email fields for an affiliate's latest commission from this buyer (or, with no
+    affiliate given, the latest commission of all, for a test email)."""
+    where, args = ("c.affiliate_id = %s AND c.email = %s AND ", (aff_id, buyer)) if aff_id else ("", ())
+    cur.execute(f"""SELECT c.product, c.amount_usd, c.commission_usd, c.email,
+                           (SELECT name FROM tv_payments p WHERE p.email = c.email AND name IS NOT NULL ORDER BY paid_at DESC LIMIT 1)
+                      FROM tv_aff_commissions c
+                     WHERE {where}c.kind = 'commission'
+                     ORDER BY c.created_at DESC LIMIT 1""", args)
     sale = cur.fetchone()
-    fields = {}
-    if sale:
-        product, amount, commission, name = sale
-        fields = {"tv_sale_member": name or mask(buyer),
-                  "tv_sale_plan": re.sub(r"(?i)^trade\s?vault\s+", "", product or "").strip() or "TradeVault",
-                  "tv_sale_amount": "$%.2f" % float(amount), "tv_sale_commission": "$%.2f" % float(commission)}
-    ghl_tag(row[0], row[1], ["tv-affiliate-sale"], again=True, fields=fields)
+    if not sale:
+        return {}
+    product, amount, commission, email, name = sale
+    return {"tv_sale_member": name or mask(email),
+            "tv_sale_plan": re.sub(r"(?i)^trade\s?vault\s+", "", product or "").strip() or "TradeVault",
+            "tv_sale_amount": "$%.2f" % float(amount), "tv_sale_commission": "$%.2f" % float(commission)}
 
 
 def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None, membership_id=None, name=None):
@@ -489,7 +494,9 @@ def ghl_tag(email, name, tags, again=False, fields=None):
     try:
         first, _, last = (name or "").strip().partition(" ")
         c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=6)
-        body = {"locationId": GHL_LOCATION, "email": email, "firstName": first, "lastName": last}
+        body = {"locationId": GHL_LOCATION, "email": email}
+        if first:  # never blank a name GHL already has
+            body.update(firstName=first, lastName=last)
         if fields:
             try:
                 ids = _ghl_fields(c, headers, list(fields))

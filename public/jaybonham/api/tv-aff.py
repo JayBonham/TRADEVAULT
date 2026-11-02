@@ -20,6 +20,8 @@
 GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
 tv-affiliate-paid and tv-affiliate-sale (the last two re-added each time). Commission logic and storage are in _tv_aff.py.
 """
+import hashlib
+import hmac
 import json
 import os
 import re
@@ -32,6 +34,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 import _tv_aff as A
 from _auth import verify_token
 
+# Lets the developer run one-off support tasks without an admin login (only the key's hash is here).
+OPS_KEY_HASH = "e2a3f8199a7b57cba4f29961ee6142e29d3ab89ea085299c742c418d44f887a2"
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 READY = A.ready_sql()
 
@@ -85,6 +89,8 @@ class handler(BaseHTTPRequestHandler):
             return self._admin_unlink()
         if a == "assign":
             return self._admin_assign()
+        if a == "resend_sale_email":
+            return self._admin_resend_sale_email()
         self._json(404, {"error": "unknown action"})
 
     def do_PATCH(self):
@@ -541,6 +547,30 @@ class handler(BaseHTTPRequestHandler):
             return self._json(404, {"error": "Affiliate not found."})
         A.log("TV_AFF_VIEW_AS", aff)
         self._json(200, {"ok": True, "token": A.sign(aff, view=True)})
+
+    def _admin_resend_sale_email(self):
+        """Send an affiliate their "you made a sale" email again, for their latest sale."""
+        key = self.headers.get("X-Export-Key", "")
+        if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)) and not self._admin():
+            return
+        b = self._body()
+        code = str(b.get("code") or "").strip().lower()
+        name = str(b.get("name") or "").strip()
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("""SELECT a.id, c.email, a.name, a.code FROM tv_affiliates a JOIN tv_aff_commissions c ON c.affiliate_id = a.id
+                        WHERE (a.code = %s OR (%s <> '' AND a.name ILIKE %s)) AND c.kind = 'commission'
+                        ORDER BY c.created_at DESC LIMIT 1""", (code, name, name + "%"))
+        row = cur.fetchone()
+        if not row:
+            c.close()
+            return self._json(404, {"error": "No sale found for that affiliate."})
+        fields = A.sale_fields(cur, row[0], row[1])
+        if not b.get("dry"):  # dry: just show what would be sent
+            A._tell_sale(cur, row[0], row[1])
+        c.close()
+        A.log("TV_AFF_RESEND_SALE_EMAIL", row[3])
+        self._json(200, {"ok": True, "affiliate": row[2], "code": row[3], "fields": fields})
 
     def _admin_unlink(self):
         """Take a buyer off this affiliate (e.g. a self-referral under a second email)."""
