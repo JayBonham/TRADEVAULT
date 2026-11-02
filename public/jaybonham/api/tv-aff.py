@@ -568,7 +568,11 @@ class handler(BaseHTTPRequestHandler):
             c.close()
             return self._json(404, {"error": "No sale found for that affiliate."})
         fields = A.sale_fields(cur, row[0], row[1])
-        if not b.get("dry"):  # dry: just show what would be sent
+        if b.get("fields_only"):  # write the details on the contact, send nothing
+            cur.execute("SELECT email, name FROM tv_affiliates WHERE id = %s", (row[0],))
+            aff = cur.fetchone()
+            A.ghl_tag(aff[0], aff[1], [], fields=fields)
+        elif not b.get("dry"):  # dry: just show what would be sent
             A._tell_sale(cur, row[0], row[1])
         c.close()
         A.log("TV_AFF_RESEND_SALE_EMAIL", row[3])

@@ -458,34 +458,11 @@ GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 
 
-_ghl_field_ids = {}
-
-
-def _ghl_fields(c, headers, keys):
-    """Ids of the contact custom fields named by key (tv_sale_member, ...), creating any that are missing."""
-    want = [k for k in keys if k not in _ghl_field_ids]
-    if want:
-        c.request("GET", f"/locations/{GHL_LOCATION}/customFields?model=contact", headers=headers)
-        r = c.getresponse()
-        for f in json.loads(r.read() or b"{}").get("customFields") or []:
-            _ghl_field_ids[(f.get("fieldKey") or "").split(".")[-1]] = f.get("id")
-        for k in [k for k in want if k not in _ghl_field_ids]:
-            label = " ".join(w.upper() if w == "tv" else w.capitalize() for w in k.split("_"))  # tv_sale_member -> TV Sale Member
-            c.request("POST", f"/locations/{GHL_LOCATION}/customFields",
-                      json.dumps({"name": label, "dataType": "TEXT", "model": "contact"}), headers)
-            r = c.getresponse()
-            made = json.loads(r.read() or b"{}").get("customField") or {}
-            if made.get("id"):
-                _ghl_field_ids[(made.get("fieldKey") or k).split(".")[-1]] = made["id"]
-            else:
-                log("TV_AFF_GHL_FIELD:", k, r.status)
-    return {k: _ghl_field_ids[k] for k in keys if _ghl_field_ids.get(k)}
-
-
 def ghl_tag(email, name, tags, again=False, fields=None):
     """Best-effort: upsert the contact and add tags so GHL automations can send emails.
     again=True removes the tags first, so a "tag added" trigger fires every time (each sale, each payout).
-    fields: {custom field key: value} written on the contact before the tag, for the email to use."""
+    fields: {custom field key: value} written on the contact before the tag, for the email to use.
+    tags=[] just writes the fields."""
     if not (GHL_API_KEY and email):
         return
     import http.client
@@ -497,17 +474,13 @@ def ghl_tag(email, name, tags, again=False, fields=None):
         body = {"locationId": GHL_LOCATION, "email": email}
         if first:  # never blank a name GHL already has
             body.update(firstName=first, lastName=last)
-        if fields:
-            try:
-                ids = _ghl_fields(c, headers, list(fields))
-                body["customFields"] = [{"id": ids[k], "field_value": v} for k, v in fields.items() if k in ids]
-            except Exception as e:
-                log("TV_AFF_GHL_FIELDS_ERR:", e)
+        if fields:  # by key: the fields exist in GHL (Settings > Custom Fields, "TV Sale …")
+            body["customFields"] = [{"key": k, "field_value": v} for k, v in fields.items()]
         c.request("POST", "/contacts/upsert", json.dumps(body), headers)
         r = c.getresponse()
         data = json.loads(r.read() or b"{}")
         cid = (data.get("contact") or {}).get("id")
-        if cid:
+        if cid and tags:
             if again:
                 c.request("DELETE", f"/contacts/{cid}/tags", json.dumps({"tags": tags}), headers)
                 c.getresponse().read()
@@ -515,6 +488,8 @@ def ghl_tag(email, name, tags, again=False, fields=None):
             c.getresponse().read()
         else:
             log("TV_AFF_GHL:", r.status, str(data)[:200])
+        if r.status >= 300:
+            log("TV_AFF_GHL_UPSERT:", r.status, str(data)[:300])
         c.close()
     except Exception as e:
         log("TV_AFF_GHL_ERR:", e)
