@@ -91,6 +91,8 @@ class handler(BaseHTTPRequestHandler):
             return self._admin_assign()
         if a == "resend_sale_email":
             return self._admin_resend_sale_email()
+        if a == "ghl_check":
+            return self._ops_ghl_check()
         self._json(404, {"error": "unknown action"})
 
     def do_PATCH(self):
@@ -571,6 +573,35 @@ class handler(BaseHTTPRequestHandler):
         c.close()
         A.log("TV_AFF_RESEND_SALE_EMAIL", row[3])
         self._json(200, {"ok": True, "affiliate": row[2], "code": row[3], "fields": fields})
+
+    def _ops_ghl_check(self):
+        """Support: the tv_sale_* custom fields GHL has, and what's on one contact (by email)."""
+        key = self.headers.get("X-Export-Key", "")
+        if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)):
+            return self._json(401, {"error": "Unauthorized"})
+        import http.client
+        email = str(self._body().get("email") or "").strip().lower()
+        h = {"Authorization": "Bearer " + A.GHL_API_KEY, "Version": "2021-07-28", "Accept": "application/json"}
+        c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=10)
+        c.request("GET", f"/locations/{A.GHL_LOCATION}/customFields?model=contact", headers=h)
+        r = c.getresponse()
+        raw = json.loads(r.read() or b"{}")
+        fields = [{k: f.get(k) for k in ("id", "name", "fieldKey", "dataType")} for f in raw.get("customFields") or []
+                  if "sale" in (f.get("fieldKey") or "").lower() or "sale" in (f.get("name") or "").lower()]
+        out = {"ok": True, "fields_status": r.status, "fields": fields, "cache": A._ghl_field_ids}
+        if email:
+            c.request("GET", f"/contacts/search/duplicate?locationId={A.GHL_LOCATION}&email={email}", headers=h)
+            r = c.getresponse()
+            ct = (json.loads(r.read() or b"{}").get("contact") or {})
+            out["contact"] = {"id": ct.get("id"), "customFields": ct.get("customFields"), "tags": ct.get("tags")}
+        # a field create attempt, to see GHL's answer
+        if self._body().get("try_create"):
+            c.request("POST", f"/locations/{A.GHL_LOCATION}/customFields",
+                      json.dumps({"name": "TV Sale Probe", "dataType": "TEXT", "model": "contact"}), {**h, "Content-Type": "application/json"})
+            r = c.getresponse()
+            out["create"] = [r.status, r.read()[:400].decode("utf-8", "replace")]
+        c.close()
+        self._json(200, out)
 
     def _admin_unlink(self):
         """Take a buyer off this affiliate (e.g. a self-referral under a second email)."""
