@@ -74,6 +74,16 @@ def tv_title(p):
     return TV_ROUTES.get(str(prod.get("route") or ""), "")
 
 
+def with_buyer(d, pay):
+    """An event's data plus its payment's buyer and product, for the Slack line. Amounts stay the event's own."""
+    if not pay:
+        return d
+    items = [li for li in (pay.get("line_items") or []) if isinstance(li, dict)]
+    title = next((str(li.get("product_title") or li.get("label")).strip() for li in items if li.get("product_title") or li.get("label")), "")
+    return dict(d, user=pay.get("user"), email=pay.get("customer_email") or "", billing_address=pay.get("billing_address"),
+                product={"title": title} if title else pay.get("product"))
+
+
 def find_email(obj, depth=0):
     if depth > 4:
         return ""
@@ -146,7 +156,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-13", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-14", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -156,6 +166,31 @@ class handler(BaseHTTPRequestHandler):
         if res.status >= 300:
             raise RuntimeError("Whop API %s: %s" % (res.status, body[:300].decode("utf-8", "replace")))
         return json.loads(body or b"{}")
+
+    def _linked_payment(self, event_type, d):
+        """Refund and dispute events name only their payment: (is it TradeVault?, the payment or {}).
+        If Whop can't answer, it counts as not TradeVault, so a Sniper refund still reaches Slack."""
+        pay = d.get("payment") if isinstance(d.get("payment"), dict) else {}
+        pay_id = d.get("payment_id") or pay.get("id")
+        if not pay_id or event_type not in ("refund.created", "refund.updated", "dispute.created"):
+            return False, {}
+        try:
+            sys.path.insert(0, sys_path)
+            import _tv_aff
+            c = _tv_aff.conn(); cur = c.cursor()
+            cur.execute("SELECT 1 FROM tv_payments WHERE whop_id = %s", (str(pay_id),))
+            known = cur.fetchone()
+            c.close()
+            if known:
+                return True, {}
+        except Exception as e:
+            print("SLACK_TV_LOOKUP_ERR:", e, file=sys.stderr)
+        try:
+            full = self._whop_get("/api/v1/payments/" + str(pay_id))
+            return bool(tv_title(full)), full
+        except Exception as e:
+            print("SLACK_PAYMENT_LOOKUP_ERR:", e, file=sys.stderr)
+            return False, {}
 
     def _email_for(self, p, cache, errs):
         """Payments from API 2026-10-27 carry only member_id / user id: fetch the email."""
@@ -537,7 +572,9 @@ class handler(BaseHTTPRequestHandler):
                 d = event.get("data", {}) or {}
                 pay = d.get("payment") if isinstance(d.get("payment"), dict) else {}
                 if not (tv_title(d) or tv_title(pay)):
-                    self._notify_slack(event_type, d)
+                    is_tv, full = self._linked_payment(event_type, d)
+                    if not is_tv:
+                        self._notify_slack(event_type, with_buyer(d, full))
 
             # A refunded TradeVault payment earns its affiliate nothing.
             if event_type in ("payment.refunded", "refund.created", "refund.updated"):
