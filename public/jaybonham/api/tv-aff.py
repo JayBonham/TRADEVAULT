@@ -653,6 +653,23 @@ class handler(BaseHTTPRequestHandler):
             out["contact"] = {"id": ct.get("id"), "customFields": ct.get("customFields"), "tags": ct.get("tags")}
         if b.get("put_probe"):  # a contact that can't exist: 400/404 means the key may write contacts, 401/403 means it can't
             out["put_probe"] = A._ghl("PUT", "/contacts/tv-put-probe-none", {"email": "probe@example.invalid"})[0]
+        if b.get("refund"):  # what we know about a Whop refund: its payment's product, and whether commission was voided
+            import _tv_whop
+            rf = _tv_whop.whop("GET", "/api/v1/refunds/" + str(b["refund"]))
+            pay = _tv_whop.whop("GET", "/api/v1/payments/" + str(rf.get("payment_id")))
+            cc = A.conn(); cur = cc.cursor()
+            cur.execute("SELECT refunded FROM tv_payments WHERE whop_id = %s", (rf.get("payment_id"),))
+            have = cur.fetchone()
+            cur.execute("SELECT status FROM tv_aff_commissions WHERE whop_id = %s", (rf.get("payment_id"),))
+            comm = cur.fetchone()
+            cur.execute("SELECT event, body FROM whop_events WHERE body LIKE %s ORDER BY id DESC LIMIT 1", ("%" + str(b["refund"]) + "%",))
+            ev = cur.fetchone()
+            cc.close()
+            out["refund"] = {"payment_id": rf.get("payment_id"), "status": rf.get("status"), "amount": rf.get("amount"),
+                             "payment_keys": sorted(pay.keys()), "product": pay.get("product"), "line_items": pay.get("line_items"),
+                             "in_tv_payments": have[0] if have else None, "commission": comm[0] if comm else None,
+                             "event": ev[0] if ev else None,
+                             "event_data_keys": sorted((json.loads(ev[1]).get("data") or {}).keys()) if ev else None}
         if b.get("whop_probe"):  # a membership that can't exist: 404 means the key may transfer, 403 means it can't
             import _tv_whop
             try:
