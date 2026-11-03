@@ -107,6 +107,25 @@ th:last-child{background:rgba(14,26,46,.98)}
 .sub{font-size:12.5px;color:var(--tx-mute);margin-top:2px}
 td .sub.wrap{white-space:normal;max-width:170px;line-height:1.35}
 .em{color:var(--tx-dim);font-size:14px}
+.em-edit{border:0;background:none;color:var(--tx-mute);cursor:pointer;margin-left:6px;padding:4px;border-radius:6px;line-height:0;opacity:.55;vertical-align:middle}
+.em-edit:hover,.em-edit:focus-visible{opacity:1;color:var(--tx);background:rgba(255,255,255,.07)}
+#mv{margin:auto;width:min(460px,calc(100vw - 32px));background:var(--g2);color:var(--tx);border:1px solid var(--hair-2);border-radius:16px;padding:24px}
+#mv::backdrop{background:rgba(2,6,14,.7)}
+#mv h2{font-family:var(--display);font-size:20px;font-weight:600;margin-bottom:4px}
+#mv .from{color:var(--tx-mute);font-size:14px;margin-bottom:16px;word-break:break-all}
+#mv label{display:block;font-size:13px;color:var(--tx-dim);margin-bottom:6px}
+#mv input{width:100%;min-height:42px;padding:8px 12px;border-radius:10px;border:1px solid var(--hair-2);background:var(--g1);color:var(--tx);font:inherit}
+#mv input:focus{outline:2px solid var(--acc);outline-offset:1px}
+#mvSum{margin-top:14px;font-size:14px;color:var(--tx-dim);display:grid;gap:6px}
+#mvSum .warn{color:var(--warn)}
+#mvSum .err{color:var(--warn)}
+#mv .note{margin-top:14px;font-size:13px;color:var(--tx-mute)}
+#mvLinks{margin-top:14px;display:grid;gap:10px}
+#mvLinks .lk{display:grid;gap:6px;padding:12px;border:1px solid var(--hair-2);border-radius:10px;background:var(--g1);min-width:0}
+#mvLinks .lk b{font-size:14px;font-weight:600}
+#mvLinks .lk code{font-family:var(--mono);font-size:12px;color:var(--tx-dim);word-break:break-all}
+#mvLinks .lk button{justify-self:start;border:0;background:none;color:var(--acc);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:2px 0}
+#mv .btns{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
 .dash{color:#4A586D}
 .tier{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--hair-2);color:var(--tx-dim)}
 .tier::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
@@ -219,6 +238,22 @@ footer{padding-block:32px 40px}
 </main>
 
 <footer class="W"><span class="mono">© 2026 The Trade Vault · Admin</span></footer>
+
+<dialog id="mv" aria-labelledby="mvH">
+  <form method="dialog" id="mvForm">
+    <h2 id="mvH">Change email</h2>
+    <p class="from" id="mvFrom"></p>
+    <label for="mvNew">New email</label>
+    <input id="mvNew" type="email" autocomplete="off" spellcheck="false" required>
+    <div id="mvSum" aria-live="polite"></div>
+    <div id="mvLinks"></div>
+    <p class="note" id="mvNote"></p>
+    <div class="btns">
+      <button type="button" class="act undo" id="mvCancel">Cancel</button>
+      <button type="submit" class="act go" id="mvGo">Check</button>
+    </div>
+  </form>
+</dialog>
 
 <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastUndo">Undo</button></div>
 
@@ -362,6 +397,7 @@ footer{padding-block:32px 40px}
       var tr = el('tr'); tr.style.animationDelay = Math.min(i * 18, 300) + 'ms'; tr.dataset.id = m.id;
       var c1 = el('td'); c1.appendChild(el('div', 'nm', m.name || '(no name)')); c1.appendChild(m.ended ? el('div', 'sub end', 'Membership ended ' + (date(m.ended_at) || '')) : el('div', 'sub', 'Joined ' + (date(m.joined) || '—')));
       var c2 = el('td'); c2.appendChild(m.email ? el('span', 'em', m.email) : dash());
+      if (m.email) c2.appendChild(editEmailBtn(m));
       var c3 = el('td'); c3.appendChild(m.tier ? el('span', 'tier ' + m.tier, TIER[m.tier]) : dash());
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());
@@ -375,6 +411,92 @@ footer{padding-block:32px 40px}
       body.appendChild(tr);
     });
   }
+
+  function editEmailBtn(m) {
+    var b = el('button', 'em-edit');
+    b.type = 'button'; b.title = 'Change email'; b.setAttribute('aria-label', 'Change email for ' + (m.name || m.email));
+    b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+    b.addEventListener('click', function () { openMove(m); });
+    return b;
+  }
+
+  var moving = null, checked = '', moved = false;
+  var NOTE_BEFORE = 'This updates our records and GHL. Whop has no way for us to edit their email, so the next step gives you a Whop transfer link for them.';
+  var NOTE_AFTER = 'Whop still has the old email. If they can log into it, they can change it themselves in Whop under Edit profile > Account security, and they don’t need a link. If not, send them this one-use link: they open it logged into the Whop account with the right email, and the membership moves there. Anyone who opens it can claim it, so send it only to them.';
+  function openMove(m) {
+    moving = m; checked = ''; moved = false;
+    $('mvNew').readOnly = false; $('mvLinks').textContent = ''; $('mvNote').textContent = NOTE_BEFORE; $('mvCancel').textContent = 'Cancel';
+    $('mvFrom').textContent = (m.name ? m.name + ' · ' : '') + m.email;
+    $('mvNew').value = ''; $('mvSum').textContent = ''; $('mvGo').textContent = 'Check'; $('mvGo').disabled = false; $('mvGo').hidden = false;
+    $('mv').showModal(); $('mvNew').focus();
+  }
+  function moveCall(dry) {
+    return fetch('https://jaybonham.com/api/tv-aff?action=change_email', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ old: moving.email, new: $('mvNew').value.trim(), dry: dry })
+    }).then(function (r) {
+      if (r.status === 401) { signOut(); throw { msg: 'Session expired' }; }
+      return r.json().then(function (d) { if (!d.ok) throw { msg: d.error || 'Request failed' }; return d; });
+    });
+  }
+  var GHL_NOTE = {
+    update: 'GHL contact moves to the new email.',
+    already: 'GHL already has the new email.',
+    none: 'No GHL contact to move.',
+    failed: 'Couldn’t reach GHL. Change the email on their contact there by hand.',
+    merge: 'Both emails have a GHL contact. Merge them in GHL afterwards, keeping the new email.'
+  };
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+  function showPlan(d) {
+    var s = $('mvSum'); s.textContent = '';
+    s.appendChild(el('div', null, plural(d.payments, 'payment') + ' and ' + plural(d.commissions, 'commission') + ' move across.'));
+    if (d.affiliate) s.appendChild(el('div', null, d.affiliate + ' keeps the credit.'));
+    s.appendChild(el('div', d.ghl === 'merge' || d.ghl === 'failed' ? 'warn' : null, GHL_NOTE[d.ghl] || ''));
+  }
+  $('mvCancel').addEventListener('click', function () { $('mv').close(); });
+  $('mvNew').addEventListener('input', function () { checked = ''; $('mvGo').textContent = 'Check'; $('mvSum').textContent = ''; });
+  function showLinks(list) {
+    var box = $('mvLinks'); box.textContent = '';
+    list.forEach(function (l) {
+      var row = el('div', 'lk'), copy = el('button', null, 'Copy link');
+      copy.type = 'button';
+      copy.addEventListener('click', function () {
+        navigator.clipboard.writeText(l.url).then(function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy link'; }, 1200); });
+      });
+      row.appendChild(el('b', null, l.product)); row.appendChild(el('code', null, l.url)); row.appendChild(copy);
+      box.appendChild(row);
+    });
+  }
+  function makeLinks() {
+    var go = $('mvGo'); go.disabled = true;
+    fetch('https://jaybonham.com/api/tv-aff?action=whop_transfer_link', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: moving.email })
+    }).then(function (r) {
+      if (r.status === 401) { signOut(); throw { msg: 'Session expired' }; }
+      return r.json().then(function (d) { if (!d.ok) throw { msg: d.error || 'Request failed' }; return d; });
+    }).then(function (d) { showLinks(d.links); go.hidden = true; })
+      .catch(function (x) { var s = $('mvSum'); s.textContent = ''; s.appendChild(el('div', 'err', x.msg || 'Network error')); })
+      .then(function () { go.disabled = false; });
+  }
+  $('mvForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (moved) { makeLinks(); return; }
+    var email = $('mvNew').value.trim().toLowerCase(), go = $('mvGo'), sure = checked === email;
+    go.disabled = true;
+    moveCall(!sure).then(function (d) {
+      if (!sure) { checked = email; showPlan(d); go.textContent = 'Change email'; return; }
+      moved = true; moving.email = d.new; render(); load(true);
+      var after = d.ghl === 'failed' ? ' Couldn’t update GHL: change it on their contact there.' : d.ghl === 'merge' ? ' Now merge the two contacts in GHL, keeping the new email.' : '';
+      var s = $('mvSum'); s.textContent = ''; s.appendChild(el('div', d.ghl === 'failed' || d.ghl === 'merge' ? 'warn' : null, 'Changed to ' + d.new + ' on our side.' + after));
+      $('mvNew').readOnly = true; $('mvNote').textContent = NOTE_AFTER; $('mvCancel').textContent = 'Close'; go.textContent = 'Create Whop transfer link';
+    }).catch(function (x) {
+      var s = $('mvSum'); s.textContent = ''; s.appendChild(el('div', 'err', x.msg || 'Network error'));
+      checked = ''; go.textContent = 'Check';
+    }).then(function () { go.disabled = false; });
+  });
 
   function copyBtn(v) {
     var b = el('button', 'copy'); b.type = 'button'; b.title = 'Copy TradingView username';

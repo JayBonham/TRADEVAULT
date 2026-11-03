@@ -93,6 +93,10 @@ class handler(BaseHTTPRequestHandler):
             return self._admin_resend_sale_email()
         if a == "ghl_check":
             return self._ops_ghl_check()
+        if a == "change_email":
+            return self._admin_change_email()
+        if a == "whop_transfer_link":
+            return self._admin_whop_transfer_link()
         self._json(404, {"error": "unknown action"})
 
     def do_PATCH(self):
@@ -578,6 +582,48 @@ class handler(BaseHTTPRequestHandler):
         A.log("TV_AFF_RESEND_SALE_EMAIL", row[3])
         self._json(200, {"ok": True, "affiliate": row[2], "code": row[3], "fields": fields})
 
+    def _admin_change_email(self):
+        """Move a buyer to another email across our records and GHL. dry: just report what would move."""
+        key = self.headers.get("X-Export-Key", "")
+        if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)) and not self._admin():
+            return
+        b = self._body()
+        old = str(b.get("old") or "").strip().lower()[:160]
+        new = str(b.get("new") or "").strip().lower()[:160]
+        if not EMAIL_RE.match(old) or not EMAIL_RE.match(new):
+            return self._json(400, {"ok": False, "error": "Enter a valid email."})
+        out = A.change_email(old, new, dry=bool(b.get("dry")))
+        self._json(200 if out["ok"] else 400, out)
+
+    def _admin_whop_transfer_link(self):
+        """One-use Whop links that move this buyer's live memberships to whichever Whop account opens them.
+        Whop has no API to edit a member's email; this is its way to get a purchase onto the right account."""
+        key = self.headers.get("X-Export-Key", "")
+        if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)) and not self._admin():
+            return
+        import _tv_whop
+        email = str(self._body().get("email") or "").strip().lower()[:160]
+        c = A.conn()
+        cur = c.cursor()
+        try:
+            links = []
+            for mid in _tv_whop.membership_ids(cur, email):
+                if str(_tv_whop.whop("GET", "/api/v1/memberships/" + mid).get("status") or "") not in _tv_whop.VALID | {"completed"}:
+                    continue
+                cur.execute("SELECT product FROM tv_payments WHERE membership_id = %s ORDER BY paid_at DESC LIMIT 1", (mid,))
+                product = (cur.fetchone() or [""])[0]
+                links.append({"product": product or "Membership", "url": _tv_whop.whop("POST", f"/api/v1/memberships/{mid}/transfer", {}).get("url")})
+            c.commit()
+        except Exception as e:
+            A.log("TV_WHOP_TRANSFER_ERR:", e)
+            return self._json(502, {"ok": False, "error": "Whop refused: " + str(e)[:200]})
+        finally:
+            c.close()
+        if not links:
+            return self._json(404, {"ok": False, "error": "No live Whop membership found under " + email + "."})
+        A.log("TV_WHOP_TRANSFER_LINK", A.mask(email), len(links))
+        self._json(200, {"ok": True, "links": links})
+
     def _ops_ghl_check(self):
         """Support: the tv_sale_* custom fields GHL has, and what's on one contact (by email)."""
         key = self.headers.get("X-Export-Key", "")
@@ -605,6 +651,14 @@ class handler(BaseHTTPRequestHandler):
             r = c.getresponse()
             ct = (json.loads(r.read() or b"{}").get("contact") or {})
             out["contact"] = {"id": ct.get("id"), "customFields": ct.get("customFields"), "tags": ct.get("tags")}
+        if b.get("put_probe"):  # a contact that can't exist: 400/404 means the key may write contacts, 401/403 means it can't
+            out["put_probe"] = A._ghl("PUT", "/contacts/tv-put-probe-none", {"email": "probe@example.invalid"})[0]
+        if b.get("whop_probe"):  # a membership that can't exist: 404 means the key may transfer, 403 means it can't
+            import _tv_whop
+            try:
+                out["whop_probe"] = _tv_whop.whop("POST", "/api/v1/memberships/mem_probe_none/transfer", {})
+            except Exception as e:
+                out["whop_probe"] = str(e)[:300]
         # a field create attempt, to see GHL's answer
         if b.get("try_create"):
             c.request("POST", f"/locations/{A.GHL_LOCATION}/customFields",

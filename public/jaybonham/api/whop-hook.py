@@ -146,7 +146,7 @@ class handler(BaseHTTPRequestHandler):
                 rows = [{"error": str(e)[:200]}]
             self._json(200, {"ok": True, "secret_set": bool(WHOP_SECRET), "enforced": ENFORCE_SIG, "recent": rows})
             return
-        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-12", "whop_key": bool(WHOP_API_KEY)})
+        self._json(200, {"ok": True, "service": "whop-webhook", "v": "sync-13", "whop_key": bool(WHOP_API_KEY)})
 
     def _whop_get(self, path):
         conn = http.client.HTTPSConnection("api.whop.com", timeout=15)
@@ -597,6 +597,14 @@ class handler(BaseHTTPRequestHandler):
         if isinstance(paid_at, (int, float)):
             import datetime
             paid_at = datetime.datetime.fromtimestamp(paid_at, datetime.timezone.utc).isoformat()
+
+        if "tradevault-purchased" in tags:
+            # Before GHL: if their email changed, the contact moves first rather than a second one appearing.
+            sys.path.insert(0, sys_path)
+            import _tv_aff
+            mem = data.get("membership")
+            mem_id = data.get("membership_id") or (mem.get("id") if isinstance(mem, dict) else mem)
+            email = _tv_aff.current_email(email, str(mem_id) if mem_id and event_type == "payment.succeeded" else None)
 
         ghl_result = self._ghl_upsert(email, first, last, phone, tags)
         if "tradevault-purchased" in tags and ghl_result.get("contact"):

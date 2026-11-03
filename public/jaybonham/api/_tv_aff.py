@@ -135,6 +135,11 @@ def conn():
                 key   TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS tv_email_moves (
+                old_email TEXT PRIMARY KEY,
+                new_email TEXT NOT NULL,
+                moved_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
         """)
         c.commit()
         _ready = True
@@ -325,6 +330,129 @@ def record_payment(whop_id, email, amount_usd, product, tier, paid_at=None, memb
     except Exception as e:
         log("TV_AFF_PAYMENT_ERR:", e)
         return False
+
+
+def _ghl(method, path, body=None):
+    """One GHL call: (status, parsed JSON)."""
+    import http.client
+    c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=6)
+    c.request(method, path, json.dumps(body) if body is not None else None,
+              {"Authorization": "Bearer " + GHL_API_KEY, "Version": "2021-07-28",
+               "Content-Type": "application/json", "Accept": "application/json"})
+    r = c.getresponse()
+    data = json.loads(r.read() or b"{}")
+    c.close()
+    return r.status, data
+
+
+def _ghl_contact(email):
+    """The GHL contact id for an email, or None. Raises if GHL can't answer."""
+    from urllib.parse import quote
+    status, data = _ghl("GET", f"/contacts/search/duplicate?locationId={GHL_LOCATION}&email={quote(email)}")
+    if status >= 300:
+        raise RuntimeError("GHL search %s" % status)
+    return (data.get("contact") or {}).get("id")
+
+
+def change_email(old, new, dry=False):
+    """Move a buyer to another email: payments, commissions, their referral, the members board and
+    their GHL contact. Whop's own record is the buyer's to change; a move is remembered so a later
+    webhook still carrying the old email lands on the new one. dry=True reports what would happen.
+    ghl: update(d) / merge (both emails have a contact: GHL's merge is by hand) / already / none / failed."""
+    old, new = (old or "").strip().lower(), (new or "").strip().lower()
+    if old == new:
+        return {"ok": False, "error": "That's the same email."}
+    c = conn()
+    cur = c.cursor()
+    try:
+        if is_affiliate(cur, old) or is_affiliate(cur, new):
+            return {"ok": False, "error": "One of those emails belongs to an affiliate. Change it from Admin > Affiliates instead."}
+        cur.execute("SELECT COUNT(*) FROM tv_payments WHERE email = %s", (old,))
+        payments = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM tv_aff_commissions WHERE email = %s", (old,))
+        commissions = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM tv_members WHERE lower(email) = %s", (old,))
+        members = cur.fetchone()[0]
+        refs = {}
+        cur.execute("""SELECT r.email, a.id, a.name FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id
+                        WHERE r.email = ANY(%s)""", ([old, new],))
+        for email, aff, name in cur.fetchall():
+            refs[email] = (aff, name)
+        if old in refs and new in refs and refs[old][0] != refs[new][0]:
+            return {"ok": False, "error": "These emails are credited to different affiliates: %s and %s. Unlink one first." % (refs[old][1], refs[new][1])}
+        ghl, old_id = "none", None
+        if GHL_API_KEY:
+            try:
+                old_id, new_id = _ghl_contact(old), _ghl_contact(new)
+                ghl = "merge" if old_id and new_id and old_id != new_id else "update" if old_id else "already" if new_id else "none"
+            except Exception as e:
+                log("TV_EMAIL_GHL_ERR:", e)
+                ghl = "failed"
+        if not (payments or members or old in refs or old_id):
+            return {"ok": False, "error": "Nobody found under " + old + "."}
+        out = {"ok": True, "old": old, "new": new, "payments": payments, "commissions": commissions,
+               "affiliate": (refs.get(old) or refs.get(new) or (None, None))[1], "ghl": ghl}
+        if dry:
+            return out
+
+        cur.execute("UPDATE tv_payments SET email = %s WHERE email = %s", (new, old))
+        cur.execute("UPDATE tv_aff_commissions SET email = %s WHERE email = %s", (new, old))
+        if new in refs:
+            cur.execute("DELETE FROM tv_aff_referrals WHERE email = %s", (old,))
+        else:
+            cur.execute("UPDATE tv_aff_referrals SET email = %s WHERE email = %s", (new, old))
+        cur.execute("SELECT 1 FROM tv_aff_claims WHERE email = %s", (new,))
+        if cur.fetchone():
+            cur.execute("DELETE FROM tv_aff_claims WHERE email = %s", (old,))
+        else:
+            cur.execute("UPDATE tv_aff_claims SET email = %s WHERE email = %s", (new, old))
+        cur.execute("""UPDATE tv_members SET email = %s WHERE lower(email) = %s
+                         AND NOT EXISTS (SELECT 1 FROM tv_members WHERE lower(email) = %s)""", (new, old, new))
+        # One hop only: earlier moves now point at the new email, and moving back cancels the old move.
+        cur.execute("UPDATE tv_email_moves SET new_email = %s WHERE new_email = %s", (new, old))
+        cur.execute("DELETE FROM tv_email_moves WHERE old_email = %s", (new,))
+        cur.execute("""INSERT INTO tv_email_moves (old_email, new_email) VALUES (%s, %s)
+                       ON CONFLICT (old_email) DO UPDATE SET new_email = EXCLUDED.new_email, moved_at = NOW()""", (old, new))
+        c.commit()
+        if ghl == "update":
+            try:
+                status, data = _ghl("PUT", "/contacts/" + old_id, {"email": new})
+                out["ghl"] = "updated" if status < 300 else "failed"
+                if status >= 300:
+                    log("TV_EMAIL_GHL_PUT:", status, str(data)[:300])
+            except Exception as e:
+                log("TV_EMAIL_GHL_ERR:", e)
+                out["ghl"] = "failed"
+        log("TV_EMAIL_MOVED", mask(old), mask(new), out["ghl"])
+        return out
+    finally:
+        c.close()
+
+
+def current_email(email, membership_id=None):
+    """The email we know this buyer by. An old email that was moved lands on its new one, and a payment
+    on a membership we hold under a different email means they changed it in Whop: follow them."""
+    if not DATABASE_URL:
+        return email
+    try:
+        c = conn()
+        cur = c.cursor()
+        cur.execute("SELECT new_email FROM tv_email_moves WHERE old_email = %s", (email,))
+        row = cur.fetchone()
+        was = None
+        if not row and membership_id:
+            cur.execute("SELECT email FROM tv_payments WHERE membership_id = %s ORDER BY paid_at DESC LIMIT 1", (membership_id,))
+            was = (cur.fetchone() or [None])[0]
+        c.close()
+        if row:
+            return row[0]
+        if was and was != email:
+            out = change_email(was, email)
+            if not out["ok"]:
+                log("TV_EMAIL_FOLLOW:", mask(was), mask(email), out["error"])
+    except Exception as e:
+        log("TV_EMAIL_CURRENT_ERR:", e)
+    return email
 
 
 def refund(whop_id):
