@@ -131,6 +131,7 @@ h2{font-size:clamp(34px,4.8vw,60px)}
 .crew img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) contrast(1.04);transition:transform 1.2s var(--ease),filter .6s}
 .crew figure:hover img{transform:scale(1.04);filter:saturate(1) contrast(1.04)}
 .crew .cut img{object-position:center 8%}
+.crew .jay img{object-position:center 53%}
 .crew figure::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(5,10,20,.92) 100%)}
 .crew figcaption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;text-align:left}
 .crew figcaption b{display:block;font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em}
@@ -416,6 +417,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   .hero-ctas>a{width:100%}
   .pill{font-size:10px;letter-spacing:.14em}
   .crew figcaption{left:12px;right:12px;bottom:12px}
+  .crew .jay img{object-position:center 0%}
   .crew figcaption b{font-size:16px}
   .crew figcaption span{font-size:8.5px;letter-spacing:.12em}
   .stat{padding:30px 12px 30px 0}
@@ -512,7 +514,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
     <div class="frame reveal">
       <span class="live-chip">Your educators</span>
       <div class="crew">
-        <figure class="cut"><img src="assets/jay-bonham-cut.webp" alt="Jay Bonham" style="object-position:center 0%"><figcaption><b>Jay Bonham</b><span>Founder · Killshot</span></figcaption></figure>
+        <figure class="cut jay"><img src="assets/jay-bonham-cut.webp" alt="Jay Bonham"><figcaption><b>Jay Bonham</b><span>Founder · Killshot</span></figcaption></figure>
         <figure class="cut"><img src="assets/tyler-collins-cut.webp" alt="Tyler Collins"><figcaption><b>Tyler Collins</b><span>Gold &amp; NQ · Smartshot</span></figcaption></figure>
         <figure><img src="assets/andrew-bridges.jpg" alt="Andrew Bridges" style="object-position:center 12%"><figcaption><b>Andrew Bridges</b><span>Indices · Spectrum</span></figcaption></figure>
         <figure><img src="assets/adam-haase.webp" style="object-position:center 20%" alt="Adam Haase"><figcaption><b>Adam Haase</b><span>US30 · Killshot</span></figcaption></figure>
@@ -541,7 +543,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
     </div>
     <div class="edu">
       <article class="card reveal">
-        <div class="ph"><img src="assets/jay-bonham-cut.webp" alt="Jay Bonham" loading="lazy" style="object-position:center 20%"></div>
+        <div class="ph"><img src="assets/jay-bonham-card.webp" alt="Jay Bonham" loading="lazy"></div>
         <div class="bd">
           <div class="sc">Killshot scanner</div>
           <h3>Jay Bonham</h3>
@@ -551,7 +553,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         </div>
       </article>
       <article class="card reveal d1">
-        <div class="ph"><img src="assets/tyler-collins-cut.webp" alt="Tyler Collins" loading="lazy" style="object-position:center 4%"></div>
+        <div class="ph"><img src="assets/tyler-collins-card.webp" alt="Tyler Collins" loading="lazy"></div>
         <div class="bd">
           <div class="sc">Smartshot scanner</div>
           <h3>Tyler Collins</h3>
@@ -561,7 +563,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         </div>
       </article>
       <article class="card reveal">
-        <div class="ph"><img src="assets/andrew-bridges.jpg" alt="Andrew Bridges" loading="lazy" style="object-position:center 15%"></div>
+        <div class="ph"><img src="assets/andrew-bridges-card.webp" alt="Andrew Bridges" loading="lazy"></div>
         <div class="bd">
           <div class="sc">Spectrum scanner</div>
           <h3>Andrew Bridges</h3>
@@ -571,7 +573,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         </div>
       </article>
       <article class="card reveal d1">
-        <div class="ph"><img src="assets/adam-haase.webp" alt="Adam Haase" loading="lazy" style="object-position:center 18%"></div>
+        <div class="ph"><img src="assets/adam-haase-card.webp" alt="Adam Haase" loading="lazy"></div>
         <div class="bd">
           <div class="sc">Killshot scanner</div>
           <h3>Adam Haase</h3>
