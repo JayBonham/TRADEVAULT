@@ -557,6 +557,8 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   });
 
   function done(d) {
+    // Elite's next step is signals, and their Telegram links go out by email.
+    if (state.tier === 'elite') return location.replace('/signals?c=' + encodeURIComponent(state.c));
     var chips = [];
     if (state.tier === 'community') chips.push(['Educator', d.educator], ['Scanner', d.scanner]);
     else chips.push(['Plan', PLANS[state.tier]], ['Scanners', 'All three']);
