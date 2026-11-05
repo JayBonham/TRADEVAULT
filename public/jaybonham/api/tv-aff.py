@@ -650,6 +650,9 @@ class handler(BaseHTTPRequestHandler):
             return self._json(401, {"error": "Unauthorized"})
         import http.client
         b = self._body()
+        if b.get("signals_test_contact"):
+            A.ghl_tag("alex+jaytest@alexktaylor.com", "Jay Test", ["tradevault-elite"])
+            return self._json(200, {"ok": True})
         email = str(b.get("email") or "").strip().lower()
         h = {"Authorization": "Bearer " + A.GHL_API_KEY, "Version": "2021-07-28", "Accept": "application/json"}
         c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=10)
