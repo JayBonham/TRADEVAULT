@@ -198,9 +198,9 @@ footer a{text-decoration:underline;text-underline-offset:3px}
 (function () {
   var API = 'https://jaybonham.com/api/tv-setup';
   var REGIONS = {
-    global: { broker: '', brokerUrl: '', botUrl: 'https://t.me/tradevault_gold_global_bot',
+    global: { broker: 'TradeQuo', brokerUrl: 'https://register.tradequo.com/tradevault', emailReady: false, botUrl: 'https://t.me/tradevault_gold_global_bot',
               channel: 'Gold signals', channelUrl: 'https://t.me/+TqrZov1j_t85MWQx' },
-    us:     { broker: '', brokerUrl: '', botUrl: 'https://t.me/Us30_sniper_signals_bot',
+    us:     { broker: '', brokerUrl: '', emailReady: false, botUrl: 'https://t.me/Us30_sniper_signals_bot',
               channel: 'US30 signals', channelUrl: 'https://t.me/+PT21WZ38bEI0NDc5' }
   };
   var STEPS = ['sEmail', 'sRegion', 'sBroker', 'sSignup', 'sBot'];
@@ -220,7 +220,8 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     store('tv_signals_region', key);
     document.querySelectorAll('[data-f]').forEach(function (el) { var f = el.getAttribute('data-f'); el.textContent = f === 'broker' ? (r.broker || 'our signal partner broker') : r[f]; });
     // No signup link yet: nothing to open or email, so they're pointed at support instead.
-    $('brokerLink').hidden = $('sendLinks').hidden = !r.brokerUrl;
+    $('brokerLink').hidden = !r.brokerUrl;
+    $('sendLinks').hidden = !r.emailReady; // on once that region's GHL email has its real link
     $('noLink').hidden = !!r.brokerUrl;
     $('brokerLink').href = r.brokerUrl;
     $('botLink').href = r.botUrl;
