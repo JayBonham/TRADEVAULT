@@ -112,6 +112,9 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             return self._json(400, {"ok": False, "error": "Invalid request"})
 
+        if b.get("action") == "signals_links":
+            return self._signals_links(b)
+
         contact = self._find(_clip(b.get("c"), 40), "")
         if contact is None:
             return
@@ -162,6 +165,28 @@ class handler(BaseHTTPRequestHandler):
         log("TV_SETUP", cid, tier, educator or "-", scanner or "-")
         self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name,
                          "groups": groups_for(tier, educator)})
+
+    def _signals_links(self, b):
+        """/signals: Elite member asked for their broker link. A GHL automation on the tag sends the email."""
+        region = _clip(b.get("region"), 10).lower()
+        if region not in ("global", "us"):
+            return self._json(400, {"ok": False, "error": "missing"})
+        contact = self._find("", _clip(b.get("email"), 160).lower())
+        if contact is None:
+            return
+        if _tier(contact.get("tags")) != "elite":
+            return self._json(404, {"ok": False, "error": "not_member"})
+        tags = {"tags": ["signals-links-" + region]}
+        try:
+            # removed first so the "tag added" trigger fires again if they ask twice
+            _ghl("DELETE", "/contacts/" + contact["id"] + "/tags", tags)
+            status, _ = _ghl("POST", "/contacts/" + contact["id"] + "/tags", tags)
+        except Exception as e:
+            log("TV_SIGNALS_ERR:", e)
+            status = 502
+        if status >= 300:
+            return self._json(502, {"ok": False, "error": "We couldn't send that. Please try again."})
+        self._json(200, {"ok": True})
 
     # ── helpers ──────────────────────────────────────────────
     def _find(self, cid, email):
