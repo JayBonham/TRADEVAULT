@@ -4,6 +4,7 @@
                     payout_method, payout {..}           -> {token} (status 'pending')
   login      POST   email, password                       -> {token}
   me         GET    (Bearer affiliate token)  status, progress, stats, referrals, commissions, payouts
+  code_check GET    ?code=                    -> {available} is this link name free (the signup form asks as they fill it in)
   click      POST   code                      count a visit from an affiliate link
   payout     POST   (Bearer affiliate token)  request payout of everything ready
   profile    POST   (Bearer affiliate token)  {payout_method, payout} save where to be paid
@@ -67,6 +68,8 @@ class handler(BaseHTTPRequestHandler):
             return self._admin_get()
         if a == "detail":
             return self._admin_detail()
+        if a == "code_check":
+            return self._code_check()
         self._json(404, {"error": "unknown action"})
 
     def do_POST(self):
@@ -261,6 +264,22 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             A.log("TV_AFF_ME_ERR:", e)
             self._json(500, {"error": "Could not load your dashboard."})
+
+    def _code_check(self):
+        # A convenience for the form only: register's unique constraint is still what guarantees a name.
+        code = (parse_qs(urlparse(self.path).query).get("code") or [""])[0].strip().lower()
+        if not A.CODE_RE.match(code):
+            return self._json(400, {"error": "invalid"})
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("SELECT 1 FROM tv_affiliates WHERE code = %s", (code,))
+            taken = cur.fetchone() is not None
+            c.close()
+            self._json(200, {"ok": True, "available": not taken})
+        except Exception as e:
+            A.log("TV_AFF_CODE_CHECK_ERR:", e)
+            self._json(500, {"error": "Could not check that name."})
 
     def _click(self):
         code = (self._body().get("code") or "").strip().lower()
