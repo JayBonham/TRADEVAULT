@@ -171,7 +171,7 @@ class handler(BaseHTTPRequestHandler):
         region = _clip(b.get("region"), 10).lower()
         if region not in ("global", "us"):
             return self._json(400, {"ok": False, "error": "missing"})
-        contact = self._find("", _clip(b.get("email"), 160).lower())
+        contact = self._find(_clip(b.get("c"), 40), _clip(b.get("email"), 160).lower())
         if contact is None:
             return
         if _tier(contact.get("tags")) != "elite":

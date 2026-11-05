@@ -401,6 +401,11 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     <p>Tap to request to join. Groups are members only, so we approve each request. Request from <b data-tgname></b> so we can match you.</p>
     <div class="groups" data-groups></div>
   </div>
+  <div class="tgbox" data-signals hidden>
+    <h3>Get your trade signals</h3>
+    <p>Elite includes our Gold and US30 signals. It takes a few minutes to get set up.</p>
+    <a class="btn" data-signals-link style="margin-top:16px" href="/signals">Set up my signals <span class="arr">→</span></a>
+  </div>
   <div class="next">
     <div class="card"><div class="n">Next 01</div><h3>Scanner access</h3><p>We'll add your scanner<span data-plural>s</span> to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts.</p></div>
     <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p>Whop emails you your Academy login, and we'll email your Telegram link<span data-gplural>s</span> too. Not there? Check spam or promotions.</p></div>
@@ -418,6 +423,11 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     <h3>Your Telegram group<span data-gplural>s</span></h3>
     <p>Request to join from the Telegram username you gave us. We approve members only.</p>
     <div class="groups" data-groups></div>
+  </div>
+  <div class="tgbox" data-signals hidden>
+    <h3>Get your trade signals</h3>
+    <p>Elite includes our Gold and US30 signals. It takes a few minutes to get set up.</p>
+    <a class="btn" data-signals-link style="margin-top:16px" href="/signals">Set up my signals <span class="arr">→</span></a>
   </div>
 </section>
 
@@ -469,7 +479,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
       if (!d.ok) return show('v-none');
       state.c = d.contact; state.tier = d.tier;
       setName(d.first);
-      if (d.done) { groups($('tgBox2'), d.groups); return show('v-already'); }
+      if (d.done) { groups($('tgBox2'), d.groups); signals(); return show('v-already'); }
       setup(d.tier);
     }).catch(function () { show('v-none'); });
   }
@@ -536,7 +546,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
         tradingview: $('tv').value.trim(), telegram: $('tg').value.trim() })
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d.ok) return done(d);
-      if (d.error === 'already_done') return show('v-already');
+      if (d.error === 'already_done') { signals(); return show('v-already'); }
       throw { msg: d.error && d.error.length > 20 ? d.error : '' };
     }).catch(function (x) {
       err.textContent = (x && x.msg) || 'Something went wrong. Please try again.';
@@ -559,8 +569,15 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     document.querySelectorAll('[data-plural]').forEach(function (el) { el.hidden = state.tier === 'community'; });
     $('tgBox').querySelector('[data-tgname]').textContent = '@' + $('tg').value.trim();
     groups($('tgBox'), d.groups);
+    signals();
     if (state.tier === 'community') $('nextTrain').textContent = 'Begin the Basic Academy, then join ' + d.educator.split(' ')[0] + "'s live sessions to see " + d.scanner + ' traded in real time.';
     show('v-done');
+  }
+
+  // Elite's next step. Carries the contact so /signals doesn't ask for their email again.
+  function signals() {
+    document.querySelectorAll('[data-signals]').forEach(function (el) { el.hidden = state.tier !== 'elite'; });
+    document.querySelectorAll('[data-signals-link]').forEach(function (el) { el.href = '/signals?c=' + encodeURIComponent(state.c); });
   }
 
   function groups(box, list) {
