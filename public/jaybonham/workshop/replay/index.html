@@ -82,11 +82,11 @@ footer{padding-block:40px 48px}
 <script>
 (function () {
   // Paste the replay link here. An .mp4 / .m3u8 file plays in a video player; anything else (an embed link) loads in a frame.
-  var VIDEO = '';
+  var VIDEO = 'https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6aed357f42ff25478ce34246.mp4';
   if (VIDEO) {
     var box = document.getElementById('vid'), el;
     if (/\.(mp4|webm|mov|m3u8)(\?|$)/i.test(VIDEO)) {
-      el = document.createElement('video'); el.src = VIDEO; el.controls = true; el.playsInline = true; el.preload = 'metadata';
+      el = document.createElement('video'); el.src = VIDEO + '#t=0.5'; el.controls = true; el.playsInline = true; el.preload = 'metadata';
     } else {
       el = document.createElement('iframe'); el.src = VIDEO; el.allow = 'autoplay; fullscreen; picture-in-picture'; el.allowFullscreen = true; el.title = 'Workshop replay';
     }
