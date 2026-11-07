@@ -482,11 +482,13 @@
     fetch('/api/jb-webinar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok || !d.ok) throw new Error(d.error || 'Something went wrong. Please try again.'); }); })
       .then(function () {
+        // Ads optimise for Lead; CompleteRegistration kept for older reporting
+        try { fbq('track', 'Lead', { content_name: 'Workshop', value: 0, currency: 'USD' }); } catch (x) {}
         try { fbq('track', 'CompleteRegistration', { content_name: 'Workshop', value: 0, currency: 'USD' }); } catch (x) {}
         try { localStorage.setItem('jb_vt_email', email.toLowerCase()); } catch (x) {}
         setTimeout(function () {
           location.href = '/workshop/registered?s=' + encodeURIComponent(JBW.start.toISOString()) + '&n=' + encodeURIComponent(name.split(' ')[0]);
-        }, 250);
+        }, 600);
       })
       .catch(function (x) { err.textContent = x.message; btn.disabled = false; btn.innerHTML = label; });
   });
