@@ -398,7 +398,7 @@ footer{padding-block:32px 40px}
       var c1 = el('td'); c1.appendChild(el('div', 'nm', m.name || '(no name)')); c1.appendChild(m.ended ? el('div', 'sub end', 'Membership ended ' + (date(m.ended_at) || '')) : el('div', 'sub', 'Joined ' + (date(m.joined) || '—')));
       var c2 = el('td'); c2.appendChild(m.email ? el('span', 'em', m.email) : dash());
       if (m.email) c2.appendChild(editEmailBtn(m));
-      var c3 = el('td'); c3.appendChild(m.tier ? el('span', 'tier ' + m.tier, TIER[m.tier]) : dash());
+      var c3 = el('td'); c3.appendChild(m.tier ? el('span', 'tier ' + m.tier, TIER[m.tier] + (m.partner ? ' Partner' : '')) : dash());
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());
       var c6 = el('td'); c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
