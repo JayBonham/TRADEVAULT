@@ -27,6 +27,7 @@ GHL_HOST = "services.leadconnectorhq.com"
 MEMBER_TAG = "tradevault-purchased"
 ASSIGNED_TAG = "tv-access-granted"
 DONE_TAG = "tv-setup-complete"
+PARTNER_TAG = "tradevault-partner"
 TIERS = (("tradevault-elite", "elite"), ("tradevault-community", "community"), ("tradevault-tools", "tools"))
 EDUCATORS = {"jay": "Jay Bonham", "adam": "Adam Haase", "tyler": "Tyler Collins", "andrew": "Andrew Bridges"}
 SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spectrum"}
@@ -129,7 +130,7 @@ def _member(c, ids, db):
     educator = (row.get("educator") or vals.get("tv_educator") or
                 next((n for k, n in EDUCATORS.items() if "tv-educator-" + k in tags), ""))
     scanner = (row.get("scanner") or vals.get("tv_scanner") or
-               next((n for k, n in SCANNERS.items() if "tv-scanner-" + k in tags), ""))
+               ", ".join(n for k, n in SCANNERS.items() if "tv-scanner-" + k in tags))
     if setup and tier == "elite":
         educator, scanner = educator or "All educators", scanner or "All scanners"
     elif setup and tier == "tools":
@@ -137,7 +138,7 @@ def _member(c, ids, db):
     name = (c.get("contactName") or " ".join(filter(None, [c.get("firstName"), c.get("lastName")])) or "").strip()
     return {
         "id": c.get("id"), "name": name.title() if name.islower() else name, "email": c.get("email") or "",
-        "tier": tier, "setup": setup, "assigned": ASSIGNED_TAG in tags,
+        "tier": tier, "partner": PARTNER_TAG in tags, "setup": setup, "assigned": ASSIGNED_TAG in tags,
         "educator": educator, "scanner": scanner,
         "tradingview": row.get("tradingview") or vals.get("tradingview_username", ""),
         "telegram": row.get("telegram") or vals.get("telegram_username", ""),

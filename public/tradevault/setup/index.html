@@ -344,13 +344,13 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   <section class="step" data-tier="tools elite">
     <div class="W">
       <div class="step-h">
-        <div><span class="kick"><b>01</b>Your scanners</span><h2>All three scanners. <span class="hl">Included.</span></h2></div>
+        <div><span class="kick"><b>01</b>Your scanners</span><h2 id="inclHead">All three scanners. <span class="hl">Included.</span></h2></div>
         <p id="inclNote"></p>
       </div>
       <div class="incl">
-        <div class="card"><div class="shot"><img src="../assets/killshot-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Killshot</h3><div class="mono mk">US30</div></div></div>
-        <div class="card"><div class="shot"><img src="../assets/smartshot-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Smartshot</h3><div class="mono mk">Gold &amp; NQ</div></div></div>
-        <div class="card"><div class="shot"><img src="../assets/spectrum-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Spectrum</h3><div class="mono mk">US30 · ES · NQ</div></div></div>
+        <div class="card" data-card="Killshot"><div class="shot"><img src="../assets/killshot-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Killshot</h3><div class="mono mk">US30</div></div></div>
+        <div class="card" data-card="Smartshot"><div class="shot"><img src="../assets/smartshot-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Smartshot</h3><div class="mono mk">Gold &amp; NQ</div></div></div>
+        <div class="card" data-card="Spectrum"><div class="shot"><img src="../assets/spectrum-graphic.webp" alt="" loading="lazy"></div><div class="bd"><h3>Spectrum</h3><div class="mono mk">US30 · ES · NQ</div></div></div>
       </div>
     </div>
   </section>
@@ -453,7 +453,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   var API = 'https://jaybonham.com/api/tv-setup';
   var PLANS = { tools: 'Tradevault Tools', community: 'Tradevault Community', elite: 'Tradevault Elite' };
   var q = new URLSearchParams(location.search);
-  var state = { c: q.get('c') || '', email: q.get('email') || '', tier: '' };
+  var state = { c: q.get('c') || '', email: q.get('email') || '', tier: '', partner: null };
   var $ = function (id) { return document.getElementById(id); };
   var form = $('v-setup');
 
@@ -477,7 +477,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     show('v-load');
     fetch(API + '?' + qs).then(function (r) { return r.json(); }).then(function (d) {
       if (!d.ok) return show('v-none');
-      state.c = d.contact; state.tier = d.tier;
+      state.c = d.contact; state.tier = d.tier; state.partner = d.partner || null;
       setName(d.first);
       if (d.done) { groups($('tgBox2'), d.groups); signals(); return show('v-already'); }
       setup(d.tier);
@@ -485,18 +485,28 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   }
 
   function setup(tier) {
+    var p = state.partner;
+    // A partner package has nothing to choose: it shows like Tools, with only its own scanners.
+    var view = p ? 'tools' : tier;
     document.querySelectorAll('[data-tier]').forEach(function (el) {
-      el.hidden = el.getAttribute('data-tier').split(' ').indexOf(tier) < 0;
+      el.hidden = el.getAttribute('data-tier').split(' ').indexOf(view) < 0;
     });
-    $('planName').textContent = PLANS[tier];
-    $('detailsNum').textContent = tier === 'community' ? '03' : '02';
+    $('planName').textContent = PLANS[tier] + (p ? ' Partner' : '');
+    $('detailsNum').textContent = view === 'community' ? '03' : '02';
     $('setupLede').textContent = tier === 'community'
       ? 'Two quick choices: your educator and your scanner. Then tell us your TradingView username so we can switch on your access.'
       : 'One quick step: tell us your TradingView username so we can switch on your scanner access.';
     $('inclNote').textContent = tier === 'elite'
       ? 'Elite includes every scanner, every educator and every Academy. Nothing to choose: you get the full Vault.'
       : 'Tools includes Killshot, Smartshot and Spectrum, plus the scanner bootcamps that teach you to read every signal.';
-    $('lockNote').hidden = tier !== 'community';
+    $('lockNote').hidden = tier !== 'community' || !!p;
+    if (p) {
+      document.querySelectorAll('[data-card]').forEach(function (el) { el.hidden = p.scanners.indexOf(el.getAttribute('data-card')) < 0; });
+      $('inclHead').innerHTML = (p.scanners.length > 1 ? 'Your scanners. ' : 'Your scanner. ') + '<span class="hl">Included.</span>';
+      $('inclNote').textContent = 'Your plan includes ' + p.scanners.join(' and ') + ', plus the Bootcamp' + (p.scanners.length > 1 ? 's' : '') +
+        ' that teach' + (p.scanners.length > 1 ? '' : 'es') + ' you to read every signal' + (p.educator ? ', and ' + p.educator + "'s live sessions." : '.');
+      $('setupLede').textContent = 'One quick step: tell us your TradingView username' + (tier === 'tools' ? '' : ' and Telegram') + ' so we can switch on your access.';
+    }
     $('tgField').hidden = $('sTgWrap').hidden = tier === 'tools';
     show('v-setup');
     sync();
@@ -514,7 +524,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     var tg = $('tg').value.trim();
     setSum('sTg', tg ? '@' + tg : '', 'Not added');
     var handle = /^[A-Za-z0-9_.\-]{2,40}$/;
-    var ok = handle.test(tv) && (state.tier === 'tools' || handle.test(tg)) && (state.tier !== 'community' || (val('educator') && val('scanner')));
+    var ok = handle.test(tv) && (state.tier === 'tools' || handle.test(tg)) && (state.tier !== 'community' || !!state.partner || (val('educator') && val('scanner')));
     $('goBtn').disabled = !ok;
   }
 
@@ -560,7 +570,9 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     // Elite's next step is signals, and their Telegram links go out by email.
     if (state.tier === 'elite') return location.replace('/signals?c=' + encodeURIComponent(state.c));
     var chips = [];
-    if (state.tier === 'community') chips.push(['Educator', d.educator], ['Scanner', d.scanner]);
+    var p = state.partner;
+    if (p) chips.push(['Plan', PLANS[state.tier] + ' Partner'], [p.scanners.length > 1 ? 'Scanners' : 'Scanner', p.scanners.join(' + ')]);
+    else if (state.tier === 'community') chips.push(['Educator', d.educator], ['Scanner', d.scanner]);
     else chips.push(['Plan', PLANS[state.tier]], ['Scanners', 'All three']);
     chips.push(['TradingView', '@' + $('tv').value.trim().replace(/^@/, '')]);
     $('picked').innerHTML = '';
@@ -568,11 +580,12 @@ footer a{text-decoration:underline;text-underline-offset:3px}
       var s = document.createElement('span'), b = document.createElement('b');
       s.textContent = c[0] + ': '; b.textContent = c[1]; s.appendChild(b); $('picked').appendChild(s);
     });
-    document.querySelectorAll('[data-plural]').forEach(function (el) { el.hidden = state.tier === 'community'; });
+    document.querySelectorAll('[data-plural]').forEach(function (el) { el.hidden = p ? p.scanners.length < 2 : state.tier === 'community'; });
     $('tgBox').querySelector('[data-tgname]').textContent = '@' + $('tg').value.trim();
     groups($('tgBox'), d.groups);
     signals();
-    if (state.tier === 'community') $('nextTrain').textContent = 'Begin the Basic Academy, then join ' + d.educator.split(' ')[0] + "'s live sessions to see " + d.scanner + ' traded in real time.';
+    if (p) $('nextTrain').textContent = 'Start with the Bootcamp' + (p.scanners.length > 1 ? 's' : '') + (p.educator ? ', then join ' + p.educator.split(' ')[0] + "'s live sessions to see " + p.scanners.join(' and ') + ' traded in real time.' : ', then put ' + p.scanners.join(' and ') + ' to work on your own charts.');
+    else if (state.tier === 'community') $('nextTrain').textContent = 'Begin the Basic Academy, then join ' + d.educator.split(' ')[0] + "'s live sessions to see " + d.scanner + ' traded in real time.';
     show('v-done');
   }
 

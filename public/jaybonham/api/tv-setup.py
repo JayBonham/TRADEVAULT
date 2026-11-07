@@ -31,8 +31,17 @@ EDUCATORS = {"jay": "Jay Bonham", "adam": "Adam Haase", "tyler": "Tyler Collins"
 SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spectrum"}
 TIERS = (("tradevault-elite", "elite"), ("tradevault-community", "community"), ("tradevault-tools", "tools"))
 DONE_TAG = "tv-setup-complete"
+PARTNER_TAG = "tradevault-partner"
 def _educator_key(tags):
     return next((k for k in EDUCATORS if "tv-educator-" + k in tags), "")
+
+
+def _partner(tags):
+    """A partner package's fixed scanners and educator (tagged at purchase from the Whop title), else None."""
+    if PARTNER_TAG not in tags:
+        return None
+    return {"scanners": [n for k, n in SCANNERS.items() if "tv-scanner-" + k in tags],
+            "educator": EDUCATORS.get(_educator_key(tags), "")}
 CID_RE = re.compile(r"^[A-Za-z0-9]{10,40}$")
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 HANDLE_RE = re.compile(r"^[A-Za-z0-9_.\-]{2,40}$")
@@ -102,7 +111,7 @@ class handler(BaseHTTPRequestHandler):
             import _tv_aff
             _tv_aff.claim(contact.get("email") or "", ref, tier)
         self._json(200, {"ok": True, "contact": contact["id"], "first": contact.get("firstName") or "",
-                         "tier": tier, "done": done,
+                         "tier": tier, "done": done, "partner": _partner(tags),
                          "groups": groups_for(tier, _educator_key(tags)) if done else []})
 
     def do_POST(self):
@@ -136,7 +145,10 @@ class handler(BaseHTTPRequestHandler):
 
         educator = scanner = ""
         new_tags = [DONE_TAG]
-        if tier == "community":
+        partner = _partner(tags)
+        if partner:
+            educator = _educator_key(tags)
+        elif tier == "community":
             educator = _clip(b.get("educator"), 20).lower()
             scanner = _clip(b.get("scanner"), 20).lower()
             if educator not in EDUCATORS or scanner not in SCANNERS:
@@ -145,11 +157,11 @@ class handler(BaseHTTPRequestHandler):
 
         cid = contact["id"]
         edu_name = EDUCATORS.get(educator, "All educators" if tier == "elite" else "")
-        scan_name = SCANNERS.get(scanner, "All scanners")
+        scan_name = ", ".join(partner["scanners"]) if partner else SCANNERS.get(scanner, "All scanners")
         self._fields(cid, {"tv_educator": edu_name, "tv_scanner": scan_name,
                            "tradingview_username": tv, "telegram_username": tg})
         _ghl("POST", "/contacts/" + cid + "/notes", {"body": "\n".join(filter(None, [
-            "TradeVault setup (" + tier.title() + ")",
+            "TradeVault setup (" + tier.title() + (" Partner" if partner else "") + ")",
             "Educator: " + edu_name if edu_name else "",
             "Scanner: " + scan_name,
             "TradingView: " + tv,

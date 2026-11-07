@@ -17,7 +17,8 @@ WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
 WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 # Store routes of the TradeVault products, for payments that arrive without a product title.
 TV_ROUTES = {"sniper-tools": "Tradevault Tools", "sniper-community-3c": "Tradevault Community",
-             "sniper-elite-3d": "Tradevault Elite"}
+             "sniper-elite-3d": "Tradevault Elite",
+             "tradevault-tools-copy": "Tradevault Tools Partner - Killshot"}
 
 # Signatures are checked and logged on every event; rejecting bad ones is switched on
 # once a real Whop event has been seen to pass (GET /api/whop-hook?sig=1).
@@ -112,6 +113,13 @@ def purchase_tags(slug, title):
         for key in ("tools", "community", "elite"):
             if key in t:
                 tags.append("tradevault-" + key)
+        if "partner" in t:
+            # Partner packages: only the scanners (and educator) named in the title, set at purchase
+            # so /setup has nothing to choose. e.g. "Tradevault Tools Partner - Killshot + Smartshot"
+            tags.append("tradevault-partner")
+            tags += ["tv-scanner-" + k for k in ("killshot", "smartshot", "spectrum") if k in t]
+            if "jay" in t:
+                tags.append("tv-educator-jay")
         return tags
     tags = list(PLAN_TAGS.get(slug, ["purchased"]))
     if "deposit" in t:

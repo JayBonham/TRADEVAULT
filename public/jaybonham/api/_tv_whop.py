@@ -54,10 +54,11 @@ def meta_for(row):
     """The metadata the portal reads, from a tv_members row (as _tv_db.all_members returns it)."""
     tier = row.get("tier") or ""
     scanner = (row.get("scanner") or "").strip().lower()
-    if tier in ("elite", "tools") or scanner.startswith("all") or not scanner:
+    if tier == "elite" or scanner.startswith("all") or not scanner:
         scanners = ALL_SCANNERS
     else:
-        scanners = SCAN_KEYS.get(scanner, scanner)
+        # one scanner (Community) or a partner package's list, e.g. "Killshot, Smartshot"
+        scanners = ",".join(SCAN_KEYS.get(x.strip(), x.strip()) for x in scanner.split(",") if x.strip())
     educator = (row.get("educator") or "").strip().lower()
     educator = "all" if tier == "elite" else "none" if tier == "tools" else EDU_KEYS.get(educator, educator or "none")
     out = {"tv_tier": tier, "tv_scanners": scanners, "tv_educator": educator,
