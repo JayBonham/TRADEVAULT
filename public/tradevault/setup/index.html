@@ -408,7 +408,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   </div>
   <div class="next">
     <div class="card"><div class="n">Next 01</div><h3>Scanner access</h3><p>We'll add your scanner<span data-plural>s</span> to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts.</p></div>
-    <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p>Whop emails you your Academy login, and we'll email your Telegram link<span data-gplural>s</span> too. Not there? Check spam or promotions.</p></div>
+    <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p id="nextInbox">Whop emails you your Academy login, and we'll email your Telegram link<span data-gplural>s</span> too. Not there? Check spam or promotions.</p></div>
     <div class="card"><div class="n">Next 03</div><h3>Start the training</h3><p id="nextTrain">Begin with the Academy, then join the live sessions to see the scanners traded in real time.</p></div>
   </div>
 </section>
@@ -584,6 +584,8 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     $('tgBox').querySelector('[data-tgname]').textContent = '@' + $('tg').value.trim();
     groups($('tgBox'), d.groups);
     signals();
+    // Tools plans (partner Jay Live is community) have no Telegram groups.
+    if (state.tier === 'tools') $('nextInbox').textContent = 'Whop emails you your login for the Bootcamp' + (p && p.scanners.length < 2 ? '' : 's') + '. Not there? Check spam or promotions.';
     if (p) $('nextTrain').textContent = 'Start with the Bootcamp' + (p.scanners.length > 1 ? 's' : '') + (p.educator ? ', then join ' + p.educator.split(' ')[0] + "'s live sessions to see " + p.scanners.join(' and ') + ' traded in real time.' : ', then put ' + p.scanners.join(' and ') + ' to work on your own charts.');
     else if (state.tier === 'community') $('nextTrain').textContent = 'Begin the Basic Academy, then join ' + d.educator.split(' ')[0] + "'s live sessions to see " + d.scanner + ' traded in real time.';
     show('v-done');
