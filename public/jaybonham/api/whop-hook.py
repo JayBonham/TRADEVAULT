@@ -18,7 +18,10 @@ WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 # Store routes of the TradeVault products, for payments that arrive without a product title.
 TV_ROUTES = {"sniper-tools": "Tradevault Tools", "sniper-community-3c": "Tradevault Community",
              "sniper-elite-3d": "Tradevault Elite",
-             "tradevault-tools-copy": "Tradevault Tools Partner - Killshot"}
+             "tradevault-tools-partner-killshot": "Tradevault Tools Partner - Killshot",
+             "tradevault-tools-partner-smartshot": "Tradevault Tools Partner - Smartshot",
+             "tradevault-tools-partner-killshot-smartshot": "Tradevault Tools Partner - Killshot + Smartshot",
+             "tradevault-tools-jay-live": "Tradevault Community Partner - Jay Live + Killshot"}
 
 # Signatures are checked and logged on every event; rejecting bad ones is switched on
 # once a real Whop event has been seen to pass (GET /api/whop-hook?sig=1).
