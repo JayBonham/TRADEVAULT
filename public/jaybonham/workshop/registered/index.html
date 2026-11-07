@@ -35,6 +35,8 @@
 .split .ticks{margin:26px 0 32px}
 .split .ph{aspect-ratio:4/5}
 .split .ph img{object-position:50% 20%}
+.split .tvph{aspect-ratio:16/11}
+.split .tvph img{object-position:50% 50%}
 .book{display:flex;justify-content:center;padding:clamp(20px,4vw,40px);background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(var(--acc-rgb),.14),transparent 70%)}
 .book img{width:min(300px,72%);border-radius:6px;box-shadow:0 40px 90px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);transform:rotate(-3deg)}
 .stars{display:flex;align-items:center;gap:10px;margin-top:18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
@@ -128,11 +130,34 @@ footer{padding-block:40px 48px}
   </div>
 </section>
 
-<!-- ===== 2) BOOK ===== -->
+<!-- ===== 2) TRADEVAULT → SCANNERS ===== -->
+<section class="sec">
+  <div class="W split">
+    <div class="ph reveal tvph">
+      <img src="https://thetradevault.co/assets/killshot-graphic.webp" alt="The Killshot scanner running on a TradingView chart" loading="lazy">
+      <div class="cap">The Trade Vault · Jay's scanners on TradingView</div>
+    </div>
+    <div>
+      <span class="kick reveal"><b>02</b>Want the tools Jay trades with?</span>
+      <h2 class="reveal">Trade with rules, <span class="hl">not instinct.</span></h2>
+      <p class="reveal">The Trade Vault puts Jay's own scanners on your TradingView charts. They flag the setups that fit the rules, so you stop guessing and stop forcing trades.</p>
+      <ul class="ticks reveal">
+        <li>Killshot: Jay's original rules-based scanner for US30</li>
+        <li>Smartshot and Spectrum for Gold, NQ and ES</li>
+        <li>A bootcamp for each scanner, so you know why every signal fires</li>
+        <li>Plans from $49.99/month · cancel any time</li>
+      </ul>
+      <div class="reveal"><a href="https://thetradevault.co/?utm_source=jaybonham&amp;utm_medium=workshop-ty&amp;utm_campaign=tradevault" target="_blank" rel="noopener" class="btn" id="tvBtn">See The Trade Vault <span class="arr">→</span></a>
+      <span class="note">See Killshot in action on Thursday</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3) BOOK ===== -->
 <section class="sec">
   <div class="W split">
     <div>
-      <span class="kick reveal"><b>02</b>Published work</span>
+      <span class="kick reveal"><b>03</b>Published work</span>
       <h2 class="reveal">Mindset <span class="hl">before markets.</span></h2>
       <div class="stars reveal"><i>★★★★★</i>5.0 · Amazon</div>
       <p class="reveal">Learn from an institutional trader how to get your mind ready for the markets every day. Build the long-term habits that generate a profitable trading mindset, with any strategy, in any market.</p>
@@ -160,7 +185,7 @@ footer{padding-block:40px 48px}
   var n = new URLSearchParams(location.search).get('n');
   if (n) JBW.set('[data-fname]', ', ' + n.slice(0, 30));
   function ev(id, name) { var el = document.getElementById(id); if (el) el.addEventListener('click', function () { try { fbq('trackCustom', name); } catch (e) {} }); }
-  ev('applyBtn', 'Workshop_ApplyClick'); ev('bookBtn', 'Workshop_BookClick'); ev('bonusBtn', 'Workshop_BonusDownload');
+  ev('applyBtn', 'Workshop_ApplyClick'); ev('bookBtn', 'Workshop_BookClick'); ev('bonusBtn', 'Workshop_BonusDownload'); ev('tvBtn', 'Workshop_TradeVaultClick');
 
   var els = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
