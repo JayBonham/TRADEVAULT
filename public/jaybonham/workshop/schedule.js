@@ -8,6 +8,8 @@ var WEBINAR = {
   weekday: 4,                       // 0=Sun … 4=Thu
   hour: 20, minute: 0,              // 8:00 PM …
   tz: 'America/New_York', tzLabel: 'ET',
+  zoom: 'https://us06web.zoom.us/j/82619623348?pwd=A6sRvLbNG5ItwoyP6BWKf5Oxf99aKX.1',  // recurring weekly meeting
+  zoomId: '826 1962 3348', zoomPass: '560991',
   durationMin: 60,
   liveWindowMin: 75,
   title: 'Live Workshop: The Secrets of a Hedge Fund Trader — Jay Bonham'
@@ -53,14 +55,14 @@ window.JBW = (function () {
   }
 
   var z = function (dt) { return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-  var details = 'Free live workshop with Jay Bonham. Your join link is in your email and texts.\n\nhttps://jaybonham.com/workshop';
+  var details = 'Free live workshop with Jay Bonham.\n\nJoin on Zoom: ' + WEBINAR.zoom + '\nMeeting ID: ' + WEBINAR.zoomId + '\nPasscode: ' + WEBINAR.zoomPass + '\n\nJoin a few minutes early. You may be held in the waiting room for a moment.';
   var gcal = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(WEBINAR.title) +
-             '&dates=' + z(start) + '/' + z(end) + '&details=' + encodeURIComponent(details) + '&location=' + encodeURIComponent('Online — link in your email');
+             '&dates=' + z(start) + '/' + z(end) + '&details=' + encodeURIComponent(details) + '&location=' + encodeURIComponent(WEBINAR.zoom);
 
   function ics() {
     var body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Jay Bonham//Workshop//EN', 'BEGIN:VEVENT',
       'UID:' + z(start) + '@jaybonham.com', 'DTSTAMP:' + z(new Date()), 'DTSTART:' + z(start), 'DTEND:' + z(end),
-      'SUMMARY:' + WEBINAR.title, 'DESCRIPTION:' + details.replace(/\n/g, '\\n'), 'LOCATION:Online — link in your email',
+      'SUMMARY:' + WEBINAR.title, 'DESCRIPTION:' + details.replace(/\n/g, '\\n'), 'LOCATION:' + WEBINAR.zoom,
       'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Jay Bonham live workshop starts in 15 minutes', 'END:VALARM',
       'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
     var a = document.createElement('a');
