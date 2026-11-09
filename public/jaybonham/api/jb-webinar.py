@@ -3,6 +3,8 @@ POST {name, email, phone, session (ISO UTC start), page, ref, utm_*}
  1. Saves a backup row in Postgres (jb_webinar_regs) so no signup is ever lost.
  2. Upserts the contact in GHL and ADDS tags (never replaces existing tags):
       workshop-registered, workshop-YYYY-MM-DD
+    or, for program "tradevault" (thetradevault.co/webinar):
+      tv-webinar-registered, tv-webinar-YYYY-MM-DD
  3. Forwards the payload to a GHL inbound webhook if GHL_WEBINAR_WEBHOOK is set.
 """
 import http.client
@@ -18,6 +20,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
 GHL_LOCATION = "gjD9eQ5iWb8X6zNbltKP"
 GHL_WEBINAR_WEBHOOK = os.environ.get("GHL_WEBINAR_WEBHOOK", "")
+# thetradevault.co/webinar posts here cross-origin.
+ORIGINS = {"https://thetradevault.co", "https://www.thetradevault.co", "https://start.thetradevault.co"}
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 
 
@@ -62,14 +66,20 @@ class handler(BaseHTTPRequestHandler):
             local_day = session.astimezone(ZoneInfo("America/New_York"))
         except Exception:
             local_day = session - timedelta(hours=5)
-        session_tag = "workshop-" + local_day.strftime("%Y-%m-%d")
+        tv = _clip(b.get("program"), 20) == "tradevault"
+        prefix = "tv-webinar-" if tv else "workshop-"
+        session_tag = prefix + local_day.strftime("%Y-%m-%d")
         first, _, last = name.partition(" ")
         utm = {k: _clip(b.get(k), 120) for k in ("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid")}
         ref = _clip(b.get("ref"), 300)
 
+        ghl = self._ghl(first, last, email, phone, [prefix + "registered", session_tag],
+                        "Trade Vault webinar registration" if tv else "Workshop registration")
+        if tv:
+            utm["program"] = "tradevault"  # marks the backup row
         saved = self._save(name, email, phone, session, utm, ref)
-        ghl = self._ghl(first, last, email, phone, ["workshop-registered", session_tag])
-        hook = self._webhook({
+        # the inbound webhook feeds the Sniper workshop flow, so TradeVault signups skip it
+        hook = False if tv else self._webhook({
             "first_name": first, "last_name": last, "full_name": name,
             "email": email, "phone": phone,
             "workshop_start_utc": session.isoformat(),
@@ -112,7 +122,7 @@ class handler(BaseHTTPRequestHandler):
             return False
 
     # ── GHL contact + tags ───────────────────────────────────
-    def _ghl(self, first, last, email, phone, tags):
+    def _ghl(self, first, last, email, phone, tags, source):
         if not GHL_API_KEY:
             return False
         headers = {
@@ -122,7 +132,7 @@ class handler(BaseHTTPRequestHandler):
         }
         try:
             body = {"locationId": GHL_LOCATION, "firstName": first, "email": email,
-                    "phone": phone, "source": "Workshop registration"}
+                    "phone": phone, "source": source}
             if last:
                 body["lastName"] = last
             c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=8)
@@ -166,6 +176,12 @@ class handler(BaseHTTPRequestHandler):
 
     def _json(self, status, body):
         self.send_response(status)
+        origin = self.headers.get("Origin", "")
+        if origin in ORIGINS or origin.startswith("http://localhost"):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+            self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Content-Type", "application/json")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>You're in — The Trade Vault Live Webinar</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/tv-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
+<style>
+:root{
+  --g0:#050A14; --hair:rgba(255,255,255,.08); --hair-2:rgba(255,255,255,.14);
+  --tx:#EAF0FA; --tx-dim:#B3C0D4; --tx-mute:#7F8DA3; --acc:#4B9EFF; --cy:#58E9FF;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --display:'Instrument Sans',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--g0)}
+body{color:var(--tx);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip;
+  background:radial-gradient(900px 600px at 15% 0%,rgba(28,72,170,.3),transparent 70%),radial-gradient(800px 600px at 95% 40%,rgba(75,158,255,.10),transparent 70%),var(--g0);background-attachment:fixed}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit}
+.wrap{max-width:1000px;margin:0 auto;padding:0 max(20px,env(safe-area-inset-left))}
+.mono{font-family:var(--mono);letter-spacing:.18em;text-transform:uppercase;font-size:12px}
+.hl{color:var(--acc)}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.025em;line-height:1.05;text-wrap:balance}
+.top{padding:22px 0}
+.top img{height:26px;width:auto}
+.hero{padding:40px 0 30px}
+.ok{display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;border:1px solid rgba(123,224,176,.5);background:rgba(123,224,176,.1);color:#7BE0B0}
+.hero h1{font-size:clamp(44px,7vw,80px);margin:20px 0 16px}
+.hero p{font-size:20px;color:var(--tx-dim);max-width:640px}
+.when{display:grid;grid-template-columns:repeat(3,1fr);margin:34px 0 0;border:1px solid var(--hair-2);border-radius:18px;overflow:hidden;background:rgba(14,26,46,.7)}
+.when div{padding:18px 22px;border-left:1px solid var(--hair-2)}
+.when div:first-child{border-left:0}
+.when small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--tx-mute);margin-bottom:4px}
+.when b{font-family:var(--display);font-size:22px}
+.local{font-size:14px;color:var(--tx-mute);margin-top:10px}
+.steps{display:grid;gap:18px;padding:30px 0 40px}
+.step{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:26px;border-radius:22px;border:1px solid var(--hair-2);background:linear-gradient(160deg,rgba(26,46,82,.7),rgba(10,20,40,.7))}
+.step.hot{border-color:var(--cy);box-shadow:0 0 70px rgba(88,233,255,.2);background:linear-gradient(165deg,rgba(38,76,140,.85),rgba(10,26,54,.9))}
+.step .n{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-family:var(--mono);font-size:18px;color:var(--cy);background:rgba(75,158,255,.14)}
+.step.hot .n{background:linear-gradient(135deg,var(--cy),var(--acc));color:#050A14}
+.step h3{font-size:26px;margin-bottom:6px}
+.step p{color:var(--tx-dim)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.b{display:inline-flex;align-items:center;gap:8px;padding:13px 20px;border-radius:999px;font-weight:600;font-size:15px;border:1px solid var(--hair-2);background:rgba(255,255,255,.05);cursor:pointer}
+.b.p{background:var(--acc);color:#050A14;border-color:var(--acc);box-shadow:0 0 30px rgba(88,233,255,.3)}
+.zoom{margin-top:14px;font-family:var(--mono);font-size:14px;color:#8CC4FF;letter-spacing:.06em}
+.peek{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:60px 0;border-top:1px solid var(--hair)}
+.peek img{border-radius:20px;border:1px solid var(--hair-2);transform:rotate(1.5deg);box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 60px rgba(75,158,255,.22)}
+.peek h2{font-size:clamp(32px,4vw,46px)}
+.peek p{color:var(--tx-dim);margin:14px 0 20px}
+.disc{font-size:12px;color:var(--tx-mute);line-height:1.6;padding:30px 0 50px;border-top:1px solid var(--hair);text-align:center}
+@media (max-width:760px){
+  .when{grid-template-columns:1fr}
+  .when div{border-left:0;border-top:1px solid var(--hair-2)}
+  .when div:first-child{border-top:0}
+  .step{grid-template-columns:1fr;gap:14px}
+  .peek{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><a href="/"><img src="/assets/tv-logo.png" alt="The Trade Vault"></a></header>
+
+  <div class="hero">
+    <span class="ok mono">✓ Seat saved</span>
+    <h1>You’re in<span id="nm"></span>. <span class="hl">See you Tuesday.</span></h1>
+    <p>Jay is taking you inside The Trade Vault, live. Do these three things now so you don’t miss it.</p>
+    <div class="when">
+      <div><small>DATE</small><b data-when-date>Tuesday Nov 10</b></div>
+      <div><small>TIME</small><b data-when-time>9:00 PM ET</b></div>
+      <div><small>WHERE</small><b>Zoom</b></div>
+    </div>
+    <p class="local" data-when-local></p>
+  </div>
+
+  <div class="steps">
+    <div class="step hot">
+      <div class="n">01</div>
+      <div>
+        <h3>Add it to your calendar</h3>
+        <p>The invite has the Zoom link in it, so you can join in one tap.</p>
+        <div class="btns">
+          <a class="b p" data-gcal href="#" target="_blank" rel="noopener">Google Calendar</a>
+          <button class="b" type="button" data-ics>Apple / Outlook (.ics)</button>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">02</div>
+      <div>
+        <h3>Save the Zoom link</h3>
+        <p>Join a few minutes early. You may be held in the waiting room for a moment.</p>
+        <div class="btns"><a class="b" id="zoomLink" href="https://us06web.zoom.us/j/82468528057?pwd=PnVamNOtXbXuQUGooIsnWyKr8pexAD.1" target="_blank" rel="noopener">Open Zoom link →</a></div>
+        <p class="zoom">MEETING ID 824 6852 8057 · PASSCODE 316277</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">03</div>
+      <div>
+        <h3>Watch your inbox and texts</h3>
+        <p>We’ll send you a reminder before it starts. Can’t find the email? Check spam or promotions and move it to your inbox.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="peek">
+    <img src="/assets/journal-demo.jpg" alt="The Trade Vault journal dashboard with demo data" loading="lazy">
+    <div>
+      <p class="mono hl">While you wait</p>
+      <h2>Take a look around the Vault.</h2>
+      <p>Educators, scanners, the full curriculum and the packages. Have a look now and bring your questions on Tuesday.</p>
+      <a class="b" href="/">Explore The Trade Vault →</a>
+    </div>
+  </div>
+
+  <p class="disc">Trading involves substantial risk of loss and isn’t suitable for everyone. This webinar is educational and isn’t financial advice. No results are promised.</p>
+</div>
+
+<script src="/webinar/tv-schedule.js"></script>
+<script>
+try {
+  var n = new URLSearchParams(location.search).get('n');
+  if (n) document.getElementById('nm').textContent = ', ' + n.slice(0, 30);
+} catch (e) {}
+</script>
+</body>
+</html>
