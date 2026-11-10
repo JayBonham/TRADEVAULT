@@ -586,6 +586,7 @@ class handler(BaseHTTPRequestHandler):
         """Credit a buyer to an affiliate (admin assign, or an approved claim request). Returns (status, body)."""
         if not aff or not EMAIL_RE.match(email):
             return 400, {"error": "Enter the buyer's checkout email."}
+        email = A.current_email(email)  # an email changed on the members board: credit the one the payments now sit under
         c = A.conn()
         cur = c.cursor()
         try:
@@ -615,7 +616,7 @@ class handler(BaseHTTPRequestHandler):
         cur.execute("SELECT COUNT(*) FROM tv_aff_commissions WHERE affiliate_id = %s AND email = %s", (aff, email))
         n = cur.fetchone()[0]
         c.close()
-        return 200, {"ok": True, "payments": n}
+        return 200, {"ok": True, "payments": n, "email": email}
 
     def _admin_claims(self):
         """Claim requests (pending first), each with what we hold on the buyer so the call is quick."""
@@ -636,7 +637,10 @@ class handler(BaseHTTPRequestHandler):
                        (SELECT r.affiliate_id FROM tv_aff_referrals r WHERE r.email = q.email),
                        (SELECT COUNT(*) FROM tv_aff_requests o WHERE o.email = q.email AND o.affiliate_id <> q.affiliate_id AND o.status = 'pending'),
                        EXISTS (SELECT 1 FROM tv_affiliates x WHERE lower(x.email) = q.email AND x.status <> 'rejected')
-                  FROM tv_aff_requests q JOIN tv_affiliates a ON a.id = q.affiliate_id
+                  FROM (SELECT q0.id, q0.affiliate_id, COALESCE(m.new_email, q0.email) AS email, q0.name, q0.note, q0.status,
+                               q0.reason, q0.created_at, q0.decided_at
+                          FROM tv_aff_requests q0 LEFT JOIN tv_email_moves m ON m.old_email = q0.email) q
+                  JOIN tv_affiliates a ON a.id = q.affiliate_id
                  WHERE q.status = 'pending' OR q.decided_at > NOW() - INTERVAL '60 days'
                  ORDER BY (q.status = 'pending') DESC, q.created_at DESC LIMIT 300
             """)

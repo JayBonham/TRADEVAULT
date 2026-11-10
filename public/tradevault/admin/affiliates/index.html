@@ -508,6 +508,7 @@
     if (!drawerAff || !em) return;
     b.disabled = true;
     api('POST', 'assign', { id: drawerAff.id, email: em }).then(function (d) {
+      if (d.email && d.email !== em) em = d.email + ' (moved from ' + em + ')';
       toast(em + ' credited to ' + drawerAff.name + (d.payments ? ' · ' + d.payments + ' payment' + (d.payments === 1 ? '' : 's') : ' · no payments yet'));
       $('dAssignEmail').value = ''; b.disabled = false; load(); openDrawer(drawerAff);
     }).catch(fail(b));
