@@ -66,6 +66,16 @@
 @media(max-width:480px){.how{grid-template-columns:minmax(0,1fr)}}
 td.who b{display:block;font-weight:500}
 td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
+.claim{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px 28px;align-items:start}
+.claim h3{font-size:17px}
+.claim .help{font-size:14px;color:var(--tx-dim);margin-top:8px}
+.claim form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.claim form .full{grid-column:1/-1}
+.claim form .btn{justify-self:start}
+.claim textarea{min-height:76px;font:inherit}
+.claimmsg{font-size:13.5px;color:var(--tx-dim)}
+.claimmsg.bad{color:var(--bad)}.claimmsg.ok{color:var(--ok)}
+@media(max-width:860px){.claim,.claim form{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -158,6 +168,24 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     <section class="sec">
       <div class="sech"><h2>Your members</h2><span class="mono" id="refCount"></span></div>
       <div class="tw"><table><thead><tr><th>Joined</th><th>Member</th><th>Plan</th><th>Status</th></tr></thead><tbody id="refs"></tbody></table></div>
+    </section>
+
+    <section class="sec" id="claimSec">
+      <div class="sech"><h2>Missing a member?</h2><span class="mono">Request commission</span></div>
+      <div class="card claim">
+        <div>
+          <h3>Someone joined through you but isn't showing?</h3>
+          <p class="help">It happens when they switch browser or device before paying, or block cookies. Send us the email they used at checkout. We check it against the payment and, if it lines up, they're added to your members with commission on every payment they've made.</p>
+        </div>
+        <form id="claimForm" novalidate>
+          <div class="field"><label for="clEmail">Their checkout email</label><div class="inp"><input id="clEmail" type="email" autocomplete="off" required maxlength="160"></div></div>
+          <div class="field"><label for="clName">Their name <small>(optional)</small></label><div class="inp"><input id="clName" autocomplete="off" maxlength="80"></div></div>
+          <div class="field full"><label for="clNote">Anything that helps <small>(optional)</small></label><div class="inp"><textarea id="clNote" maxlength="500" placeholder="e.g. joined Elite on 3 Nov after my YouTube live, sent them my link in DMs"></textarea></div></div>
+          <button class="btn" type="submit" id="clGo">Send request</button>
+          <p class="claimmsg full" id="clMsg" aria-live="polite"></p>
+        </form>
+      </div>
+      <div class="tw" id="claimHist" style="margin-top:12px" hidden><table><thead><tr><th>Sent</th><th>Member</th><th>Status</th><th>Note from us</th></tr></thead><tbody id="claims"></tbody></table></div>
     </section>
 
     <section class="sec">
@@ -348,7 +376,40 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
       refs.appendChild(tr);
     });
+    renderClaims();
   }
+
+  function renderClaims() {
+    var list = data.claims || [], tb = $('claims');
+    tb.innerHTML = ''; $('claimHist').hidden = !list.length;
+    list.forEach(function (q) {
+      var tr = document.createElement('tr');
+      tr.appendChild(td(date(q.at)));
+      tr.appendChild(who({ member: q.name, email: q.email }));
+      tr.appendChild(pillTd({ pending: 'Being checked', approved: 'Added to your members', rejected: 'Not added' }[q.status] || q.status,
+        { pending: 'warn', approved: 'ok', rejected: 'off' }[q.status] || ''));
+      tr.appendChild(td(q.reason || '\u2014'));
+      tb.appendChild(tr);
+    });
+    $('clGo').disabled = viewAs;
+  }
+
+  $('claimForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('clMsg'), b = $('clGo'), em = $('clEmail').value.trim().toLowerCase();
+    msg.className = 'claimmsg full';
+    if (viewAs) { msg.textContent = 'Read-only admin view.'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { msg.className += ' bad'; msg.textContent = 'Enter the email they used at checkout.'; return; }
+    b.disabled = true; b.innerHTML = '<span class="spin"></span>Sending';
+    api('POST', 'claim', { email: em, name: $('clName').value.trim(), note: $('clNote').value.trim() })
+      .then(function () {
+        $('clEmail').value = ''; $('clName').value = ''; $('clNote').value = '';
+        msg.className += ' ok'; msg.textContent = 'Sent. We\u2019ll check it and update it below, usually within a day or two.';
+        return api('GET', 'me').then(function (d) { data = d; renderClaims(); });
+      })
+      .catch(function (x) { msg.className += ' bad'; msg.textContent = (x && x.msg) || 'Could not send. Try again.'; })
+      .then(function () { b.textContent = 'Send request'; b.disabled = viewAs; });
+  });
 
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
   document.querySelectorAll('[data-copy]').forEach(function (b) {

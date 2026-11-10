@@ -17,6 +17,9 @@
   unlink     POST   (Bearer admin token)      {id, email}  take a buyer off this affiliate (unpaid commission goes)
   settings   PATCH  (Bearer admin token)      {base_pct, tier_pct, tier_count, unlock_count, unlock_wait_days}
   view_as    POST   (Bearer admin token)      {id}  -> {token}: read-only 2-hour token for "Login as"
+  claim      POST   (Bearer affiliate token)  {email, name?, note?}  "this buyer joined through me but isn't showing"
+  claims     GET    (Bearer admin token)      claim requests, each with what we hold on the buyer
+             PATCH  (Bearer admin token)      {id, action: approve|reject, reason?}  approve credits the buyer (same as assign)
 
 GHL tags (for automations): tv-affiliate-applied, tv-affiliate-approved, tv-affiliate-rejected,
 tv-affiliate-paid and tv-affiliate-sale (the last two re-added each time). Commission logic and storage are in _tv_aff.py.
@@ -70,6 +73,8 @@ class handler(BaseHTTPRequestHandler):
             return self._admin_detail()
         if a == "code_check":
             return self._code_check()
+        if a == "claims":
+            return self._admin_claims()
         self._json(404, {"error": "unknown action"})
 
     def do_POST(self):
@@ -84,6 +89,8 @@ class handler(BaseHTTPRequestHandler):
             return self._payout()
         if a == "profile":
             return self._profile()
+        if a == "claim":
+            return self._claim()
         if a == "bonus":
             return self._admin_bonus()
         if a == "view_as":
@@ -110,6 +117,8 @@ class handler(BaseHTTPRequestHandler):
             return self._admin_payout()
         if a == "settings":
             return self._admin_settings()
+        if a == "claims":
+            return self._admin_claim_decide()
         self._json(404, {"error": "unknown action"})
 
     # ---------- affiliate ----------
@@ -247,6 +256,10 @@ class handler(BaseHTTPRequestHandler):
                              FROM tv_aff_payouts WHERE affiliate_id = %s ORDER BY requested_at DESC LIMIT 50""", (aff,))
             pays = [{"id": r[0], "amount": float(r[1]), "method": r[2], "to": A.payout_label(r[2], r[3]), "status": r[4],
                      "reference": r[5] or "", "requested_at": _iso(r[6]), "decided_at": _iso(r[7])} for r in cur.fetchall()]
+            cur.execute("""SELECT email, name, status, reason, created_at, decided_at FROM tv_aff_requests
+                             WHERE affiliate_id = %s ORDER BY created_at DESC LIMIT 50""", (aff,))
+            claims = [{"email": r[0], "name": r[1] or "", "status": r[2], "reason": r[3] or "", "at": _iso(r[4]),
+                       "decided_at": _iso(r[5])} for r in cur.fetchall()]
             c.close()
             self._json(200, {
                 "ok": True, "name": p[1], "email": p[2], "code": p[3], "status": p[4], "pct": pct,
@@ -259,7 +272,7 @@ class handler(BaseHTTPRequestHandler):
                 "stats": {"clicks": p[7], "referrals": len(refs), "active": sum(1 for r in refs if r["active"]),
                           "pending": float(s[0]), "ready": float(s[1]), "paid": float(s[2]), "sales": float(s[3]),
                           "requested": float(s[4])},
-                "referrals": refs, "commissions": coms, "payouts": pays,
+                "referrals": refs, "commissions": coms, "payouts": pays, "claims": claims,
             })
         except Exception as e:
             A.log("TV_AFF_ME_ERR:", e)
@@ -354,6 +367,51 @@ class handler(BaseHTTPRequestHandler):
         c.commit()
         c.close()
         self._json(200, {"ok": True})
+
+    def _claim(self):
+        """Affiliate: "this person joined through my link but isn't in my members". Admin checks it, then approves."""
+        aff = self._aff()
+        if not aff:
+            return
+        b = self._body()
+        email = (b.get("email") or "").strip().lower()[:160]
+        name = " ".join(str(b.get("name") or "").split())[:80]
+        note = str(b.get("note") or "").strip()[:500]
+        if not EMAIL_RE.match(email):
+            return self._json(400, {"error": "Enter the email they used at checkout."})
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("SELECT status, email FROM tv_affiliates WHERE id = %s", (aff,))
+            st, own = cur.fetchone()
+            if st != "active":
+                c.close()
+                return self._json(403, {"error": "You can send requests once your application is approved."})
+            if email == (own or "").lower():
+                c.close()
+                return self._json(400, {"error": "That's your own email. Your own purchases don't earn commission."})
+            cur.execute("SELECT affiliate_id FROM tv_aff_referrals WHERE email = %s", (email,))
+            ref = cur.fetchone()
+            if ref and ref[0] == aff:
+                c.close()
+                return self._json(409, {"error": "They're already one of your members."})
+            cur.execute("SELECT 1 FROM tv_aff_requests WHERE affiliate_id = %s AND email = %s AND status = 'pending'", (aff, email))
+            if cur.fetchone():
+                c.close()
+                return self._json(409, {"error": "You've already sent this one. It's waiting for review below."})
+            cur.execute("SELECT COUNT(*) FROM tv_aff_requests WHERE affiliate_id = %s AND status = 'pending'", (aff,))
+            if cur.fetchone()[0] >= 20:
+                c.close()
+                return self._json(429, {"error": "You have 20 requests waiting. We'll get through those first."})
+            cur.execute("INSERT INTO tv_aff_requests (affiliate_id, email, name, note) VALUES (%s, %s, %s, %s)",
+                        (aff, email, name or None, note or None))
+            c.commit()
+            c.close()
+            A.log("TV_AFF_CLAIM_REQUEST", aff, A.mask(email))
+            self._json(200, {"ok": True})
+        except Exception as e:
+            A.log("TV_AFF_CLAIM_REQ_ERR:", e)
+            self._json(500, {"error": "Could not send your request. Please try again."})
 
     # ---------- admin ----------
     def _admin_get(self):
@@ -521,42 +579,107 @@ class handler(BaseHTTPRequestHandler):
         if not self._admin():
             return
         b = self._body()
-        aff = int(b.get("id") or 0)
-        email = (b.get("email") or "").strip().lower()[:160]
+        status, out = self._assign(int(b.get("id") or 0), (b.get("email") or "").strip().lower()[:160])
+        self._json(status, out)
+
+    def _assign(self, aff, email):
+        """Credit a buyer to an affiliate (admin assign, or an approved claim request). Returns (status, body)."""
         if not aff or not EMAIL_RE.match(email):
-            return self._json(400, {"error": "Enter the buyer's checkout email."})
+            return 400, {"error": "Enter the buyer's checkout email."}
         c = A.conn()
         cur = c.cursor()
-        cur.execute("SELECT code, email, status FROM tv_affiliates WHERE id = %s", (aff,))
-        row = cur.fetchone()
-        if not row:
+        try:
+            cur.execute("SELECT code, email, status FROM tv_affiliates WHERE id = %s", (aff,))
+            row = cur.fetchone()
+            if not row:
+                return 404, {"error": "Affiliate not found."}
+            if row[2] != "active":
+                return 400, {"error": "Activate this affiliate first."}
+            if (row[1] or "").lower() == email:
+                return 400, {"error": "That's the affiliate's own email: self-purchases don't count."}
+            if A.is_affiliate(cur, email):
+                return 400, {"error": "That buyer is an affiliate: affiliates can't be credited to another affiliate."}
+            cur.execute("""SELECT a.id, a.name FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id
+                            WHERE r.email = %s""", (email,))
+            other = cur.fetchone()
+            if other and other[0] != aff:
+                return 409, {"error": "Already credited to " + other[1] + ". Remove them there first."}
+            cur.execute("SELECT tier FROM tv_payments WHERE email = %s ORDER BY paid_at DESC LIMIT 1", (email,))
+            tier = (cur.fetchone() or [None])[0]
+        finally:
             c.close()
-            return self._json(404, {"error": "Affiliate not found."})
-        if row[2] != "active":
-            c.close()
-            return self._json(400, {"error": "Activate this affiliate first."})
-        if row[1] == email:
-            c.close()
-            return self._json(400, {"error": "That's the affiliate's own email: self-purchases don't count."})
-        if A.is_affiliate(cur, email):
-            c.close()
-            return self._json(400, {"error": "That buyer is an affiliate: affiliates can't be credited to another affiliate."})
-        cur.execute("""SELECT a.id, a.name FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id
-                        WHERE r.email = %s""", (email,))
-        other = cur.fetchone()
-        if other and other[0] != aff:
-            c.close()
-            return self._json(409, {"error": "Already credited to " + other[1] + "."})
-        cur.execute("SELECT tier FROM tv_payments WHERE email = %s ORDER BY paid_at DESC LIMIT 1", (email,))
-        tier = (cur.fetchone() or [None])[0]
-        c.close()
-        A.claim(email, row[0], tier, all_payments=True)
+        if not A.claim(email, row[0], tier, all_payments=True):
+            return 500, {"error": "Could not credit that buyer. Try again."}
         c = A.conn()
         cur = c.cursor()
         cur.execute("SELECT COUNT(*) FROM tv_aff_commissions WHERE affiliate_id = %s AND email = %s", (aff, email))
         n = cur.fetchone()[0]
         c.close()
-        self._json(200, {"ok": True, "payments": n})
+        return 200, {"ok": True, "payments": n}
+
+    def _admin_claims(self):
+        """Claim requests (pending first), each with what we hold on the buyer so the call is quick."""
+        if not self._admin():
+            return
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("""
+                SELECT q.id, q.affiliate_id, a.name, a.email, a.code, q.email, q.name, q.note, q.status, q.reason,
+                       q.created_at, q.decided_at,
+                       (SELECT COUNT(*) FROM tv_payments p WHERE p.email = q.email AND NOT p.refunded),
+                       COALESCE((SELECT SUM(amount_usd) FROM tv_payments p WHERE p.email = q.email AND NOT p.refunded), 0),
+                       (SELECT MIN(paid_at) FROM tv_payments p WHERE p.email = q.email),
+                       (SELECT product FROM tv_payments p WHERE p.email = q.email ORDER BY paid_at DESC LIMIT 1),
+                       (SELECT name FROM tv_payments p WHERE p.email = q.email AND name IS NOT NULL ORDER BY paid_at DESC LIMIT 1),
+                       (SELECT x.name FROM tv_aff_referrals r JOIN tv_affiliates x ON x.id = r.affiliate_id WHERE r.email = q.email),
+                       (SELECT r.affiliate_id FROM tv_aff_referrals r WHERE r.email = q.email),
+                       (SELECT COUNT(*) FROM tv_aff_requests o WHERE o.email = q.email AND o.affiliate_id <> q.affiliate_id AND o.status = 'pending'),
+                       EXISTS (SELECT 1 FROM tv_affiliates x WHERE lower(x.email) = q.email AND x.status <> 'rejected')
+                  FROM tv_aff_requests q JOIN tv_affiliates a ON a.id = q.affiliate_id
+                 WHERE q.status = 'pending' OR q.decided_at > NOW() - INTERVAL '60 days'
+                 ORDER BY (q.status = 'pending') DESC, q.created_at DESC LIMIT 300
+            """)
+            out = [{"id": r[0], "affiliate_id": r[1], "affiliate": r[2], "affiliate_email": r[3], "code": r[4],
+                    "email": r[5], "name": r[6] or "", "note": r[7] or "", "status": r[8], "reason": r[9] or "",
+                    "at": _iso(r[10]), "decided_at": _iso(r[11]),
+                    "buyer": {"payments": int(r[12]), "paid": float(r[13]), "first_paid": _iso(r[14]), "product": r[15] or "",
+                              "whop_name": r[16] or "", "credited_to": r[17] or "", "credited_here": r[18] == r[1],
+                              "other_claims": int(r[19]), "is_affiliate": bool(r[20])}} for r in cur.fetchall()]
+            c.close()
+            self._json(200, {"ok": True, "claims": out})
+        except Exception as e:
+            A.log("TV_AFF_CLAIMS_ERR:", e)
+            self._json(500, {"error": str(e)})
+
+    def _admin_claim_decide(self):
+        """Approve (credits the buyer exactly like assign) or reject a claim request."""
+        if not self._admin():
+            return
+        b = self._body()
+        rid, act = int(b.get("id") or 0), b.get("action")
+        reason = str(b.get("reason") or "").strip()[:300]
+        if not rid or act not in ("approve", "reject"):
+            return self._json(400, {"error": "id and action required"})
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("SELECT affiliate_id, email FROM tv_aff_requests WHERE id = %s AND status = 'pending'", (rid,))
+        row = cur.fetchone()
+        c.close()
+        if not row:
+            return self._json(409, {"error": "That request was already handled."})
+        out = {"ok": True}
+        if act == "approve":
+            status, out = self._assign(row[0], row[1])
+            if status != 200:
+                return self._json(status, out)
+        c = A.conn()
+        cur = c.cursor()
+        cur.execute("UPDATE tv_aff_requests SET status = %s, reason = %s, decided_at = NOW() WHERE id = %s AND status = 'pending'",
+                    ("approved" if act == "approve" else "rejected", reason or None, rid))
+        c.commit()
+        c.close()
+        self._json(200, out)
 
     def _admin_view_as(self):
         """Admin "Login as": a read-only token for this affiliate's dashboard."""

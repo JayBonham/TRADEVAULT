@@ -135,6 +135,18 @@ def conn():
                 key   TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS tv_aff_requests (
+                id           BIGSERIAL PRIMARY KEY,
+                affiliate_id BIGINT NOT NULL REFERENCES tv_affiliates(id),
+                email        TEXT NOT NULL,
+                name         TEXT,
+                note         TEXT,
+                status       TEXT NOT NULL DEFAULT 'pending',
+                reason       TEXT,
+                created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                decided_at   TIMESTAMPTZ
+            );
+            CREATE INDEX IF NOT EXISTS tv_aff_requests_status ON tv_aff_requests (status, created_at);
             CREATE TABLE IF NOT EXISTS tv_email_moves (
                 old_email TEXT PRIMARY KEY,
                 new_email TEXT NOT NULL,

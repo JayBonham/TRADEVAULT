@@ -63,6 +63,9 @@
 .ref .inp{flex:1;min-width:200px}
 .ref input{padding:9px 12px;font-size:14px}
 .warnline{margin-top:8px;font-size:12.5px;color:var(--warn)}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.facts .pill{white-space:normal}
+.cnote{margin-top:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--hair);font-size:14px;color:var(--tx-dim);white-space:pre-wrap;overflow-wrap:anywhere}
 
 /* detail drawer */
 .assign{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}.assign .inp{flex:1;min-width:200px}.assign+.help{margin-top:6px}
@@ -105,6 +108,7 @@
     <nav class="tabs" id="tabs">
       <button type="button" data-t="apps">Applications <span class="n" id="nApps"></span></button>
       <button type="button" data-t="pays">Payouts <span class="n" id="nPays"></span></button>
+      <button type="button" data-t="claims">Claims <span class="n" id="nClaims"></span></button>
       <button type="button" data-t="affs">Affiliates</button>
       <button type="button" data-t="share">Profit share</button>
       <button type="button" data-t="set">Settings</button>
@@ -136,6 +140,14 @@
       <div class="items" id="reqs"></div>
       <div class="sech" style="margin-top:28px"><h2>Payout history</h2><span class="mono" id="paidTotal"></span></div>
       <div class="tw"><table style="min-width:900px"><thead><tr><th>Requested</th><th>Affiliate</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th><th>Done</th></tr></thead><tbody id="hist"></tbody></table></div>
+    </section>
+
+    <!-- Claim requests -->
+    <section class="sec" data-p="claims" hidden>
+      <div class="sech"><h2>Claim requests</h2><span class="mono">Affiliates asking for a buyer their link missed</span></div>
+      <div class="items" id="claimReqs"></div>
+      <div class="sech" style="margin-top:28px"><h2>Recently decided</h2><span class="mono">Last 60 days</span></div>
+      <div class="tw"><table style="min-width:820px"><thead><tr><th>Sent</th><th>Affiliate</th><th>Buyer</th><th>Decision</th><th>Reason</th><th>Decided</th></tr></thead><tbody id="claimHist"></tbody></table></div>
     </section>
 
     <!-- Affiliates -->
@@ -291,6 +303,52 @@
       .catch(function (x) { toast('Check failed: ' + ((x && x.msg) || 'network error'), true); })
       .then(function () { b.disabled = false; b.textContent = 'Check against Whop'; });
   });
+
+  var C = [];
+  function loadClaims() {
+    return api('GET', 'claims').then(function (d) { C = d.claims; renderClaims(); }).catch(function (x) { toast('Claims: ' + ((x && x.msg) || 'network error'), true); });
+  }
+  function renderClaims() {
+    var open = C.filter(function (q) { return q.status === 'pending'; }), box = $('claimReqs');
+    $('nClaims').textContent = open.length || '';
+    box.innerHTML = '';
+    if (!open.length) box.appendChild(el('div', 'card empty', 'No claim requests waiting. Affiliates send them from "Missing a member?" in their portal.'));
+    open.forEach(function (q) {
+      var B = q.buyer, it = el('div', 'item warn'), left = el('div');
+      left.appendChild(el('span', 'mono', q.affiliate + ' · ?ref=' + q.code + ' · sent ' + date(q.at)));
+      left.appendChild(el('h3', null, q.email));
+      if (q.name || B.whop_name) left.appendChild(el('p', 'meta', 'They say: ' + (q.name || '—') + (B.whop_name ? ' · Whop name: ' + B.whop_name : '')));
+      var f = el('div', 'facts');
+      if (B.is_affiliate) f.appendChild(pill('This email is an affiliate: can\u2019t be credited', 'off'));
+      if (B.payments) f.appendChild(pill(B.payments + ' payment' + (B.payments === 1 ? '' : 's') + ' · ' + money(B.paid) + (B.product ? ' · ' + B.product.replace(/^Tradevault\s+/i, '') : '') + ' · first ' + date(B.first_paid), 'ok'));
+      else f.appendChild(pill('No TradeVault payment under this email (check the spelling, or Sync Whop)', 'warn'));
+      if (B.credited_here) f.appendChild(pill('Already this affiliate\u2019s member', 'acc'));
+      else if (B.credited_to) f.appendChild(pill('Already credited to ' + B.credited_to + ': remove them there first', 'off'));
+      else f.appendChild(pill('Not credited to anyone yet', 'acc'));
+      if (B.other_claims) f.appendChild(pill(B.other_claims + ' other affiliate' + (B.other_claims === 1 ? ' is' : 's are') + ' also claiming them', 'warn'));
+      left.appendChild(f);
+      if (q.note) left.appendChild(el('p', 'cnote', q.note));
+      var ref = el('div', 'ref'), wrap = el('div', 'inp'), inp = el('input'); inp.placeholder = 'Reason, shown to the affiliate (optional)'; inp.maxLength = 300;
+      wrap.appendChild(inp); ref.appendChild(wrap); left.appendChild(ref);
+      var acts = el('div', 'acts');
+      acts.appendChild(btn('btn-g btn-sm no-btn', 'Reject', function (b) { b.disabled = true; api('PATCH', 'claims', { id: q.id, action: 'reject', reason: inp.value }).then(function () { toast('Claim rejected'); loadClaims(); }).catch(fail(b)); }));
+      acts.appendChild(btn('btn btn-sm ok-btn', 'Approve & credit', function (b) { b.disabled = true; api('PATCH', 'claims', { id: q.id, action: 'approve', reason: inp.value }).then(function (d) {
+        toast(q.email + ' credited to ' + q.affiliate + (d.payments ? ' · ' + d.payments + ' payment' + (d.payments === 1 ? '' : 's') : ' · no payments yet')); loadClaims(); load(); }).catch(fail(b)); }));
+      it.appendChild(left); it.appendChild(acts); box.appendChild(it);
+    });
+    var done = C.filter(function (q) { return q.status !== 'pending'; }), tb = $('claimHist'); tb.innerHTML = '';
+    if (!done.length) tb.innerHTML = '<tr><td colspan="6" class="empty">Nothing decided yet.</td></tr>';
+    done.forEach(function (q) {
+      var tr = el('tr');
+      tr.appendChild(el('td', null, date(q.at)));
+      var a = el('td', 'nm'); a.appendChild(el('b', null, q.affiliate)); a.appendChild(el('span', null, '?ref=' + q.code)); tr.appendChild(a);
+      var bu = el('td', 'nm'); bu.appendChild(el('b', null, q.name || q.buyer.whop_name || '—')); bu.appendChild(el('span', null, q.email)); tr.appendChild(bu);
+      var st = el('td'); st.appendChild(pill(q.status === 'approved' ? 'Approved' : 'Rejected', q.status === 'approved' ? 'ok' : 'off')); tr.appendChild(st);
+      tr.appendChild(el('td', null, q.reason || '—'));
+      tr.appendChild(el('td', null, date(q.decided_at)));
+      tb.appendChild(tr);
+    });
+  }
 
   function load() {
     return api('GET', 'admin').then(function (d) { D = d; render(); })
@@ -553,7 +611,8 @@
 
   window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (document.querySelector('[data-p="' + h + '"]')) tab(h); });
   var start = (location.hash || '').slice(1);
-  tab(['apps', 'pays', 'affs', 'share', 'set'].indexOf(start) >= 0 ? start : 'apps');
+  tab(['apps', 'pays', 'claims', 'affs', 'share', 'set'].indexOf(start) >= 0 ? start : 'apps');
+  loadClaims();
   load().then(function () { if (!start && D && !D.affiliates.some(function (a) { return a.status === 'pending'; }) && D.payouts.some(function (p) { return p.status === 'requested'; })) tab('pays'); });
 })();
 </script>
