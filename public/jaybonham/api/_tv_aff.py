@@ -554,17 +554,24 @@ def webinar_claim(email, tier=None):
     return claim(email, row[0], tier)
 
 
-def webinar_signups(code):
-    """How many webinar signups came through this affiliate's link (shown in their portal)."""
+def webinar_signups(code, aff_id=None):
+    """Webinar opt-ins through this affiliate's link, newest first: first name, masked email, when, and
+    whether they've since become this affiliate's member. Shown in their portal under Opt-ins."""
     try:
         c = conn()
         cur = c.cursor()
-        cur.execute("SELECT COUNT(DISTINCT lower(email)) FROM jb_webinar_regs WHERE aff = %s", (code,))
-        n = cur.fetchone()[0]
+        cur.execute("""
+            SELECT DISTINCT ON (lower(w.email)) lower(w.email), w.name, w.created_at,
+                   EXISTS (SELECT 1 FROM tv_aff_referrals r WHERE r.email = lower(w.email) AND r.affiliate_id = %s)
+              FROM jb_webinar_regs w WHERE w.aff = %s
+             ORDER BY lower(w.email), w.created_at DESC
+        """, (aff_id, code))
+        rows = sorted(cur.fetchall(), key=lambda r: r[2], reverse=True)[:300]
         c.close()
-        return int(n)
+        return [{"name": (r[1] or "").split(" ")[0][:30], "email": mask(r[0]), "at": r[2].isoformat(), "member": bool(r[3])}
+                for r in rows]
     except Exception:
-        return 0
+        return []
 
 
 def pending_claim(email, code):

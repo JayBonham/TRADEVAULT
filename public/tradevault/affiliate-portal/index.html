@@ -128,7 +128,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         <div class="biglink"><code id="webLink"></code></div>
       </div>
       <button class="btn copy" id="copyWeb" type="button">Copy link</button>
-      <div class="more"><span><b id="webN">0</b> signed up for the webinar through you.</span>
+      <div class="more"><span><b id="webN">0</b> signed up for the webinar through you. <a href="#optSec" style="color:var(--cy)">See your opt-ins ↓</a></span>
         <span>If they buy within 60 days using the email they signed up with, they're your member, even if they buy on another device.</span>
       </div>
     </section>
@@ -181,6 +181,12 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     <section class="sec">
       <div class="sech"><h2>Your members</h2><span class="mono" id="refCount"></span></div>
       <div class="tw"><table><thead><tr><th>Joined</th><th>Member</th><th>Plan</th><th>Status</th></tr></thead><tbody id="refs"></tbody></table></div>
+    </section>
+
+    <section class="sec" id="optSec" hidden>
+      <div class="sech"><h2>Webinar opt-ins</h2><span class="mono" id="optCount"></span></div>
+      <p class="help" style="margin:-6px 0 12px">People who signed up for the webinar through your webinar link. They're leads, not members yet. When one buys with the same email, they move into Your members above and you earn on it.</p>
+      <div class="tw"><table><thead><tr><th>Signed up</th><th>Lead</th><th>Status</th></tr></thead><tbody id="opts"></tbody></table></div>
     </section>
 
     <section class="sec" id="claimSec">
@@ -308,7 +314,8 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
     $('link').textContent = L.main;
     var W = d.webinar || {};
-    $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = W.signups || 0;
+    var O = W.optins || [];
+    $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = O.length;
 
     var u = Math.min(P.personals, P.unlock_count), t = Math.min(P.personals, P.tier_count);
     $('barUnlock').classList.toggle('done', P.qualified);
@@ -390,6 +397,16 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(td(cap(r.tier) || '—'));
       tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
       refs.appendChild(tr);
+    });
+    $('optSec').hidden = !W.on;
+    var opts = $('opts'); opts.innerHTML = ''; $('optCount').textContent = O.length + ' opt-ins';
+    if (!O.length) opts.innerHTML = '<tr><td colspan="3" class="empty">No opt-ins yet. Share your webinar link to fill your first seat.</td></tr>';
+    O.forEach(function (o) {
+      var tr = document.createElement('tr');
+      tr.appendChild(td(date(o.at)));
+      tr.appendChild(who({ member: o.name, email: o.email }));
+      tr.appendChild(pillTd(o.member ? 'Became a member ✓' : 'Opted in', o.member ? 'ok' : 'off'));
+      opts.appendChild(tr);
     });
     renderClaims();
   }
