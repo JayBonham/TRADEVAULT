@@ -89,6 +89,9 @@ class handler(BaseHTTPRequestHandler):
                 out["quote"] = U.public(U.quote(cur, email))
             except U.UpgradeError as e:
                 out["quote_error"] = str(e)
+                out["memberships"] = [{k: m.get(k) for k in ("id", "status", "product_id", "renewal_price", "initial_price",
+                                                             "billing_period_days", "current_period_end", "promo_code_id")}
+                                      for m in U.memberships(cur, email)]
             return out
         return self._run(run)
 
