@@ -214,44 +214,13 @@ def check_reset(token: str, pw_hash: str) -> bool:
 
 
 def send_reset_email(email, name, link):
-    """Brevo transactional email (same account as the admin portal's emails)."""
-    key = os.environ.get("BREVO_API_KEY", "")
-    if not key:
-        log("TV_AFF_RESET_NO_BREVO")
+    """GHL sends it: the link goes on the contact as {{contact.tv_reset_link}}, then the
+    tv-affiliate-reset tag (re-added each time) fires the "Affiliate password reset" workflow."""
+    if not GHL_API_KEY:
+        log("TV_AFF_RESET_NO_GHL")
         return False
-    import http.client
-    first = ((name or "").split() or ["there"])[0]
-    html = f"""<div style="background:#07101F;padding:32px 16px;font-family:Arial,Helvetica,sans-serif">
-<div style="max-width:480px;margin:0 auto;background:#0E1A2E;border:1px solid #1E2E4A;border-radius:14px;padding:32px 28px;color:#e8eaed">
-<p style="margin:0 0 6px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#4B9EFF">The Trade Vault · Affiliates</p>
-<h1 style="margin:0 0 16px;font-size:24px;color:#fff">Reset your password</h1>
-<p style="margin:0 0 14px;font-size:15px;line-height:1.6">Hi {first}, someone asked to reset the password for your affiliate account. Tap the button to choose a new one.</p>
-<p style="margin:24px 0"><a href="{link}" style="display:inline-block;background:#ffffff;color:#07101F;font-weight:bold;text-decoration:none;padding:14px 26px;border-radius:10px;font-size:15px">Choose a new password</a></p>
-<p style="margin:0 0 14px;font-size:13px;line-height:1.6;color:#9aa0a8">The link works for 1 hour and only once. If you didn't ask for this, ignore this email; your password stays the same.</p>
-<p style="margin:0;font-size:12px;line-height:1.6;color:#6b7179;word-break:break-all">Button not working? Paste this into your browser:<br>{link}</p>
-</div></div>"""
-    body = json.dumps({
-        "sender": {"name": "The Trade Vault", "email": os.environ.get("ADMIN_FROM_EMAIL", "info@jaybonham.com")},
-        "to": [{"email": email, "name": name or email}],
-        "replyTo": {"email": "support@thetradevault.co", "name": "The Trade Vault"},
-        "subject": "Reset your affiliate password",
-        "htmlContent": html,
-        "textContent": f"Hi {first},\n\nChoose a new password for your Trade Vault affiliate account here (works for 1 hour, once):\n{link}\n\nIf you didn't ask for this, ignore this email.",
-        "tags": ["tv-aff-reset"],
-    })
-    try:
-        c = http.client.HTTPSConnection("api.brevo.com", timeout=8)
-        c.request("POST", "/v3/smtp/email", body, {"accept": "application/json", "content-type": "application/json", "api-key": key})
-        r = c.getresponse()
-        out = r.read().decode()[:300]
-        c.close()
-        if r.status not in (200, 201):
-            log("TV_AFF_RESET_BREVO:", r.status, out)
-            return False
-        return True
-    except Exception as e:
-        log("TV_AFF_RESET_ERR:", e)
-        return False
+    ghl_tag(email, name, ["tv-affiliate-reset"], again=True, fields={"tv_reset_link": link})
+    return True
 
 
 def new_code() -> str:
