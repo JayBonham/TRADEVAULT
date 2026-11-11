@@ -331,8 +331,8 @@ def finish(cur, payment, email):
     except Exception as e:
         status = "cancel_failed"
         log("TV_UPGRADE_CANCEL_ERR", pay_id, old, e)
-    if status == "done" and from_tier == "tools":
-        _redo_setup(email)
+    if status == "done":
+        _back_to_new(email, from_tier == "tools")
     cur.execute("""INSERT INTO tv_upgrades (payment_id, email, old_membership, from_tier, to_tier, amount_usd, status, code)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status""",
@@ -341,17 +341,22 @@ def finish(cur, payment, email):
     log("TV_UPGRADE", pay_id, email, from_tier, "->", to_tier, status)
 
 
-def _redo_setup(email):
-    """Take off the setup-complete tag so /setup asks for the new tier's choices."""
+def _back_to_new(email, redo_setup):
+    """Back to New members on the TradeVault admin board, labelled Upgraded, so the team gives them
+    the new tier's access (assigning re-adds tv-access-granted, which sends the access email).
+    From Tools, setup-complete comes off too so /setup asks for the new tier's choices."""
     import _tv_aff as A
-    if not A.GHL_API_KEY:
+    if not (A.GHL_API_KEY and email):
         return
     try:
         cid = A._ghl_contact(email)
-        if cid:
-            A._ghl("DELETE", "/contacts/%s/tags" % cid, {"tags": ["tv-setup-complete"]})
+        if not cid:
+            return
+        off = ["tv-access-granted"] + (["tv-setup-complete"] if redo_setup else [])
+        A._ghl("DELETE", "/contacts/%s/tags" % cid, {"tags": off})
+        A._ghl("POST", "/contacts/%s/tags" % cid, {"tags": ["tv-upgraded"]})
     except Exception as e:
-        log("TV_UPGRADE_SETUP_TAG_ERR", e)
+        log("TV_UPGRADE_TAGS_ERR", e)
 
 
 def promo_codes():

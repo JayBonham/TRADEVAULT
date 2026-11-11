@@ -138,7 +138,7 @@ def _member(c, ids, db):
     name = (c.get("contactName") or " ".join(filter(None, [c.get("firstName"), c.get("lastName")])) or "").strip()
     return {
         "id": c.get("id"), "name": name.title() if name.islower() else name, "email": c.get("email") or "",
-        "tier": tier, "partner": PARTNER_TAG in tags, "setup": setup, "assigned": ASSIGNED_TAG in tags,
+        "tier": tier, "partner": PARTNER_TAG in tags, "upgraded": "tv-upgraded" in tags, "setup": setup, "assigned": ASSIGNED_TAG in tags,
         "educator": educator, "scanner": scanner,
         "tradingview": row.get("tradingview") or vals.get("tradingview_username", ""),
         "telegram": row.get("telegram") or vals.get("telegram_username", ""),
