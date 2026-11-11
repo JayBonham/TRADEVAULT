@@ -46,9 +46,13 @@ class handler(BaseHTTPRequestHandler):
         try:
             c = A.conn()
             cur = c.cursor()
+            # A member: a payment on record, or on the members board (a $0 signup has no payment).
             cur.execute("""SELECT name FROM tv_payments WHERE lower(email) = %s AND NOT refunded
                            ORDER BY paid_at DESC LIMIT 1""", (email,))
             row = cur.fetchone()
+            if not row:
+                cur.execute("SELECT '' FROM tv_members WHERE lower(email) = %s AND removed_at IS NULL LIMIT 1", (email,))
+                row = cur.fetchone()
             c.close()
         except Exception as e:
             A.log("TV_UPGRADE_START_ERR:", e)

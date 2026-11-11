@@ -99,12 +99,34 @@ def tier_plans(cur):
     return out
 
 
+def memberships(cur, email):
+    """Every Whop membership on this email: the ones our payment log knows, plus Whop's own search
+    (a $0 signup, e.g. a 100% promo code, never reaches the payment log)."""
+    from urllib.parse import quote as q
+    seen = {}
+    for mid in W.membership_ids(cur, email):
+        try:
+            seen[mid] = W.whop("GET", "/api/v1/memberships/" + mid)
+        except Exception as e:
+            log("TV_UPGRADE_MEM_ERR", mid, e)
+    try:
+        found = W.whop("GET", "/api/v1/members?account_id=%s&query=%s&first=10" % (W.WHOP_COMPANY, q(email)))
+        for mb in found.get("data") or []:
+            if (mb.get("email") or "").lower() != email:
+                continue
+            page = W.whop("GET", "/api/v1/memberships?account_id=%s&member_id=%s&first=50" % (W.WHOP_COMPANY, mb["id"]))
+            for m in page.get("data") or []:
+                seen.setdefault(m["id"], m)
+    except Exception as e:
+        log("TV_UPGRADE_SEARCH_ERR", email, e)
+    return list(seen.values())
+
+
 def current(cur, email, plans):
     """The member's highest active TradeVault membership: (membership dict, tier)."""
     by_product = {v["product"]: t for t, v in plans.items() if v.get("product")}
     best = None
-    for mid in W.membership_ids(cur, email):
-        m = W.whop("GET", "/api/v1/memberships/" + mid)
+    for m in memberships(cur, email):
         prod = m.get("product_id") or (m["product"].get("id") if isinstance(m.get("product"), dict) else None)
         tier = by_product.get(prod)
         if tier and str(m.get("status")) in OK_STATUS and (best is None or W.RANK[tier] > W.RANK[best[1]]):
