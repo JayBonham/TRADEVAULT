@@ -18,8 +18,8 @@ for i in range(1, 7):
 
 # Built-in accounts: PBKDF2-SHA256 (salt, hash), 600k iterations. No plaintext in the repo.
 HASHED_USERS = {
-    "Admin": ("de0778fb5c3215935b3040ab666bb680",
-              "53a9ea63aa01fc185c49be490e5513b12ac02ab8de8df184bacda62c023eee27"),
+    "Admin": ("b52f8ac69c7d222b53839918777ea11c",
+              "424995f78bbce0a6db3e4ef0e52f195b1457a70d415bf506b04558eb4a5b4537"),
 }
 
 
