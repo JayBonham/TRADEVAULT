@@ -115,7 +115,10 @@ class handler(BaseHTTPRequestHandler):
             return self._json(400, {"error": str(e)})
         except Exception as e:
             A.log("TV_UPGRADE_ERR:", e)
-            return self._json(500, {"error": "Something went wrong. Please try again, or email support@thetradevault.co."})
+            out = {"error": "Something went wrong. Please try again, or email support@thetradevault.co."}
+            if str(e).startswith("Whop "):
+                out["detail"] = str(e)[:400]  # Whop's own reason, for support
+            return self._json(500, out)
 
     def _action(self):
         return (parse_qs(urlparse(self.path).query).get("action") or [""])[0].strip().lower()
