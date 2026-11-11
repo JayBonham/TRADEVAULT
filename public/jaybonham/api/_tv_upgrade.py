@@ -78,6 +78,9 @@ def _ts(iso):
 
 
 def _num(v):
+    """A price as Whop sends it: a number, or a Money object {"amount": "25.00", ...}."""
+    if isinstance(v, dict):
+        v = v.get("amount")
     try:
         return float(v)
     except (TypeError, ValueError):
@@ -147,6 +150,18 @@ def quote(cur, email):
     renews = _ts(m.get("current_period_end"))
     period = m.get("billing_period_days")
     now = datetime.datetime.now(datetime.timezone.utc)
+    if not renews and period:
+        # Whop sometimes leaves current_period_end empty: the next renewal is a whole number of
+        # periods after the period (or membership) started.
+        if m.get("most_recent_action") == "renewing_on" and _ts(m.get("most_recent_action_at")):
+            renews = _ts(m.get("most_recent_action_at"))
+        else:
+            start = _ts(m.get("current_period_start")) or _ts(m.get("created_at"))
+            if start:
+                step = datetime.timedelta(days=int(period))
+                renews = start + step
+                while renews <= now:
+                    renews += step
     if paying is None or not renews or renews <= now or not period or not 27 <= int(period) <= 31:
         raise UpgradeError("Your plan can't be upgraded online. Email support@thetradevault.co and we'll sort it for you.")
     days = max(1, math.ceil((renews - now).total_seconds() / 86400))
