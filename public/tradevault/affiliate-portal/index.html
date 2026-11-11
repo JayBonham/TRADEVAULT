@@ -19,6 +19,54 @@
 .cd .u span{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);margin-top:6px}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px}
 .top h1{font-size:clamp(32px,4vw,46px)}
+/* Dashboard / Promo kit tabs */
+.tabs{display:flex;gap:6px;margin-top:22px;padding:5px;border-radius:999px;border:1px solid var(--hair-2);background:rgba(10,20,40,.6);width:max-content;max-width:100%}
+.tab{font:inherit;font-weight:600;font-size:14.5px;color:var(--tx-dim);background:none;border:0;padding:10px 20px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.tab.on{background:var(--acc);color:#050A14}
+.tab .new{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:999px;background:rgba(88,233,255,.18);color:#58E9FF}
+.tab.on .new{background:rgba(5,10,20,.2);color:#050A14}
+#kit{display:none}
+#app.kitmode #kit{display:block}
+#app.kitmode > :not(.top):not(.tabs):not(#kit){display:none!important}
+.kithero{margin-top:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;border-color:rgba(88,233,255,.4);
+  background:radial-gradient(500px 260px at 0% 0%,rgba(75,158,255,.22),transparent 70%),linear-gradient(160deg,rgba(26,46,82,.7),rgba(10,20,40,.7))}
+.kithero h2{font-size:clamp(26px,3vw,34px);margin:8px 0 6px}
+.kithero .mono{color:#58E9FF}
+.kitlinks{display:grid;gap:10px;min-width:0}
+.kitlink{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2)}
+.kitlink .mono{grid-column:1/-1;font-size:10.5px;color:var(--tx-mute)}
+.kitlink code{font-family:var(--mono);font-size:14px;overflow-wrap:anywhere;min-width:0}
+.kitsteps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.kitstep{padding:20px}
+.kitstep .n{font-family:var(--mono);font-size:12px;color:#58E9FF}
+.kitstep h3{font-size:18px;margin:8px 0 6px}
+.kitstep p{font-size:14px;color:var(--tx-dim);line-height:1.55}
+.kitrules{margin-top:12px;padding:16px 20px;border-color:rgba(255,196,84,.35);background:rgba(255,196,84,.06)}
+.kitrules b{font-size:14.5px}
+.kitrules ul{margin:8px 0 0 18px;display:grid;gap:4px;font-size:14px;color:var(--tx-dim)}
+.kitbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.kitchips{display:flex;gap:8px;flex-wrap:wrap}
+.kitchip{font:inherit;font-size:13.5px;font-weight:600;color:var(--tx-dim);background:rgba(255,255,255,.05);border:1px solid var(--hair-2);padding:8px 16px;border-radius:999px;cursor:pointer}
+.kitchip.on{color:#050A14;background:#EAF0FA;border-color:#EAF0FA}
+.kitnav{display:flex;gap:8px}
+.kitarrow{font:inherit;font-size:18px;width:42px;height:42px;border-radius:50%;border:1px solid var(--hair-2);background:rgba(255,255,255,.05);color:var(--tx);cursor:pointer}
+.kittrack{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px;scrollbar-width:thin;align-items:flex-start}
+.kitslide{flex:0 0 280px;scroll-snap-align:start;margin:0;border-radius:18px;overflow:hidden;border:1px solid var(--hair-2);background:rgba(10,20,40,.7)}
+.kitslide.story{flex-basis:220px}
+.kitslide img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#0A1426}
+.kitslide.story img{aspect-ratio:9/16}
+.kitslide figcaption{padding:12px 14px 14px;display:grid;gap:4px}
+.kitslide figcaption b{font-size:14.5px}
+.kitslide figcaption .mono{font-size:10px;color:var(--tx-mute)}
+.kitbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.kittip{margin-top:6px}
+.kitcopies{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kitcopy{padding:18px 20px;display:grid;gap:10px;align-content:start;justify-items:start}
+.kitcopy b{font-size:15px}
+.kitcopy p{font-size:14.5px;color:var(--tx-dim);line-height:1.55;white-space:pre-line}
+.kitcopy p.bio{color:var(--tx)}
+@media(max-width:860px){.kithero{grid-template-columns:minmax(0,1fr)}.kitsteps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.kitsteps,.kitcopies{grid-template-columns:minmax(0,1fr)}.kitslide{flex-basis:240px}.kitslide.story{flex-basis:190px}.tabs{width:100%}.tab{flex:1;justify-content:center}}
 .welcome{margin-top:20px;padding:16px 20px;border-radius:16px;border:1px solid rgba(123,224,176,.35);background:rgba(123,224,176,.08);color:var(--tx-dim);font-size:14.5px}
 .welcome b{color:var(--tx)}
 .linkcard{margin-top:22px;padding:24px 26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center;
@@ -98,6 +146,10 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div><span class="eyebrow">Affiliate dashboard</span><h1>Hey <span id="fname"></span>, <span class="hl" id="hl">here's how you're doing.</span></h1></div>
       <span class="pill acc" id="ratePill"></span>
     </div>
+    <nav class="tabs" role="tablist" aria-label="Portal sections">
+      <button type="button" class="tab on" data-tab="dash" role="tab" aria-selected="true">Dashboard</button>
+      <button type="button" class="tab" data-tab="kit" role="tab" aria-selected="false">Promo kit <span class="new">New</span></button>
+    </nav>
     <section class="card review" id="review" hidden>
       <div class="ico">⏳</div>
       <div>
@@ -217,12 +269,14 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       </div>
     </section>
     </div>
+    <div id="kit"></div>
   </div>
 </main>
 
 <footer><div class="W"><span class="mono">© 2026 The Trade Vault</span><span class="mono">Questions: support@thetradevault.co</span></div></footer>
 
 <script src="../aff-payout.js"></script>
+<script src="kit.js"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-aff';
@@ -398,6 +452,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
       refs.appendChild(tr);
     });
+    if (window.TVKit) TVKit.render($('kit'), { main: L.main, webinar: L.webinar, webOn: !!W.on });
     $('optSec').hidden = !W.on;
     var opts = $('opts'); opts.innerHTML = ''; $('optCount').textContent = O.length + ' opt-ins';
     if (!O.length) opts.innerHTML = '<tr><td colspan="3" class="empty">No opt-ins yet. Share your webinar link to fill your first seat.</td></tr>';
@@ -443,6 +498,13 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       .then(function () { b.textContent = 'Send request'; b.disabled = viewAs; });
   });
 
+  function showTab(t) {
+    $('app').classList.toggle('kitmode', t === 'kit');
+    document.querySelectorAll('.tab').forEach(function (b) { var on = b.getAttribute('data-tab') === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    try { history.replaceState(null, '', t === 'kit' ? '#kit' : location.pathname + location.search); } catch (e) {}
+  }
+  document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); window.scrollTo({ top: 0, behavior: 'smooth' }); }); });
+  if (location.hash === '#kit') showTab('kit');
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
   $('copyWeb').addEventListener('click', function () { copy(links(data.code).webinar, this, 'Copy link'); });
   document.querySelectorAll('[data-copy]').forEach(function (b) {
