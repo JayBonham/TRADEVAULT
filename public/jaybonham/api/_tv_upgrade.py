@@ -33,6 +33,7 @@ LINK_TTL = 60 * 60 * 48
 SITE = "https://thetradevault.co"
 NAMES = {"tools": "Tools", "community": "Community", "elite": "Elite"}
 OK_STATUS = {"active", "trialing"}
+MIN_PRICE = 1.0  # Whop's smallest price
 TABLE = """CREATE TABLE IF NOT EXISTS tv_upgrades (
     payment_id TEXT PRIMARY KEY, email TEXT NOT NULL, old_membership TEXT, from_tier TEXT,
     to_tier TEXT, amount_usd NUMERIC, status TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
@@ -172,7 +173,7 @@ def quote(cur, email):
             continue
         if not p.get("period") or not 27 <= int(p["period"]) <= 31:
             continue
-        options.append({"tier": t, "name": NAMES[t], "today": round(max(1.0, p["price"] - paying), 2),
+        options.append({"tier": t, "name": NAMES[t], "today": round(max(MIN_PRICE, p["price"] - paying), 2),
                         "monthly": round(p["price"], 2), "plan": p})
     return {"email": email, "membership": m, "tier": tier, "name": NAMES[tier], "paying": round(paying, 2),
             "renews": renews.isoformat(), "days": days, "options": options}
@@ -235,9 +236,10 @@ def apply_code(cur, q, code):
             continue
         hit = True
         cut = (lambda v: v * (1 - amount)) if pct else (lambda v: v - amount)
-        o["today"] = round(max(0.0, cut(o["today"])), 2)
+        # Whop won't create a price under $1 ("The plan must be at least $1.00").
+        o["today"] = round(max(MIN_PRICE, cut(o["today"])), 2)
         if forever:
-            o["monthly"] = round(max(0.0, cut(o["monthly"])), 2)
+            o["monthly"] = round(max(MIN_PRICE, cut(o["monthly"])), 2)
         o["code"] = p.get("code")
     if not hit:
         raise UpgradeError("That code doesn't apply to these upgrades.")
