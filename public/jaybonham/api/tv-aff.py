@@ -3,6 +3,8 @@
   register   POST   application: name, email, password, code?, socials, audience, promote,
                     payout_method, payout {..}           -> {token} (status 'pending')
   login      POST   email, password                       -> {token}
+  forgot     POST   email                     emails a 1-hour, one-use reset link (always says ok)
+  reset      POST   token, password           sets the new password -> {token} (logged in)
   me         GET    (Bearer affiliate token)  status, progress, stats, referrals, commissions, payouts
   code_check GET    ?code=                    -> {available} is this link name free (the signup form asks as they fill it in)
   click      POST   code                      count a visit from an affiliate link
@@ -83,6 +85,10 @@ class handler(BaseHTTPRequestHandler):
             return self._register()
         if a == "login":
             return self._login()
+        if a == "forgot":
+            return self._forgot()
+        if a == "reset":
+            return self._reset()
         if a == "click":
             return self._click()
         if a == "payout":
@@ -198,6 +204,59 @@ class handler(BaseHTTPRequestHandler):
         if row[5] == "rejected":
             return self._json(403, {"error": "Your application wasn't approved this time. Questions: support@thetradevault.co."})
         self._json(200, {"ok": True, "token": A.sign(row[0]), "code": row[2], "name": row[1]})
+
+    def _forgot(self):
+        email = ((self._body().get("email") or "")).strip().lower()
+        if not EMAIL_RE.match(email):
+            return self._json(400, {"error": "Enter the email you signed up with."})
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("SELECT id, name, password_hash, status FROM tv_affiliates WHERE lower(email) = %s", (email,))
+            row = cur.fetchone()
+            c.close()
+        except Exception as e:
+            A.log("TV_AFF_FORGOT_ERR:", e)
+            return self._json(500, {"error": "Password reset is unavailable right now. Email support@thetradevault.co."})
+        # Same answer whether or not the email has an account, so the form can't be used to find affiliates.
+        if row and row[3] != "rejected":
+            link = "https://thetradevault.co/affiliate-login?reset=" + A.reset_token(row[0], row[2])
+            sent = A.send_reset_email(email, row[1], link)
+            A.log("TV_AFF_FORGOT", row[0], "sent" if sent else "FAILED")
+        self._json(200, {"ok": True})
+
+    def _reset(self):
+        b = self._body()
+        token, password = (b.get("token") or "").strip(), b.get("password") or ""
+        if len(password) < 8:
+            return self._json(400, {"error": "Your password needs at least 8 characters."})
+        aff = A.reset_aff(token)
+        expired = {"error": "This reset link has expired or was already used. Ask for a new one.", "expired": True}
+        if not aff:
+            return self._json(400, expired)
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("SELECT name, code, password_hash, status FROM tv_affiliates WHERE id = %s", (aff,))
+            row = cur.fetchone()
+            if not row or row[3] == "rejected" or not A.check_reset(token, row[2]):
+                c.close()
+                return self._json(400, expired)
+            ph, salt = A.hash_password(password)
+            cur.execute("UPDATE tv_affiliates SET password_hash = %s, password_salt = %s WHERE id = %s AND password_hash = %s",
+                        (ph, salt, aff, row[2]))
+            ok = cur.rowcount == 1
+            c.commit()
+            c.close()
+        except Exception as e:
+            A.log("TV_AFF_RESET_ERR:", e)
+            return self._json(500, {"error": "Couldn't save your new password. Please try again."})
+        if not ok:
+            return self._json(400, expired)
+        A.log("TV_AFF_RESET", aff)
+        if row[3] == "paused":
+            return self._json(200, {"ok": True, "paused": True})
+        self._json(200, {"ok": True, "token": A.sign(aff), "code": row[1], "name": row[0]})
 
     def _me(self):
         aff = self._aff(view_ok=True)

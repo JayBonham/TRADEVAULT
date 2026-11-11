@@ -18,6 +18,10 @@ main{display:grid;place-items:center;padding-block:40px}
 .card{padding:30px 28px 28px}
 form{display:grid;gap:14px;margin-top:22px}
 .below{text-align:center;margin-top:18px;font-size:14px;color:var(--tx-mute)}
+.lbrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.forgot{font-size:13px;color:var(--acc);text-decoration:none}.forgot:hover{text-decoration:underline}
+.sent{margin-top:22px;display:grid;gap:10px;font-size:14.5px;line-height:1.55;padding:14px 16px;border-radius:12px;background:rgba(var(--acc-rgb),.06);border:1px solid rgba(var(--acc-rgb),.2)}
+.back{margin-top:18px;font-size:14px}.back a{color:var(--tx-mute);text-decoration:none}.back a:hover{color:var(--tx)}
 .below a{color:var(--tx);text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
@@ -25,42 +29,114 @@ form{display:grid;gap:14px;margin-top:22px}
 <main class="W">
   <div class="box view">
     <a href="/" class="brandc"><img src="../assets/tv-icon.png" alt="" width="30" height="30"><img src="../assets/tv-logo.png" alt="The Trade Vault" width="190" height="15"></a>
-    <div class="card">
+    <div class="card" id="vLogin">
       <span class="eyebrow">Affiliates</span>
       <h1 style="font-size:34px">Affiliate login</h1>
       <p class="muted" style="font-size:14.5px;margin-top:8px">See your clicks, members and commission.</p>
       <form id="f" novalidate>
         <div class="field"><label for="email">Email</label><div class="inp"><input id="email" type="email" autocomplete="email" required></div></div>
-        <div class="field"><label for="pw">Password</label><div class="inp"><input id="pw" type="password" autocomplete="current-password" required></div></div>
+        <div class="field"><div class="lbrow"><label for="pw">Password</label><a href="#" class="forgot" id="toForgot">Forgot password?</a></div><div class="inp"><input id="pw" type="password" autocomplete="current-password" required></div></div>
         <p class="err" id="err" role="alert"></p>
         <button class="btn" id="go" type="submit">Log in</button>
       </form>
     </div>
-    <p class="below">Not an affiliate yet? <a href="/affiliate-signup">Join the programme</a><br>Forgot your password? Email support@thetradevault.co</p>
+    <div class="card" id="vForgot" hidden>
+      <span class="eyebrow">Affiliates</span>
+      <h1 style="font-size:30px">Reset your password</h1>
+      <p class="muted" style="font-size:14.5px;margin-top:8px">Enter the email you signed up with and we'll send you a link to choose a new password.</p>
+      <form id="ff" novalidate>
+        <div class="field"><label for="femail">Email</label><div class="inp"><input id="femail" type="email" autocomplete="email" required></div></div>
+        <p class="err" id="ferr" role="alert"></p>
+        <button class="btn" id="fgo" type="submit">Send reset link</button>
+      </form>
+      <div class="sent" id="fsent" hidden>
+        <p><strong>Check your inbox.</strong> If <span id="fwho"></span> has an affiliate account, a reset link is on its way. It works for 1 hour.</p>
+        <p class="muted">Nothing after a few minutes? Check spam, or email support@thetradevault.co.</p>
+      </div>
+      <p class="back"><a href="#" id="toLogin">← Back to login</a></p>
+    </div>
+    <div class="card" id="vReset" hidden>
+      <span class="eyebrow">Affiliates</span>
+      <h1 style="font-size:30px">Choose a new password</h1>
+      <p class="muted" style="font-size:14.5px;margin-top:8px">At least 8 characters.</p>
+      <form id="rf" novalidate>
+        <div class="field"><label for="npw">New password</label><div class="inp"><input id="npw" type="password" autocomplete="new-password" minlength="8" required></div></div>
+        <div class="field"><label for="npw2">Type it again</label><div class="inp"><input id="npw2" type="password" autocomplete="new-password" minlength="8" required></div></div>
+        <p class="err" id="rerr" role="alert"></p>
+        <button class="btn" id="rgo" type="submit">Save and log in</button>
+      </form>
+      <p class="back" id="rback" hidden><a href="#" id="toForgot2">Send me a new link</a></p>
+    </div>
+    <p class="below">Not an affiliate yet? <a href="/affiliate-signup">Join the programme</a></p>
   </div>
 </main>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-aff';
-  try { if (localStorage.getItem('tv_aff_token')) location.replace('/affiliate-portal'); } catch (e) {}
-  var f = document.getElementById('f'), go = document.getElementById('go'), err = document.getElementById('err');
-  f.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var email = document.getElementById('email').value.trim(), pw = document.getElementById('pw').value;
-    if (!email || !pw) { err.textContent = 'Enter your email and password.'; return; }
-    err.textContent = '';
-    go.disabled = true; go.innerHTML = '<span class="spin"></span>Logging in';
-    fetch(API + '?action=login', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ email: email, password: pw }) })
+  var $ = function (id) { return document.getElementById(id); };
+  var resetTok = new URLSearchParams(location.search).get('reset');
+  if (!resetTok) { try { if (localStorage.getItem('tv_aff_token')) location.replace('/affiliate-portal'); } catch (e) {} }
+  function post(action, body) {
+    return fetch(API + '?action=' + action, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ok) throw { msg: d.error };
-        try { localStorage.setItem('tv_aff_token', d.token); } catch (x) {}
-        location.replace('/affiliate-portal');
-      })
-      .catch(function (x) {
-        err.textContent = (x && x.msg) || 'Something went wrong. Please try again.';
-        go.disabled = false; go.textContent = 'Log in';
-      });
+      .then(function (d) { if (!d.ok) throw { msg: d.error, expired: d.expired }; return d; });
+  }
+  function show(v) { ['vLogin', 'vForgot', 'vReset'].forEach(function (k) { $(k).hidden = k !== v; }); }
+  function busy(btn, text) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>' + text; }
+  function done(token) {
+    try { localStorage.setItem('tv_aff_token', token); } catch (x) {}
+    location.replace('/affiliate-portal');
+  }
+
+  // Log in
+  $('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = $('email').value.trim(), pw = $('pw').value, err = $('err'), go = $('go');
+    if (!email || !pw) { err.textContent = 'Enter your email and password.'; return; }
+    err.textContent = ''; busy(go, 'Logging in');
+    post('login', { email: email, password: pw }).then(function (d) { done(d.token); })
+      .catch(function (x) { err.textContent = (x && x.msg) || 'Something went wrong. Please try again.'; go.disabled = false; go.textContent = 'Log in'; });
+  });
+
+  // Forgot password
+  function openForgot(e) {
+    if (e) e.preventDefault();
+    $('femail').value = $('femail').value || $('email').value.trim();
+    $('ff').hidden = false; $('fsent').hidden = true; $('ferr').textContent = '';
+    if (history.replaceState) history.replaceState(null, '', location.pathname);
+    show('vForgot'); $('femail').focus();
+  }
+  $('toForgot').addEventListener('click', openForgot);
+  $('toForgot2').addEventListener('click', openForgot);
+  $('toLogin').addEventListener('click', function (e) { e.preventDefault(); show('vLogin'); });
+  $('ff').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = $('femail').value.trim(), err = $('ferr'), go = $('fgo');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Enter the email you signed up with.'; return; }
+    err.textContent = ''; busy(go, 'Sending');
+    post('forgot', { email: email }).then(function () {
+      $('fwho').textContent = email; $('ff').hidden = true; $('fsent').hidden = false;
+    }).catch(function (x) { err.textContent = (x && x.msg) || 'Something went wrong. Please try again.'; })
+      .then(function () { go.disabled = false; go.textContent = 'Send reset link'; });
+  });
+
+  // Choose a new password (from the email link)
+  if (resetTok) { show('vReset'); $('npw').focus(); }
+  $('rf').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var a = $('npw').value, b = $('npw2').value, err = $('rerr'), go = $('rgo');
+    if (a.length < 8) { err.textContent = 'Your password needs at least 8 characters.'; return; }
+    if (a !== b) { err.textContent = "Those passwords don't match."; return; }
+    err.textContent = ''; busy(go, 'Saving');
+    post('reset', { token: resetTok, password: a }).then(function (d) {
+      if (d.token) return done(d.token);
+      if (history.replaceState) history.replaceState(null, '', location.pathname);
+      show('vLogin'); $('err').textContent = 'Password saved, but this account is paused. Email support@thetradevault.co.';
+    }).catch(function (x) {
+      err.textContent = (x && x.msg) || 'Something went wrong. Please try again.';
+      if (x && x.expired) { $('rf').hidden = true; $('rback').hidden = false; }
+      go.disabled = false; go.textContent = 'Save and log in';
+    });
   });
 })();
 </script>
