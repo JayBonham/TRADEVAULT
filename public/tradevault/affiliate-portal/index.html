@@ -179,6 +179,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div class="more"><span>Other links:</span>
         <button class="btn-g btn-sm copy" data-copy="pricing" type="button">Pricing section</button>
         <button class="btn-g btn-sm copy" data-copy="pl" type="button">Polish page</button>
+        <button class="btn-g btn-sm copy" data-copy="replay" type="button">Webinar replay</button>
         <span>All links last 60 days per visitor.</span>
       </div>
     </section>
@@ -333,7 +334,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   $('retry').addEventListener('click', load);
 
   function links(code) {
-    return { main: SITE + '/?ref=' + code, pricing: SITE + '/?ref=' + code + '#pricing', pl: SITE + '/pl?ref=' + code, webinar: SITE + '/webinar?ref=' + code };
+    return { main: SITE + '/?ref=' + code, pricing: SITE + '/?ref=' + code + '#pricing', pl: SITE + '/pl?ref=' + code, webinar: SITE + '/webinar?ref=' + code, replay: SITE + '/webinar/replay?ref=' + code };
   }
 
   function copy(text, btn, label) {
@@ -463,7 +464,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
       refs.appendChild(tr);
     });
-    if (window.TVKit) TVKit.render($('kit'), { main: L.main, webinar: L.webinar, webOn: !!W.on });
+    if (window.TVKit) TVKit.render($('kit'), { main: L.main, webinar: L.webinar, replay: L.replay, webOn: !!W.on });
     $('optSec').hidden = !W.on;
     var opts = $('opts'); opts.innerHTML = ''; $('optCount').textContent = O.length + ' opt-ins';
     if (!O.length) opts.innerHTML = '<tr><td colspan="3" class="empty">No opt-ins yet. Share your webinar link to fill your first seat.</td></tr>';

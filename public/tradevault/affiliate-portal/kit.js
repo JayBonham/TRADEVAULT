@@ -44,6 +44,7 @@
     { t: 'When someone asks what you use', s: 'I use The Trade Vault. Live educators, 3 scanners and a journal that tracks whether I followed my rules. Here’s my link if you want a look: {link}' },
     { t: 'They’re interested but unsure', s: 'No pressure at all. Tools starts at $49.99/month if you just want the scanners, and you can upgrade any time. Happy to answer anything about how I use it.' },
     { t: 'Follow-up a few days later', s: 'Hey, did you get a chance to look at The Trade Vault? If you’ve got questions about the scanners or the live sessions, ask away. Link again: {link}' },
+    { t: 'Missed the webinar? Send the replay', s: 'Jay did a full live walkthrough of The Trade Vault: the educators, the scanners, the journal and every plan. You can watch the whole replay here: {replay}' },
     { t: 'Webinar invite', s: 'Jay’s doing a free live walkthrough of The Trade Vault on Zoom: the scanners, the journal and live Q&A. Grab a free seat here: {webinar}', web: true },
     { t: 'Webinar day reminder', s: 'Reminder: the free Trade Vault webinar is today. If you haven’t saved a seat yet, it takes 10 seconds: {webinar}', web: true }
   ];
@@ -72,7 +73,7 @@
   ];
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-  function fill(s, L) { return s.replace(/\{link\}/g, L.main).replace(/\{webinar\}/g, L.webinar); }
+  function fill(s, L) { return s.replace(/\{link\}/g, L.main).replace(/\{webinar\}/g, L.webinar).replace(/\{replay\}/g, L.replay); }
   function copyBtn(text, label, cls) {
     var b = el('button', cls || 'btn-g btn-sm', label); b.type = 'button';
     b.addEventListener('click', function () {
@@ -97,7 +98,7 @@
     hl.appendChild(el('p', 'help', 'Graphics, captions and DMs, all with your link already in them. Download, copy, post.'));
     hero.appendChild(hl);
     var links = el('div', 'kitlinks');
-    [['Direct offer link', L.main, true], ['Webinar link', L.webinar, web]].forEach(function (x) {
+    [['Direct offer link', L.main, true], ['Webinar link', L.webinar, web], ['Last webinar replay', L.replay, true]].forEach(function (x) {
       if (!x[2]) return;
       var r = el('div', 'kitlink'); r.appendChild(el('span', 'mono', x[0])); var c = el('code', null, x[1]); r.appendChild(c); r.appendChild(copyBtn(x[1], 'Copy')); links.appendChild(r);
     });
