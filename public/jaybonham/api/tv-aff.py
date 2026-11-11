@@ -269,6 +269,7 @@ class handler(BaseHTTPRequestHandler):
                             "unlocked_at": _iso(unlocked), "payout_from": _iso(opens), "can_payout": can_pay,
                             "unlock_wait_days": cfg["unlock_wait_days"],
                             "base_pct": cfg["base_pct"], "tier_pct": cfg["tier_pct"], "tier_count": cfg["tier_count"]},
+                "webinar": {"on": bool(cfg["webinar_link"]), "signups": A.webinar_signups(p[3]) if cfg["webinar_link"] else 0},
                 "stats": {"clicks": p[7], "referrals": len(refs), "active": sum(1 for r in refs if r["active"]),
                           "pending": float(s[0]), "ready": float(s[1]), "paid": float(s[2]), "sales": float(s[3]),
                           "requested": float(s[4])},
@@ -854,7 +855,7 @@ class handler(BaseHTTPRequestHandler):
             return
         b = self._body()
         limits = {"base_pct": (0, 100), "tier_pct": (0, 100), "tier_count": (1, 10000), "unlock_count": (0, 10000),
-                  "unlock_wait_days": (0, 365)}
+                  "unlock_wait_days": (0, 365), "webinar_link": (0, 1)}
         c = A.conn()
         cur = c.cursor()
         for k, (lo, hi) in limits.items():

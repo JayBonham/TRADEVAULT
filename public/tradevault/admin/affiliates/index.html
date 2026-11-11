@@ -191,6 +191,11 @@
 
     <!-- Settings -->
     <section class="sec" data-p="set" hidden>
+      <div class="card fcard" style="max-width:720px;margin-bottom:16px">
+        <h3>Webinar links</h3>
+        <p class="help">When on, every affiliate sees their own link to thetradevault.co/webinar in their portal, with a count of who signed up through it. Their links work either way. A sign-up through an affiliate's link credits that affiliate if the person buys within 60 days with the same email, on any device.</p>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:14px;cursor:pointer;font-weight:600"><input id="stWeb" type="checkbox" style="width:20px;height:20px;accent-color:#4B9EFF"> Show webinar links in affiliate portals</label>
+      </div>
       <div class="card fcard" style="max-width:720px">
         <h3>Programme rules</h3>
         <p class="help">Changes apply to new payments from now on. Commission already earned keeps its rate.</p>
@@ -602,12 +607,19 @@
   // settings
   function renderSettings(S) {
     $('stBase').value = S.base_pct; $('stUnlock').value = S.unlock_count; $('stTierN').value = S.tier_count; $('stTier').value = S.tier_pct; $('stWait').value = S.unlock_wait_days; $('stHold').textContent = D.hold_days;
+    $('stWeb').checked = !!S.webinar_link;
   }
   $('stGo').addEventListener('click', function () {
     var b = this, v = { base_pct: +$('stBase').value, unlock_count: +$('stUnlock').value, tier_count: +$('stTierN').value, tier_pct: +$('stTier').value, unlock_wait_days: +$('stWait').value };
     if ([v.base_pct, v.tier_pct].some(function (x) { return !(x >= 0 && x <= 100); }) || !(v.tier_count >= 1) || !(v.unlock_count >= 0) || !(v.unlock_wait_days >= 0 && v.unlock_wait_days <= 365)) { $('stErr').textContent = 'Rates are 0 to 100%, member counts are whole numbers.'; return; }
     $('stErr').textContent = ''; b.disabled = true;
     api('PATCH', 'settings', v).then(function () { toast('Rules saved'); b.disabled = false; load(); }).catch(fail(b));
+  });
+
+  $('stWeb').addEventListener('change', function () {
+    var c = this, on = c.checked; c.disabled = true;
+    api('PATCH', 'settings', { webinar_link: on ? 1 : 0 }).then(function () { toast(on ? 'Webinar links are showing in portals' : 'Webinar links hidden'); c.disabled = false; })
+      .catch(function (x) { c.checked = !on; c.disabled = false; toast('Could not save: ' + ((x && x.msg) || 'network error'), true); });
   });
 
   window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (document.querySelector('[data-p="' + h + '"]')) tab(h); });

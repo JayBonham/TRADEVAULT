@@ -25,6 +25,8 @@
   background:radial-gradient(ellipse 70% 120% at 0% 0%,rgba(28,72,170,.35),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)),var(--g1);border-color:var(--hair-2)}
 .biglink{display:flex;align-items:center;gap:12px;min-width:0;margin-top:8px;padding:14px 16px;border-radius:14px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2)}
 .biglink code{flex:1;min-width:0;font-family:var(--mono);font-size:15px;color:var(--tx);overflow-wrap:anywhere}
+.webcard{margin-top:14px;border-color:rgba(88,233,255,.45);background:linear-gradient(160deg,rgba(38,76,140,.55),rgba(10,26,54,.7))}
+.webcard .mono{color:var(--cy)}
 .more{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13.5px;color:var(--tx-mute)}
 .copy.done{color:var(--ok);border-color:rgba(123,224,176,.4)}
 .sec{margin-top:34px}
@@ -117,6 +119,17 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         <button class="btn-g btn-sm copy" data-copy="pricing" type="button">Pricing section</button>
         <button class="btn-g btn-sm copy" data-copy="pl" type="button">Polish page</button>
         <span>All links last 60 days per visitor.</span>
+      </div>
+    </section>
+
+    <section class="card linkcard webcard" id="webCard" aria-label="Your webinar link" hidden>
+      <div style="min-width:0">
+        <span class="mono">● Your webinar link</span>
+        <div class="biglink"><code id="webLink"></code></div>
+      </div>
+      <button class="btn copy" id="copyWeb" type="button">Copy link</button>
+      <div class="more"><span><b id="webN">0</b> signed up for the webinar through you.</span>
+        <span>If they buy within 60 days using the email they signed up with, they're your member, even if they buy on another device.</span>
       </div>
     </section>
 
@@ -249,7 +262,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   $('retry').addEventListener('click', load);
 
   function links(code) {
-    return { main: SITE + '/?ref=' + code, pricing: SITE + '/?ref=' + code + '#pricing', pl: SITE + '/pl?ref=' + code };
+    return { main: SITE + '/?ref=' + code, pricing: SITE + '/?ref=' + code + '#pricing', pl: SITE + '/pl?ref=' + code, webinar: SITE + '/webinar?ref=' + code };
   }
 
   function copy(text, btn, label) {
@@ -294,6 +307,8 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('review').hidden = !pend; $('live').hidden = pend; $('live2').hidden = pend;
     $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
     $('link').textContent = L.main;
+    var W = d.webinar || {};
+    $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = W.signups || 0;
 
     var u = Math.min(P.personals, P.unlock_count), t = Math.min(P.personals, P.tier_count);
     $('barUnlock').classList.toggle('done', P.qualified);
@@ -412,6 +427,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   });
 
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
+  $('copyWeb').addEventListener('click', function () { copy(links(data.code).webinar, this, 'Copy link'); });
   document.querySelectorAll('[data-copy]').forEach(function (b) {
     var label = b.textContent;
     b.addEventListener('click', function () { copy(links(data.code)[b.getAttribute('data-copy')], b, label); });

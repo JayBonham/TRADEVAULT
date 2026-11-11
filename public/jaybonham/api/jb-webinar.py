@@ -1,5 +1,5 @@
 """Live workshop registration (pages live at /workshop).
-POST {name, email, phone, session (ISO UTC start), page, ref, utm_*}
+POST {name, email, phone, session (ISO UTC start), page, ref, aff, utm_*}
  1. Saves a backup row in Postgres (jb_webinar_regs) so no signup is ever lost.
  2. Upserts the contact in GHL and ADDS tags (never replaces existing tags):
       workshop-registered, workshop-YYYY-MM-DD
@@ -23,6 +23,7 @@ GHL_WEBINAR_WEBHOOK = os.environ.get("GHL_WEBINAR_WEBHOOK", "")
 # thetradevault.co/webinar posts here cross-origin.
 ORIGINS = {"https://thetradevault.co", "https://www.thetradevault.co", "https://start.thetradevault.co"}
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
+AFF_RE = re.compile(r"^[a-z0-9_]{3,20}$")
 
 
 def log(*a):
@@ -72,12 +73,17 @@ class handler(BaseHTTPRequestHandler):
         first, _, last = name.partition(" ")
         utm = {k: _clip(b.get(k), 120) for k in ("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid")}
         ref = _clip(b.get("ref"), 300)
+        # affiliate code from thetradevault.co/webinar?ref=CODE; a later Whop payment by this email credits them
+        aff = _clip(b.get("aff"), 20).lower() if tv else ""
+        if not AFF_RE.match(aff):
+            aff = ""
 
-        ghl = self._ghl(first, last, email, phone, [prefix + "registered", session_tag],
+        tags = [prefix + "registered", session_tag] + (["tv-webinar-aff-" + aff] if aff else [])
+        ghl = self._ghl(first, last, email, phone, tags,
                         "Trade Vault webinar registration" if tv else "Workshop registration")
         if tv:
             utm["program"] = "tradevault"  # marks the backup row
-        saved = self._save(name, email, phone, session, utm, ref)
+        saved = self._save(name, email, phone, session, utm, ref, aff)
         # the inbound webhook feeds the Sniper workshop flow, so TradeVault signups skip it
         hook = False if tv else self._webhook({
             "first_name": first, "last_name": last, "full_name": name,
@@ -94,7 +100,7 @@ class handler(BaseHTTPRequestHandler):
         self._json(200, {"ok": True, "via": [k for k, v in (("db", saved), ("ghl", ghl), ("hook", hook)) if v]})
 
     # ── backup copy ──────────────────────────────────────────
-    def _save(self, name, email, phone, session, utm, ref):
+    def _save(self, name, email, phone, session, utm, ref, aff=""):
         if not DATABASE_URL:
             return False
         try:
@@ -110,9 +116,10 @@ class handler(BaseHTTPRequestHandler):
                     utm JSONB, ref TEXT
                 )
             """)
+            cur.execute("ALTER TABLE jb_webinar_regs ADD COLUMN IF NOT EXISTS aff TEXT")
             cur.execute(
-                "INSERT INTO jb_webinar_regs (session_at, name, email, phone, utm, ref) VALUES (%s,%s,%s,%s,%s,%s)",
-                (session, name, email, phone, json.dumps(utm), ref),
+                "INSERT INTO jb_webinar_regs (session_at, name, email, phone, utm, ref, aff) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                (session, name, email, phone, json.dumps(utm), ref, aff or None),
             )
             conn.commit()
             conn.close()

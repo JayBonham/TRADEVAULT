@@ -292,6 +292,7 @@ footer a{margin:0 10px}
 </div>
 
 <script src="/webinar/tv-schedule.js"></script>
+<script src="/webinar/tv-ref.js"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/jb-webinar';
@@ -315,7 +316,7 @@ footer a{margin:0 10px}
     if (phone.replace(/\D/g, '').length < 7) return (err.textContent = 'Please enter a valid mobile number.', fP.focus());
     btn.disabled = true; var label = btn.innerHTML; btn.textContent = 'Saving your seat…';
 
-    var payload = { program: 'tradevault', name: name, email: email, phone: phone, session: JBW.start.toISOString(), ref: document.referrer || '' };
+    var payload = { program: 'tradevault', name: name, email: email, phone: phone, session: JBW.start.toISOString(), ref: document.referrer || '', aff: (window.tvRef && tvRef()) || '' };
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'].forEach(function (k) { if (qs.get(k)) payload[k] = qs.get(k); });
 
     fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })

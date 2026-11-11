@@ -680,6 +680,9 @@ class handler(BaseHTTPRequestHandler):
                 meta = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
                 if meta.get("tv_ref"):
                     _tv_aff.claim(email, str(meta["tv_ref"]), tier)
+                else:
+                    # No code on the checkout: did they sign up for the webinar through an affiliate's link?
+                    _tv_aff.webinar_claim(email, tier)
         else:
             self._record_affiliate_purchase(email, slug, None)
         return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}

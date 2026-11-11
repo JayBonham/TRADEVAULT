@@ -40,7 +40,9 @@ from _aff_db import hash_password, check_password  # same PBKDF2 scheme as Jay's
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 SECRET = os.environ.get("AFF_SESSION_SECRET", "changeme-aff-secret") + ":tv"
 DEFAULT_PCT = 20
-SETTINGS = {"base_pct": 20, "tier_pct": 30, "tier_count": 25, "unlock_count": 5, "unlock_wait_days": 30}
+SETTINGS = {"base_pct": 20, "tier_pct": 30, "tier_count": 25, "unlock_count": 5, "unlock_wait_days": 30,
+            "webinar_link": 0}  # webinar_link 1: affiliates see their /webinar link in the portal
+WEBINAR_DAYS = 60  # a webinar signup through an affiliate link credits a purchase within this many days
 CLAIM_WINDOW_DAYS = 14
 HOLD_DAYS = 30
 TOKEN_TTL = 60 * 60 * 24 * 30
@@ -520,6 +522,49 @@ def claim(email, code, tier=None, all_payments=False):
     except Exception as e:
         log("TV_AFF_CLAIM_ERR:", e)
         return False
+
+
+def webinar_claim(email, tier=None):
+    """A payment arrived with no affiliate on it. If this email signed up for the webinar through an affiliate's
+    link (thetradevault.co/webinar?ref=CODE) in the last WEBINAR_DAYS days, credit that affiliate. This covers
+    the buyer who registered on their phone and bought later from the email on another device."""
+    email = (email or "").strip().lower()
+    if not (DATABASE_URL and email):
+        return False
+    try:
+        c = conn()
+        cur = c.cursor()
+        cur.execute("SELECT 1 FROM tv_aff_referrals WHERE email = %s", (email,))
+        if cur.fetchone():
+            c.close()
+            return False
+        # only buyers who first paid after signing up: an existing member watching the webinar isn't a new referral
+        cur.execute(f"""SELECT w.aff FROM jb_webinar_regs w WHERE lower(w.email) = %s AND w.aff IS NOT NULL
+                          AND w.created_at > NOW() - INTERVAL '{WEBINAR_DAYS} days'
+                          AND NOT EXISTS (SELECT 1 FROM tv_payments p WHERE p.email = %s AND p.paid_at < w.created_at)
+                        ORDER BY w.created_at DESC LIMIT 1""", (email, email))
+        row = cur.fetchone()
+        c.close()
+    except Exception as e:  # no webinar table/column yet
+        log("TV_AFF_WEBINAR_LOOKUP:", e)
+        return False
+    if not row:
+        return False
+    log("TV_AFF_WEBINAR_CLAIM", row[0], "->", mask(email))
+    return claim(email, row[0], tier)
+
+
+def webinar_signups(code):
+    """How many webinar signups came through this affiliate's link (shown in their portal)."""
+    try:
+        c = conn()
+        cur = c.cursor()
+        cur.execute("SELECT COUNT(DISTINCT lower(email)) FROM jb_webinar_regs WHERE aff = %s", (code,))
+        n = cur.fetchone()[0]
+        c.close()
+        return int(n)
+    except Exception:
+        return 0
 
 
 def pending_claim(email, code):
