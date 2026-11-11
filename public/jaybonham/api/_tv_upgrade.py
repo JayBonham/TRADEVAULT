@@ -35,7 +35,8 @@ NAMES = {"tools": "Tools", "community": "Community", "elite": "Elite"}
 OK_STATUS = {"active", "trialing"}
 TABLE = """CREATE TABLE IF NOT EXISTS tv_upgrades (
     payment_id TEXT PRIMARY KEY, email TEXT NOT NULL, old_membership TEXT, from_tier TEXT,
-    to_tier TEXT, amount_usd NUMERIC, status TEXT, created_at TIMESTAMPTZ DEFAULT NOW())"""
+    to_tier TEXT, amount_usd NUMERIC, status TEXT, created_at TIMESTAMPTZ DEFAULT NOW());
+ALTER TABLE tv_upgrades ADD COLUMN IF NOT EXISTS code TEXT"""
 
 
 def log(*a):
@@ -173,25 +174,88 @@ def quote(cur, email):
             continue
         options.append({"tier": t, "name": NAMES[t], "today": round(max(1.0, p["price"] - paying), 2),
                         "monthly": round(p["price"], 2), "plan": p})
-    return {"membership": m, "tier": tier, "name": NAMES[tier], "paying": round(paying, 2),
+    return {"email": email, "membership": m, "tier": tier, "name": NAMES[tier], "paying": round(paying, 2),
             "renews": renews.isoformat(), "days": days, "options": options}
 
 
 def public(q):
     """The quote as the upgrade page shows it."""
-    return {"current": {"tier": q["tier"], "name": q["name"], "paying": q["paying"], "renews": q["renews"]},
-            "options": [{k: o[k] for k in ("tier", "name", "today", "monthly")} for o in q["options"]]}
+    out = {"current": {"tier": q["tier"], "name": q["name"], "paying": q["paying"], "renews": q["renews"]},
+           "options": [{k: o[k] for k in ("tier", "name", "today", "monthly", "code") if k in o} for o in q["options"]]}
+    if q.get("code"):
+        out["code"] = q["code"]
+    return out
 
 
-def checkout(cur, email, tier):
+# ---------- promo codes ----------
+# Whop's promo codes only fit the price options already in a product, not the one-off option an
+# upgrade checks out on. So the upgrade page takes the code and we apply it to the price ourselves,
+# using the code exactly as it's set up in Whop (amount, product, expiry, once or forever).
+
+def _whop_promo(code):
+    after = None
+    for _ in range(10):
+        page = W.whop("GET", "/api/v1/promo_codes?account_id=%s&status=active&first=50%s" % (W.WHOP_COMPANY, "&after=" + after if after else ""))
+        for p in page.get("data") or []:
+            if str(p.get("code") or "").strip().lower() == code:
+                return p
+        info = page.get("page_info") or {}
+        after = info.get("end_cursor")
+        if not (info.get("has_next_page") and after):
+            return None
+    return None
+
+
+def apply_code(cur, q, code):
+    """Take a Whop promo code off the upgrade prices it fits. Raises UpgradeError if it fits none."""
+    code = (code or "").strip().lower()
+    if not code:
+        return q
+    p = _whop_promo(code)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    if not p or (p.get("expires_at") and (_ts(p["expires_at"]) or now) <= now):
+        raise UpgradeError("That code isn't valid or has expired.")
+    if p.get("new_users_only") or p.get("churned_users_only"):
+        raise UpgradeError("That code is for new members only.")
+    if not p.get("unlimited_stock") and p.get("stock") is not None and int(p.get("stock") or 0) <= 0:
+        raise UpgradeError("That code has been used up.")
+    if p.get("one_per_customer"):
+        cur.execute(TABLE)
+        cur.execute("SELECT 1 FROM tv_upgrades WHERE lower(email) = %s AND lower(code) = %s AND status = 'done' LIMIT 1",
+                    (q["email"], code))
+        if cur.fetchone():
+            raise UpgradeError("You've already used that code.")
+    prod = (p.get("product") or {}).get("id") if isinstance(p.get("product"), dict) else p.get("product_id")
+    amount = _num(p.get("amount_off")) or 0
+    pct = str(p.get("promo_type")) == "percentage"
+    forever = str(p.get("duration")) == "forever"
+    hit = False
+    for o in q["options"]:
+        if prod and prod != o["plan"]["product"]:
+            continue
+        hit = True
+        cut = (lambda v: v * (1 - amount)) if pct else (lambda v: v - amount)
+        o["today"] = round(max(0.0, cut(o["today"])), 2)
+        if forever:
+            o["monthly"] = round(max(0.0, cut(o["monthly"])), 2)
+        o["code"] = p.get("code")
+    if not hit:
+        raise UpgradeError("That code doesn't apply to these upgrades.")
+    q["code"] = p.get("code")
+    return q
+
+
+def checkout(cur, email, tier, code=""):
     """A Whop checkout for the upgrade -> purchase URL."""
-    q = quote(cur, email)
+    q = apply_code(cur, quote(cur, email), code)
     opt = next((o for o in q["options"] if o["tier"] == tier), None)
     if not opt:
         raise UpgradeError("That upgrade isn't available on your plan.")
     m = q["membership"]
     meta = {k: str(v) for k, v in (m.get("metadata") or {}).items()} if isinstance(m.get("metadata"), dict) else {}
     meta.update({"tv_tier": tier, "tv_upgrade_from": m["id"], "tv_upgrade_old_tier": q["tier"]})
+    if opt.get("code"):
+        meta["tv_upgrade_code"] = str(opt["code"])
     if tier == "elite":
         meta.update({"tv_scanners": W.ALL_SCANNERS, "tv_educator": "all"})
     renews = _ts(q["renews"]).strftime("%-d %b")
@@ -208,7 +272,7 @@ def checkout(cur, email, tier):
             "renewal_price": opt["monthly"],
             "trial_period_days": q["days"],
             "title": ("Upgrade to " + NAMES[tier])[:30],
-            "description": ("Upgrade from %s: $%s today (the difference), then $%s/month from %s, your usual billing date. "
+            "description": ("Upgrade from %s: $%s today, then $%s/month from %s, your usual billing date. "
                             "Your %s plan is cancelled automatically, so you're never billed twice.")
                            % (q["name"], _money(opt["today"]), _money(opt["monthly"]), renews, q["name"]),
             "visibility": "hidden",
@@ -267,10 +331,11 @@ def finish(cur, payment, email):
         log("TV_UPGRADE_CANCEL_ERR", pay_id, old, e)
     if status == "done" and from_tier == "tools":
         _redo_setup(email)
-    cur.execute("""INSERT INTO tv_upgrades (payment_id, email, old_membership, from_tier, to_tier, amount_usd, status)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s)
+    cur.execute("""INSERT INTO tv_upgrades (payment_id, email, old_membership, from_tier, to_tier, amount_usd, status, code)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status""",
-                (pay_id, email, old, from_tier, to_tier, _num(payment.get("usd_total") or payment.get("total")), status))
+                (pay_id, email, old, from_tier, to_tier, _num(payment.get("usd_total") or payment.get("total")), status,
+                 (meta.get("tv_upgrade_code") or "").lower() or None))
     log("TV_UPGRADE", pay_id, email, from_tier, "->", to_tier, status)
 
 

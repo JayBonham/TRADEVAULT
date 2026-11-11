@@ -64,17 +64,19 @@ class handler(BaseHTTPRequestHandler):
         self._json(200, {"ok": True})
 
     def _quote(self):
-        email = U.verify(self._body().get("t"))
+        self._body_cache = self._body()
+        email = U.verify(self._body_cache.get("t"))
         if not email:
             return self._json(400, {"error": "This upgrade link has expired. Ask for a new one below.", "expired": True})
-        return self._run(lambda cur: dict(U.public(U.quote(cur, email)), ok=True, email=email))
+        code = self._body_cache.get("code") or ""
+        return self._run(lambda cur: dict(U.public(U.apply_code(cur, U.quote(cur, email), code)), ok=True, email=email))
 
     def _go(self):
         b = self._body()
         email = U.verify(b.get("t"))
         if not email:
             return self._json(400, {"error": "This upgrade link has expired. Ask for a new one below.", "expired": True})
-        return self._run(lambda cur: {"ok": True, "url": U.checkout(cur, email, str(b.get("tier") or ""))})
+        return self._run(lambda cur: {"ok": True, "url": U.checkout(cur, email, str(b.get("tier") or ""), str(b.get("code") or ""))})
 
     def _link(self):
         if not self._admin():

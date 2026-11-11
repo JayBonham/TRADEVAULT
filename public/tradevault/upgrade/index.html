@@ -31,6 +31,9 @@ form{display:grid;gap:14px;margin-top:22px}
 .opt .btn{width:100%;margin-top:16px}
 .fine{margin-top:18px;font-size:13px;color:var(--tx-mute);line-height:1.6}
 .err{margin-top:12px}
+.codebox{margin-top:16px;display:flex;gap:8px}.codebox .inp{flex:1;min-width:0}.codebox .btn-g{min-height:48px;padding:8px 18px}
+.cmsg{font-size:13.5px;margin-top:6px;min-height:1.2em}.cmsg.ok{color:var(--ok)}.cmsg.bad{color:var(--bad)}
+.acct{margin-top:14px;font-size:13.5px;line-height:1.55;padding:12px 14px;border-radius:12px;background:rgba(245,184,92,.07);border:1px solid rgba(245,184,92,.28);color:var(--tx-dim)}.acct b{color:var(--tx)}
 .load{display:flex;justify-content:center;padding:30px 0}.load .spin{border-color:rgba(255,255,255,.2);border-top-color:#fff;width:22px;height:22px}
 .below{text-align:center;margin-top:18px;font-size:14px;color:var(--tx-mute)}
 .back a{color:var(--tx-mute)}.back a:hover{color:var(--tx)}
@@ -67,8 +70,11 @@ form{display:grid;gap:14px;margin-top:22px}
       <div class="load" id="qload"><span class="spin"></span></div>
       <div id="qbody" hidden>
         <div class="now"><div><span class="mono">Your plan now</span><div class="t" id="curName"></div></div><div class="num" style="text-align:right"><div id="curPrice"></div><div class="muted" style="font-size:13px" id="curRenew"></div></div></div>
+        <div class="codebox" id="codeRow"><div class="inp"><input id="code" type="text" placeholder="Promo code" autocapitalize="characters" autocomplete="off" spellcheck="false"></div><button class="btn-g" id="codeGo" type="button">Apply</button></div>
+        <p class="cmsg" id="cmsg" role="status"></p>
         <div class="opts" id="opts"></div>
-        <p class="fine">Today's price is the difference between what you pay now and the new plan, whatever day of the month you upgrade. Have a promo code? Enter it on the next page. Your current plan is cancelled the moment the upgrade goes through.</p>
+        <p class="acct">On the next page, pay while signed in to Whop as <b id="acctEmail"></b>, the account your current plan is on. That's how we know to cancel your old plan.</p>
+        <p class="fine">Today's price is the difference between what you pay now and the new plan, whatever day of the month you upgrade. Your current plan is cancelled the moment the upgrade goes through.</p>
       </div>
       <p class="err" id="qerr" role="alert"></p>
       <p class="back" id="qback" hidden style="margin-top:16px;font-size:14px"><a href="/upgrade">Send me a new link</a></p>
@@ -104,21 +110,27 @@ form{display:grid;gap:14px;margin-top:22px}
 
   if (!tok) return;
   $('vStart').hidden = true; $('vQuote').hidden = false;
-  post('quote', { t: tok }).then(function (d) {
+  var code = '';
+  function render(d) {
     var c = d.current;
     $('curName').textContent = c.name;
     $('curPrice').textContent = money(c.paying) + '/month';
     $('curRenew').textContent = 'Renews ' + day(c.renews);
+    $('acctEmail').textContent = d.email;
     if (!d.options.length) {
       $('opts').innerHTML = '<div class="note"><p><strong>You\'re on our top plan.</strong> There\'s nothing to upgrade to.</p></div>';
-    } else {
-      $('opts').innerHTML = d.options.map(function (o) {
-        return '<div class="opt"><span class="mono">Upgrade to</span><h2>' + esc(o.name) + '</h2>' +
-          '<div class="price"><span class="big num">' + money(o.today) + '</span><span class="muted">today</span></div>' +
-          '<div class="then">Then ' + money(o.monthly) + '/month from ' + day(c.renews) + ', your usual billing date.</div>' +
-          '<button class="btn" data-tier="' + esc(o.tier) + '" type="button">Upgrade to ' + esc(o.name) + ' <span class="arr">→</span></button></div>';
-      }).join('');
+      $('codeRow').hidden = true;
+      return;
     }
+    $('opts').innerHTML = d.options.map(function (o) {
+      return '<div class="opt"><span class="mono">Upgrade to</span><h2>' + esc(o.name) + '</h2>' +
+        '<div class="price"><span class="big num">' + money(o.today) + '</span><span class="muted">today' + (o.code ? ' · code ' + esc(o.code.toUpperCase()) : '') + '</span></div>' +
+        '<div class="then">Then ' + money(o.monthly) + '/month from ' + day(c.renews) + ', your usual billing date.</div>' +
+        '<button class="btn" data-tier="' + esc(o.tier) + '" type="button">Upgrade to ' + esc(o.name) + ' <span class="arr">→</span></button></div>';
+    }).join('');
+  }
+  post('quote', { t: tok }).then(function (d) {
+    render(d);
     $('qload').hidden = true; $('qbody').hidden = false;
   }).catch(function (x) {
     $('qload').hidden = true;
@@ -126,13 +138,27 @@ form{display:grid;gap:14px;margin-top:22px}
     if (x && x.expired) $('qback').hidden = false;
   });
 
+  function applyCode() {
+    var v = $('code').value.trim(), msg = $('cmsg'), b = $('codeGo');
+    msg.className = 'cmsg'; msg.textContent = '';
+    b.disabled = true; b.textContent = 'Checking';
+    post('quote', { t: tok, code: v }).then(function (d) {
+      code = v; render(d);
+      msg.className = 'cmsg ok'; msg.textContent = v ? 'Code ' + v.toUpperCase() + ' applied.' : '';
+    }).catch(function (x) {
+      msg.className = 'cmsg bad'; msg.textContent = (x && x.msg) || 'Couldn\'t check that code.';
+    }).then(function () { b.disabled = false; b.textContent = 'Apply'; });
+  }
+  $('codeGo').addEventListener('click', applyCode);
+  $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyCode(); } });
+
   $('opts').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-tier]');
     if (!b) return;
     var label = b.innerHTML;
     b.disabled = true; b.innerHTML = '<span class="spin"></span>Opening checkout';
     $('qerr').textContent = '';
-    post('go', { t: tok, tier: b.getAttribute('data-tier') }).then(function (d) { location.href = d.url; })
+    post('go', { t: tok, tier: b.getAttribute('data-tier'), code: code }).then(function (d) { location.href = d.url; })
       .catch(function (x) {
         $('qerr').textContent = (x && x.msg) || 'Something went wrong. Please try again.';
         if (x && x.expired) $('qback').hidden = false;
