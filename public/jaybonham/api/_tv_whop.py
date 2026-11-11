@@ -23,6 +23,15 @@ VALID = {"active", "trialing", "past_due"}
 EDU_KEYS = {"jay bonham": "jay", "adam haase": "adam", "tyler collins": "tyler", "andrew bridges": "andrew"}
 SCAN_KEYS = {"killshot": "killshot", "smartshot": "smartshot", "spectrum": "spectrum"}
 ALL_SCANNERS = "killshot,smartshot,spectrum"
+WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
+STORE = "https://whop.com/sniper-academy-603f/"
+PRODUCTS = {  # tier -> (Whop product title, store page), cheapest first
+    "tools":     ("tradevault tools",     STORE + "sniper-tools/"),
+    "community": ("tradevault community", STORE + "sniper-community-3c/"),
+    "elite":     ("tradevault elite",     STORE + "sniper-elite-3d/"),
+}
+RANK = {t: i for i, t in enumerate(PRODUCTS)}
+PLAN_TABLE = "CREATE TABLE IF NOT EXISTS tv_whop_plans (tier TEXT PRIMARY KEY, plan_id TEXT NOT NULL)"
 
 
 def log(*a):
@@ -39,6 +48,38 @@ def whop(method, path, body=None):
     if r.status >= 300:
         raise RuntimeError("Whop %s %s %s: %s" % (method, path.split("?")[0], r.status, raw[:200].decode("utf-8", "replace")))
     return json.loads(raw or b"{}")
+
+
+def _title(p):
+    prod = p.get("product") if isinstance(p.get("product"), dict) else {}
+    t = prod.get("title") or next((li.get("product_title") for li in p.get("line_items") or []
+                                   if isinstance(li, dict) and li.get("product_title")), "")
+    return " ".join(str(t or "").lower().split())
+
+
+def plan_id(cur, tier):
+    """The plan new buyers check out on, per tier. Env TV_PLAN_<TIER> wins; otherwise it's learned
+    from the most recent first payment for that product and remembered in tv_whop_plans."""
+    env = os.environ.get("TV_PLAN_" + tier.upper(), "").strip()
+    if env:
+        return env
+    cur.execute(PLAN_TABLE)
+    cur.execute("SELECT plan_id FROM tv_whop_plans WHERE tier = %s", (tier,))
+    row = cur.fetchone()
+    if row:
+        return row[0]
+    page = whop("GET", "/api/v1/payments?account_id=" + WHOP_COMPANY + "&first=100")
+    found = {}
+    for p in page.get("data") or []:  # newest first
+        if p.get("status") != "paid" or p.get("billing_reason") not in ("subscription_create", "one_time", None):
+            continue
+        plan = p.get("variant_id") or (p["plan"].get("id") if isinstance(p.get("plan"), dict) else None)
+        for t, (title, _) in PRODUCTS.items():
+            if plan and t not in found and _title(p) == title:
+                found[t] = plan
+    for t, pid in found.items():
+        cur.execute("INSERT INTO tv_whop_plans (tier, plan_id) VALUES (%s, %s) ON CONFLICT (tier) DO NOTHING", (t, pid))
+    return found.get(tier)
 
 
 def _utc(iso):

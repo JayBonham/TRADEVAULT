@@ -683,6 +683,16 @@ class handler(BaseHTTPRequestHandler):
                 else:
                     # No code on the checkout: did they sign up for the webinar through an affiliate's link?
                     _tv_aff.webinar_claim(email, tier)
+                if meta.get("tv_upgrade_from"):
+                    # An upgrade from /upgrade: the old membership goes now, so it never renews.
+                    import _tv_upgrade
+                    try:
+                        c = _tv_aff.conn()
+                        _tv_upgrade.finish(c.cursor(), data, email)
+                        c.commit()
+                        c.close()
+                    except Exception as e:
+                        print("TV_UPGRADE_FINISH_ERR:", e, file=sys.stderr)
         else:
             self._record_affiliate_purchase(email, slug, None)
         return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}
