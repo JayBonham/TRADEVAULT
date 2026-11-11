@@ -82,6 +82,7 @@
 .linkcard .goes{display:block;font-size:13.5px;color:var(--tx-dim);margin-top:4px}
 .webcard{margin-top:14px;border-color:rgba(88,233,255,.45);background:linear-gradient(160deg,rgba(38,76,140,.55),rgba(10,26,54,.7))}
 .webcard .mono{color:var(--cy)}
+.replaycard{margin-top:14px}
 .more{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13.5px;color:var(--tx-mute)}
 .copy.done{color:var(--ok);border-color:rgba(123,224,176,.4)}
 .sec{margin-top:34px}
@@ -179,7 +180,6 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div class="more"><span>Other links:</span>
         <button class="btn-g btn-sm copy" data-copy="pricing" type="button">Pricing section</button>
         <button class="btn-g btn-sm copy" data-copy="pl" type="button">Polish page</button>
-        <button class="btn-g btn-sm copy" data-copy="replay" type="button">Webinar replay</button>
         <span>All links last 60 days per visitor.</span>
       </div>
     </section>
@@ -195,6 +195,17 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div class="more"><span><b id="webN">0</b> signed up for the webinar through you. <a href="#optSec" style="color:var(--cy)">See your opt-ins ↓</a></span>
         <span>If they buy within 60 days using the email they signed up with, they're your member, even if they buy on another device.</span>
       </div>
+    </section>
+
+    <section class="card linkcard hasshot replaycard" aria-label="Your replay link">
+      <a class="shot" href="/webinar/replay" target="_blank" rel="noopener"><img src="/assets/promo/preview-replay.jpg" alt="The Trade Vault webinar replay page" loading="lazy"><span>Webinar replay</span></a>
+      <div style="min-width:0">
+        <span class="mono">▶ Your replay link</span>
+        <span class="goes">To the full replay of the last webinar. Use it for people who missed it live and want to watch now.</span>
+        <div class="biglink"><code id="replayLink"></code></div>
+      </div>
+      <button class="btn copy" id="copyReplay" type="button">Copy link</button>
+      <div class="more"><span>Tracks on the device they watch on. If they buy on another device, send a <a href="#claimSec" style="color:var(--acc)">Missing a member?</a> request.</span></div>
     </section>
 
     <section class="sec">
@@ -378,7 +389,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('payBtn').hidden = pend;
     $('review').hidden = !pend; $('live').hidden = pend; $('live2').hidden = pend;
     $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
-    $('link').textContent = L.main;
+    $('link').textContent = L.main; $('replayLink').textContent = L.replay;
     var W = d.webinar || {};
     var O = W.optins || [];
     $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = O.length;
@@ -518,6 +529,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); window.scrollTo({ top: 0, behavior: 'smooth' }); }); });
   if (location.hash === '#kit') showTab('kit');
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
+  $('copyReplay').addEventListener('click', function () { copy(links(data.code).replay, this, 'Copy link'); });
   $('copyWeb').addEventListener('click', function () { copy(links(data.code).webinar, this, 'Copy link'); });
   document.querySelectorAll('[data-copy]').forEach(function (b) {
     var label = b.textContent;
