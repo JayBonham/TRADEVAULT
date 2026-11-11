@@ -212,12 +212,14 @@ def finish(cur, payment, email):
     # Only the member who owns the old plan can cancel it by upgrading.
     cur.execute("SELECT email FROM tv_payments WHERE membership_id = %s LIMIT 1", (old,))
     owner = cur.fetchone()
+    payer = email
+    email = email or (owner[0] if owner else "")  # for the log and /setup, never for the owner check
     status = "done"
     try:
         m = W.whop("GET", "/api/v1/memberships/" + old)
         user = payment.get("user") if isinstance(payment.get("user"), dict) else {}
         same_user = bool(m.get("user_id") and m.get("user_id") == (user.get("id") or payment.get("user_id")))
-        if not (same_user or (owner and owner[0].lower() == email.lower())):
+        if not (same_user or (owner and payer and owner[0].lower() == payer.lower())):
             status = "owner_mismatch"
             log("TV_UPGRADE_MISMATCH", pay_id, email, old)
         elif str(m.get("status")) in W.VALID:

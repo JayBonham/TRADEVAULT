@@ -602,6 +602,21 @@ class handler(BaseHTTPRequestHandler):
                               "membership.activated", "membership.went_valid"):
                 self._membership_change(event.get("data", {}) or {},
                                         event_type in ("membership.activated", "membership.went_valid"))
+                # An upgrade the member paid nothing for today (e.g. a promo code covered the
+                # difference) may never send payment.succeeded: the new membership going live cancels the old.
+                d = event.get("data", {}) or {}
+                if event_type in ("membership.activated", "membership.went_valid") and \
+                        isinstance(d.get("metadata"), dict) and d["metadata"].get("tv_upgrade_from"):
+                    sys.path.insert(0, sys_path)
+                    import _tv_aff, _tv_upgrade
+                    try:
+                        u = d.get("user") if isinstance(d.get("user"), dict) else {}
+                        c = _tv_aff.conn()
+                        _tv_upgrade.finish(c.cursor(), d, (u.get("email") or "").strip().lower())
+                        c.commit()
+                        c.close()
+                    except Exception as e:
+                        print("TV_UPGRADE_FINISH_ERR:", e, file=sys.stderr)
 
             if event_type not in ("payment.succeeded", "membership.went_valid",
                                    "membership.activated", "member.created"):
