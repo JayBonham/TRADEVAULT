@@ -73,6 +73,13 @@
   background:radial-gradient(ellipse 70% 120% at 0% 0%,rgba(28,72,170,.35),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)),var(--g1);border-color:var(--hair-2)}
 .biglink{display:flex;align-items:center;gap:12px;min-width:0;margin-top:8px;padding:14px 16px;border-radius:14px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2)}
 .biglink code{flex:1;min-width:0;font-family:var(--mono);font-size:15px;color:var(--tx);overflow-wrap:anywhere}
+.linkcard.hasshot{grid-template-columns:210px minmax(0,1fr) auto}
+.linkcard .shot{grid-row:1/3;align-self:stretch;display:block;border-radius:14px;overflow:hidden;border:1px solid var(--hair-2);background:#050A14;box-shadow:0 18px 40px rgba(0,0,0,.45);position:relative}
+.linkcard .shot img{display:block;width:100%;height:100%;min-height:130px;object-fit:cover;object-position:top center;transition:transform .4s}
+.linkcard .shot:hover img{transform:scale(1.04)}
+.linkcard .shot span{position:absolute;left:8px;bottom:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:rgba(5,10,20,.85);color:var(--tx-dim)}
+.linkcard.hasshot .more{grid-column:2/-1}
+.linkcard .goes{display:block;font-size:13.5px;color:var(--tx-dim);margin-top:4px}
 .webcard{margin-top:14px;border-color:rgba(88,233,255,.45);background:linear-gradient(160deg,rgba(38,76,140,.55),rgba(10,26,54,.7))}
 .webcard .mono{color:var(--cy)}
 .more{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13.5px;color:var(--tx-mute)}
@@ -112,7 +119,7 @@
 .bar p{font-size:13px;color:var(--tx-mute)}
 .bar.done b{color:var(--ok)}
 .loader{width:32px;height:32px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
-@media(max-width:860px){.linkcard,.payout,.prog{grid-template-columns:minmax(0,1fr)}.review{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){.linkcard,.linkcard.hasshot,.payout,.prog{grid-template-columns:minmax(0,1fr)}.linkcard .shot{grid-row:auto;max-height:180px}.linkcard.hasshot .more{grid-column:1/-1}.review{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.how{grid-template-columns:minmax(0,1fr)}}
 td.who b{display:block;font-weight:500}
 td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
@@ -161,9 +168,11 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     </section>
     <div id="live">
 
-    <section class="card linkcard" aria-label="Your link">
+    <section class="card linkcard hasshot" aria-label="Your direct offer link">
+      <a class="shot" id="shotMain" href="/" target="_blank" rel="noopener"><img src="/assets/promo/preview-home.jpg" alt="The Trade Vault homepage" loading="lazy"><span>Homepage</span></a>
       <div style="min-width:0">
-        <span class="mono">Your referral link</span>
+        <span class="mono">Your direct offer link</span>
+        <span class="goes">Straight to the homepage and plans. Use it when people are ready to join.</span>
         <div class="biglink"><code id="link"></code></div>
       </div>
       <button class="btn copy" id="copyMain" type="button">Copy link</button>
@@ -174,9 +183,11 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       </div>
     </section>
 
-    <section class="card linkcard webcard" id="webCard" aria-label="Your webinar link" hidden>
+    <section class="card linkcard webcard hasshot" id="webCard" aria-label="Your webinar link" hidden>
+      <a class="shot" id="shotWeb" href="/webinar" target="_blank" rel="noopener"><img src="/assets/promo/preview-webinar.jpg" style="object-position:18% top" alt="The Trade Vault webinar sign-up page" loading="lazy"><span>Webinar sign-up</span></a>
       <div style="min-width:0">
         <span class="mono">● Your webinar link</span>
+        <span class="goes">To the free webinar sign-up. Use it for people who want to see inside first.</span>
         <div class="biglink"><code id="webLink"></code></div>
       </div>
       <button class="btn copy" id="copyWeb" type="button">Copy link</button>

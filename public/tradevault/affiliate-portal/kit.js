@@ -97,7 +97,7 @@
     hl.appendChild(el('p', 'help', 'Graphics, captions and DMs, all with your link already in them. Download, copy, post.'));
     hero.appendChild(hl);
     var links = el('div', 'kitlinks');
-    [['Your link', L.main, true], ['Webinar link', L.webinar, web]].forEach(function (x) {
+    [['Direct offer link', L.main, true], ['Webinar link', L.webinar, web]].forEach(function (x) {
       if (!x[2]) return;
       var r = el('div', 'kitlink'); r.appendChild(el('span', 'mono', x[0])); var c = el('code', null, x[1]); r.appendChild(c); r.appendChild(copyBtn(x[1], 'Copy')); links.appendChild(r);
     });
