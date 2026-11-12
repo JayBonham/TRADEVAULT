@@ -15,9 +15,11 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
   comment    POST {id, body, parent?} (Bearer) post a comment or a reply
   uncomment  POST {cid}               (Bearer) take down your own comment (a coach: any)
   check      GET  ?email= (Bearer admin)  whether an email has access, and why
+  members    GET  (Bearer admin session)  every Sniper member with progress and last seen
+  profile    GET  ?email= (Bearer admin session)  one member: Whop plans, trader profile, GHL, progress
 
-Coaches (env JB_ACADEMY_COACHES, comma-separated emails, e.g. Jay's) always have access and
-post with a Coach badge.
+Admins (ADMINS below, plus env JB_ACADEMY_COACHES) always have access, see the Members area and
+post with a Coach / Team badge. The jaybonham.com admin token also opens members/profile.
 """
 import json
 import os
@@ -32,11 +34,16 @@ sys.path.insert(0, os.path.dirname(__file__))
 import _jb_academy as J
 import _tv_aff as A
 import _tv_whop as W
+import _jb_admin
 from _auth import verify_token
 
 COURSE = "cors_ubqXl5GzVJpMN"  # Whop course "Sniper Academy"
 OK_STATUS = {"active", "trialing", "past_due", "completed"}
-COACHES = {e.strip().lower() for e in os.environ.get("JB_ACADEMY_COACHES", "").split(",") if e.strip()}
+ADMINS = {"jay@jaybonham.com": ("Jay Bonham", "coach"), "alex@alexktaylor.com": ("Alex Taylor", "team")}
+for _e in os.environ.get("JB_ACADEMY_COACHES", "").split(","):
+    if _e.strip():
+        ADMINS.setdefault(_e.strip().lower(), ("", "coach"))
+COACHES = set(ADMINS)
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
 POSTS_PER_HOUR = 20
@@ -60,7 +67,12 @@ CREATE TABLE IF NOT EXISTS jb_academy_comments (
     body       TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ);
-CREATE INDEX IF NOT EXISTS jb_academy_comments_lesson ON jb_academy_comments (lesson_id, created_at);"""
+CREATE INDEX IF NOT EXISTS jb_academy_comments_lesson ON jb_academy_comments (lesson_id, created_at);
+CREATE TABLE IF NOT EXISTS jb_academy_seen (
+    email      TEXT PRIMARY KEY,
+    logins     INTEGER NOT NULL DEFAULT 0,
+    last_login TIMESTAMPTZ,
+    last_seen  TIMESTAMPTZ NOT NULL DEFAULT now());"""
 
 _members = {}   # email -> (checked_at, ok, name)
 _titles = {}    # product id -> lowercased title
@@ -118,8 +130,8 @@ def member(email, fresh=False):
     hit = _members.get(email)
     if hit and not fresh and time.time() - hit[0] < MEMBER_CACHE:
         return hit[1], hit[2]
-    if email in COACHES:
-        _members[email] = (time.time(), True, "Jay Bonham" if len(COACHES) == 1 else _name_from([], email))
+    if email in ADMINS:
+        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email))
         return True, _members[email][2]
     c = A.conn()
     try:
@@ -247,6 +259,8 @@ class handler(BaseHTTPRequestHandler):
         a = self._action()
         if a == "check":
             return self._check()
+        if a in ("members", "profile"):
+            return self._admin_get(a)
         if a not in ("course", "lesson", "comments"):
             return self._json(404, {"error": "unknown action"})
         email = self._member()
@@ -266,7 +280,14 @@ class handler(BaseHTTPRequestHandler):
                 data["progress"] = {r[0]: {"pos": r[1], "done": r[2]} for r in rows}
                 data["last"] = rows[0][0] if rows else None
                 data["comments"] = counts
-                return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], coach=email in COACHES))
+                c = db()
+                cur = c.cursor()
+                cur.execute("""INSERT INTO jb_academy_seen (email, last_seen) VALUES (%s, now())
+                               ON CONFLICT (email) DO UPDATE SET last_seen = now()""", (email,))
+                c.commit()
+                c.close()
+                return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], admin=email in ADMINS,
+                                            role=ADMINS.get(email, ("", None))[1]))
             lid = self._q("id")
             if a == "comments":
                 if not (ID_RE.match(lid) and allowed(lid)):
@@ -317,6 +338,14 @@ class handler(BaseHTTPRequestHandler):
             return self._json(500, {"error": "Sign-in is unavailable right now. Please try again in a minute."})
         if not ok:
             return self._json(403, {"error": "We couldn't find an active Sniper Academy membership on this email.", "expired": True})
+        try:
+            c = db()
+            c.cursor().execute("""INSERT INTO jb_academy_seen (email, logins, last_login, last_seen) VALUES (%s, 1, now(), now())
+                                  ON CONFLICT (email) DO UPDATE SET logins = jb_academy_seen.logins + 1, last_login = now(), last_seen = now()""", (email,))
+            c.commit()
+            c.close()
+        except Exception as e:
+            log("JB_ACADEMY_SEEN_ERR:", e)
         self._json(200, {"ok": True, "email": email, "session": J.sign(email, "s", J.SESSION_TTL)})
 
     def _progress(self):
@@ -376,7 +405,7 @@ class handler(BaseHTTPRequestHandler):
                 parent = row[0]  # replies stay one level deep
             cur.execute("""INSERT INTO jb_academy_comments (lesson_id, email, parent_id, author, role, body)
                            VALUES (%s, %s, %s, %s, %s, %s)""",
-                        (lid, email, parent, member(email)[1], "coach" if email in COACHES else None, text))
+                        (lid, email, parent, member(email)[1], ADMINS.get(email, ("", None))[1], text))
             c.commit()
             out = thread(cur, lid, email)
             c.close()
@@ -426,6 +455,46 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             log("JB_ACADEMY_CHECK_ERR:", e)
             return self._json(502, {"error": str(e)[:400]})
+
+    def _admin_get(self, a):
+        h = self.headers.get("Authorization", "")
+        tok = h[7:].strip() if h.startswith("Bearer ") else ""
+        who = J.verify(tok, "s")
+        if not (who in ADMINS or verify_token(tok)):
+            return self._json(403, {"error": "Admins only."})
+        try:
+            c = db()
+            cur = c.cursor()
+            if a == "members":
+                rows = _jb_admin.members(cur, fresh=self._q("fresh") == "1")
+                cur.execute("SELECT email, logins, last_login, last_seen FROM jb_academy_seen")
+                seen = {r[0]: r[1:] for r in cur.fetchall()}
+                for r in rows:
+                    s = seen.get(r["email"])
+                    r["logins"] = s[0] if s else 0
+                    r["last_login"] = s[1].isoformat() if s and s[1] else None
+                    r["last_seen"] = s[2].isoformat() if s and s[2] else None
+                out = {"ok": True, "members": rows, "lessons": sum(len(ch["lessons"]) for ch in course()["chapters"])}
+                if self._q("debug") == "1":
+                    ms = _jb_admin.sniper_memberships()
+                    out["raw"] = ms[:1]
+            else:
+                email = self._q("email").strip().lower()
+                if not EMAIL_RE.match(email):
+                    c.close()
+                    return self._json(400, {"error": "email required"})
+                out = dict(_jb_admin.profile(cur, email, course()), ok=True)
+                cur.execute("SELECT logins, last_login, last_seen FROM jb_academy_seen WHERE email = %s", (email,))
+                s = cur.fetchone()
+                out["logins"] = s[0] if s else 0
+                out["last_login"] = s[1].isoformat() if s and s[1] else None
+                out["last_seen"] = s[2].isoformat() if s and s[2] else None
+            c.commit()
+            c.close()
+            return self._json(200, out)
+        except Exception as e:
+            log("JB_ACADEMY_ADMIN_ERR:", e)
+            return self._json(502, {"error": "Couldn't load that from Whop/GHL. Please refresh.", "detail": str(e)[:300]})
 
     # ---------- helpers ----------
     def _member(self):
