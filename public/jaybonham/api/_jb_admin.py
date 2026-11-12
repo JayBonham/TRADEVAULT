@@ -322,7 +322,7 @@ def _label(label, val):
     """Readable question labels: GHL names unlabelled fields like "checkbox 2msq"."""
     import re
     if re.match(r"^(checkbox|radio|single[ _]?line|multi[ _]?line|dropdown|text|field)[ _]?[a-z0-9]{0,6}$", label.strip().lower()):
-        return "Trading capital" if "$" in val else "Other answer"
+        return "Trading capital" if "$" in val or re.search(r"\d\s*k\b", val, re.I) else "Other answer"
     return label
 
 
