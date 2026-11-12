@@ -332,7 +332,7 @@ def finish(cur, payment, email):
         status = "cancel_failed"
         log("TV_UPGRADE_CANCEL_ERR", pay_id, old, e)
     if status == "done":
-        _back_to_new(email, from_tier == "tools")
+        _back_to_new(email, from_tier == "tools", to_tier)
     cur.execute("""INSERT INTO tv_upgrades (payment_id, email, old_membership, from_tier, to_tier, amount_usd, status, code)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status""",
@@ -341,7 +341,7 @@ def finish(cur, payment, email):
     log("TV_UPGRADE", pay_id, email, from_tier, "->", to_tier, status)
 
 
-def _back_to_new(email, redo_setup):
+def _back_to_new(email, redo_setup, to_tier=""):
     """Back to New members on the TradeVault admin board, labelled Upgraded, so the team gives them
     the new tier's access (assigning re-adds tv-access-granted, which sends the access email).
     From Tools, setup-complete comes off too so /setup asks for the new tier's choices."""
@@ -355,6 +355,8 @@ def _back_to_new(email, redo_setup):
         off = ["tv-access-granted"] + (["tv-setup-complete"] if redo_setup else [])
         A._ghl("DELETE", "/contacts/%s/tags" % cid, {"tags": off})
         A._ghl("POST", "/contacts/%s/tags" % cid, {"tags": ["tv-upgraded"]})
+        if to_tier:  # the TV Package field the "member ready" email shows
+            A.ghl_tag(email, "", [], fields={"tv_package": NAMES.get(to_tier, to_tier.title())})
     except Exception as e:
         log("TV_UPGRADE_TAGS_ERR", e)
 

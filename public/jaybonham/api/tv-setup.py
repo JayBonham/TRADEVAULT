@@ -5,7 +5,7 @@ GET  ?c=<GHL contact id>  or  ?email=<checkout email>
 POST {c, educator, scanner, tradingview, telegram}
      Community picks 1 educator + 1 scanner; every tier gives a TradingView username.
      Writes to GHL: tags tv-setup-complete (+ tv-educator-<x>, tv-scanner-<x> for Community),
-     custom fields tv_educator / tv_scanner / tradingview_username / telegram_username
+     custom fields tv_educator / tv_scanner / tradingview_username / telegram_username / tv_package
      (when they exist in GHL), and a note with the full choice. Choices lock once made.
      The answers are also written onto the buyer's Whop membership metadata (_tv_whop), which is
      where the trading portal reads them.
@@ -159,7 +159,8 @@ class handler(BaseHTTPRequestHandler):
         edu_name = EDUCATORS.get(educator, "All educators" if tier == "elite" else "")
         scan_name = ", ".join(partner["scanners"]) if partner else SCANNERS.get(scanner, "All scanners")
         self._fields(cid, {"tv_educator": edu_name, "tv_scanner": scan_name,
-                           "tradingview_username": tv, "telegram_username": tg})
+                           "tradingview_username": tv, "telegram_username": tg,
+                           "tv_package": tier.title() + (" Partner" if partner else "")})
         _ghl("POST", "/contacts/" + cid + "/notes", {"body": "\n".join(filter(None, [
             "TradeVault setup (" + tier.title() + (" Partner" if partner else "") + ")",
             "Educator: " + edu_name if edu_name else "",
