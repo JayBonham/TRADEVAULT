@@ -57,6 +57,9 @@
     },
     "api/jb-webinar.py": {
       "maxDuration": 15
+    },
+    "api/jb-academy.py": {
+      "maxDuration": 30
     }
   },
   "redirects": [
