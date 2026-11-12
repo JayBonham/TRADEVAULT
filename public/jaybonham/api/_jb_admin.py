@@ -392,6 +392,15 @@ def profile(cur, email, course):
         ghl = dict(ghl, fields=[dict(f, name=_label(f["name"], f["value"])) for f in ghl.get("fields") or []
                                 if " ".join(f["value"].lower().split()) not in seen and not _junk_key(f["name"])])
         ghl.pop("tags", None)
+        # Team workflow fields ("Send Agreements", "Send Video Pages…") aren't about the member.
+        ghl["fields"] = [f for f in ghl["fields"] if not f["name"].lower().startswith(("send ", "sent "))]
+        if not profile_forms:  # no form submission on this email: their answers still sit on the contact
+            qs = [f for f in ghl["fields"] if f["name"].rstrip().endswith(("?", "...", "…")) or f["name"].lower().startswith(
+                ("describe", "trading capital", "length of time", "telegram", "tradingview"))]
+            if qs:
+                profile_forms.append({"form": "Trader profile (from their GHL contact)", "at": None,
+                                      "answers": [{"name": f["name"], "value": f["value"].strip()} for f in qs]})
+                ghl["fields"] = [f for f in ghl["fields"] if f not in qs]
     cur.execute("SELECT lesson_id, pos, done, updated_at FROM jb_academy_progress WHERE email = %s ORDER BY updated_at DESC", (email,))
     prog = {r[0]: {"pos": r[1], "done": r[2], "at": r[3].isoformat()} for r in cur.fetchall()}
     wdone, wlast = whop_done({uid(m) for m in ms if uid(m)})
