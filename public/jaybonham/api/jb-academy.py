@@ -318,7 +318,7 @@ class handler(BaseHTTPRequestHandler):
         a = self._action()
         if a == "check":
             return self._check()
-        if a in ("members", "profile", "allcomments", "calls"):
+        if a in ("members", "profile", "allcomments", "calls", "ghlfields"):
             return self._admin_get(a)
         if a not in ("course", "lesson", "comments"):
             return self._json(404, {"error": "unknown action"})
@@ -615,6 +615,9 @@ class handler(BaseHTTPRequestHandler):
                     out = {"ok": False, "probe_error": str(e)[:500]}
                 c.close()
                 return self._json(200, out)
+            if a == "ghlfields":  # admin: the GHL contact field names, to map the trader profile
+                c.close()
+                return self._json(200, {"ok": True, "fields": sorted(n for n in _jb_admin._field_names().values() if n)})
             if a == "calls":
                 out = {"ok": True, "calls": calls(cur, admin=True)}
                 c.close()
