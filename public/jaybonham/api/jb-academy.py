@@ -489,6 +489,16 @@ class handler(BaseHTTPRequestHandler):
                 out["logins"] = s[0] if s else 0
                 out["last_login"] = s[1].isoformat() if s and s[1] else None
                 out["last_seen"] = s[2].isoformat() if s and s[2] else None
+                if self._q("debug") == "1":  # admin-only: what GHL returns for its forms
+                    from urllib.parse import quote as _q
+                    st, fl = A._ghl("GET", "/forms/?locationId=%s&limit=50" % A.GHL_LOCATION)
+                    out["debug_forms"] = {"status": st, "forms": [{"id": f.get("id"), "name": f.get("name")} for f in fl.get("forms") or []] or str(fl)[:300]}
+                    tp = [f for f in fl.get("forms") or [] if "trader profile" in (f.get("name") or "").lower()]
+                    if tp:
+                        st2, sb = A._ghl("GET", "/forms/submissions?locationId=%s&formId=%s&limit=3" % (A.GHL_LOCATION, tp[0]["id"]))
+                        out["debug_subs"] = {"status": st2, "total": (sb.get("meta") or {}).get("total"),
+                                             "sample": [{k: (v if k != "others" else {kk: str(vv)[:60] for kk, vv in (v or {}).items()}) for k, v in x.items()}
+                                                        for x in (sb.get("submissions") or [])[:1]] or str(sb)[:300]}
             c.commit()
             c.close()
             return self._json(200, out)
