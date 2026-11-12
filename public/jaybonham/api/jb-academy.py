@@ -21,6 +21,7 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
   onboard    POST {item} (Bearer)      a setup step done: "cal:<call id>", "discord"
   profile_save POST {answers} (Bearer) the trader profile from the setup page: written to the member's
                                        GHL contact fields (the Trader Profile Form's own) + tag trader-profile-complete
+  hide       POST {email, hidden} (Bearer admin)  keep a test account off the members list (and its numbers)
   calls      GET  (Bearer admin)       every live call, for the admin Calls tab
   call_save  POST {call} (Bearer admin)  add / change a live call;  call_delete POST {id}
 Live calls (Zoom links, passcodes) live in jb_academy_calls, never in this public repo, and only
@@ -118,6 +119,9 @@ CREATE TABLE IF NOT EXISTS jb_academy_onboarding (
     data    TEXT,
     done_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (email, item));
+CREATE TABLE IF NOT EXISTS jb_academy_hidden (
+    email      TEXT PRIMARY KEY,
+    hidden_at  TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS jb_academy_seen (
     email      TEXT PRIMARY KEY,
     logins     INTEGER NOT NULL DEFAULT 0,
@@ -447,7 +451,7 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         a = self._action()
-        if a in ("start", "login", "progress", "comment", "uncomment", "call_save", "call_delete", "onboard", "profile_save"):
+        if a in ("start", "login", "progress", "comment", "uncomment", "call_save", "call_delete", "onboard", "profile_save", "hide"):
             return getattr(self, "_" + a)()
         self._json(404, {"error": "unknown action"})
 
@@ -597,6 +601,23 @@ class handler(BaseHTTPRequestHandler):
             log("JB_ACADEMY_CHECK_ERR:", e)
             return self._json(502, {"error": str(e)[:400]})
 
+    def _hide(self):
+        if not self._is_admin():
+            return self._json(403, {"error": "Admins only."})
+        b = self._body()
+        email = str(b.get("email") or "").strip().lower()
+        if not EMAIL_RE.match(email):
+            return self._json(400, {"error": "email required"})
+        c = db()
+        cur = c.cursor()
+        if b.get("hidden", True):
+            cur.execute("INSERT INTO jb_academy_hidden (email) VALUES (%s) ON CONFLICT DO NOTHING", (email,))
+        else:
+            cur.execute("DELETE FROM jb_academy_hidden WHERE email = %s", (email,))
+        c.commit()
+        c.close()
+        self._json(200, {"ok": True})
+
     def _onboard(self):
         email = self._member()
         if not email:
@@ -740,6 +761,12 @@ class handler(BaseHTTPRequestHandler):
                 if self._q("fresh") == "1":
                     _jb_admin.whop_progress(fresh=True)
                 rows = _jb_admin.members(cur, fresh=self._q("fresh") == "1")
+                cur.execute("SELECT email FROM jb_academy_hidden")
+                hidden = {r[0] for r in cur.fetchall()}
+                rows = [dict(r, hidden=r["email"] in hidden) for r in rows]
+                n_hidden = sum(1 for r in rows if r["hidden"])
+                if self._q("hidden") != "1":
+                    rows = [r for r in rows if not r["hidden"]]
                 cur.execute("SELECT email, logins, last_login, last_seen FROM jb_academy_seen")
                 seen = {r[0]: r[1:] for r in cur.fetchall()}
                 cur.execute("SELECT email, array_agg(item) FROM jb_academy_onboarding GROUP BY email")
@@ -763,7 +790,7 @@ class handler(BaseHTTPRequestHandler):
                     o = onb.get(r["email"], set())
                     r["setup"] = {"profile": "profile" in o, "discord": "discord" in o,
                                   "calendar": any(i.startswith("cal:") for i in o)}
-                out = {"ok": True, "members": rows, "lessons": sum(len(ch["lessons"]) for ch in course()["chapters"])}
+                out = {"ok": True, "members": rows, "hidden": n_hidden, "lessons": sum(len(ch["lessons"]) for ch in course()["chapters"])}
                 if self._q("debug") == "1":
                     ms = _jb_admin.sniper_memberships()
                     out["raw"] = ms[:1]
@@ -773,6 +800,8 @@ class handler(BaseHTTPRequestHandler):
                     c.close()
                     return self._json(400, {"error": "email required"})
                 out = dict(_jb_admin.profile(cur, email, course()), ok=True)
+                cur.execute("SELECT 1 FROM jb_academy_hidden WHERE email = %s", (email,))
+                out["hidden"] = bool(cur.fetchone())
                 cur.execute("SELECT logins, last_login, last_seen FROM jb_academy_seen WHERE email = %s", (email,))
                 s = cur.fetchone()
                 out["logins"] = s[0] if s else 0

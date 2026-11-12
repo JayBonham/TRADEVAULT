@@ -779,12 +779,24 @@ img{max-width:100%}
   window.addEventListener('pagehide', function () { if (cur) save(); });
 
   // ----- admin: members -----
-  var aRows = null, aFilter = 'all';
+  var aRows = null, aFilter = 'all', aHidden = 0, aShowHidden = false;
   $('nav').addEventListener('click', function (e) { var b = e.target.closest('[data-go]'); if (b) location.hash = b.getAttribute('data-go'); });
   $('pBack').addEventListener('click', function () { location.hash = 'admin'; });
+  $('pBody').addEventListener('click', function (e) {
+    var b = e.target.closest('#pHide'); if (!b) return;
+    var hide = b.getAttribute('data-h') === '1';
+    if (hide && b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Tap again: hide test account'; return; }
+    b.disabled = true;
+    api('POST', 'hide', { email: b.getAttribute('data-email'), hidden: hide }).then(function () { aRows = null; location.hash = 'admin'; })
+      .catch(function (x) { b.disabled = false; b.textContent = (x && x.error) || 'Couldn\'t do that'; });
+  });
   $('aRefresh').addEventListener('click', function () { admin(true); });
   $('aSearch').addEventListener('input', renderMembers);
-  $('aChips').addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c) { aFilter = c.getAttribute('data-f'); renderMembers(); } });
+  $('aChips').addEventListener('click', function (e) {
+    var c = e.target.closest('.chip'); if (!c) return;
+    if (c.getAttribute('data-hid')) { aShowHidden = !aShowHidden; return admin(true); }
+    aFilter = c.getAttribute('data-f'); renderMembers();
+  });
   function planCls(p) { p = (p || '').toLowerCase(); return p.indexOf('elite') > -1 ? 'eli' : p.indexOf('accel') > -1 ? 'acc' : p.indexOf('fast') > -1 ? 'fast' : ''; }
   function short(p) { return (p || '').replace(/^sniper\s+/i, ''); }
   function when(iso, never) { return iso ? '<span title="' + esc(new Date(iso).toLocaleString()) + '">' + ago(iso) + '</span>' : '<span class="muted">' + (never || '—') + '</span>'; }
@@ -793,7 +805,7 @@ img{max-width:100%}
     show('vAdmin'); window.scrollTo(0, 0);
     if (aRows && !fresh) return renderMembers();
     $('aRows').innerHTML = '<tr><td colspan="8" class="muted">Loading members from Whop…</td></tr>'; $('aCards').innerHTML = ''; $('aErr').textContent = '';
-    api('GET', 'members', null, fresh ? '&fresh=1' : '').then(function (d) { aRows = d.members; data.total = d.lessons; renderMembers(); })
+    api('GET', 'members', null, (fresh ? '&fresh=1' : '') + (aShowHidden ? '&hidden=1' : '')).then(function (d) { aRows = d.members; aHidden = d.hidden || 0; data.total = d.lessons; renderMembers(); })
       .catch(function (x) { if (x && x.signin) return signOut(x.error); $('aRows').innerHTML = ''; $('aErr').textContent = (x && x.error) || 'Couldn\'t load members.'; });
   }
   function renderMembers() {
@@ -812,7 +824,8 @@ img{max-width:100%}
     ].map(function (k) { return '<div class="kpi"><b>' + k[1] + '</b><span>' + k[0] + '</span>' + (k[2] ? '<small>' + esc(k[2]) + '</small>' : '') + '</div>'; }).join('');
     var names = ['all', 'Fast Start', 'Accelerator', 'Elite', 'setup', 'never', 'ended'];
     var labels = { all: 'All active', setup: 'Setup not finished', never: 'Never signed in', ended: 'Ended' };
-    $('aChips').innerHTML = names.map(function (n) { return '<button class="chip' + (aFilter === n ? ' on' : '') + '" data-f="' + n + '" type="button">' + esc(labels[n] || n) + '</button>'; }).join('');
+    $('aChips').innerHTML = names.map(function (n) { return '<button class="chip' + (aFilter === n ? ' on' : '') + '" data-f="' + n + '" type="button">' + esc(labels[n] || n) + '</button>'; }).join('') +
+      (aHidden ? '<button class="chip' + (aShowHidden ? ' on' : '') + '" data-hid="1" type="button" style="border-style:dashed">' + (aShowHidden ? 'Hide' : 'Show') + ' hidden (' + aHidden + ')</button>' : '');
     var q = $('aSearch').value.trim().toLowerCase();
     var rows = aRows.filter(function (r) {
       if (aFilter === 'ended') { if (r.active) return false; } else if (!r.active) return false;
@@ -829,7 +842,7 @@ img{max-width:100%}
     function plansHtml(r) { return r.plans.map(function (p) { return '<span class="pill ' + planCls(p.plan) + (p.live ? '' : ' off') + '">' + esc(short(p.plan)) + '</span>'; }).join(''); }
     function prog(r) { var pct = total ? Math.round(r.done * 100 / total) : 0; return '<div class="pbar"><span class="mini"><i style="width:' + pct + '%"></i></span><span>' + r.done + '/' + total + '</span></div>'; }
     $('aRows').innerHTML = rows.length ? rows.map(function (r) {
-      return '<tr data-m="' + esc(r.email) + '"><td><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.username || r.email) + '</div><div class="em">' + esc(r.email) + (r.username ? ' · @' + esc(r.username) : '') + '</div></div></div></td>' +
+      return '<tr data-m="' + esc(r.email) + '"><td><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.username || r.email) + (r.hidden ? ' <span class="pill" style="border-style:dashed">Hidden</span>' : '') + '</div><div class="em">' + esc(r.email) + (r.username ? ' · @' + esc(r.username) : '') + '</div></div></div></td>' +
         '<td>' + plansHtml(r) + '</td><td>' + day(r.joined) + '</td><td>' + prog(r) + '</td><td>' + setupCell(r) + '</td><td>' + when(r.last_login, 'Not yet') + '</td><td>' + when(r.last_active || r.last_seen) + '</td><td>' + (r.comments || '<span class="muted">0</span>') + '</td></tr>';
     }).join('') : '<tr><td colspan="8" class="muted">No members match.</td></tr>';
     $('aCards').innerHTML = rows.map(function (r) {
@@ -867,7 +880,8 @@ img{max-width:100%}
         '<div class="pf-top"><span class="av lg">' + esc(initials(nm)) + '</span><div style="min-width:0"><div class="pf-n">' + esc(nm) + '</div>' +
         '<div class="pf-sub"><span>' + esc(email) + '</span>' + (p.username ? '<span>@' + esc(p.username) + '</span>' : '') + (g.phone ? '<span>' + esc(g.phone) + '</span>' : '') + (g.country ? '<span>' + esc(g.country) + '</span>' : '') + '</div>' +
         '<div style="margin-top:12px">' + plans.map(function (x) { return '<span class="pill ' + planCls(x.plan) + '">' + esc(short(x.plan)) + '</span>'; }).join('') + (p.access ? '<span class="pill live">Has course access</span>' : '<span class="pill dead">No access</span>') + '</div></div>' +
-        '<div class="pf-acts">' + (g.url ? '<a class="btn btn-g btn-sm" href="' + esc(g.url) + '" target="_blank" rel="noopener">Open in GHL ↗</a>' : '') + '</div></div>' +
+        '<div class="pf-acts">' + (g.url ? '<a class="btn btn-g btn-sm" href="' + esc(g.url) + '" target="_blank" rel="noopener">Open in GHL ↗</a>' : '') +
+          '<button class="btn btn-g btn-sm" type="button" id="pHide" data-email="' + esc(email) + '" data-h="' + (p.hidden ? '0' : '1') + '">' + (p.hidden ? 'Show on members list' : 'Hide from members list') + '</button></div></div>' +
         '<div class="kpis"><div class="kpi"><b>' + pct + '%</b><span>Course progress</span><small>' + p.progress.done + ' of ' + p.progress.total + ' lessons' + (p.progress.whop_done ? ' · ' + p.progress.whop_done + ' on Whop' : '') + '</small></div>' +
         '<div class="kpi"><b>' + (p.last_login ? ago(p.last_login) : 'Not yet') + '</b><span>Signed in here</span><small>' + (p.logins || 0) + ' sign-in' + (p.logins === 1 ? '' : 's') + '</small></div>' +
         '<div class="kpi"><b>' + ((p.progress.last_active || p.last_seen) ? ago(p.progress.last_active || p.last_seen) : '—') + '</b><span>Last active</span><small>' + (p.progress.recent[0] ? esc(p.progress.recent[0].title) : p.progress.whop_last ? 'On Whop' : 'Hasn\'t watched yet') + '</small></div>' +
