@@ -312,6 +312,20 @@ def _form_list():
     return _forms["list"]
 
 
+def _junk_key(k):
+    """GHL's own bookkeeping that rides along in a submission (e.g. fieldsOriSequance: the field-id order)."""
+    k = (k or "").lower().replace("_", "").replace(" ", "")
+    return k in {x.replace("_", "") for x in META_KEYS} or any(w in k for w in ("sequance", "sequence", "fieldsori", "captcha", "signature", "utm", "adsource", "campaign", "medium"))
+
+
+def _label(label, val):
+    """Readable question labels: GHL names unlabelled fields like "checkbox 2msq"."""
+    import re
+    if re.match(r"^(checkbox|radio|single[ _]?line|multi[ _]?line|dropdown|text|field)[ _]?[a-z0-9]{0,6}$", label.strip().lower()):
+        return "Trading capital" if "$" in val else "Other answer"
+    return label
+
+
 def _answer(v):
     if isinstance(v, list):
         return ", ".join(_answer(x) for x in v if x not in (None, ""))
@@ -339,9 +353,10 @@ def forms(email):
             for k, v in others.items():
                 label = names.get(k) or k
                 val = _answer(v)
-                if not val or k.lower() in META_KEYS or label.lower() in META_KEYS or len(k) > 60 and k not in names:
+                if not val or _junk_key(k) or _junk_key(label) or len(k) > 60 and k not in names:
                     continue
-                answers.append({"name": label.replace("_", " ").strip().capitalize() if label == k else label, "value": val[:1500]})
+                label = label.replace("_", " ").strip().capitalize() if label == k else label
+                answers.append({"name": _label(label, val), "value": val[:1500]})
             if answers:
                 out.append({"form": f.get("name") or "Form", "at": sub.get("createdAt"), "answers": answers})
         except Exception as e:
@@ -371,6 +386,12 @@ def profile(cur, email, course):
                       "monthly": _money(m.get("renewal_price"))})
     plans.sort(key=lambda p: str(p["joined"] or ""), reverse=True)
     application = [{"name": label, "value": str(app.get(k))} for k, label in APPLY_FIELDS if app.get(k) not in (None, "", 0)]
+    # The contact's custom fields mostly repeat the form answers: keep only what the forms don't already show.
+    seen = {" ".join(a["value"].lower().split()) for f in profile_forms for a in f["answers"]}
+    if ghl:
+        ghl = dict(ghl, fields=[dict(f, name=_label(f["name"], f["value"])) for f in ghl.get("fields") or []
+                                if " ".join(f["value"].lower().split()) not in seen and not _junk_key(f["name"])])
+        ghl.pop("tags", None)
     cur.execute("SELECT lesson_id, pos, done, updated_at FROM jb_academy_progress WHERE email = %s ORDER BY updated_at DESC", (email,))
     prog = {r[0]: {"pos": r[1], "done": r[2], "at": r[3].isoformat()} for r in cur.fetchall()}
     wdone, wlast = whop_done({uid(m) for m in ms if uid(m)})
