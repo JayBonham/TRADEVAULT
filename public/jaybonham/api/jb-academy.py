@@ -8,6 +8,8 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
 
   start      POST {email}             emails a login link if the email is a member (always says ok)
   login      POST {l}                 -> {session, email}: swaps an emailed link for a session
+  pw_login   POST {email, password}   admins only: sign in with a password instead of the emailed link
+             (env JB_ACADEMY_PASSWORD_ALEX / JB_ACADEMY_PASSWORD_JAY; 8 wrong tries in 15 min locks it)
   course     GET  (Bearer session)    modules, lessons (with thumbnails), progress, comment counts
   lesson     GET  ?id= (Bearer)       one lesson: video stream, poster, notes, attachments
   progress   POST {id, pos?, done?, undo?}  (Bearer) where they are / lesson complete
@@ -54,6 +56,9 @@ for _e in os.environ.get("JB_ACADEMY_COACHES", "").split(","):
     if _e.strip():
         ADMINS.setdefault(_e.strip().lower(), ("", "coach"))
 COACHES = set(ADMINS)
+ADMIN_PASSWORDS = {"alex@alexktaylor.com": os.environ.get("JB_ACADEMY_PASSWORD_ALEX", ""),
+                   "jay@jaybonham.com": os.environ.get("JB_ACADEMY_PASSWORD_JAY", "")}
+PW_MAX_FAILS = 8
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
 POSTS_PER_HOUR = 20
@@ -122,6 +127,9 @@ CREATE TABLE IF NOT EXISTS jb_academy_onboarding (
 CREATE TABLE IF NOT EXISTS jb_academy_hidden (
     email      TEXT PRIMARY KEY,
     hidden_at  TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS jb_academy_pwfail (
+    email  TEXT NOT NULL,
+    at     TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS jb_academy_seen (
     email      TEXT PRIMARY KEY,
     logins     INTEGER NOT NULL DEFAULT 0,
@@ -451,6 +459,8 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         a = self._action()
+        if a == "pw_login":
+            return self._pw_login()
         if a in ("start", "login", "progress", "comment", "uncomment", "call_save", "call_delete", "onboard", "profile_save", "hide"):
             return getattr(self, "_" + a)()
         self._json(404, {"error": "unknown action"})
@@ -459,6 +469,8 @@ class handler(BaseHTTPRequestHandler):
         email = (self._body().get("email") or "").strip().lower()
         if not EMAIL_RE.match(email):
             return self._json(400, {"error": "Enter the email you joined with."})
+        if ADMIN_PASSWORDS.get(email):  # Jay / Alex sign in with their password, no email
+            return self._json(200, {"ok": True, "password": True})
         try:
             ok = member(email, fresh=True)[0]
         except Exception as e:
@@ -491,6 +503,37 @@ class handler(BaseHTTPRequestHandler):
             c.close()
         except Exception as e:
             log("JB_ACADEMY_SEEN_ERR:", e)
+        self._json(200, {"ok": True, "email": email, "session": J.sign(email, "s", J.SESSION_TTL)})
+
+    def _pw_login(self):
+        import hmac as _h
+        b = self._body()
+        email = str(b.get("email") or "").strip().lower()
+        pw = str(b.get("password") or "")
+        want = ADMIN_PASSWORDS.get(email, "")
+        if not want:
+            return self._json(400, {"error": "Use the emailed sign-in link for this email."})
+        c = db()
+        cur = c.cursor()
+        cur.execute("DELETE FROM jb_academy_pwfail WHERE at < now() - interval '1 day'")
+        cur.execute("SELECT count(*) FROM jb_academy_pwfail WHERE email = %s AND at > now() - interval '15 minutes'", (email,))
+        if cur.fetchone()[0] >= PW_MAX_FAILS:
+            c.commit()
+            c.close()
+            return self._json(429, {"error": "Too many wrong passwords. Try again in 15 minutes."})
+        if not _h.compare_digest(pw.encode(), want.encode()):
+            cur.execute("INSERT INTO jb_academy_pwfail (email) VALUES (%s)", (email,))
+            c.commit()
+            c.close()
+            time.sleep(1)
+            log("JB_ACADEMY_PW_FAIL", email)
+            return self._json(401, {"error": "That password isn't right."})
+        cur.execute("DELETE FROM jb_academy_pwfail WHERE email = %s", (email,))
+        cur.execute("""INSERT INTO jb_academy_seen (email, logins, last_login, last_seen) VALUES (%s, 1, now(), now())
+                       ON CONFLICT (email) DO UPDATE SET logins = jb_academy_seen.logins + 1, last_login = now(), last_seen = now()""", (email,))
+        c.commit()
+        c.close()
+        log("JB_ACADEMY_PW_LOGIN", email)
         self._json(200, {"ok": True, "email": email, "session": J.sign(email, "s", J.SESSION_TTL)})
 
     def _progress(self):

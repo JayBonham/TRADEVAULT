@@ -395,7 +395,8 @@ img{max-width:100%}
     <p>Sign in with the email you joined with. We'll send you a link: tap it and you're in, no password needed.</p>
     <form class="gform" id="gf" novalidate>
       <label for="email">Your email</label>
-      <input class="inp" id="email" type="email" autocomplete="email" inputmode="email" required>
+      <input class="inp" id="email" type="email" autocomplete="username" inputmode="email" required>
+      <div id="pwRow" hidden style="display:grid;gap:12px"><label for="pw">Password</label><input class="inp" id="pw" type="password" autocomplete="current-password"></div>
       <p class="err" id="gerr" role="alert"></p>
       <button class="btn" id="ggo" type="submit">Send my sign-in link <span>→</span></button>
     </form>
@@ -540,12 +541,23 @@ img{max-width:100%}
     e.preventDefault();
     var email = $('email').value.trim(), go = $('ggo');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('gerr').textContent = 'Enter the email you joined with.'; return; }
-    $('gerr').textContent = ''; go.disabled = true; go.innerHTML = '<span class="spin"></span>Sending';
-    api('POST', 'start', { email: email }).then(function () {
+    $('gerr').textContent = ''; go.disabled = true;
+    if (!$('pwRow').hidden) {  // admin password sign-in
+      go.innerHTML = '<span class="spin"></span>Signing in';
+      return api('POST', 'pw_login', { email: email, password: $('pw').value }).then(function (d) {
+        session = d.session; try { localStorage.setItem(KEY, session); } catch (x) {}
+        load();
+      }).catch(function (x) { $('gerr').textContent = (x && x.error) || 'Couldn\'t sign in.'; $('pw').select(); })
+        .then(function () { go.disabled = false; go.innerHTML = 'Sign in <span>→</span>'; });
+    }
+    go.innerHTML = '<span class="spin"></span>Sending';
+    api('POST', 'start', { email: email }).then(function (d) {
+      if (d.password) { $('pwRow').hidden = false; $('pw').focus(); go.innerHTML = 'Sign in <span>→</span>'; return; }
       $('sentTo').textContent = email; $('gf').hidden = true; $('sent').hidden = false;
     }).catch(function (x) { $('gerr').textContent = (x && x.error) || 'Something went wrong. Please try again.'; })
-      .then(function () { go.disabled = false; go.innerHTML = 'Send my sign-in link <span>→</span>'; });
+      .then(function () { go.disabled = false; if ($('pwRow').hidden) go.innerHTML = 'Send my sign-in link <span>→</span>'; else go.innerHTML = 'Sign in <span>→</span>'; });
   });
+  $('email').addEventListener('input', function () { if (!$('pwRow').hidden) { $('pwRow').hidden = true; $('pw').value = ''; $('ggo').innerHTML = 'Send my sign-in link <span>→</span>'; } });
   $('again').addEventListener('click', function (e) { e.preventDefault(); $('gf').hidden = false; $('sent').hidden = true; $('email').focus(); });
 
   var link = new URLSearchParams(location.search).get('l');
