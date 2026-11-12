@@ -18,6 +18,10 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
   members    GET  (Bearer admin session)  every Sniper member with progress and last seen
   profile    GET  ?email= (Bearer admin session)  one member: Whop plans, trader profile, GHL, progress
   allcomments GET (Bearer admin session)  every comment, newest first, for the admin Comments tab
+  calls      GET  (Bearer admin)       every live call, for the admin Calls tab
+  call_save  POST {call} (Bearer admin)  add / change a live call;  call_delete POST {id}
+Live calls (Zoom links, passcodes) live in jb_academy_calls, never in this public repo, and only
+go to signed-in members: Fast Start gets them for 30 days from joining, Accelerator / Elite always.
 Progress counts lessons finished here or on Whop's own course page.
 
 Admins (ADMINS below, plus env JB_ACADEMY_COACHES) always have access, see the Members area and
@@ -49,6 +53,9 @@ COACHES = set(ADMINS)
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
 POSTS_PER_HOUR = 20
+FAST_START_CALL_DAYS = 30
+CALL_FIELDS = ("title", "coach", "blurb", "weekday", "start_time", "tz", "minutes", "zoom_url", "meeting_id", "passcode", "ics_url", "active")
+TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 ID_RE = re.compile(r"^[A-Za-z0-9_]{4,60}$")
 TABLES = """
@@ -70,6 +77,21 @@ CREATE TABLE IF NOT EXISTS jb_academy_comments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ);
 CREATE INDEX IF NOT EXISTS jb_academy_comments_lesson ON jb_academy_comments (lesson_id, created_at);
+CREATE TABLE IF NOT EXISTS jb_academy_calls (
+    id         BIGSERIAL PRIMARY KEY,
+    title      TEXT NOT NULL,
+    coach      TEXT NOT NULL DEFAULT '',
+    blurb      TEXT NOT NULL DEFAULT '',
+    weekday    INTEGER NOT NULL,            -- 0 Monday .. 6 Sunday
+    start_time TEXT NOT NULL,               -- HH:MM in tz
+    tz         TEXT NOT NULL DEFAULT 'America/Edmonton',
+    minutes    INTEGER NOT NULL DEFAULT 60,
+    zoom_url   TEXT NOT NULL DEFAULT '',
+    meeting_id TEXT NOT NULL DEFAULT '',
+    passcode   TEXT NOT NULL DEFAULT '',
+    ics_url    TEXT NOT NULL DEFAULT '',
+    active     BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS jb_academy_seen (
     email      TEXT PRIMARY KEY,
     logins     INTEGER NOT NULL DEFAULT 0,
@@ -127,13 +149,37 @@ def _name_from(ms, email):
     return re.sub(r"[._\-\d]+", " ", local).strip().title()[:60] or "Member"
 
 
+def _call_access(ms):
+    """Live-call access: Accelerator / Elite always; Fast Start for 30 days from joining.
+    {"until": iso or None (no end), "plan": ...} or None when the member has no calls."""
+    import datetime
+    live = [m for m in ms if str(m.get("status")) in OK_STATUS]
+    titles = {_title(m) for m in live}
+    if titles & {"sniper accelerator", "sniper elite"}:
+        return {"until": None, "plan": "Elite" if "sniper elite" in titles else "Accelerator"}
+    joined = sorted(str(m.get("created_at") or "") for m in live if _title(m) == "sniper fast start" and m.get("created_at"))
+    if not joined:
+        return None
+    try:
+        start = datetime.datetime.fromisoformat(joined[0].replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return {"until": (start + datetime.timedelta(days=FAST_START_CALL_DAYS)).isoformat(), "plan": "Fast Start"}
+
+
+def calls(cur, admin=False):
+    cur.execute("SELECT id, " + ", ".join(CALL_FIELDS) + " FROM jb_academy_calls" + ("" if admin else " WHERE active") +
+                " ORDER BY weekday, start_time")
+    return [dict(zip(("id",) + CALL_FIELDS, r)) for r in cur.fetchall()]
+
+
 def member(email, fresh=False):
     """(has access, display name), from Whop; cached per warm instance."""
     hit = _members.get(email)
     if hit and not fresh and time.time() - hit[0] < MEMBER_CACHE:
         return hit[1], hit[2]
     if email in ADMINS:
-        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email), set())
+        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email), set(), {"until": None, "plan": "Admin"})
         return True, _members[email][2]
     c = A.conn()
     try:
@@ -142,7 +188,7 @@ def member(email, fresh=False):
     finally:
         c.close()
     ok = any(str(m.get("status")) in OK_STATUS for m in ms)
-    _members[email] = (time.time(), ok, _name_from(ms, email), {_jb_admin.uid(m) for m in ms if _jb_admin.uid(m)})
+    _members[email] = (time.time(), ok, _name_from(ms, email), {_jb_admin.uid(m) for m in ms if _jb_admin.uid(m)}, _call_access(ms))
     return ok, _members[email][2]
 
 
@@ -261,7 +307,7 @@ class handler(BaseHTTPRequestHandler):
         a = self._action()
         if a == "check":
             return self._check()
-        if a in ("members", "profile", "allcomments"):
+        if a in ("members", "profile", "allcomments", "calls"):
             return self._admin_get(a)
         if a not in ("course", "lesson", "comments"):
             return self._json(404, {"error": "unknown action"})
@@ -291,8 +337,18 @@ class handler(BaseHTTPRequestHandler):
                                ON CONFLICT (email) DO UPDATE SET last_seen = now()""", (email,))
                 c.commit()
                 c.close()
+                hit = _members.get(email)
+                access = hit[4] if hit and len(hit) > 4 else None
+                import datetime
+                open_ = bool(access) and (not access["until"] or access["until"] > datetime.datetime.now(datetime.timezone.utc).isoformat())
+                c = db()
+                cl = calls(c.cursor())
+                c.close()
+                if not open_:  # no join links once access has ended
+                    cl = [{k: v for k, v in x.items() if k not in ("zoom_url", "meeting_id", "passcode", "ics_url")} for x in cl]
                 return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], admin=email in ADMINS,
-                                            role=ADMINS.get(email, ("", None))[1]))
+                                            role=ADMINS.get(email, ("", None))[1], calls=cl,
+                                            call_access={"open": open_, "until": access and access["until"], "plan": access and access["plan"]}))
             lid = self._q("id")
             if a == "comments":
                 if not (ID_RE.match(lid) and allowed(lid)):
@@ -311,7 +367,7 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         a = self._action()
-        if a in ("start", "login", "progress", "comment", "uncomment"):
+        if a in ("start", "login", "progress", "comment", "uncomment", "call_save", "call_delete"):
             return getattr(self, "_" + a)()
         self._json(404, {"error": "unknown action"})
 
@@ -461,6 +517,58 @@ class handler(BaseHTTPRequestHandler):
             log("JB_ACADEMY_CHECK_ERR:", e)
             return self._json(502, {"error": str(e)[:400]})
 
+    def _is_admin(self):
+        h = self.headers.get("Authorization", "")
+        tok = h[7:].strip() if h.startswith("Bearer ") else ""
+        return J.verify(tok, "s") in ADMINS or verify_token(tok)
+
+    def _call_save(self):
+        if not self._is_admin():
+            return self._json(403, {"error": "Admins only."})
+        b = self._body().get("call") or {}
+        try:
+            v = {"title": str(b.get("title") or "").strip()[:120], "coach": str(b.get("coach") or "").strip()[:120],
+                 "blurb": str(b.get("blurb") or "").strip()[:300], "weekday": int(b.get("weekday")),
+                 "start_time": str(b.get("start_time") or "").strip(), "tz": str(b.get("tz") or "America/Edmonton").strip()[:60],
+                 "minutes": max(15, min(int(b.get("minutes") or 60), 480)), "zoom_url": str(b.get("zoom_url") or "").strip()[:500],
+                 "meeting_id": str(b.get("meeting_id") or "").strip()[:40], "passcode": str(b.get("passcode") or "").strip()[:40],
+                 "ics_url": str(b.get("ics_url") or "").strip()[:800], "active": bool(b.get("active", True))}
+        except (TypeError, ValueError):
+            return self._json(400, {"error": "Check the day and length."})
+        if not v["title"] or not 0 <= v["weekday"] <= 6 or not TIME_RE.match(v["start_time"]):
+            return self._json(400, {"error": "A call needs a title, a day and a time like 11:00."})
+        for k in ("zoom_url", "ics_url"):
+            if v[k] and not v[k].startswith("https://"):
+                return self._json(400, {"error": "Links must start with https://"})
+        try:
+            from zoneinfo import ZoneInfo
+            ZoneInfo(v["tz"])
+        except Exception:
+            return self._json(400, {"error": "Unknown timezone. Use one like America/Edmonton."})
+        c = db()
+        cur = c.cursor()
+        if b.get("id"):
+            cur.execute("UPDATE jb_academy_calls SET " + ", ".join(k + " = %s" for k in CALL_FIELDS) + ", updated_at = now() WHERE id = %s",
+                        [v[k] for k in CALL_FIELDS] + [int(b["id"])])
+        else:
+            cur.execute("INSERT INTO jb_academy_calls (" + ", ".join(CALL_FIELDS) + ") VALUES (" + ", ".join(["%s"] * len(CALL_FIELDS)) + ")",
+                        [v[k] for k in CALL_FIELDS])
+        c.commit()
+        out = calls(cur, admin=True)
+        c.close()
+        return self._json(200, {"ok": True, "calls": out})
+
+    def _call_delete(self):
+        if not self._is_admin():
+            return self._json(403, {"error": "Admins only."})
+        c = db()
+        cur = c.cursor()
+        cur.execute("DELETE FROM jb_academy_calls WHERE id = %s", (int(self._body().get("id") or 0),))
+        c.commit()
+        out = calls(cur, admin=True)
+        c.close()
+        return self._json(200, {"ok": True, "calls": out})
+
     def _admin_get(self, a):
         h = self.headers.get("Authorization", "")
         tok = h[7:].strip() if h.startswith("Bearer ") else ""
@@ -480,6 +588,10 @@ class handler(BaseHTTPRequestHandler):
                     out = {"ok": True, "probe": W.whop("GET", path)}
                 except Exception as e:
                     out = {"ok": False, "probe_error": str(e)[:500]}
+                c.close()
+                return self._json(200, out)
+            if a == "calls":
+                out = {"ok": True, "calls": calls(cur, admin=True)}
                 c.close()
                 return self._json(200, out)
             if a == "allcomments":
