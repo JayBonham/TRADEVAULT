@@ -465,6 +465,18 @@ class handler(BaseHTTPRequestHandler):
         try:
             c = db()
             cur = c.cursor()
+            if a == "members" and self._q("probe") and verify_token(tok):
+                # admin JWT only: read-only look at Whop's course endpoints, to map course progress
+                path = self._q("probe")
+                if not re.match(r"^/api/v1/course_[a-z_]+(/[A-Za-z0-9_]+)?(\?[A-Za-z0-9_=&%.-]*)?$", path):
+                    c.close()
+                    return self._json(400, {"error": "course endpoints only"})
+                try:
+                    out = {"ok": True, "probe": W.whop("GET", path)}
+                except Exception as e:
+                    out = {"ok": False, "probe_error": str(e)[:500]}
+                c.close()
+                return self._json(200, out)
             if a == "members":
                 rows = _jb_admin.members(cur, fresh=self._q("fresh") == "1")
                 cur.execute("SELECT email, logins, last_login, last_seen FROM jb_academy_seen")
