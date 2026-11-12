@@ -18,6 +18,9 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
   members    GET  (Bearer admin session)  every Sniper member with progress and last seen
   profile    GET  ?email= (Bearer admin session)  one member: Whop plans, trader profile, GHL, progress
   allcomments GET (Bearer admin session)  every comment, newest first, for the admin Comments tab
+  onboard    POST {item} (Bearer)      a setup step done: "cal:<call id>", "discord"
+  profile_save POST {answers} (Bearer) the trader profile from the setup page: written to the member's
+                                       GHL contact fields (the Trader Profile Form's own) + tag trader-profile-complete
   calls      GET  (Bearer admin)       every live call, for the admin Calls tab
   call_save  POST {call} (Bearer admin)  add / change a live call;  call_delete POST {id}
 Live calls (Zoom links, passcodes) live in jb_academy_calls, never in this public repo, and only
@@ -53,6 +56,19 @@ COACHES = set(ADMINS)
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
 POSTS_PER_HOUR = 20
+DISCORD = "https://discord.gg/vFBQacDYQ"
+PROFILE_TAG = "trader-profile-complete"
+# The Trader Profile Form's questions = its GHL contact fields (names exactly as in GHL). key, field, required
+PROFILE_Q = (("how_long", "How long you've been trading?", True),
+             ("markets", "What markets are you currently trading?", True),
+             ("live_demo", "Are you currently trading live or demo?", True),
+             ("tradingview", "What is your TradingView Username? (For Indicator Access)", True),
+             ("accomplish", "What do you want to accomplish through Sniper Academy?", True),
+             ("goals", "What are your short-term and long-term trading goals?", False),
+             ("struggling", "Where do you feel like you're struggling?", True),
+             ("frustrations", "What are your biggest frustrations and challenges?", False),
+             ("style", "Describe your current trading style and strategies", False))
+ONB_RE = re.compile(r"^(cal:\d{1,9}|discord)$")
 # Live calls per package, in days from joining that package (the length of each programme).
 CALL_DAYS = {"fast start": 30, "accelerator": 90, "elite": 180}
 PLANS = tuple(CALL_DAYS)
@@ -96,6 +112,12 @@ CREATE TABLE IF NOT EXISTS jb_academy_calls (
     active     BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
 ALTER TABLE jb_academy_calls ADD COLUMN IF NOT EXISTS plans TEXT NOT NULL DEFAULT 'fast start,accelerator,elite';
+CREATE TABLE IF NOT EXISTS jb_academy_onboarding (
+    email   TEXT NOT NULL,
+    item    TEXT NOT NULL,
+    data    TEXT,
+    done_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (email, item));
 CREATE TABLE IF NOT EXISTS jb_academy_seen (
     email      TEXT PRIMARY KEY,
     logins     INTEGER NOT NULL DEFAULT 0,
@@ -176,6 +198,31 @@ def _call_access(ms):
 
 def _plans(v):
     return [p for p in PLANS if p in {x.strip().lower() for x in str(v or "").split(",")}]
+
+
+_profile_checked = {}  # email -> when GHL last said "not yet" (don't ask GHL on every page load)
+
+
+def _profile_in_ghl(email):
+    """Filled in the Trader Profile Form (or the setup page) already: the tag, or its answers on the contact."""
+    if time.time() - _profile_checked.get(email, 0) < MEMBER_CACHE:
+        return False
+    _profile_checked[email] = time.time()
+    try:
+        cid = A._ghl_contact(email)
+        if not cid:
+            return False
+        st, d = A._ghl("GET", "/contacts/" + cid)
+        ct = d.get("contact") or {}
+        if PROFILE_TAG in [t.lower() for t in ct.get("tags") or []]:
+            return True
+        names = _jb_admin._field_names()
+        want = {q.lower() for _, q, _ in PROFILE_Q}
+        filled = [f for f in ct.get("customFields") or [] if (names.get(f.get("id")) or "").strip().lower() in want and f.get("value") not in (None, "")]
+        return len(filled) >= 3
+    except Exception as e:
+        log("JB_ACADEMY_PROFILE_CHECK_ERR:", e)
+        return False
 
 
 def calls(cur, admin=False):
@@ -366,6 +413,17 @@ class handler(BaseHTTPRequestHandler):
                     cl.append(x)
                 c.close()
                 best = max(access.items(), key=lambda kv: (PLANS.index(kv[0]), kv[1])) if access and not admin else None
+                c = db()
+                cur = c.cursor()
+                cur.execute("SELECT item FROM jb_academy_onboarding WHERE email = %s", (email,))
+                done_items = {r[0] for r in cur.fetchall()}
+                if "profile" not in done_items and not admin and _profile_in_ghl(email):
+                    cur.execute("INSERT INTO jb_academy_onboarding (email, item, data) VALUES (%s, 'profile', 'ghl') ON CONFLICT DO NOTHING", (email,))
+                    c.commit()
+                    done_items.add("profile")
+                c.close()
+                data["onboarding"] = {"done": sorted(done_items), "discord": DISCORD,
+                                      "questions": [{"key": k, "q": q, "required": r} for k, q, r in PROFILE_Q]}
                 return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], admin=admin,
                                             role=ADMINS.get(email, ("", None))[1], calls=cl,
                                             call_access={"open": admin or any(x["open"] for x in cl), "admin": admin,
@@ -389,7 +447,7 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         a = self._action()
-        if a in ("start", "login", "progress", "comment", "uncomment", "call_save", "call_delete"):
+        if a in ("start", "login", "progress", "comment", "uncomment", "call_save", "call_delete", "onboard", "profile_save"):
             return getattr(self, "_" + a)()
         self._json(404, {"error": "unknown action"})
 
@@ -539,6 +597,58 @@ class handler(BaseHTTPRequestHandler):
             log("JB_ACADEMY_CHECK_ERR:", e)
             return self._json(502, {"error": str(e)[:400]})
 
+    def _onboard(self):
+        email = self._member()
+        if not email:
+            return
+        item = str(self._body().get("item") or "")
+        if not ONB_RE.match(item):
+            return self._json(400, {"error": "bad step"})
+        c = db()
+        c.cursor().execute("INSERT INTO jb_academy_onboarding (email, item) VALUES (%s, %s) ON CONFLICT DO NOTHING", (email, item))
+        c.commit()
+        c.close()
+        self._json(200, {"ok": True})
+
+    def _profile_save(self):
+        email = self._member()
+        if not email:
+            return
+        given = self._body().get("answers") or {}
+        answers = {}
+        for k, q, req in PROFILE_Q:
+            v = re.sub(r"\s+\n", "\n", str(given.get(k) or "")).strip()[:1500]
+            if req and not v:
+                return self._json(400, {"error": "Please answer: " + q, "field": k})
+            if v:
+                answers[q] = v
+        try:
+            cid = A._ghl_contact(email)
+            if not cid:  # a member with no GHL contact yet: make one, then fill it
+                A.ghl_tag(email, member(email)[1], [])
+                cid = A._ghl_contact(email)
+            ids = {(n or "").strip().lower(): i for i, n in _jb_admin._field_names().items()}
+            fields = [{"id": ids[q.lower()], "field_value": v} for q, v in answers.items() if q.lower() in ids]
+            missing = [q for q in answers if q.lower() not in ids]
+            if missing:
+                log("JB_ACADEMY_PROFILE_FIELDS_MISSING", missing)
+            if cid and fields:
+                st, d = A._ghl("PUT", "/contacts/" + cid, {"customFields": fields})
+                if st >= 300:
+                    raise RuntimeError("GHL %s %s" % (st, str(d)[:200]))
+                A._ghl("POST", "/contacts/%s/tags" % cid, {"tags": [PROFILE_TAG]})
+        except Exception as e:
+            log("JB_ACADEMY_PROFILE_GHL_ERR:", e)
+            return self._json(502, {"error": "We couldn't save that just now. Please try again."})
+        c = db()
+        c.cursor().execute("""INSERT INTO jb_academy_onboarding (email, item, data) VALUES (%s, 'profile', %s)
+                              ON CONFLICT (email, item) DO UPDATE SET data = EXCLUDED.data, done_at = now()""",
+                           (email, json.dumps(answers)))
+        c.commit()
+        c.close()
+        log("JB_ACADEMY_PROFILE_SAVED", email, len(answers))
+        self._json(200, {"ok": True})
+
     def _is_admin(self):
         h = self.headers.get("Authorization", "")
         tok = h[7:].strip() if h.startswith("Bearer ") else ""
@@ -632,11 +742,16 @@ class handler(BaseHTTPRequestHandler):
                 rows = _jb_admin.members(cur, fresh=self._q("fresh") == "1")
                 cur.execute("SELECT email, logins, last_login, last_seen FROM jb_academy_seen")
                 seen = {r[0]: r[1:] for r in cur.fetchall()}
+                cur.execute("SELECT email, array_agg(item) FROM jb_academy_onboarding GROUP BY email")
+                onb = {r[0]: set(r[1] or []) for r in cur.fetchall()}
                 for r in rows:
                     s = seen.get(r["email"])
                     r["logins"] = s[0] if s else 0
                     r["last_login"] = s[1].isoformat() if s and s[1] else None
                     r["last_seen"] = s[2].isoformat() if s and s[2] else None
+                    o = onb.get(r["email"], set())
+                    r["setup"] = {"profile": "profile" in o, "discord": "discord" in o,
+                                  "calendar": any(i.startswith("cal:") for i in o)}
                 out = {"ok": True, "members": rows, "lessons": sum(len(ch["lessons"]) for ch in course()["chapters"])}
                 if self._q("debug") == "1":
                     ms = _jb_admin.sniper_memberships()

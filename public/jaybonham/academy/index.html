@@ -213,7 +213,7 @@ img{max-width:100%}
 .chip{background:none;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:0 14px;height:36px;cursor:pointer}
 .chip.on{background:rgba(75,158,255,.12);border-color:rgba(75,158,255,.5);color:var(--tx)}
 .tbl-w{margin-top:18px;border:1px solid var(--line);overflow-x:auto;background:var(--panel)}
-.tbl{width:100%;border-collapse:collapse;min-width:900px}
+.tbl{width:100%;border-collapse:collapse;min-width:1040px}
 .tbl th{text-align:left;font-family:var(--mono);font-weight:500;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
 .tbl td{padding:14px 16px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
@@ -318,6 +318,52 @@ img{max-width:100%}
 .cform .w2{grid-column:span 2}.cform .w4{grid-column:1/-1}
 .cform .row{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 @media(max-width:720px){.cform{grid-template-columns:1fr 1fr}.cform .w2{grid-column:1/-1}}
+/* setup / onboarding */
+.setup{max-width:880px;margin:0 auto;padding:clamp(28px,5vw,56px) var(--gutr) 70px var(--gut);animation:rise .4s ease both}
+.setup h1{font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:clamp(40px,6vw,64px);line-height:.92;margin:14px 0 0;text-wrap:balance}
+.setup h1 b{color:var(--acc);font-weight:800}
+.setup .lead{color:var(--dim);font-size:16px;line-height:1.6;margin:14px 0 0;max-width:60ch}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:30px}
+.stp{display:flex;align-items:center;gap:10px;padding:12px 12px;border:1px solid var(--line);background:var(--panel);color:var(--mute);cursor:pointer;text-align:left;min-width:0}
+.stp .n{width:26px;height:26px;flex:none;display:grid;place-items:center;border:1px solid var(--line2);font-family:var(--mono);font-size:11px}
+.stp .l{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;line-height:1.3;min-width:0}
+.stp.on{border-color:rgba(75,158,255,.6);color:var(--tx);background:rgba(75,158,255,.08)}.stp.on .n{border-color:var(--acc);color:var(--acc)}
+.stp.ok{color:var(--dim)}.stp.ok .n{background:var(--ok);border-color:var(--ok);color:#06080B}
+.spanel{margin-top:16px;background:var(--panel);border:1px solid var(--line);padding:clamp(20px,3.5vw,32px)}
+.spanel h2{font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:clamp(26px,3vw,34px);line-height:1;margin:10px 0 0}
+.spanel .why{color:var(--dim);font-size:15px;line-height:1.6;margin:10px 0 0;max-width:62ch}
+.ccard{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 18px;padding:18px;border:1px solid var(--line);margin-top:12px;transition:opacity .2s,border-color .2s}
+.ccard.act{border-color:rgba(75,158,255,.55);background:rgba(75,158,255,.05)}
+.ccard.lock{opacity:.38;pointer-events:none}
+.ccard.ok{border-color:rgba(61,220,151,.35)}
+.ccard .d{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+.ccard.ok .d{color:var(--ok)}
+.ccard .t{font-weight:600;font-size:16px;margin-top:4px}.ccard .c3{font-size:13px;color:var(--mute);margin-top:2px}
+.ccard .b{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.ccard .b .btn{min-height:40px;padding:0 14px;font-size:10.5px}
+.ccard .zoom{background:none;border:none;color:var(--mute);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:0 6px;text-decoration:underline;text-underline-offset:3px}
+.ccard .zoom:hover{color:var(--tx)}
+.snext{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:22px}
+.pf{display:grid;gap:18px;margin-top:22px}
+.pf label{display:grid;gap:8px;font-size:14.5px;font-weight:600}
+.pf label i{font-style:normal;color:var(--acc)}
+.pf .inp{height:48px;font-size:15px;font-weight:400}
+.pf textarea{width:100%;min-height:86px;resize:vertical;padding:12px 14px;background:#06080B;border:1px solid var(--line2);color:var(--tx);font-size:15px;font-family:var(--body);line-height:1.5;outline:none;font-weight:400}
+.pf textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(75,158,255,.15)}
+.pf .bad .inp,.pf .bad textarea,.pf .bad .chips{outline:1px solid var(--bad)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{height:40px;padding:0 14px;background:#06080B;border:1px solid var(--line2);color:var(--dim);font-size:14px;cursor:pointer;font-family:var(--body)}
+.chips button.on{border-color:var(--acc);background:rgba(75,158,255,.12);color:var(--tx)}
+.pf .two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:end}
+.later{display:block;margin:26px auto 0;background:none;border:none;color:var(--mute);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.later:hover{color:var(--dim)}
+.donebig{text-align:center;padding:20px 0 6px}
+.donebig .tick{width:64px;height:64px;margin:0 auto;display:grid;place-items:center;background:var(--ok);color:#06080B;font-size:30px}
+.setbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;max-width:1400px;margin:0 auto;padding:12px var(--gutr) 12px var(--gut);background:linear-gradient(90deg,rgba(75,158,255,.16),rgba(75,158,255,.04));border-bottom:1px solid rgba(75,158,255,.3)}
+.setbar-w{background:rgba(75,158,255,.06)}
+.setbar span{font-size:14.5px}.setbar b{color:var(--acc)}
+.setbar .btn{min-height:38px;padding:0 16px;font-size:11px}
+@media(max-width:700px){.steps{grid-template-columns:1fr 1fr}.ccard{grid-template-columns:1fr}.ccard .b{justify-content:flex-start}.pf .two{grid-template-columns:1fr}}
 .load{display:grid;place-items:center;min-height:calc(100vh - 64px)}
 .load .spin{width:26px;height:26px;border-color:rgba(255,255,255,.15);border-top-color:var(--acc)}
 .cerr{max-width:480px;margin:80px auto;text-align:center;color:var(--dim);padding:0 18px}
@@ -363,7 +409,10 @@ img{max-width:100%}
 
 <div class="load" id="vLoad"><span class="spin"></span></div>
 
+<main class="setup" id="vSetup" hidden></main>
+
 <main id="vHome" hidden>
+  <div class="setbar-w" id="setbar" hidden><div class="setbar"><span>Finish setting up: <b id="sbN"></b> done</span><button class="btn" type="button" id="sbGo">Continue setup →</button></div></div>
   <section class="hero">
     <div class="hero-in">
       <div class="hero-l">
@@ -425,7 +474,7 @@ img{max-width:100%}
   <div class="kpis" id="aKpis"></div>
   <div class="tools"><input class="inp" id="aSearch" type="search" placeholder="Search name, email or username" autocomplete="off">
     <div id="aChips" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
-  <div class="tbl-w"><table class="tbl"><thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Course progress</th><th>Signed in here</th><th>Last active</th><th>Comments</th></tr></thead><tbody id="aRows"></tbody></table></div>
+  <div class="tbl-w"><table class="tbl"><thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Course progress</th><th>Setup</th><th>Signed in here</th><th>Last active</th><th>Comments</th></tr></thead><tbody id="aRows"></tbody></table></div>
   <div class="mcards" id="aCards"></div>
   <p class="err" id="aErr" style="margin-top:14px"></p>
 </main>
@@ -471,7 +520,7 @@ img{max-width:100%}
     var h = Math.round(m / 60); if (h < 24) return h + 'h ago'; var d = Math.round(h / 24); if (d < 30) return d + 'd ago';
     return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
-  function show(v) { if (v !== 'vHome') stopTick(); ['vGate', 'vLoad', 'vHome', 'vLesson', 'vAdmin', 'vProfile', 'vComments', 'vCalls', 'vErr'].forEach(function (id) { $(id).hidden = id !== v; }); }
+  function show(v) { if (v !== 'vHome') stopTick(); ['vGate', 'vLoad', 'vSetup', 'vHome', 'vLesson', 'vAdmin', 'vProfile', 'vComments', 'vCalls', 'vErr'].forEach(function (id) { $(id).hidden = id !== v; }); }
   function api(method, action, body, extra) {
     var h = { 'Content-Type': 'text/plain' };
     if (session) h.Authorization = 'Bearer ' + session;
@@ -543,6 +592,8 @@ img{max-width:100%}
     if (data.admin && h === 'admin') { stopVideo(); cur = null; return admin(); }
     if (data.admin && h === 'comments') { stopVideo(); cur = null; return allComments(); }
     if (data.admin && h === 'calls') { stopVideo(); cur = null; return adminCalls(); }
+    if (h === 'setup') { stopVideo(); cur = null; return setup(true); }
+    if (!h && !data.admin && !setupState().all && !later()) { location.replace('#setup'); return; }
     if (data.admin && h.indexOf('member/') === 0) { stopVideo(); cur = null; return profile(h.slice(7)); }
     var l = byId(h);
     if (l) openLesson(l, user === true); else home();
@@ -577,6 +628,8 @@ img{max-width:100%}
     }).join('');
     show('vHome'); window.scrollTo(0, 0);
     renderCalls();
+    var st = setupState();
+    $('setbar').hidden = st.all || data.admin; $('sbN').textContent = st.n + ' of 4';
   }
   function card(l) {
     var p = prog(l.id), w = watched(l), cc = (data.comments || {})[l.id] || 0;
@@ -739,7 +792,7 @@ img{max-width:100%}
   function admin(fresh) {
     show('vAdmin'); window.scrollTo(0, 0);
     if (aRows && !fresh) return renderMembers();
-    $('aRows').innerHTML = '<tr><td colspan="7" class="muted">Loading members from Whop…</td></tr>'; $('aCards').innerHTML = ''; $('aErr').textContent = '';
+    $('aRows').innerHTML = '<tr><td colspan="8" class="muted">Loading members from Whop…</td></tr>'; $('aCards').innerHTML = ''; $('aErr').textContent = '';
     api('GET', 'members', null, fresh ? '&fresh=1' : '').then(function (d) { aRows = d.members; data.total = d.lessons; renderMembers(); })
       .catch(function (x) { if (x && x.signin) return signOut(x.error); $('aRows').innerHTML = ''; $('aErr').textContent = (x && x.error) || 'Couldn\'t load members.'; });
   }
@@ -757,22 +810,28 @@ img{max-width:100%}
       ['Average progress', avg + '%', total + ' lessons in the course'],
       ['Comments', aRows.reduce(function (a, r) { return a + r.comments; }, 0), '']
     ].map(function (k) { return '<div class="kpi"><b>' + k[1] + '</b><span>' + k[0] + '</span>' + (k[2] ? '<small>' + esc(k[2]) + '</small>' : '') + '</div>'; }).join('');
-    var names = ['all', 'Fast Start', 'Accelerator', 'Elite', 'never', 'ended'];
-    var labels = { all: 'All active', never: 'Never signed in', ended: 'Ended' };
+    var names = ['all', 'Fast Start', 'Accelerator', 'Elite', 'setup', 'never', 'ended'];
+    var labels = { all: 'All active', setup: 'Setup not finished', never: 'Never signed in', ended: 'Ended' };
     $('aChips').innerHTML = names.map(function (n) { return '<button class="chip' + (aFilter === n ? ' on' : '') + '" data-f="' + n + '" type="button">' + esc(labels[n] || n) + '</button>'; }).join('');
     var q = $('aSearch').value.trim().toLowerCase();
     var rows = aRows.filter(function (r) {
       if (aFilter === 'ended') { if (r.active) return false; } else if (!r.active) return false;
       if (aFilter === 'never' && (r.last_login || r.last_seen)) return false;
+      if (aFilter === 'setup' && r.setup && r.setup.profile && r.setup.discord && r.setup.calendar) return false;
       if (['Fast Start', 'Accelerator', 'Elite'].indexOf(aFilter) > -1 && !r.plans.some(function (p) { return p.live && short(p.plan).toLowerCase() === aFilter.toLowerCase(); })) return false;
       return !q || (r.name + ' ' + r.email + ' ' + r.username).toLowerCase().indexOf(q) > -1;
     });
+    function setupCell(r) {
+      var s2 = r.setup || {};
+      return [['calendar', 'Cal'], ['profile', 'Profile'], ['discord', 'Discord']].map(function (x) {
+        return '<span class="pill ' + (s2[x[0]] ? 'live' : '') + '" style="' + (s2[x[0]] ? '' : 'opacity:.45') + '">' + (s2[x[0]] ? '✓ ' : '') + x[1] + '</span>'; }).join('');
+    }
     function plansHtml(r) { return r.plans.map(function (p) { return '<span class="pill ' + planCls(p.plan) + (p.live ? '' : ' off') + '">' + esc(short(p.plan)) + '</span>'; }).join(''); }
     function prog(r) { var pct = total ? Math.round(r.done * 100 / total) : 0; return '<div class="pbar"><span class="mini"><i style="width:' + pct + '%"></i></span><span>' + r.done + '/' + total + '</span></div>'; }
     $('aRows').innerHTML = rows.length ? rows.map(function (r) {
       return '<tr data-m="' + esc(r.email) + '"><td><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.username || r.email) + '</div><div class="em">' + esc(r.email) + (r.username ? ' · @' + esc(r.username) : '') + '</div></div></div></td>' +
-        '<td>' + plansHtml(r) + '</td><td>' + day(r.joined) + '</td><td>' + prog(r) + '</td><td>' + when(r.last_login, 'Not yet') + '</td><td>' + when(r.last_active || r.last_seen) + '</td><td>' + (r.comments || '<span class="muted">0</span>') + '</td></tr>';
-    }).join('') : '<tr><td colspan="7" class="muted">No members match.</td></tr>';
+        '<td>' + plansHtml(r) + '</td><td>' + day(r.joined) + '</td><td>' + prog(r) + '</td><td>' + setupCell(r) + '</td><td>' + when(r.last_login, 'Not yet') + '</td><td>' + when(r.last_active || r.last_seen) + '</td><td>' + (r.comments || '<span class="muted">0</span>') + '</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="muted">No members match.</td></tr>';
     $('aCards').innerHTML = rows.map(function (r) {
       return '<div class="mcard" data-m="' + esc(r.email) + '"><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.email) + '</div><div class="em">' + esc(r.email) + '</div></div></div>' +
         '<div>' + plansHtml(r) + '</div>' + prog(r) + '<div class="row"><span>Signed in ' + when(r.last_login, 'never') + '</span><span>Joined ' + day(r.joined) + '</span></div></div>';
@@ -832,6 +891,125 @@ img{max-width:100%}
         '</div></div>';
     }).catch(function (x) { if (x && x.signin) return signOut(x.error); $('pBody').innerHTML = '<div class="err" style="padding:30px 0">' + esc((x && x.error) || 'Couldn\'t load this member.') + '</div>'; });
   }
+
+  // ----- setup: calendar, trader profile, Discord, first lesson -----
+  var stepOn = null, pfDraft = {};
+  function later() { try { return sessionStorage.getItem('jb_setup_later') === '1'; } catch (e) { return false; } }
+  function onb() { return data.onboarding || { done: [], questions: [] }; }
+  function isDone(item) { return onb().done.indexOf(item) > -1; }
+  function setupCalls() { return (data.calls || []).filter(function (c) { return c.open && nextOf(c); }).sort(function (a, b) { return a.weekday - b.weekday || (a.start_time < b.start_time ? -1 : 1); }); }
+  function setupState() {
+    var cl = setupCalls();
+    var st = { cal: cl.every(function (c) { return isDone('cal:' + c.id); }), profile: isDone('profile'), discord: isDone('discord'),
+      lesson: Object.keys(data.progress || {}).some(function (k) { var p = data.progress[k]; return p.done || p.pos > 0; }) };
+    st.n = [st.cal, st.profile, st.discord, st.lesson].filter(Boolean).length; st.all = st.n === 4;
+    return st;
+  }
+  function markDone(item) {
+    if (isDone(item)) return Promise.resolve();
+    onb().done.push(item);
+    return api('POST', 'onboard', { item: item }).catch(function () {});
+  }
+  var STEPS = [['cal', 'Add your calls'], ['profile', 'Trader profile'], ['discord', 'Join Discord'], ['lesson', 'First lesson']];
+  function firstOpenStep() { var st = setupState(); return (STEPS.filter(function (x) { return !st[x[0]]; })[0] || ['done'])[0]; }
+  function setup(pick) {
+    show('vSetup'); stopTick();
+    var st = setupState();
+    if (pick || !stepOn) stepOn = firstOpenStep();
+    var first = (data.name || '').split(' ')[0];
+    var body = stepOn === 'cal' ? stepCal() : stepOn === 'profile' ? stepProfile() : stepOn === 'discord' ? stepDiscord() : stepOn === 'lesson' ? stepLesson() : stepAll();
+    $('vSetup').innerHTML = '<span class="ey">Welcome to Sniper Academy</span><h1>Let\'s get you<br><b>set up, ' + esc(first) + '</b></h1>' +
+      '<p class="lead">Four quick steps, about five minutes. Do them now and you\'ll never miss a call, Jay will know where you\'re at, and you\'ll be in the room with everyone else.</p>' +
+      '<div class="steps">' + STEPS.map(function (x, i) {
+        return '<button class="stp' + (st[x[0]] ? ' ok' : '') + (stepOn === x[0] ? ' on' : '') + '" type="button" data-step="' + x[0] + '"><span class="n">' + (st[x[0]] ? '✓' : i + 1) + '</span><span class="l">' + x[1] + '</span></button>';
+      }).join('') + '</div><div class="spanel">' + body + '</div>' +
+      (st.all ? '' : '<button class="later" type="button" id="later">I\'ll finish this later →</button>');
+    if (stepOn === 'profile') fillProfile();
+  }
+  function stepCal() {
+    var cl = setupCalls();
+    if (!cl.length) return '<span class="ey">Step 1</span><h2>Live calls</h2><p class="why">There are no live calls on your package right now.</p><div class="snext"><span></span><button class="btn" type="button" data-next="profile">Next: trader profile →</button></div>';
+    var firstOpen = cl.filter(function (c) { return !isDone('cal:' + c.id); })[0];
+    return '<span class="ey">Step 1 of 4</span><h2>Add your live calls to your calendar</h2><p class="why">Add each one so you get a reminder before it starts. Pick Google, or Apple / Outlook for iPhone and Outlook. The Zoom link and passcode are saved in the calendar invite.</p>' +
+      cl.map(function (c) {
+        var ok = isDone('cal:' + c.id), act = firstOpen && firstOpen.id === c.id;
+        return '<div class="ccard' + (ok ? ' ok' : act ? ' act' : ' lock') + '"><div><div class="d">' + (ok ? '✓ Added · ' : '') + esc(localDay(c)) + ' · ' + esc(localTime(c)) + '</div><div class="t">' + esc(c.title) + '</div>' +
+          (c.coach ? '<div class="c3">with ' + esc(c.coach) + '</div>' : '') + '</div><div class="b">' +
+          '<a class="btn' + (ok ? ' btn-g' : '') + '" href="' + esc(gcal(c)) + '" target="_blank" rel="noopener" data-cal="' + c.id + '">+ Google</a>' +
+          (c.ics_url ? '<a class="btn' + (ok ? ' btn-g' : '') + '" href="' + esc(c.ics_url) + '" target="_blank" rel="noopener" data-cal="' + c.id + '">+ Apple / Outlook</a>'
+            : '<button class="btn' + (ok ? ' btn-g' : '') + '" type="button" data-ics="' + c.id + '" data-cal="' + c.id + '">+ Apple / Outlook</button>') +
+          (c.zoom_url ? '<a class="zoom" href="' + esc(c.zoom_url) + '" target="_blank" rel="noopener">Join Zoom</a>' : '') + '</div></div>';
+      }).join('') +
+      '<div class="snext"><span class="muted" style="font-size:13.5px">' + (firstOpen ? 'Add each call to unlock the next one.' : 'All ' + cl.length + ' calls added.') + '</span>' +
+      (firstOpen ? '' : '<button class="btn" type="button" data-next="profile">Next: trader profile →</button>') + '</div>';
+  }
+  var CHOICE = { how_long: ['Under 1 year', '1–3 years', '3–5 years', '5+ years'], live_demo: ['Live', 'Demo', 'Both', 'Not trading yet'] };
+  function stepProfile() {
+    var qs = onb().questions || [], done = isDone('profile');
+    function field(q) {
+      var lab = '<span>' + esc(q.q) + (q.required ? ' <i>*</i>' : '') + '</span>';
+      if (CHOICE[q.key]) return '<label data-q="' + q.key + '">' + lab + '<div class="chips">' + CHOICE[q.key].map(function (o) { return '<button type="button" data-chip="' + esc(o) + '">' + esc(o) + '</button>'; }).join('') + '</div></label>';
+      if (q.key === 'tradingview' || q.key === 'markets') return '<label data-q="' + q.key + '">' + lab + '<input class="inp" data-a="' + q.key + '" type="text" autocomplete="off"' + (q.key === 'markets' ? ' placeholder="e.g. US30, Gold, Forex"' : ' placeholder="Your TradingView username"') + '></label>';
+      return '<label data-q="' + q.key + '">' + lab + '<textarea data-a="' + q.key + '" maxlength="1500"></textarea></label>';
+    }
+    var byKey = {}; qs.forEach(function (q) { byKey[q.key] = q; });
+    return '<span class="ey">Step 2 of 4</span><h2>Your trader profile</h2><p class="why">' + (done ? '<b style="color:var(--ok)">✓ Done, thanks.</b> Jay and the team already have your answers. You can update them below any time.' : 'Takes about 3 minutes. This is how Jay and the coaches tailor your coaching, and it\'s how we give you indicator access on TradingView.') + '</p>' +
+      '<div class="pf" id="pf"><div class="two">' + [byKey.how_long, byKey.live_demo].filter(Boolean).map(field).join('') + '</div>' +
+      '<div class="two">' + [byKey.tradingview, byKey.markets].filter(Boolean).map(field).join('') + '</div>' +
+      qs.filter(function (q) { return ['how_long', 'live_demo', 'tradingview', 'markets'].indexOf(q.key) < 0; }).map(field).join('') + '</div>' +
+      '<p class="err" id="pfErr" style="margin-top:14px"></p><div class="snext"><span class="muted" style="font-size:13.5px"><i style="color:var(--acc);font-style:normal">*</i> required</span>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap">' + (done ? '<button class="btn btn-g" type="button" data-next="discord">Skip →</button>' : '') + '<button class="btn" type="button" id="pfSave">' + (done ? 'Update my answers' : 'Save &amp; continue →') + '</button></div></div>';
+  }
+  function fillProfile() {
+    Object.keys(pfDraft).forEach(function (k) {
+      var el = document.querySelector('[data-a="' + k + '"]'); if (el) el.value = pfDraft[k];
+      var chip = document.querySelector('[data-q="' + k + '"] [data-chip="' + (pfDraft[k] || '').replace(/"/g, '') + '"]'); if (chip) chip.classList.add('on');
+    });
+  }
+  function stepDiscord() {
+    return '<span class="ey">Step 3 of 4</span><h2>Join the Sniper Discord</h2><p class="why">Everyone in Sniper Academy is in here: the coaching chat, Jay\'s signals, the US30 Sniper Chat and reminders before every call.</p>' +
+      '<div class="snext"><a class="btn" href="' + esc(onb().discord) + '" target="_blank" rel="noopener" id="dGo">Join the Discord →</a>' +
+      (isDone('discord') ? '<button class="btn btn-g" type="button" data-next="lesson">Next: first lesson →</button>' : '<span class="muted" style="font-size:13.5px">Opens Discord in a new tab</span>') + '</div>';
+  }
+  function stepLesson() {
+    var l = flat[0];
+    return '<span class="ey">Step 4 of 4</span><h2>Watch your first lesson</h2><p class="why">Start with Module 1. Work through the course in order and don\'t skip ahead. Your progress saves as you go.</p>' +
+      (l ? '<a class="upnext" href="#' + esc(l.id) + '" style="margin-top:18px">' + (l.thumb ? '<img src="' + esc(l.thumb) + '" alt="">' : '<span class="ph"></span>') + '<div><small>Module 1 · Lesson 1</small><div>' + esc(l.title) + '</div></div></a>' : '') +
+      '<div class="snext"><span></span>' + (l ? '<a class="btn" href="#' + esc(l.id) + '">Start lesson 1 →</a>' : '') + '</div>';
+  }
+  function stepAll() {
+    return '<div class="donebig"><div class="tick">✓</div><h2 style="margin-top:18px">You\'re all set</h2><p class="why" style="margin:10px auto 0">Your calls are in your calendar, Jay has your trader profile and you\'re in the Discord. See you on the next call.</p>' +
+      '<div style="margin-top:22px"><a class="btn" href="#">Go to the course →</a></div></div>';
+  }
+  $('vSetup').addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-step]'))) { stepOn = t.getAttribute('data-step'); return setup(); }
+    if ((t = e.target.closest('[data-next]'))) { stepOn = t.getAttribute('data-next'); window.scrollTo({ top: 0, behavior: 'smooth' }); return setup(); }
+    if (e.target.id === 'later') { try { sessionStorage.setItem('jb_setup_later', '1'); } catch (x) {} location.hash = ''; return; }
+    if ((t = e.target.closest('[data-cal]'))) {
+      var was = setupState().cal; markDone('cal:' + t.getAttribute('data-cal'));
+      setTimeout(function () { if (!was && setupState().cal) stepOn = firstOpenStep(); setup(); }, 400); return;
+    }
+    if (e.target.id === 'dGo') { markDone('discord'); setTimeout(function () { stepOn = firstOpenStep(); setup(); }, 700); return; }
+    if ((t = e.target.closest('[data-chip]'))) {
+      var q = t.closest('[data-q]').getAttribute('data-q');
+      t.parentNode.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === t); });
+      pfDraft[q] = t.getAttribute('data-chip'); t.closest('[data-q]').classList.remove('bad'); return;
+    }
+    if (e.target.id === 'pfSave') {
+      document.querySelectorAll('#pf [data-a]').forEach(function (el) { pfDraft[el.getAttribute('data-a')] = el.value; });
+      var miss = (onb().questions || []).filter(function (q) { return q.required && !(pfDraft[q.key] || '').trim(); });
+      document.querySelectorAll('#pf [data-q]').forEach(function (el) { el.classList.toggle('bad', miss.some(function (q) { return q.key === el.getAttribute('data-q'); })); });
+      if (miss.length) { $('pfErr').textContent = 'Please answer the questions marked *.'; var m = document.querySelector('#pf .bad'); if (m) m.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      var b = e.target; b.disabled = true; b.innerHTML = '<span class="spin"></span>Saving'; $('pfErr').textContent = '';
+      api('POST', 'profile_save', { answers: pfDraft }).then(function () {
+        if (!isDone('profile')) onb().done.push('profile');
+        stepOn = firstOpenStep(); window.scrollTo({ top: 0, behavior: 'smooth' }); setup();
+      }).catch(function (x) { $('pfErr').textContent = (x && x.error) || 'Couldn\'t save that. Please try again.'; b.disabled = false; b.textContent = 'Save & continue →'; });
+    }
+  });
+  $('vSetup').addEventListener('input', function (e) { var a = e.target.getAttribute && e.target.getAttribute('data-a'); if (a) { pfDraft[a] = e.target.value; e.target.closest('[data-q]').classList.remove('bad'); } });
+  $('sbGo').addEventListener('click', function () { location.hash = 'setup'; });
 
   // ----- live calls -----
   var DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], tick = null;
