@@ -17,6 +17,8 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
   check      GET  ?email= (Bearer admin)  whether an email has access, and why
   members    GET  (Bearer admin session)  every Sniper member with progress and last seen
   profile    GET  ?email= (Bearer admin session)  one member: Whop plans, trader profile, GHL, progress
+  allcomments GET (Bearer admin session)  every comment, newest first, for the admin Comments tab
+Progress counts lessons finished here or on Whop's own course page.
 
 Admins (ADMINS below, plus env JB_ACADEMY_COACHES) always have access, see the Members area and
 post with a Coach / Team badge. The jaybonham.com admin token also opens members/profile.
@@ -74,7 +76,7 @@ CREATE TABLE IF NOT EXISTS jb_academy_seen (
     last_login TIMESTAMPTZ,
     last_seen  TIMESTAMPTZ NOT NULL DEFAULT now());"""
 
-_members = {}   # email -> (checked_at, ok, name)
+_members = {}   # email -> (checked_at, ok, name, Whop user ids)
 _titles = {}    # product id -> lowercased title
 _course = {"at": 0, "data": None}
 _ready = False
@@ -131,7 +133,7 @@ def member(email, fresh=False):
     if hit and not fresh and time.time() - hit[0] < MEMBER_CACHE:
         return hit[1], hit[2]
     if email in ADMINS:
-        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email))
+        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email), set())
         return True, _members[email][2]
     c = A.conn()
     try:
@@ -140,7 +142,7 @@ def member(email, fresh=False):
     finally:
         c.close()
     ok = any(str(m.get("status")) in OK_STATUS for m in ms)
-    _members[email] = (time.time(), ok, _name_from(ms, email))
+    _members[email] = (time.time(), ok, _name_from(ms, email), {_jb_admin.uid(m) for m in ms if _jb_admin.uid(m)})
     return ok, _members[email][2]
 
 
@@ -259,7 +261,7 @@ class handler(BaseHTTPRequestHandler):
         a = self._action()
         if a == "check":
             return self._check()
-        if a in ("members", "profile"):
+        if a in ("members", "profile", "allcomments"):
             return self._admin_get(a)
         if a not in ("course", "lesson", "comments"):
             return self._json(404, {"error": "unknown action"})
@@ -278,6 +280,9 @@ class handler(BaseHTTPRequestHandler):
                 c.commit()
                 c.close()
                 data["progress"] = {r[0]: {"pos": r[1], "done": r[2]} for r in rows}
+                hit = _members.get(email)
+                for lid in _jb_admin.whop_done(hit[3] if hit and len(hit) > 3 else set())[0]:  # finished on Whop
+                    data["progress"].setdefault(lid, {"pos": 0, "done": True})["done"] = True
                 data["last"] = rows[0][0] if rows else None
                 data["comments"] = counts
                 c = db()
@@ -477,7 +482,13 @@ class handler(BaseHTTPRequestHandler):
                     out = {"ok": False, "probe_error": str(e)[:500]}
                 c.close()
                 return self._json(200, out)
+            if a == "allcomments":
+                out = {"ok": True, "comments": _jb_admin.all_comments(cur)}
+                c.close()
+                return self._json(200, out)
             if a == "members":
+                if self._q("fresh") == "1":
+                    _jb_admin.whop_progress(fresh=True)
                 rows = _jb_admin.members(cur, fresh=self._q("fresh") == "1")
                 cur.execute("SELECT email, logins, last_login, last_seen FROM jb_academy_seen")
                 seen = {r[0]: r[1:] for r in cur.fetchall()}

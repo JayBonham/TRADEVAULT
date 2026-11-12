@@ -262,6 +262,18 @@ img{max-width:100%}
   .mcard .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--dim)}
   .nav button{padding:22px 6px 20px;letter-spacing:.1em}.kpi{border-bottom:1px solid var(--line)}}
 @media(max-width:480px){.brand-s,.brand-t{display:none}}
+.navb{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;background:var(--acc);color:#030D1F;font-weight:600;font-size:10px;letter-spacing:0}
+.th2{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;padding:22px;background:var(--panel);border:1px solid var(--line)}
+.th2+.th2{margin-top:14px}
+.th2.need{border-color:rgba(75,158,255,.45);box-shadow:inset 3px 0 0 var(--acc)}
+.th2 .lk{display:block;cursor:pointer}
+.th2 .lk img,.th2 .lk .ph{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#0E131A}
+.th2 .lk span{display:block;margin-top:8px;font-size:13px;line-height:1.35;color:var(--dim)}
+.th2 .lk small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:8px}
+.th2 .c:first-child{border-top:none;padding-top:0}
+.c-a a{color:inherit}.c-a a:hover{color:var(--acc)}
+.needtag{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#030D1F;background:var(--acc);padding:3px 7px}
+@media(max-width:640px){.th2{grid-template-columns:1fr;padding:16px}.th2 .lk{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;align-items:center}.th2 .lk span{margin-top:0}}
 .load{display:grid;place-items:center;min-height:calc(100vh - 64px)}
 .load .spin{width:26px;height:26px;border-color:rgba(255,255,255,.15);border-top-color:var(--acc)}
 .cerr{max-width:480px;margin:80px auto;text-align:center;color:var(--dim);padding:0 18px}
@@ -283,7 +295,7 @@ img{max-width:100%}
     <svg width="34" height="34" viewBox="0 0 56 56" fill="none" style="flex:none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
     <div><div class="brand-t">Jay Bonham</div><div class="brand-s">Sniper Academy</div></div>
   </a>
-  <div class="who" id="who" hidden><nav class="nav" id="nav" hidden><button type="button" data-go="">Course</button><button type="button" data-go="admin">Members</button></nav><span class="who-n" id="whoName"></span><span class="av" id="whoAv"></span><button id="out" type="button">Sign out</button></div>
+  <div class="who" id="who" hidden><nav class="nav" id="nav" hidden><button type="button" data-go="">Course</button><button type="button" data-go="admin">Members</button><button type="button" data-go="comments">Comments<b id="navNeed" class="navb" hidden></b></button></nav><span class="who-n" id="whoName"></span><span class="av" id="whoAv"></span><button id="out" type="button">Sign out</button></div>
 </header>
 
 <section class="gate" id="vGate" hidden>
@@ -369,9 +381,16 @@ img{max-width:100%}
   <div class="kpis" id="aKpis"></div>
   <div class="tools"><input class="inp" id="aSearch" type="search" placeholder="Search name, email or username" autocomplete="off">
     <div id="aChips" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
-  <div class="tbl-w"><table class="tbl"><thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Course progress</th><th>Last sign-in</th><th>Last active</th><th>Comments</th></tr></thead><tbody id="aRows"></tbody></table></div>
+  <div class="tbl-w"><table class="tbl"><thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Course progress</th><th>Signed in here</th><th>Last active</th><th>Comments</th></tr></thead><tbody id="aRows"></tbody></table></div>
   <div class="mcards" id="aCards"></div>
   <p class="err" id="aErr" style="margin-top:14px"></p>
+</main>
+
+<main class="adm" id="vComments" hidden>
+  <div class="adm-h"><div><span class="ey">Admin</span><h1>Comments</h1></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap" id="kChips"></div></div>
+  <p class="err" id="kErr" style="margin-top:14px"></p>
+  <div id="kList" style="margin-top:26px"></div>
 </main>
 
 <main class="adm" id="vProfile" hidden>
@@ -400,7 +419,7 @@ img{max-width:100%}
     var h = Math.round(m / 60); if (h < 24) return h + 'h ago'; var d = Math.round(h / 24); if (d < 30) return d + 'd ago';
     return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
-  function show(v) { ['vGate', 'vLoad', 'vHome', 'vLesson', 'vAdmin', 'vProfile', 'vErr'].forEach(function (id) { $(id).hidden = id !== v; }); }
+  function show(v) { ['vGate', 'vLoad', 'vHome', 'vLesson', 'vAdmin', 'vProfile', 'vComments', 'vErr'].forEach(function (id) { $(id).hidden = id !== v; }); }
   function api(method, action, body, extra) {
     var h = { 'Content-Type': 'text/plain' };
     if (session) h.Authorization = 'Bearer ' + session;
@@ -447,6 +466,7 @@ img{max-width:100%}
       $('whoName').textContent = d.name; $('whoAv').textContent = initials(d.name); $('whoAv').classList.toggle('coach', !!d.admin);
       $('meAv').textContent = initials(d.name); $('meAv').classList.toggle('coach', !!d.admin);
       $('nav').hidden = !d.admin;
+      if (d.admin) api('GET', 'allcomments').then(function (x) { kAll = x.comments; needBadge(); }).catch(function () {});
       $('who').hidden = false;
       route();
     }).catch(function (x) {
@@ -467,8 +487,9 @@ img{max-width:100%}
   function route(user) {
     if (!data) return;
     var h = decodeURIComponent((location.hash || '').slice(1));
-    document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-go') === (h.indexOf('admin') === 0 || h.indexOf('member/') === 0 ? 'admin' : '')); });
+    document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-go') === (h === 'comments' ? 'comments' : h.indexOf('admin') === 0 || h.indexOf('member/') === 0 ? 'admin' : '')); });
     if (data.admin && h === 'admin') { stopVideo(); cur = null; return admin(); }
+    if (data.admin && h === 'comments') { stopVideo(); cur = null; return allComments(); }
     if (data.admin && h.indexOf('member/') === 0) { stopVideo(); cur = null; return profile(h.slice(7)); }
     var l = byId(h);
     if (l) openLesson(l, user === true); else home();
@@ -672,12 +693,12 @@ img{max-width:100%}
     if (!aRows) return;
     var total = data.total || flat.length, act = aRows.filter(function (r) { return r.active; });
     var plans = {}; act.forEach(function (r) { r.plans.filter(function (p) { return p.live; }).forEach(function (p) { plans[short(p.plan)] = (plans[short(p.plan)] || 0) + 1; }); });
-    var signed = act.filter(function (r) { return r.last_login || r.last_seen; }).length;
+    var signed = act.filter(function (r) { return r.last_login || r.last_seen; }).length, started = act.filter(function (r) { return r.done > 0; }).length;
     var avg = act.length ? Math.round(act.reduce(function (a, r) { return a + r.done; }, 0) * 100 / (act.length * total || 1)) : 0;
-    var week = Date.now() - 7 * 864e5, recent = act.filter(function (r) { return r.last_seen && new Date(r.last_seen).getTime() > week; }).length;
+    var week = Date.now() - 7 * 864e5, recent = act.filter(function (r) { var t = r.last_active || r.last_seen; return t && new Date(t).getTime() > week; }).length;
     $('aKpis').innerHTML = [
       ['Active members', act.length, Object.keys(plans).map(function (k) { return plans[k] + ' ' + k; }).join(' · ')],
-      ['Signed in to the course', signed, act.length ? Math.round(signed * 100 / act.length) + '% of members' : ''],
+      ['Started the course', started, act.length ? Math.round(started * 100 / act.length) + '% of members · ' + signed + ' on the new site' : ''],
       ['Active this week', recent, ''],
       ['Average progress', avg + '%', total + ' lessons in the course'],
       ['Comments', aRows.reduce(function (a, r) { return a + r.comments; }, 0), '']
@@ -696,7 +717,7 @@ img{max-width:100%}
     function prog(r) { var pct = total ? Math.round(r.done * 100 / total) : 0; return '<div class="pbar"><span class="mini"><i style="width:' + pct + '%"></i></span><span>' + r.done + '/' + total + '</span></div>'; }
     $('aRows').innerHTML = rows.length ? rows.map(function (r) {
       return '<tr data-m="' + esc(r.email) + '"><td><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.username || r.email) + '</div><div class="em">' + esc(r.email) + (r.username ? ' · @' + esc(r.username) : '') + '</div></div></div></td>' +
-        '<td>' + plansHtml(r) + '</td><td>' + day(r.joined) + '</td><td>' + prog(r) + '</td><td>' + when(r.last_login, 'Never') + '</td><td>' + when(r.last_seen) + '</td><td>' + (r.comments || '<span class="muted">0</span>') + '</td></tr>';
+        '<td>' + plansHtml(r) + '</td><td>' + day(r.joined) + '</td><td>' + prog(r) + '</td><td>' + when(r.last_login, 'Not yet') + '</td><td>' + when(r.last_active || r.last_seen) + '</td><td>' + (r.comments || '<span class="muted">0</span>') + '</td></tr>';
     }).join('') : '<tr><td colspan="7" class="muted">No members match.</td></tr>';
     $('aCards').innerHTML = rows.map(function (r) {
       return '<div class="mcard" data-m="' + esc(r.email) + '"><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.email) + '</div><div class="em">' + esc(r.email) + '</div></div></div>' +
@@ -734,9 +755,9 @@ img{max-width:100%}
         '<div class="pf-sub"><span>' + esc(email) + '</span>' + (p.username ? '<span>@' + esc(p.username) + '</span>' : '') + (g.phone ? '<span>' + esc(g.phone) + '</span>' : '') + (g.country ? '<span>' + esc(g.country) + '</span>' : '') + '</div>' +
         '<div style="margin-top:12px">' + plans.map(function (x) { return '<span class="pill ' + planCls(x.plan) + '">' + esc(short(x.plan)) + '</span>'; }).join('') + (p.access ? '<span class="pill live">Has course access</span>' : '<span class="pill dead">No access</span>') + '</div></div>' +
         '<div class="pf-acts">' + (g.url ? '<a class="btn btn-g btn-sm" href="' + esc(g.url) + '" target="_blank" rel="noopener">Open in GHL ↗</a>' : '') + '</div></div>' +
-        '<div class="kpis"><div class="kpi"><b>' + pct + '%</b><span>Course progress</span><small>' + p.progress.done + ' of ' + p.progress.total + ' lessons</small></div>' +
-        '<div class="kpi"><b>' + (p.last_login ? ago(p.last_login) : 'Never') + '</b><span>Last sign-in</span><small>' + (p.logins || 0) + ' sign-in' + (p.logins === 1 ? '' : 's') + '</small></div>' +
-        '<div class="kpi"><b>' + (p.last_seen ? ago(p.last_seen) : '—') + '</b><span>Last active</span><small>' + (p.progress.recent[0] ? esc(p.progress.recent[0].title) : 'Hasn\'t watched yet') + '</small></div>' +
+        '<div class="kpis"><div class="kpi"><b>' + pct + '%</b><span>Course progress</span><small>' + p.progress.done + ' of ' + p.progress.total + ' lessons' + (p.progress.whop_done ? ' · ' + p.progress.whop_done + ' on Whop' : '') + '</small></div>' +
+        '<div class="kpi"><b>' + (p.last_login ? ago(p.last_login) : 'Not yet') + '</b><span>Signed in here</span><small>' + (p.logins || 0) + ' sign-in' + (p.logins === 1 ? '' : 's') + '</small></div>' +
+        '<div class="kpi"><b>' + ((p.progress.last_active || p.last_seen) ? ago(p.progress.last_active || p.last_seen) : '—') + '</b><span>Last active</span><small>' + (p.progress.recent[0] ? esc(p.progress.recent[0].title) : p.progress.whop_last ? 'On Whop' : 'Hasn\'t watched yet') + '</small></div>' +
         '<div class="kpi"><b>' + p.comments.length + '</b><span>Comments</span></div></div>' +
         '<div class="pf-grid"><div>' +
           '<div class="box"><span class="ey">Trader profile</span><h3>About ' + esc((nm || '').split(' ')[0]) + '</h3>' + trader + '</div>' +
@@ -757,6 +778,65 @@ img{max-width:100%}
         '</div></div>';
     }).catch(function (x) { if (x && x.signin) return signOut(x.error); $('pBody').innerHTML = '<div class="err" style="padding:30px 0">' + esc((x && x.error) || 'Couldn\'t load this member.') + '</div>'; });
   }
+
+  // ----- admin: every comment, to answer in one place -----
+  var kAll = null, kFilter = 'need';
+  function isStaff(c) { return c.role === 'coach' || c.role === 'team'; }
+  function threads() {
+    var tops = (kAll || []).filter(function (c) { return !c.parent; });
+    return tops.map(function (t) {
+      var reps = kAll.filter(function (r) { return r.parent === t.id; }).sort(function (a, b) { return a.at < b.at ? -1 : 1; });
+      var lastMember = [t].concat(reps).filter(function (c) { return !isStaff(c); }).pop();
+      var lastStaff = [t].concat(reps).filter(isStaff).pop();
+      return { top: t, reps: reps, need: !!lastMember && (!lastStaff || lastStaff.at < lastMember.at), at: (reps.length ? reps[reps.length - 1].at : t.at) };
+    }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+  }
+  function needBadge() { var n = threads().filter(function (t) { return t.need; }).length; $('navNeed').textContent = n; $('navNeed').hidden = !n; }
+  function allComments(keep) {
+    show('vComments'); if (!keep) window.scrollTo(0, 0);
+    if (!kAll) $('kList').innerHTML = '<div class="empty">Loading comments…</div>';
+    api('GET', 'allcomments').then(function (d) { kAll = d.comments; renderK(); })
+      .catch(function (x) { if (x && x.signin) return signOut(x.error); $('kErr').textContent = (x && x.error) || 'Couldn\'t load comments.'; });
+    if (kAll) renderK();
+  }
+  function renderK() {
+    needBadge();
+    var all = threads(), need = all.filter(function (t) { return t.need; });
+    $('kChips').innerHTML = [['need', 'Needs a reply (' + need.length + ')'], ['all', 'All (' + all.length + ')']].map(function (c) {
+      return '<button class="chip' + (kFilter === c[0] ? ' on' : '') + '" data-k="' + c[0] + '" type="button">' + c[1] + '</button>'; }).join('');
+    var list = kFilter === 'need' ? need : all;
+    $('kList').innerHTML = list.length ? list.map(function (t) {
+      var l = byId(t.top.lesson) || { title: 'Lesson', ci: 0, li: 0 };
+      function one(c) {
+        var st = isStaff(c);
+        return '<div class="c' + (st ? ' coach' : '') + '"><span class="av' + (st ? ' coach' : '') + '">' + esc(initials(c.author)) + '</span><div class="c-m">' +
+          '<div class="c-h"><span class="c-a">' + (st ? esc(c.author) : '<a href="#member/' + encodeURIComponent(c.email) + '">' + esc(c.author) + '</a>') + '</span>' +
+          (st ? '<span class="badge">' + (c.role === 'team' ? 'Team' : 'Coach') + '</span>' : '') + '<span class="c-t">' + ago(c.at) + '</span></div>' +
+          '<div class="c-b">' + esc(c.body) + '</div><div class="c-x"><button type="button" data-kdel="' + c.id + '">Delete</button></div></div></div>';
+      }
+      return '<div class="th2' + (t.need ? ' need' : '') + '"><a class="lk" href="#' + esc(t.top.lesson) + '">' + (l.thumb ? '<img loading="lazy" src="' + esc(l.thumb) + '" alt="">' : '<span class="ph"></span>') +
+        '<span>' + esc(l.title) + '<small>Module ' + (l.ci + 1) + ' · Lesson ' + (l.li + 1) + '</small></span></a><div>' +
+        (t.need ? '<span class="needtag">Needs a reply</span><div style="height:12px"></div>' : '') +
+        one(t.top) + (t.reps.length ? '<div style="padding-left:48px">' + t.reps.map(one).join('') + '</div>' : '') +
+        '<div class="cbox" style="grid-template-columns:34px minmax(0,1fr);margin-top:16px"><span class="av coach">' + esc(initials(data.name)) + '</span><div><textarea data-kta="' + t.top.id + '" maxlength="2000" placeholder="Reply to ' + esc((t.top.author || '').split(' ')[0]) + '…" style="min-height:60px"></textarea>' +
+        '<div class="cacts"><button class="btn btn-sm" type="button" data-ksend="' + t.top.id + '" data-lesson="' + esc(t.top.lesson) + '">Reply</button></div></div></div></div></div>';
+    }).join('') : '<div class="empty">' + (kFilter === 'need' ? 'All caught up. Every comment has a reply.' : 'No comments yet.') + '</div>';
+  }
+  $('kChips').addEventListener('click', function (e) { var c = e.target.closest('[data-k]'); if (c) { kFilter = c.getAttribute('data-k'); renderK(); } });
+  $('kList').addEventListener('click', function (e) {
+    var snd = e.target.closest('[data-ksend]'), del = e.target.closest('[data-kdel]');
+    if (snd) {
+      var id = snd.getAttribute('data-ksend'), ta = document.querySelector('[data-kta="' + id + '"]');
+      if (!ta.value.trim()) return ta.focus();
+      snd.disabled = true; snd.innerHTML = '<span class="spin"></span>'; $('kErr').textContent = '';
+      api('POST', 'comment', { id: snd.getAttribute('data-lesson'), body: ta.value, parent: +id }).then(function () { allComments(true); })
+        .catch(function (x) { $('kErr').textContent = (x && x.error) || 'Couldn\'t post that.'; snd.disabled = false; snd.textContent = 'Reply'; });
+    } else if (del) {
+      if (del.getAttribute('data-sure') !== '1') { del.setAttribute('data-sure', '1'); del.textContent = 'Tap again to delete'; del.style.color = 'var(--bad)'; return; }
+      api('POST', 'uncomment', { cid: +del.getAttribute('data-kdel') }).then(function () { allComments(true); })
+        .catch(function (x) { $('kErr').textContent = (x && x.error) || 'Couldn\'t remove that.'; });
+    }
+  });
 
   // ----- discussion -----
   function loadComments(l) {

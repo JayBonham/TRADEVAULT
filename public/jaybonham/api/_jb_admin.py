@@ -24,6 +24,56 @@ APPLY_FIELDS = (("EXPERIENCE_LEVEL", "Experience"), ("CURRENT_TRADING", "Trading
                 ("PIPELINE_STAGE", "Application stage"))
 
 _list = {"at": 0, "data": None}
+_wprog = {"at": 0, "data": None}
+COURSE = "cors_ubqXl5GzVJpMN"
+
+
+def whop_progress(fresh=False):
+    """Lessons each Whop user has completed in the Sniper Academy course on Whop itself:
+    {user id: {"done": set of lesson ids, "last": iso of their latest lesson}}."""
+    if _wprog["data"] is not None and not fresh and time.time() - _wprog["at"] < LIST_CACHE:
+        return _wprog["data"]
+    out, after = {}, ""
+    for _ in range(60):
+        page = W.whop("GET", "/api/v1/course_lesson_interactions?course_id=%s&first=100%s" % (COURSE, "&after=" + after if after else ""))
+        for i in page.get("data") or []:
+            u = i.get("user") if isinstance(i.get("user"), dict) else {}
+            l = i.get("lesson") if isinstance(i.get("lesson"), dict) else {}
+            if not (u.get("id") and l.get("id")):
+                continue
+            rec = out.setdefault(u["id"], {"done": set(), "last": None})
+            if i.get("completed"):
+                rec["done"].add(l["id"])
+            at = i.get("updated_at") or i.get("created_at")
+            if at and (not rec["last"] or str(at) > rec["last"]):
+                rec["last"] = str(at)
+        info = page.get("page_info") or {}
+        after = info.get("end_cursor") or ""
+        if not (info.get("has_next_page") and after):
+            break
+    _wprog.update(at=time.time(), data=out)
+    return out
+
+
+def uid(m):
+    u = m.get("user") if isinstance(m.get("user"), dict) else {}
+    return u.get("id") or m.get("user_id")
+
+
+def whop_done(uids):
+    """(completed lesson ids, latest Whop activity) across a member's Whop user ids."""
+    try:
+        wp = whop_progress()
+    except Exception as e:
+        log("JB_ADMIN_WHOP_PROGRESS_ERR", e)
+        return set(), None
+    done, last = set(), None
+    for u in uids:
+        r = wp.get(u)
+        if r:
+            done |= r["done"]
+            last = max(filter(None, [last, r["last"]]), default=None)
+    return done, last
 _member_emails = {}   # Whop member id -> (email, name, username)
 _products = {}        # product id -> title (lowercase)
 _fields = {"at": 0, "map": {}, "err": None}
@@ -125,7 +175,9 @@ def members(cur, fresh=False):
             if not email:
                 continue
             p = people.setdefault(email, {"email": email, "name": name, "username": username, "plans": [], "active": False,
-                                          "joined": None, "memberships": 0})
+                                          "joined": None, "memberships": 0, "uids": []})
+            if uid(m) and uid(m) not in p["uids"]:
+                p["uids"].append(uid(m))
             p["name"] = p["name"] or name
             p["username"] = p["username"] or username
             status = str(m.get("status") or "")
@@ -142,15 +194,17 @@ def members(cur, fresh=False):
     emails = [r["email"] for r in rows]
     prog, comm = {}, {}
     if emails:
-        cur.execute("""SELECT email, count(*) FILTER (WHERE done), max(updated_at) FROM jb_academy_progress
+        cur.execute("""SELECT email, array_agg(lesson_id) FILTER (WHERE done), max(updated_at) FROM jb_academy_progress
                        WHERE email = ANY(%s) GROUP BY email""", (emails,))
-        prog = {r[0]: (r[1], r[2]) for r in cur.fetchall()}
+        prog = {r[0]: (set(r[1] or []), r[2]) for r in cur.fetchall()}
         cur.execute("SELECT email, count(*) FROM jb_academy_comments WHERE deleted_at IS NULL AND email = ANY(%s) GROUP BY email", (emails,))
         comm = dict(cur.fetchall())
     out = []
     for r in rows:
-        done, seen = prog.get(r["email"], (0, None))
-        out.append(dict(r, done=done, last_active=seen.isoformat() if seen else None, comments=comm.get(r["email"], 0)))
+        ours, seen = prog.get(r["email"], (set(), None))
+        wdone, wlast = whop_done(r["uids"])
+        last = max(filter(None, [seen.isoformat() if seen else None, wlast]), default=None)
+        out.append(dict(r, done=len(ours | wdone), last_active=last, whop_last=wlast, comments=comm.get(r["email"], 0)))
     out.sort(key=lambda r: (not r["active"], str(r["joined"] or "")), reverse=False)
     out.sort(key=lambda r: str(r["joined"] or ""), reverse=True)
     out.sort(key=lambda r: not r["active"])
@@ -303,10 +357,13 @@ def profile(cur, email, course):
     application = [{"name": label, "value": str(app.get(k))} for k, label in APPLY_FIELDS if app.get(k) not in (None, "", 0)]
     cur.execute("SELECT lesson_id, pos, done, updated_at FROM jb_academy_progress WHERE email = %s ORDER BY updated_at DESC", (email,))
     prog = {r[0]: {"pos": r[1], "done": r[2], "at": r[3].isoformat()} for r in cur.fetchall()}
+    wdone, wlast = whop_done({uid(m) for m in ms if uid(m)})
+    for lid in wdone:  # finished on Whop counts as finished here
+        prog.setdefault(lid, {"pos": 0, "done": True, "at": None})["done"] = True
     titles = {l["id"]: l["title"] for ch in course["chapters"] for l in ch["lessons"]}
     modules = [{"title": ch["title"], "total": len(ch["lessons"]),
                 "done": sum(1 for l in ch["lessons"] if (prog.get(l["id"]) or {}).get("done"))} for ch in course["chapters"]]
-    recent = [{"id": lid, "title": titles.get(lid, lid), "done": p["done"], "at": p["at"]} for lid, p in list(prog.items())[:6] if lid in titles]
+    recent = [{"id": lid, "title": titles.get(lid, lid), "done": p["done"], "at": p["at"]} for lid, p in prog.items() if lid in titles and p["at"]][:6]
     cur.execute("""SELECT id, lesson_id, body, created_at FROM jb_academy_comments WHERE email = %s AND deleted_at IS NULL
                    ORDER BY created_at DESC LIMIT 30""", (email,))
     comments = [{"id": r[0], "lesson": r[1], "title": titles.get(r[1], ""), "body": r[2], "at": r[3].isoformat()} for r in cur.fetchall()]
@@ -317,5 +374,13 @@ def profile(cur, email, course):
             "access": any(p["sniper"] and p["status"] in OK_STATUS for p in plans),
             "plans": plans, "forms": profile_forms, "application": application, "ghl": ghl,
             "progress": {"done": done, "total": total, "modules": modules, "recent": recent,
-                         "last_active": recent[0]["at"] if recent else None},
+                         "last_active": max(filter(None, [recent[0]["at"] if recent else None, wlast]), default=None),
+                         "whop_last": wlast, "whop_done": len(wdone)},
             "comments": comments}
+
+
+def all_comments(cur):
+    cur.execute("""SELECT c.id, c.lesson_id, c.email, c.parent_id, c.author, c.role, c.body, c.created_at
+                   FROM jb_academy_comments c WHERE c.deleted_at IS NULL ORDER BY c.created_at DESC LIMIT 500""")
+    return [{"id": r[0], "lesson": r[1], "email": r[2], "parent": r[3], "author": r[4], "role": r[5], "body": r[6],
+             "at": r[7].isoformat()} for r in cur.fetchall()]
