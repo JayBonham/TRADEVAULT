@@ -439,10 +439,10 @@ img{max-width:100%}
 
 <main class="adm" id="vCalls" hidden>
   <div class="adm-h"><div><span class="ey">Admin</span><h1>Live calls</h1></div><button class="btn btn-sm" id="clNew" type="button">+ Add a call</button></div>
-  <p class="muted" style="margin:14px 0 0;max-width:70ch;line-height:1.6">These show on every member's course home with a countdown, a Join button and add-to-calendar buttons. Fast Start members see the Zoom details for 30 days from joining; Accelerator and Elite always. Times are in the timezone you pick, and each member sees them in their own.</p>
+  <p class="muted" style="margin:14px 0 0;max-width:72ch;line-height:1.6">Calls show on the course home of members whose package you tick, with a countdown, a Join button and add-to-calendar buttons, for the length of their package from joining: Fast Start 30 days, Accelerator 90, Elite 180. Times are in the timezone you pick; each member sees them in their own.</p>
   <div id="clForm"></div>
   <p class="err" id="clErr" style="margin-top:12px"></p>
-  <div class="tbl-w"><table class="tbl" style="min-width:760px"><thead><tr><th>Call</th><th>When</th><th>Zoom</th><th>Showing</th><th></th></tr></thead><tbody id="clRows"></tbody></table></div>
+  <div class="tbl-w"><table class="tbl" style="min-width:760px"><thead><tr><th>Call</th><th>When</th><th>Packages</th><th>Zoom</th><th>Showing</th><th></th></tr></thead><tbody id="clRows"></tbody></table></div>
 </main>
 
 <main class="adm" id="vProfile" hidden>
@@ -895,13 +895,13 @@ img{max-width:100%}
       (c.ics_url ? '<a class="btn btn-g btn-sm" href="' + esc(c.ics_url) + '" target="_blank" rel="noopener">+ Apple / Outlook</a>' : '<button class="btn btn-g btn-sm" type="button" data-ics="' + c.id + '">+ Apple / Outlook</button>');
   }
   function renderCalls() {
-    var sec = $('callsSec'), list = (data.calls || []).filter(function (c) { return nextOf(c); }), acc = data.call_access || {};
+    var sec = $('callsSec'), all = (data.calls || []).filter(function (c) { return nextOf(c); }), acc = data.call_access || {};
     stopTick();
-    if (!list.length || !acc.plan) { sec.hidden = true; return; }
-    var open = acc.open;
+    if (!all.length || !acc.plan) { sec.hidden = true; return; }
+    var list = all.filter(function (c) { return c.open; }), open = list.length > 0;
     list.sort(function (a, b) { return nextOf(a) - nextOf(b); });
     var nx = list[0], left = acc.until ? Math.ceil((new Date(acc.until) - Date.now()) / 864e5) : null;
-    var accLine = acc.plan === 'Admin' ? 'Admin view' : acc.until ? (open ? '<b>' + left + ' day' + (left === 1 ? '' : 's') + '</b> of live calls left on Fast Start' : 'Fast Start live calls ended ' + day(acc.until)) : 'Included with ' + esc(acc.plan);
+    var accLine = acc.admin ? 'Admin view · every package' : acc.until && left > 0 ? '<b>' + left + ' day' + (left === 1 ? '' : 's') + '</b> of live calls left on ' + esc(acc.plan) : acc.until ? esc(acc.plan) + ' live calls ended ' + day(acc.until) : '';
     var sched = list.slice().sort(function (a, b) { return a.weekday - b.weekday || (a.start_time < b.start_time ? -1 : 1); });
     sec.innerHTML = '<div class="mod-h"><div><div class="mod-n">Every week · live with the coaches</div><div class="mod-t">Live calls</div></div><div class="cacc">' + accLine + '</div></div>' +
       (open ? '<div class="calls-g"><div class="nextc"><span class="ey">Next live call</span><div class="ttl">' + esc(nx.title) + '</div>' +
@@ -911,7 +911,7 @@ img{max-width:100%}
         '<div class="sched">' + sched.map(function (c) {
           return '<div class="srow"><div><div class="d">' + esc(localDay(c)) + ' · ' + esc(localTime(c)) + '</div><div class="t">' + esc(c.title) + '</div>' + (c.coach ? '<div class="c3">' + esc(c.coach) + (c.blurb ? ' · ' + esc(c.blurb) : '') + '</div>' : '') + '</div><div class="sbtns">' + calBtns(c, true) + '</div></div>';
         }).join('') + '</div></div>'
-      : '<div class="ended"><strong>Your 30 days of live calls on Fast Start have finished.</strong> Want to keep joining Ash and Hiffy every week, plus more time with Jay? <a href="https://jaybonham.com/schedule-call" style="color:var(--acc)">Talk to Jay about Accelerator →</a></div>');
+      : '<div class="ended"><strong>Your live calls on ' + esc(acc.plan || 'your package') + ' have finished.</strong> Want to keep joining the coaches every week, plus more time with Jay? <a href="https://jaybonham.com/schedule-call" style="color:var(--acc)">Talk to Jay about your next step →</a></div>');
     sec.hidden = false;
     if (!open) return;
     function draw() {
@@ -931,23 +931,26 @@ img{max-width:100%}
 
   // ----- admin: live calls editor -----
   var clAll = null;
+  var PKG = [['fast start', 'Fast Start'], ['accelerator', 'Accelerator'], ['elite', 'Elite']];
+  function pkgList(v) { var a = Array.isArray(v) ? v : String(v || '').split(','); return a.map(function (x) { return x.trim().toLowerCase(); }); }
   var TZS = ['America/Denver', 'America/Edmonton', 'America/New_York', 'America/Chicago', 'America/Los_Angeles', 'America/Toronto', 'America/Vancouver', 'Europe/London', 'Australia/Sydney'];
   function adminCalls() {
     show('vCalls'); window.scrollTo(0, 0); $('clForm').innerHTML = ''; $('clErr').textContent = '';
-    $('clRows').innerHTML = '<tr><td colspan="5" class="muted">Loading…</td></tr>';
+    $('clRows').innerHTML = '<tr><td colspan="6" class="muted">Loading…</td></tr>';
     api('GET', 'calls').then(function (d) { clAll = d.calls; renderCl(); }).catch(function (x) { $('clErr').textContent = (x && x.error) || 'Couldn\'t load calls.'; });
   }
   function renderCl() {
     $('clRows').innerHTML = clAll.length ? clAll.map(function (c) {
       return '<tr><td><div class="nm" style="font-weight:600">' + esc(c.title) + '</div><div class="muted" style="font-size:13px">' + esc(c.coach) + '</div></td>' +
         '<td>' + DAYS[c.weekday] + 's ' + esc(c.start_time) + '<div class="muted" style="font-size:12px">' + esc(c.tz) + ' · ' + c.minutes + ' min</div></td>' +
+        '<td>' + PKG.filter(function (p) { return pkgList(c.plans).indexOf(p[0]) > -1; }).map(function (p) { return '<span class="pill ' + planCls(p[1]) + '">' + p[1] + '</span>'; }).join('') + '</td>' +
         '<td>' + (c.zoom_url ? '<a href="' + esc(c.zoom_url) + '" target="_blank" rel="noopener" style="color:var(--acc)">Zoom link</a>' : '<span class="muted">No link</span>') + (c.meeting_id ? '<div class="muted" style="font-size:12px">' + esc(c.meeting_id) + (c.passcode ? ' · ' + esc(c.passcode) : '') + '</div>' : '') + '</td>' +
         '<td>' + (c.active ? '<span class="pill live">Showing</span>' : '<span class="pill">Hidden</span>') + '</td>' +
         '<td style="text-align:right;white-space:nowrap"><button class="mini-b" type="button" data-cedit="' + c.id + '">Edit</button> <button class="mini-b" type="button" data-cdel="' + c.id + '" style="border-color:rgba(255,107,107,.4);color:var(--bad)">Delete</button></td></tr>';
-    }).join('') : '<tr><td colspan="5" class="muted">No calls yet. Add one above.</td></tr>';
+    }).join('') : '<tr><td colspan="6" class="muted">No calls yet. Add one above.</td></tr>';
   }
   function clEdit(c) {
-    c = c || { title: '', coach: '', blurb: '', weekday: 1, start_time: '11:00', tz: 'America/Denver', minutes: 60, zoom_url: '', meeting_id: '', passcode: '', ics_url: '', active: true };
+    c = c || { title: '', coach: '', blurb: '', weekday: 1, start_time: '11:00', tz: 'America/Denver', minutes: 60, zoom_url: '', meeting_id: '', passcode: '', ics_url: '', active: true, plans: 'fast start,accelerator,elite' };
     function inp(k, label, cls, type) { return '<label class="' + (cls || '') + '">' + label + '<input class="inp" data-f="' + k + '" type="' + (type || 'text') + '" value="' + esc(c[k]) + '"></label>'; }
     $('clForm').innerHTML = '<div class="cform">' + inp('title', 'Call name', 'w2') + inp('coach', 'Coach', '') +
       '<label>Day<select data-f="weekday">' + DAYS.map(function (d, i) { return '<option value="' + i + '"' + (i === c.weekday ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select></label>' +
@@ -955,6 +958,8 @@ img{max-width:100%}
       inp('minutes', 'Length (minutes)', '', 'number') + inp('blurb', 'Short description (optional)', '') +
       inp('zoom_url', 'Zoom join link', 'w2') + inp('meeting_id', 'Meeting ID', '') + inp('passcode', 'Passcode', '') +
       inp('ics_url', 'Zoom calendar (.ics) link, optional', 'w4') +
+      '<div class="row" style="gap:18px"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)">Who sees this call</span>' +
+        PKG.map(function (p) { return '<label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-family:var(--body);font-size:14px;color:var(--dim)"><input type="checkbox" data-pkg="' + p[0] + '"' + (pkgList(c.plans).indexOf(p[0]) > -1 ? ' checked' : '') + '> ' + p[1] + '</label>'; }).join('') + '</div>' +
       '<div class="row"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-family:var(--body);font-size:14px;color:var(--dim)"><input type="checkbox" data-f="active"' + (c.active ? ' checked' : '') + '> Show to members</label>' +
       '<span style="flex:1"></span><button class="btn btn-g btn-sm" type="button" id="clCancel">Cancel</button><button class="btn btn-sm" type="button" id="clSave"' + (c.id ? ' data-id="' + c.id + '"' : '') + '>Save call</button></div></div>';
     $('clForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -965,7 +970,8 @@ img{max-width:100%}
     if (e.target.id !== 'clSave') return;
     var b = e.target, call = {};
     $('clForm').querySelectorAll('[data-f]').forEach(function (el) { call[el.getAttribute('data-f')] = el.type === 'checkbox' ? el.checked : el.value; });
-    call.weekday = +call.weekday; call.minutes = +call.minutes; if (b.getAttribute('data-id')) call.id = +b.getAttribute('data-id');
+    call.weekday = +call.weekday; call.minutes = +call.minutes;
+    call.plans = [].map.call($('clForm').querySelectorAll('[data-pkg]:checked'), function (x) { return x.getAttribute('data-pkg'); }); if (b.getAttribute('data-id')) call.id = +b.getAttribute('data-id');
     b.disabled = true; $('clErr').textContent = '';
     api('POST', 'call_save', { call: call }).then(function (d) { clAll = d.calls; data.calls = d.calls.filter(function (c) { return c.active; }); $('clForm').innerHTML = ''; renderCl(); })
       .catch(function (x) { $('clErr').textContent = (x && x.error) || 'Couldn\'t save that.'; b.disabled = false; });

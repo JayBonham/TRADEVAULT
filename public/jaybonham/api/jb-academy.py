@@ -21,7 +21,7 @@ Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
   calls      GET  (Bearer admin)       every live call, for the admin Calls tab
   call_save  POST {call} (Bearer admin)  add / change a live call;  call_delete POST {id}
 Live calls (Zoom links, passcodes) live in jb_academy_calls, never in this public repo, and only
-go to signed-in members: Fast Start gets them for 30 days from joining, Accelerator / Elite always.
+go to signed-in members whose package the call is for, for that package's length (CALL_DAYS).
 Progress counts lessons finished here or on Whop's own course page.
 
 Admins (ADMINS below, plus env JB_ACADEMY_COACHES) always have access, see the Members area and
@@ -53,8 +53,11 @@ COACHES = set(ADMINS)
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
 POSTS_PER_HOUR = 20
-FAST_START_CALL_DAYS = 30
-CALL_FIELDS = ("title", "coach", "blurb", "weekday", "start_time", "tz", "minutes", "zoom_url", "meeting_id", "passcode", "ics_url", "active")
+# Live calls per package, in days from joining that package (the length of each programme).
+CALL_DAYS = {"fast start": 30, "accelerator": 90, "elite": 180}
+PLANS = tuple(CALL_DAYS)
+CALL_FIELDS = ("title", "coach", "blurb", "weekday", "start_time", "tz", "minutes", "zoom_url", "meeting_id", "passcode", "ics_url",
+               "active", "plans")
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 ID_RE = re.compile(r"^[A-Za-z0-9_]{4,60}$")
@@ -92,6 +95,7 @@ CREATE TABLE IF NOT EXISTS jb_academy_calls (
     ics_url    TEXT NOT NULL DEFAULT '',
     active     BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
+ALTER TABLE jb_academy_calls ADD COLUMN IF NOT EXISTS plans TEXT NOT NULL DEFAULT 'fast start,accelerator,elite';
 CREATE TABLE IF NOT EXISTS jb_academy_seen (
     email      TEXT PRIMARY KEY,
     logins     INTEGER NOT NULL DEFAULT 0,
@@ -150,21 +154,28 @@ def _name_from(ms, email):
 
 
 def _call_access(ms):
-    """Live-call access: Accelerator / Elite always; Fast Start for 30 days from joining.
-    {"until": iso or None (no end), "plan": ...} or None when the member has no calls."""
+    """Live calls by package: {"fast start" | "accelerator" | "elite": access ends (iso)}, from when the
+    member joined that package (CALL_DAYS). Admins get every package with no end."""
     import datetime
-    live = [m for m in ms if str(m.get("status")) in OK_STATUS]
-    titles = {_title(m) for m in live}
-    if titles & {"sniper accelerator", "sniper elite"}:
-        return {"until": None, "plan": "Elite" if "sniper elite" in titles else "Accelerator"}
-    joined = sorted(str(m.get("created_at") or "") for m in live if _title(m) == "sniper fast start" and m.get("created_at"))
-    if not joined:
-        return None
-    try:
-        start = datetime.datetime.fromisoformat(joined[0].replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return {"until": (start + datetime.timedelta(days=FAST_START_CALL_DAYS)).isoformat(), "plan": "Fast Start"}
+    out = {}
+    for m in ms:
+        t = _title(m)
+        if str(m.get("status")) not in OK_STATUS or not t.startswith("sniper "):
+            continue
+        plan = t[len("sniper "):]
+        if plan not in CALL_DAYS or not m.get("created_at"):
+            continue
+        try:
+            start = datetime.datetime.fromisoformat(str(m["created_at"]).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        until = (start + datetime.timedelta(days=CALL_DAYS[plan])).isoformat()
+        out[plan] = max(out.get(plan, ""), until)
+    return out
+
+
+def _plans(v):
+    return [p for p in PLANS if p in {x.strip().lower() for x in str(v or "").split(",")}]
 
 
 def calls(cur, admin=False):
@@ -179,7 +190,7 @@ def member(email, fresh=False):
     if hit and not fresh and time.time() - hit[0] < MEMBER_CACHE:
         return hit[1], hit[2]
     if email in ADMINS:
-        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email), set(), {"until": None, "plan": "Admin"})
+        _members[email] = (time.time(), True, ADMINS[email][0] or _name_from([], email), set(), {"admin": True})
         return True, _members[email][2]
     c = A.conn()
     try:
@@ -338,17 +349,28 @@ class handler(BaseHTTPRequestHandler):
                 c.commit()
                 c.close()
                 hit = _members.get(email)
-                access = hit[4] if hit and len(hit) > 4 else None
+                access = (hit[4] if hit and len(hit) > 4 else None) or {}
                 import datetime
-                open_ = bool(access) and (not access["until"] or access["until"] > datetime.datetime.now(datetime.timezone.utc).isoformat())
+                now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                admin = email in ADMINS
                 c = db()
-                cl = calls(c.cursor())
+                cl = []
+                for x in calls(c.cursor()):
+                    mine = [p for p in _plans(x["plans"]) if admin or p in access]
+                    if not mine:
+                        continue  # a call for a package this member doesn't have
+                    x["open"] = admin or any(access[p] > now for p in mine)
+                    x["plans"] = _plans(x["plans"])
+                    if not x["open"]:  # their package's call time has ended: no join links
+                        x = {k: v for k, v in x.items() if k not in ("zoom_url", "meeting_id", "passcode", "ics_url")}
+                    cl.append(x)
                 c.close()
-                if not open_:  # no join links once access has ended
-                    cl = [{k: v for k, v in x.items() if k not in ("zoom_url", "meeting_id", "passcode", "ics_url")} for x in cl]
-                return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], admin=email in ADMINS,
+                best = max(access.items(), key=lambda kv: (PLANS.index(kv[0]), kv[1])) if access and not admin else None
+                return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], admin=admin,
                                             role=ADMINS.get(email, ("", None))[1], calls=cl,
-                                            call_access={"open": open_, "until": access and access["until"], "plan": access and access["plan"]}))
+                                            call_access={"open": admin or any(x["open"] for x in cl), "admin": admin,
+                                                         "plan": "Admin" if admin else (best[0].title() if best else None),
+                                                         "until": best[1] if best else None}))
             lid = self._q("id")
             if a == "comments":
                 if not (ID_RE.match(lid) and allowed(lid)):
@@ -532,9 +554,12 @@ class handler(BaseHTTPRequestHandler):
                  "start_time": str(b.get("start_time") or "").strip(), "tz": str(b.get("tz") or "America/Denver").strip()[:60],
                  "minutes": max(15, min(int(b.get("minutes") or 60), 480)), "zoom_url": str(b.get("zoom_url") or "").strip()[:500],
                  "meeting_id": str(b.get("meeting_id") or "").strip()[:40], "passcode": str(b.get("passcode") or "").strip()[:40],
-                 "ics_url": str(b.get("ics_url") or "").strip()[:800], "active": bool(b.get("active", True))}
+                 "ics_url": str(b.get("ics_url") or "").strip()[:800], "active": bool(b.get("active", True)),
+                 "plans": ",".join(_plans(",".join(b.get("plans") or []) if isinstance(b.get("plans"), list) else b.get("plans")))}
         except (TypeError, ValueError):
             return self._json(400, {"error": "Check the day and length."})
+        if not v["plans"]:
+            return self._json(400, {"error": "Pick at least one package that sees this call."})
         if not v["title"] or not 0 <= v["weekday"] <= 6 or not TIME_RE.match(v["start_time"]):
             return self._json(400, {"error": "A call needs a title, a day and a time like 11:00."})
         for k in ("zoom_url", "ics_url"):
