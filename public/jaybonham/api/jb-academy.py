@@ -203,9 +203,9 @@ def _plans(v):
 _profile_checked = {}  # email -> when GHL last said "not yet" (don't ask GHL on every page load)
 
 
-def _profile_in_ghl(email):
+def _profile_in_ghl(email, force=False):
     """Filled in the Trader Profile Form (or the setup page) already: the tag, or its answers on the contact."""
-    if time.time() - _profile_checked.get(email, 0) < MEMBER_CACHE:
+    if not force and time.time() - _profile_checked.get(email, 0) < MEMBER_CACHE:
         return False
     _profile_checked[email] = time.time()
     try:
@@ -744,6 +744,17 @@ class handler(BaseHTTPRequestHandler):
                 seen = {r[0]: r[1:] for r in cur.fetchall()}
                 cur.execute("SELECT email, array_agg(item) FROM jb_academy_onboarding GROUP BY email")
                 onb = {r[0]: set(r[1] or []) for r in cur.fetchall()}
+                # Filled in the Trader Profile Form in GHL before the setup page existed: count it (and save it,
+                # so their setup page shows the step done and skips it).
+                todo = [r["email"] for r in rows if "profile" not in onb.get(r["email"], set())]
+                if todo:
+                    from concurrent.futures import ThreadPoolExecutor as _TP
+                    with _TP(6) as ex:
+                        found = [e for e, ok in zip(todo, ex.map(lambda e: _profile_in_ghl(e, force=True), todo)) if ok]
+                    for e in found:
+                        cur.execute("INSERT INTO jb_academy_onboarding (email, item, data) VALUES (%s, 'profile', 'ghl') ON CONFLICT DO NOTHING", (e,))
+                        onb.setdefault(e, set()).add("profile")
+                    c.commit()
                 for r in rows:
                     s = seen.get(r["email"])
                     r["logins"] = s[0] if s else 0
