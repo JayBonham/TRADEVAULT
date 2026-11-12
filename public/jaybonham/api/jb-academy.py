@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS jb_academy_calls (
     blurb      TEXT NOT NULL DEFAULT '',
     weekday    INTEGER NOT NULL,            -- 0 Monday .. 6 Sunday
     start_time TEXT NOT NULL,               -- HH:MM in tz
-    tz         TEXT NOT NULL DEFAULT 'America/Edmonton',
+    tz         TEXT NOT NULL DEFAULT 'America/Denver',
     minutes    INTEGER NOT NULL DEFAULT 60,
     zoom_url   TEXT NOT NULL DEFAULT '',
     meeting_id TEXT NOT NULL DEFAULT '',
@@ -529,7 +529,7 @@ class handler(BaseHTTPRequestHandler):
         try:
             v = {"title": str(b.get("title") or "").strip()[:120], "coach": str(b.get("coach") or "").strip()[:120],
                  "blurb": str(b.get("blurb") or "").strip()[:300], "weekday": int(b.get("weekday")),
-                 "start_time": str(b.get("start_time") or "").strip(), "tz": str(b.get("tz") or "America/Edmonton").strip()[:60],
+                 "start_time": str(b.get("start_time") or "").strip(), "tz": str(b.get("tz") or "America/Denver").strip()[:60],
                  "minutes": max(15, min(int(b.get("minutes") or 60), 480)), "zoom_url": str(b.get("zoom_url") or "").strip()[:500],
                  "meeting_id": str(b.get("meeting_id") or "").strip()[:40], "passcode": str(b.get("passcode") or "").strip()[:40],
                  "ics_url": str(b.get("ics_url") or "").strip()[:800], "active": bool(b.get("active", True))}
@@ -544,7 +544,7 @@ class handler(BaseHTTPRequestHandler):
             from zoneinfo import ZoneInfo
             ZoneInfo(v["tz"])
         except Exception:
-            return self._json(400, {"error": "Unknown timezone. Use one like America/Edmonton."})
+            return self._json(400, {"error": "Unknown timezone. Use one like America/Denver."})
         c = db()
         cur = c.cursor()
         if b.get("id"):
