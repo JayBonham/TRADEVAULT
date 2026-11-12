@@ -670,6 +670,15 @@ class handler(BaseHTTPRequestHandler):
             email = _tv_aff.current_email(email, str(mem_id) if mem_id and event_type == "payment.succeeded" else None)
 
         ghl_result = self._ghl_upsert(email, first, last, phone, tags)
+        try:
+            sys.path.insert(0, sys_path)
+            import _jb_academy
+            if _jb_academy.is_course_product(title):
+                # Their Sniper Academy sign-in link, for the onboarding email's "Watch the course" button.
+                import _tv_aff
+                _tv_aff.ghl_tag(email, "", [], fields={"sniper_academy_link": _jb_academy.link(email, _jb_academy.WELCOME_TTL)})
+        except Exception as e:
+            print("JB_ACADEMY_LINK_ERR:", e, file=sys.stderr)
         if "tradevault-purchased" in tags and ghl_result.get("contact"):
             sys.path.insert(0, sys_path)
             import _tv_db

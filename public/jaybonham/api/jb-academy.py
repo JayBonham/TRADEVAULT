@@ -12,9 +12,6 @@ hosting (the Sniper Academy course), so Jay keeps uploading in Whop and the page
   progress  POST {id, pos?, done?}  (Bearer) saves where they are / marks a lesson complete
   check     GET  ?email= (Bearer admin)  products found, and whether an email has access
 """
-import base64
-import hashlib
-import hmac
 import json
 import os
 import re
@@ -25,17 +22,13 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, os.path.dirname(__file__))
+import _jb_academy as J
 import _tv_aff as A
 import _tv_whop as W
 from _auth import verify_token
 
 COURSE = "cors_ubqXl5GzVJpMN"  # Whop course "Sniper Academy"
-PRODUCT_TITLES = {"sniper fast start", "sniper accelerator", "sniper elite"}  # deposits don't count
 OK_STATUS = {"active", "trialing", "past_due", "completed"}
-SECRET = os.environ.get("AFF_SESSION_SECRET", "changeme-aff-secret") + ":jb:academy"
-SITE = "https://jaybonham.com"
-LINK_TTL = 24 * 3600
-SESSION_TTL = 30 * 24 * 3600
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
@@ -57,24 +50,6 @@ def log(*a):
     print(*a, file=sys.stderr)
 
 
-# ---------- tokens ----------
-
-def _sign(email, kind, ttl):
-    payload = base64.urlsafe_b64encode(json.dumps({"m": email, "k": kind, "e": int(time.time()) + ttl}).encode()).decode().rstrip("=")
-    return payload + "." + hmac.new(SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
-
-
-def _verify(token, kind):
-    try:
-        payload, sig = (token or "").rsplit(".", 1)
-        if not hmac.compare_digest(sig, hmac.new(SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()):
-            return None
-        d = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
-        return d["m"] if d.get("k") == kind and d.get("e", 0) > time.time() else None
-    except Exception:
-        return None
-
-
 # ---------- access ----------
 
 def _title(m):
@@ -93,7 +68,7 @@ def _title(m):
 
 def sniper_memberships(cur, email):
     import _tv_upgrade as U  # Whop membership search by email (payment log + Whop's member search)
-    return [m for m in U.memberships(cur, email) if _title(m) in PRODUCT_TITLES]
+    return [m for m in U.memberships(cur, email) if J.is_course_product(_title(m))]
 
 
 def is_member(email, fresh=False):
@@ -249,14 +224,14 @@ class handler(BaseHTTPRequestHandler):
             return self._json(500, {"error": "Sign-in is unavailable right now. Please try again in a minute."})
         if ok:  # same answer either way, so the form never reveals who's a member
             A.ghl_tag(email, "", ["sniper-academy-login"], again=True,
-                      fields={"sniper_academy_link": SITE + "/academy?l=" + _sign(email, "l", LINK_TTL)})
+                      fields={"sniper_academy_link": J.link(email)})
             log("JB_ACADEMY_LINK_SENT", email)
         else:
             log("JB_ACADEMY_NOT_MEMBER", email)
         self._json(200, {"ok": True})
 
     def _login(self):
-        email = _verify(self._body().get("l"), "l")
+        email = J.verify(self._body().get("l"), "l")
         if not email:
             return self._json(400, {"error": "This sign-in link has expired. Enter your email for a new one.", "expired": True})
         try:
@@ -266,7 +241,7 @@ class handler(BaseHTTPRequestHandler):
             return self._json(500, {"error": "Sign-in is unavailable right now. Please try again in a minute."})
         if not ok:
             return self._json(403, {"error": "We couldn't find an active Sniper Academy membership on this email.", "expired": True})
-        self._json(200, {"ok": True, "email": email, "session": _sign(email, "s", SESSION_TTL)})
+        self._json(200, {"ok": True, "email": email, "session": J.sign(email, "s", J.SESSION_TTL)})
 
     def _progress(self):
         email = self._member()
@@ -318,7 +293,7 @@ class handler(BaseHTTPRequestHandler):
     # ---------- helpers ----------
     def _member(self):
         h = self.headers.get("Authorization", "")
-        email = _verify(h[7:].strip() if h.startswith("Bearer ") else "", "s")
+        email = J.verify(h[7:].strip() if h.startswith("Bearer ") else "", "s")
         if not email:
             self._json(401, {"error": "Please sign in again.", "signin": True})
             return None
