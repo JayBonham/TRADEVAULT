@@ -4,13 +4,20 @@ Members sign in with an emailed link: we check Whop for an active Sniper Fast St
 Elite membership on that email, GHL emails the link (tag sniper-academy-login, field
 sniper_academy_link), and the link swaps for a 30-day session. Videos stream from Whop's own
 hosting (the Sniper Academy course), so Jay keeps uploading in Whop and the page follows.
+Progress and lesson comments are ours (Postgres), keyed by Whop's lesson id.
 
-  start     POST {email}            emails a login link if the email is a member (always says ok)
-  login     POST {l}                -> {session, email}: swaps an emailed link for a session
-  course    GET  (Bearer session)   chapters, lessons and this member's progress
-  lesson    GET  ?id= (Bearer)      one lesson: video stream, poster, notes, attachments
-  progress  POST {id, pos?, done?}  (Bearer) saves where they are / marks a lesson complete
-  check     GET  ?email= (Bearer admin)  products found, and whether an email has access
+  start      POST {email}             emails a login link if the email is a member (always says ok)
+  login      POST {l}                 -> {session, email}: swaps an emailed link for a session
+  course     GET  (Bearer session)    modules, lessons (with thumbnails), progress, comment counts
+  lesson     GET  ?id= (Bearer)       one lesson: video stream, poster, notes, attachments
+  progress   POST {id, pos?, done?, undo?}  (Bearer) where they are / lesson complete
+  comments   GET  ?id= (Bearer)       a lesson's discussion
+  comment    POST {id, body, parent?} (Bearer) post a comment or a reply
+  uncomment  POST {cid}               (Bearer) take down your own comment (a coach: any)
+  check      GET  ?email= (Bearer admin)  whether an email has access, and why
+
+Coaches (env JB_ACADEMY_COACHES, comma-separated emails, e.g. Jay's) always have access and
+post with a Coach badge.
 """
 import json
 import os
@@ -29,25 +36,50 @@ from _auth import verify_token
 
 COURSE = "cors_ubqXl5GzVJpMN"  # Whop course "Sniper Academy"
 OK_STATUS = {"active", "trialing", "past_due", "completed"}
+COACHES = {e.strip().lower() for e in os.environ.get("JB_ACADEMY_COACHES", "").split(",") if e.strip()}
 MEMBER_CACHE = 600  # re-check Whop at most every 10 minutes per member (per warm instance)
 COURSE_CACHE = 300
+POSTS_PER_HOUR = 20
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 ID_RE = re.compile(r"^[A-Za-z0-9_]{4,60}$")
-TABLE = """CREATE TABLE IF NOT EXISTS jb_academy_progress (
+TABLES = """
+CREATE TABLE IF NOT EXISTS jb_academy_progress (
     email      TEXT NOT NULL,
     lesson_id  TEXT NOT NULL,
     pos        INTEGER NOT NULL DEFAULT 0,
     done       BOOLEAN NOT NULL DEFAULT FALSE,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (email, lesson_id))"""
+    PRIMARY KEY (email, lesson_id));
+CREATE TABLE IF NOT EXISTS jb_academy_comments (
+    id         BIGSERIAL PRIMARY KEY,
+    lesson_id  TEXT NOT NULL,
+    email      TEXT NOT NULL,
+    parent_id  BIGINT,
+    author     TEXT NOT NULL,
+    role       TEXT,
+    body       TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at TIMESTAMPTZ);
+CREATE INDEX IF NOT EXISTS jb_academy_comments_lesson ON jb_academy_comments (lesson_id, created_at);"""
 
-_members = {}   # email -> (checked_at, ok)
+_members = {}   # email -> (checked_at, ok, name)
 _titles = {}    # product id -> lowercased title
 _course = {"at": 0, "data": None}
+_ready = False
 
 
 def log(*a):
     print(*a, file=sys.stderr)
+
+
+def db():
+    global _ready
+    c = A.conn()
+    if not _ready:
+        c.cursor().execute(TABLES)
+        c.commit()
+        _ready = True
+    return c
 
 
 # ---------- access ----------
@@ -71,18 +103,33 @@ def sniper_memberships(cur, email):
     return [m for m in U.memberships(cur, email) if J.is_course_product(_title(m))]
 
 
-def is_member(email, fresh=False):
+def _name_from(ms, email):
+    for m in ms:
+        u = m.get("user") if isinstance(m.get("user"), dict) else {}
+        n = (u.get("name") or u.get("username") or "").strip()
+        if n:
+            return n[:60]
+    local = email.split("@")[0].split("+")[0]
+    return re.sub(r"[._\-\d]+", " ", local).strip().title()[:60] or "Member"
+
+
+def member(email, fresh=False):
+    """(has access, display name), from Whop; cached per warm instance."""
     hit = _members.get(email)
     if hit and not fresh and time.time() - hit[0] < MEMBER_CACHE:
-        return hit[1]
+        return hit[1], hit[2]
+    if email in COACHES:
+        _members[email] = (time.time(), True, "Jay Bonham" if len(COACHES) == 1 else _name_from([], email))
+        return True, _members[email][2]
     c = A.conn()
     try:
-        ok = any(str(m.get("status")) in OK_STATUS for m in sniper_memberships(c.cursor(), email))
+        ms = sniper_memberships(c.cursor(), email)
         c.commit()
     finally:
         c.close()
-    _members[email] = (time.time(), ok)
-    return ok
+    ok = any(str(m.get("status")) in OK_STATUS for m in ms)
+    _members[email] = (time.time(), ok, _name_from(ms, email))
+    return ok, _members[email][2]
 
 
 # ---------- the course ----------
@@ -99,6 +146,34 @@ def _all(path):
     return out
 
 
+def _lesson_raw(lid):
+    try:
+        return W.whop("GET", "/api/v1/course_lessons/" + lid)
+    except Exception as e:
+        log("JB_ACADEMY_LESSON_ERR", lid, e)
+        return None
+
+
+def _stream(v):
+    """(HLS url, poster url) from a Whop video_asset: signed ids need their token, public ids play as is."""
+    if not isinstance(v, dict):
+        return "", ""
+    if v.get("signed_playback_id") and v.get("signed_video_playback_token"):
+        pid = v["signed_playback_id"]
+        poster = ("https://image.mux.com/%s/thumbnail.jpg?token=%s" % (pid, v["signed_thumbnail_playback_token"])
+                  if v.get("signed_thumbnail_playback_token") else "")
+        return "https://stream.mux.com/%s.m3u8?token=%s" % (pid, v["signed_video_playback_token"]), poster
+    if v.get("playback_id"):
+        pid = v["playback_id"]
+        return "https://stream.mux.com/%s.m3u8" % pid, "https://image.mux.com/%s/thumbnail.jpg?width=640" % pid
+    return "", ""
+
+
+def _thumb(l):
+    t = l.get("thumbnail") if isinstance(l.get("thumbnail"), dict) else {}
+    return t.get("url") or _stream(l.get("video_asset"))[1]
+
+
 def course():
     if _course["data"] and time.time() - _course["at"] < COURSE_CACHE:
         return _course["data"]
@@ -111,56 +186,52 @@ def course():
     with ThreadPoolExecutor(8) as ex:
         per = list(ex.map(lessons, chapters))
     ids = [l["id"] for ls in per for l in ls]
-    with ThreadPoolExecutor(8) as ex:  # full lessons, for each video's length
-        full = dict(zip(ids, ex.map(lambda i: _lesson_raw(i), ids)))
-    data = {"title": "Sniper Academy", "chapters": [
-        {"id": ch.get("id"), "title": ch.get("title") or "", "lessons": [
-            {"id": l["id"], "title": l.get("title") or "",
-             "duration": int(((full.get(l["id"]) or {}).get("video_asset") or {}).get("duration_seconds") or 0)}
-            for l in ls]}
-        for ch, ls in zip(chapters, per) if ls]}
+    with ThreadPoolExecutor(8) as ex:  # full lessons: each video's length and thumbnail
+        full = dict(zip(ids, ex.map(_lesson_raw, ids)))
+    mods = []
+    for ch, ls in zip(chapters, per):
+        if not ls:
+            continue
+        out = []
+        for l in ls:
+            f = full.get(l["id"]) or {}
+            v = f.get("video_asset") if isinstance(f.get("video_asset"), dict) else {}
+            out.append({"id": l["id"], "title": l.get("title") or "", "thumb": _thumb(f),
+                        "video": bool(v), "duration": int(v.get("duration_seconds") or 0)})
+        mods.append({"id": ch.get("id"), "title": ch.get("title") or "", "lessons": out})
+    data = {"title": "Sniper Academy", "chapters": mods}
     _course.update(at=time.time(), data=data)
     return data
 
 
-def _lesson_raw(lid):
-    try:
-        return W.whop("GET", "/api/v1/course_lessons/" + lid)
-    except Exception as e:
-        log("JB_ACADEMY_LESSON_ERR", lid, e)
-        return None
-
-
-def _stream(v):
-    if not isinstance(v, dict):
-        return "", ""
-    if v.get("signed_playback_id") and v.get("signed_video_playback_token"):
-        pid = v["signed_playback_id"]
-        poster = ("https://image.mux.com/%s/thumbnail.jpg?width=1280&token=%s" % (pid, v["signed_thumbnail_playback_token"])
-                  if v.get("signed_thumbnail_playback_token") else "")
-        return "https://stream.mux.com/%s.m3u8?token=%s" % (pid, v["signed_video_playback_token"]), poster
-    if v.get("playback_id"):
-        pid = v["playback_id"]
-        return "https://stream.mux.com/%s.m3u8" % pid, "https://image.mux.com/%s/thumbnail.jpg?width=1280" % pid
-    return "", ""
+def allowed(lid):
+    return lid in {l["id"] for ch in course()["chapters"] for l in ch["lessons"]}
 
 
 def lesson(lid):
-    allowed = {l["id"] for ch in course()["chapters"] for l in ch["lessons"]}
-    if lid not in allowed:  # only Sniper Academy lessons, never another course's
+    if not allowed(lid):  # only Sniper Academy lessons, never another course's
         return None
     l = _lesson_raw(lid) or {}
     v = l.get("video_asset") if isinstance(l.get("video_asset"), dict) else {}
     stream, poster = _stream(v)
-    thumb = l.get("thumbnail") if isinstance(l.get("thumbnail"), dict) else {}
     pdf = l.get("main_pdf") if isinstance(l.get("main_pdf"), dict) else {}
     files = [{"name": a.get("filename") or "File", "url": a.get("url")} for a in (l.get("attachments") or [])
              if isinstance(a, dict) and a.get("url")]
     if pdf.get("url"):
         files.insert(0, {"name": pdf.get("filename") or "Lesson PDF", "url": pdf["url"]})
     return {"id": lid, "title": l.get("title") or "", "content": l.get("content") or "",
-            "stream": stream, "poster": poster or thumb.get("url") or "",
+            "stream": stream, "poster": _thumb(l) or poster,
             "duration": int(v.get("duration_seconds") or 0), "files": files}
+
+
+# ---------- comments ----------
+
+def thread(cur, lid, email):
+    cur.execute("""SELECT id, parent_id, author, role, body, created_at, email FROM jb_academy_comments
+                   WHERE lesson_id = %s AND deleted_at IS NULL ORDER BY created_at""", (lid,))
+    coach = email in COACHES
+    return [{"id": r[0], "parent": r[1], "author": r[2], "role": r[3], "body": r[4], "at": r[5].isoformat(),
+             "mine": r[6] == email, "can_delete": r[6] == email or coach} for r in cur.fetchall()]
 
 
 # ---------- handler ----------
@@ -176,7 +247,7 @@ class handler(BaseHTTPRequestHandler):
         a = self._action()
         if a == "check":
             return self._check()
-        if a not in ("course", "lesson"):
+        if a not in ("course", "lesson", "comments"):
             return self._json(404, {"error": "unknown action"})
         email = self._member()
         if not email:
@@ -184,17 +255,26 @@ class handler(BaseHTTPRequestHandler):
         try:
             if a == "course":
                 data = dict(course())
-                c = A.conn()
+                c = db()
                 cur = c.cursor()
-                cur.execute(TABLE)
                 cur.execute("SELECT lesson_id, pos, done FROM jb_academy_progress WHERE email = %s ORDER BY updated_at DESC", (email,))
                 rows = cur.fetchall()
+                cur.execute("SELECT lesson_id, count(*) FROM jb_academy_comments WHERE deleted_at IS NULL GROUP BY lesson_id")
+                counts = dict(cur.fetchall())
                 c.commit()
                 c.close()
                 data["progress"] = {r[0]: {"pos": r[1], "done": r[2]} for r in rows}
                 data["last"] = rows[0][0] if rows else None
-                return self._json(200, dict(data, ok=True, email=email))
+                data["comments"] = counts
+                return self._json(200, dict(data, ok=True, email=email, name=member(email)[1], coach=email in COACHES))
             lid = self._q("id")
+            if a == "comments":
+                if not (ID_RE.match(lid) and allowed(lid)):
+                    return self._json(404, {"error": "That lesson isn't in Sniper Academy."})
+                c = db()
+                out = thread(c.cursor(), lid, email)
+                c.close()
+                return self._json(200, {"ok": True, "comments": out})
             out = lesson(lid) if ID_RE.match(lid) else None
             if not out:
                 return self._json(404, {"error": "That lesson isn't in Sniper Academy."})
@@ -205,12 +285,8 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         a = self._action()
-        if a == "start":
-            return self._start()
-        if a == "login":
-            return self._login()
-        if a == "progress":
-            return self._progress()
+        if a in ("start", "login", "progress", "comment", "uncomment"):
+            return getattr(self, "_" + a)()
         self._json(404, {"error": "unknown action"})
 
     def _start(self):
@@ -218,7 +294,7 @@ class handler(BaseHTTPRequestHandler):
         if not EMAIL_RE.match(email):
             return self._json(400, {"error": "Enter the email you joined with."})
         try:
-            ok = is_member(email, fresh=True)
+            ok = member(email, fresh=True)[0]
         except Exception as e:
             log("JB_ACADEMY_START_ERR:", e)
             return self._json(500, {"error": "Sign-in is unavailable right now. Please try again in a minute."})
@@ -235,7 +311,7 @@ class handler(BaseHTTPRequestHandler):
         if not email:
             return self._json(400, {"error": "This sign-in link has expired. Enter your email for a new one.", "expired": True})
         try:
-            ok = is_member(email, fresh=True)
+            ok = member(email, fresh=True)[0]
         except Exception as e:
             log("JB_ACADEMY_LOGIN_ERR:", e)
             return self._json(500, {"error": "Sign-in is unavailable right now. Please try again in a minute."})
@@ -255,15 +331,13 @@ class handler(BaseHTTPRequestHandler):
             pos = max(0, min(int(float(b.get("pos") or 0)), 86400))
         except Exception:
             pos = 0
-        done = bool(b.get("done"))
         try:
-            c = A.conn()
+            c = db()
             cur = c.cursor()
-            cur.execute(TABLE)
             cur.execute("""INSERT INTO jb_academy_progress (email, lesson_id, pos, done) VALUES (%s, %s, %s, %s)
                            ON CONFLICT (email, lesson_id) DO UPDATE SET pos = EXCLUDED.pos,
                              done = jb_academy_progress.done OR EXCLUDED.done, updated_at = now()""",
-                        (email, lid, pos, done))
+                        (email, lid, pos, bool(b.get("done"))))
             if b.get("undo"):
                 cur.execute("UPDATE jb_academy_progress SET done = FALSE WHERE email = %s AND lesson_id = %s", (email, lid))
             c.commit()
@@ -272,6 +346,67 @@ class handler(BaseHTTPRequestHandler):
             log("JB_ACADEMY_PROGRESS_ERR:", e)
             return self._json(500, {"error": "Couldn't save progress."})
         self._json(200, {"ok": True})
+
+    def _comment(self):
+        email = self._member()
+        if not email:
+            return
+        b = self._body()
+        lid = str(b.get("id") or "")
+        text = re.sub(r"\n{3,}", "\n\n", str(b.get("body") or "").replace("\r", "")).strip()[:2000]
+        if not text:
+            return self._json(400, {"error": "Write something first."})
+        try:
+            if not (ID_RE.match(lid) and allowed(lid)):
+                return self._json(404, {"error": "That lesson isn't in Sniper Academy."})
+            c = db()
+            cur = c.cursor()
+            cur.execute("SELECT count(*) FROM jb_academy_comments WHERE email = %s AND created_at > now() - interval '1 hour'", (email,))
+            if cur.fetchone()[0] >= POSTS_PER_HOUR and email not in COACHES:
+                c.close()
+                return self._json(429, {"error": "You've posted a lot in the last hour. Try again a bit later."})
+            parent = None
+            if b.get("parent"):
+                cur.execute("SELECT COALESCE(parent_id, id) FROM jb_academy_comments WHERE id = %s AND lesson_id = %s AND deleted_at IS NULL",
+                            (int(b["parent"]), lid))
+                row = cur.fetchone()
+                if not row:
+                    c.close()
+                    return self._json(404, {"error": "That comment has been removed."})
+                parent = row[0]  # replies stay one level deep
+            cur.execute("""INSERT INTO jb_academy_comments (lesson_id, email, parent_id, author, role, body)
+                           VALUES (%s, %s, %s, %s, %s, %s)""",
+                        (lid, email, parent, member(email)[1], "coach" if email in COACHES else None, text))
+            c.commit()
+            out = thread(cur, lid, email)
+            c.close()
+            log("JB_ACADEMY_COMMENT", email, lid)
+            return self._json(200, {"ok": True, "comments": out})
+        except Exception as e:
+            log("JB_ACADEMY_COMMENT_ERR:", e)
+            return self._json(500, {"error": "Couldn't post that. Please try again."})
+
+    def _uncomment(self):
+        email = self._member()
+        if not email:
+            return
+        try:
+            cid = int(self._body().get("cid") or 0)
+            c = db()
+            cur = c.cursor()
+            cur.execute("SELECT lesson_id, email FROM jb_academy_comments WHERE id = %s AND deleted_at IS NULL", (cid,))
+            row = cur.fetchone()
+            if not row or (row[1] != email and email not in COACHES):
+                c.close()
+                return self._json(404, {"error": "That comment can't be removed."})
+            cur.execute("UPDATE jb_academy_comments SET deleted_at = now() WHERE id = %s OR parent_id = %s", (cid, cid))
+            c.commit()
+            out = thread(cur, row[0], email)
+            c.close()
+            return self._json(200, {"ok": True, "comments": out})
+        except Exception as e:
+            log("JB_ACADEMY_UNCOMMENT_ERR:", e)
+            return self._json(500, {"error": "Couldn't remove that. Please try again."})
 
     def _check(self):
         h = self.headers.get("Authorization", "")
@@ -283,7 +418,9 @@ class handler(BaseHTTPRequestHandler):
             ms = sniper_memberships(c.cursor(), email) if email else []
             c.commit()
             c.close()
-            return self._json(200, {"ok": True, "email": email, "access": any(str(m.get("status")) in OK_STATUS for m in ms),
+            return self._json(200, {"ok": True, "email": email, "coach": email in COACHES,
+                                    "access": email in COACHES or any(str(m.get("status")) in OK_STATUS for m in ms),
+                                    "name": _name_from(ms, email) if email else "",
                                     "memberships": [{"id": m.get("id"), "status": m.get("status"), "product": _title(m)} for m in ms],
                                     "lessons": sum(len(ch["lessons"]) for ch in course()["chapters"])})
         except Exception as e:
@@ -298,7 +435,7 @@ class handler(BaseHTTPRequestHandler):
             self._json(401, {"error": "Please sign in again.", "signin": True})
             return None
         try:
-            ok = is_member(email)
+            ok = member(email)[0]
         except Exception as e:
             log("JB_ACADEMY_MEMBER_ERR:", e)
             ok = True  # Whop hiccup: keep a signed-in member watching rather than locking them out
@@ -315,7 +452,7 @@ class handler(BaseHTTPRequestHandler):
 
     def _body(self):
         try:
-            n = min(int(self.headers.get("Content-Length", 0)), 4000)
+            n = min(int(self.headers.get("Content-Length", 0)), 8000)
             return json.loads(self.rfile.read(n) or b"{}")
         except Exception:
             return {}
