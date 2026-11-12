@@ -26,7 +26,7 @@ APPLY_FIELDS = (("EXPERIENCE_LEVEL", "Experience"), ("CURRENT_TRADING", "Trading
 _list = {"at": 0, "data": None}
 _member_emails = {}   # Whop member id -> (email, name, username)
 _products = {}        # product id -> title (lowercase)
-_fields = {"at": 0, "map": {}}
+_fields = {"at": 0, "map": {}, "err": None}
 
 
 def log(*a):
@@ -49,6 +49,15 @@ def _ptitle(pid):
             log("JB_ADMIN_PRODUCT_ERR", pid, e)
             _products[pid] = ""
     return _products.get(pid, "")
+
+
+def _money(v):
+    if isinstance(v, dict):
+        v = v.get("amount")
+    try:
+        return round(float(v or 0), 2)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def _nice(title):
@@ -127,6 +136,7 @@ def members(cur, fresh=False):
             if joined and (not p["joined"] or str(joined) < str(p["joined"])):
                 p["joined"] = joined
             p["memberships"] += 1
+            p["paid"] = round(p.get("paid", 0) + _money(m.get("initial_price")), 2)
         rows = list(people.values())
         _list.update(at=time.time(), data=rows)
     emails = [r["email"] for r in rows]
@@ -171,6 +181,9 @@ def _field_names():
             if status < 300:
                 _fields["map"] = {f.get("id"): f.get("name") for f in d.get("customFields") or []}
                 _fields["at"] = time.time()
+                _fields["err"] = None
+            else:
+                _fields["err"] = status
         except Exception as e:
             log("JB_ADMIN_FIELDS_ERR", e)
     return _fields["map"]
@@ -205,7 +218,7 @@ def _ghl(email):
         return {}
 
 
-_forms = {"at": 0, "list": []}
+_forms = {"at": 0, "list": [], "err": None}
 FORM_WORDS = ("trader profile", "application")  # Trader Profile Form, Killshot Application (+ Direct)
 META_KEYS = {"formid", "location_id", "locationid", "contactid", "contact_id", "eventdata", "sessionid", "session_id", "fingerprint",
              "submissionid", "signatureHash".lower(), "timezone", "terms_and_conditions", "ip", "pageurl", "page_url",
@@ -220,7 +233,9 @@ def _form_list():
             if status < 300:
                 _forms["list"] = [f for f in d.get("forms") or [] if any(w in (f.get("name") or "").lower() for w in FORM_WORDS)]
                 _forms["at"] = time.time()
+                _forms["err"] = None
             else:
+                _forms["err"] = status
                 log("JB_ADMIN_FORMS", status, str(d)[:200])
         except Exception as e:
             log("JB_ADMIN_FORMS_ERR", e)
@@ -282,7 +297,8 @@ def profile(cur, email, course):
         plans.append({"plan": _nice(title) or "Unknown product", "status": str(m.get("status") or ""),
                       "sniper": J.is_course_product(title), "joined": _ts(m, "created_at", "joined_at"),
                       "renews": _ts(m, "renewal_period_end", "current_period_end", "expires_at"),
-                      "cancelling": bool(m.get("cancel_at_period_end"))})
+                      "cancelling": bool(m.get("cancel_at_period_end")), "paid": _money(m.get("initial_price")),
+                      "monthly": _money(m.get("renewal_price"))})
     plans.sort(key=lambda p: str(p["joined"] or ""), reverse=True)
     application = [{"name": label, "value": str(app.get(k))} for k, label in APPLY_FIELDS if app.get(k) not in (None, "", 0)]
     cur.execute("SELECT lesson_id, pos, done, updated_at FROM jb_academy_progress WHERE email = %s ORDER BY updated_at DESC", (email,))
@@ -297,6 +313,7 @@ def profile(cur, email, course):
     total = sum(m["total"] for m in modules)
     done = sum(m["done"] for m in modules)
     return {"email": email, "name": name or ghl.get("name") or "", "username": username,
+            "missing_access": [x for x, e in (("forms", _forms["err"]), ("custom fields", _fields["err"])) if e in (401, 403)],
             "access": any(p["sniper"] and p["status"] in OK_STATUS for p in plans),
             "plans": plans, "forms": profile_forms, "application": application, "ghl": ghl,
             "progress": {"done": done, "total": total, "modules": modules, "recent": recent,

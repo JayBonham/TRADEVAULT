@@ -196,6 +196,72 @@ img{max-width:100%}
 .l .lt .now{position:absolute;inset:0;display:grid;place-items:center;background:rgba(75,158,255,.35);font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#fff}
 .l .ln{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase}
 .l .tt{font-size:14px;line-height:1.35;margin-top:3px}
+/* admin */
+.nav{display:flex;gap:4px;margin-right:6px}
+.nav button{background:none;border:none;border-bottom:2px solid transparent;color:var(--dim);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;padding:22px 10px 20px;cursor:pointer}
+.nav button:hover{color:var(--tx)}.nav button.on{color:var(--tx);border-bottom-color:var(--acc)}
+.adm{max-width:1400px;margin:0 auto;padding:clamp(24px,4vw,44px) var(--gutr) 80px var(--gut);animation:rise .4s ease both}
+.adm-h{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.adm-h h1{font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:clamp(38px,5vw,60px);line-height:.92;margin:14px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line);margin-top:28px;background:var(--panel)}
+.kpi{padding:18px 20px;border-right:1px solid var(--line)}.kpi:last-child{border-right:none}
+.kpi b{display:block;font-family:var(--cond);font-weight:800;font-size:34px;line-height:1}
+.kpi span{display:block;margin-top:6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+.kpi small{display:block;margin-top:4px;font-size:12.5px;color:var(--dim)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:28px}
+.tools .inp{height:44px;max-width:340px;font-size:15px}
+.chip{background:none;border:1px solid var(--line2);color:var(--dim);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:0 14px;height:36px;cursor:pointer}
+.chip.on{background:rgba(75,158,255,.12);border-color:rgba(75,158,255,.5);color:var(--tx)}
+.tbl-w{margin-top:18px;border:1px solid var(--line);overflow-x:auto;background:var(--panel)}
+.tbl{width:100%;border-collapse:collapse;min-width:900px}
+.tbl th{text-align:left;font-family:var(--mono);font-weight:500;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:14px 16px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer;transition:background .15s}.tbl tbody tr:hover{background:rgba(75,158,255,.05)}
+.who2{display:flex;align-items:center;gap:12px;min-width:0}
+.who2 .nm{font-weight:600}.who2 .em{font-size:12.5px;color:var(--mute);margin-top:2px}
+.pill{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--line2);color:var(--dim);white-space:nowrap;margin:2px 4px 2px 0}
+.pill.fast{border-color:rgba(88,233,255,.4);color:var(--cyan)}.pill.acc{border-color:rgba(75,158,255,.5);color:var(--acc)}.pill.eli{border-color:rgba(245,196,81,.5);color:var(--gold)}
+.pill.off{opacity:.5;text-decoration:line-through}
+.pill.live{border-color:rgba(61,220,151,.45);color:var(--ok)}.pill.dead{border-color:rgba(255,107,107,.45);color:var(--bad)}
+.pbar{display:flex;align-items:center;gap:10px;min-width:150px}.pbar .mini{width:90px}.pbar span{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.muted{color:var(--mute)}
+.mcards{display:none}
+.pf-top{display:flex;flex-wrap:wrap;align-items:center;gap:22px;margin-top:6px}
+.av.lg{width:76px;height:76px;font-size:28px}
+.pf-n{font-family:var(--cond);font-weight:800;text-transform:uppercase;font-size:clamp(34px,4.6vw,54px);line-height:.95}
+.pf-sub{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:14px;color:var(--dim)}
+.pf-sub span{overflow-wrap:anywhere}
+.pf-acts{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.pf-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;margin-top:20px;align-items:start}
+.box{background:var(--panel);border:1px solid var(--line);padding:22px 22px 24px;min-width:0}
+.box+.box{margin-top:20px}
+.box h3{font-family:var(--cond);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 16px}
+.qa{display:grid;gap:14px}
+.qa div{border-bottom:1px solid var(--line);padding-bottom:12px}.qa div:last-child{border-bottom:none;padding-bottom:0}
+.qa dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.qa dd{margin:5px 0 0;font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.fh{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin:4px 0 12px}
+.fh span:last-child{color:var(--mute)}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) 110px 46px;align-items:center;gap:12px;padding:8px 0;font-size:14px}
+.mrow .mini{width:100%}.mrow b{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--dim);text-align:right}
+.rl{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.rl small{font-family:var(--mono);font-size:10px;color:var(--mute);white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--mono);font-size:10.5px;padding:4px 8px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--dim)}
+.plan{display:grid;gap:4px;padding:12px 0;border-top:1px solid var(--line)}.plan:first-of-type{border-top:none;padding-top:0}
+.plan .t{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:600}
+.plan small{color:var(--mute);font-size:12.5px}
+.warn{border:1px solid rgba(245,196,81,.35);background:rgba(245,196,81,.07);color:#E9D9AE;padding:14px 16px;font-size:14px;line-height:1.55}
+.cm{padding:12px 0;border-top:1px solid var(--line)}.cm:first-of-type{border-top:none;padding-top:0}
+.cm a{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.cm p{margin:6px 0 0;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:960px){.pf-grid{grid-template-columns:1fr}.pf-acts{margin-left:0}}
+@media(max-width:720px){.tbl-w{display:none}.mcards{display:grid;gap:10px;margin-top:16px}
+  .mcard{background:var(--panel);border:1px solid var(--line);padding:16px;cursor:pointer;display:grid;gap:12px}
+  .mcard .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--dim)}
+  .nav button{padding:22px 6px 20px;letter-spacing:.1em}.kpi{border-bottom:1px solid var(--line)}}
+@media(max-width:480px){.brand-s,.brand-t{display:none}}
 .load{display:grid;place-items:center;min-height:calc(100vh - 64px)}
 .load .spin{width:26px;height:26px;border-color:rgba(255,255,255,.15);border-top-color:var(--acc)}
 .cerr{max-width:480px;margin:80px auto;text-align:center;color:var(--dim);padding:0 18px}
@@ -217,7 +283,7 @@ img{max-width:100%}
     <svg width="34" height="34" viewBox="0 0 56 56" fill="none" style="flex:none"><text x="28" y="31" text-anchor="middle" font-family="'Saira Condensed',sans-serif" font-weight="800" font-size="32" letter-spacing="-1.5"><tspan fill="#F2F5F7">J</tspan><tspan fill="#4B9EFF">B</tspan></text><polyline points="11,45 21,41 29,44 45,32" fill="none" stroke="#4B9EFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="32" r="2.4" fill="#4B9EFF"/></svg>
     <div><div class="brand-t">Jay Bonham</div><div class="brand-s">Sniper Academy</div></div>
   </a>
-  <div class="who" id="who" hidden><span class="who-n" id="whoName"></span><span class="av" id="whoAv"></span><button id="out" type="button">Sign out</button></div>
+  <div class="who" id="who" hidden><nav class="nav" id="nav" hidden><button type="button" data-go="">Course</button><button type="button" data-go="admin">Members</button></nav><span class="who-n" id="whoName"></span><span class="av" id="whoAv"></span><button id="out" type="button">Sign out</button></div>
 </header>
 
 <section class="gate" id="vGate" hidden>
@@ -297,6 +363,21 @@ img{max-width:100%}
     <div id="chs"></div>
   </aside>
 </main>
+<main class="adm" id="vAdmin" hidden>
+  <div class="adm-h"><div><span class="ey">Admin</span><h1>Sniper members</h1></div>
+    <button class="btn btn-g btn-sm" id="aRefresh" type="button">↻ Refresh from Whop</button></div>
+  <div class="kpis" id="aKpis"></div>
+  <div class="tools"><input class="inp" id="aSearch" type="search" placeholder="Search name, email or username" autocomplete="off">
+    <div id="aChips" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
+  <div class="tbl-w"><table class="tbl"><thead><tr><th>Member</th><th>Plan</th><th>Joined</th><th>Course progress</th><th>Last sign-in</th><th>Last active</th><th>Comments</th></tr></thead><tbody id="aRows"></tbody></table></div>
+  <div class="mcards" id="aCards"></div>
+  <p class="err" id="aErr" style="margin-top:14px"></p>
+</main>
+
+<main class="adm" id="vProfile" hidden>
+  <button class="back" type="button" id="pBack">← All members</button>
+  <div id="pBody"></div>
+</main>
 <div class="cerr" id="vErr" hidden></div>
 
 <script>
@@ -319,7 +400,7 @@ img{max-width:100%}
     var h = Math.round(m / 60); if (h < 24) return h + 'h ago'; var d = Math.round(h / 24); if (d < 30) return d + 'd ago';
     return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
-  function show(v) { ['vGate', 'vLoad', 'vHome', 'vLesson', 'vErr'].forEach(function (id) { $(id).hidden = id !== v; }); }
+  function show(v) { ['vGate', 'vLoad', 'vHome', 'vLesson', 'vAdmin', 'vProfile', 'vErr'].forEach(function (id) { $(id).hidden = id !== v; }); }
   function api(method, action, body, extra) {
     var h = { 'Content-Type': 'text/plain' };
     if (session) h.Authorization = 'Bearer ' + session;
@@ -363,8 +444,9 @@ img{max-width:100%}
     api('GET', 'course').then(function (d) {
       data = d; flat = [];
       d.chapters.forEach(function (ch, ci) { ch.lessons.forEach(function (l, li) { l.ci = ci; l.li = li; l.chapter = ch.title; flat.push(l); }); });
-      $('whoName').textContent = d.name; $('whoAv').textContent = initials(d.name); $('whoAv').classList.toggle('coach', !!d.coach);
-      $('meAv').textContent = initials(d.name); $('meAv').classList.toggle('coach', !!d.coach);
+      $('whoName').textContent = d.name; $('whoAv').textContent = initials(d.name); $('whoAv').classList.toggle('coach', !!d.admin);
+      $('meAv').textContent = initials(d.name); $('meAv').classList.toggle('coach', !!d.admin);
+      $('nav').hidden = !d.admin;
       $('who').hidden = false;
       route();
     }).catch(function (x) {
@@ -384,7 +466,11 @@ img{max-width:100%}
   // ----- routing: #<lesson id> opens a lesson, anything else is the course home -----
   function route(user) {
     if (!data) return;
-    var l = byId((location.hash || '').slice(1));
+    var h = decodeURIComponent((location.hash || '').slice(1));
+    document.querySelectorAll('#nav button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-go') === (h.indexOf('admin') === 0 || h.indexOf('member/') === 0 ? 'admin' : '')); });
+    if (data.admin && h === 'admin') { stopVideo(); cur = null; return admin(); }
+    if (data.admin && h.indexOf('member/') === 0) { stopVideo(); cur = null; return profile(h.slice(7)); }
+    var l = byId(h);
     if (l) openLesson(l, user === true); else home();
   }
   window.addEventListener('hashchange', function () { route(true); });
@@ -564,6 +650,114 @@ img{max-width:100%}
   vid.addEventListener('ended', function () { if (cur && !prog(cur.id).done) { save(true); completed(); } });
   window.addEventListener('pagehide', function () { if (cur) save(); });
 
+  // ----- admin: members -----
+  var aRows = null, aFilter = 'all';
+  $('nav').addEventListener('click', function (e) { var b = e.target.closest('[data-go]'); if (b) location.hash = b.getAttribute('data-go'); });
+  $('pBack').addEventListener('click', function () { location.hash = 'admin'; });
+  $('aRefresh').addEventListener('click', function () { admin(true); });
+  $('aSearch').addEventListener('input', renderMembers);
+  $('aChips').addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c) { aFilter = c.getAttribute('data-f'); renderMembers(); } });
+  function planCls(p) { p = (p || '').toLowerCase(); return p.indexOf('elite') > -1 ? 'eli' : p.indexOf('accel') > -1 ? 'acc' : p.indexOf('fast') > -1 ? 'fast' : ''; }
+  function short(p) { return (p || '').replace(/^sniper\s+/i, ''); }
+  function when(iso, never) { return iso ? '<span title="' + esc(new Date(iso).toLocaleString()) + '">' + ago(iso) + '</span>' : '<span class="muted">' + (never || '—') + '</span>'; }
+  function day(iso) { return iso ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—'; }
+  function admin(fresh) {
+    show('vAdmin'); window.scrollTo(0, 0);
+    if (aRows && !fresh) return renderMembers();
+    $('aRows').innerHTML = '<tr><td colspan="7" class="muted">Loading members from Whop…</td></tr>'; $('aCards').innerHTML = ''; $('aErr').textContent = '';
+    api('GET', 'members', null, fresh ? '&fresh=1' : '').then(function (d) { aRows = d.members; data.total = d.lessons; renderMembers(); })
+      .catch(function (x) { if (x && x.signin) return signOut(x.error); $('aRows').innerHTML = ''; $('aErr').textContent = (x && x.error) || 'Couldn\'t load members.'; });
+  }
+  function renderMembers() {
+    if (!aRows) return;
+    var total = data.total || flat.length, act = aRows.filter(function (r) { return r.active; });
+    var plans = {}; act.forEach(function (r) { r.plans.filter(function (p) { return p.live; }).forEach(function (p) { plans[short(p.plan)] = (plans[short(p.plan)] || 0) + 1; }); });
+    var signed = act.filter(function (r) { return r.last_login || r.last_seen; }).length;
+    var avg = act.length ? Math.round(act.reduce(function (a, r) { return a + r.done; }, 0) * 100 / (act.length * total || 1)) : 0;
+    var week = Date.now() - 7 * 864e5, recent = act.filter(function (r) { return r.last_seen && new Date(r.last_seen).getTime() > week; }).length;
+    $('aKpis').innerHTML = [
+      ['Active members', act.length, Object.keys(plans).map(function (k) { return plans[k] + ' ' + k; }).join(' · ')],
+      ['Signed in to the course', signed, act.length ? Math.round(signed * 100 / act.length) + '% of members' : ''],
+      ['Active this week', recent, ''],
+      ['Average progress', avg + '%', total + ' lessons in the course'],
+      ['Comments', aRows.reduce(function (a, r) { return a + r.comments; }, 0), '']
+    ].map(function (k) { return '<div class="kpi"><b>' + k[1] + '</b><span>' + k[0] + '</span>' + (k[2] ? '<small>' + esc(k[2]) + '</small>' : '') + '</div>'; }).join('');
+    var names = ['all', 'Fast Start', 'Accelerator', 'Elite', 'never', 'ended'];
+    var labels = { all: 'All active', never: 'Never signed in', ended: 'Ended' };
+    $('aChips').innerHTML = names.map(function (n) { return '<button class="chip' + (aFilter === n ? ' on' : '') + '" data-f="' + n + '" type="button">' + esc(labels[n] || n) + '</button>'; }).join('');
+    var q = $('aSearch').value.trim().toLowerCase();
+    var rows = aRows.filter(function (r) {
+      if (aFilter === 'ended') { if (r.active) return false; } else if (!r.active) return false;
+      if (aFilter === 'never' && (r.last_login || r.last_seen)) return false;
+      if (['Fast Start', 'Accelerator', 'Elite'].indexOf(aFilter) > -1 && !r.plans.some(function (p) { return p.live && short(p.plan).toLowerCase() === aFilter.toLowerCase(); })) return false;
+      return !q || (r.name + ' ' + r.email + ' ' + r.username).toLowerCase().indexOf(q) > -1;
+    });
+    function plansHtml(r) { return r.plans.map(function (p) { return '<span class="pill ' + planCls(p.plan) + (p.live ? '' : ' off') + '">' + esc(short(p.plan)) + '</span>'; }).join(''); }
+    function prog(r) { var pct = total ? Math.round(r.done * 100 / total) : 0; return '<div class="pbar"><span class="mini"><i style="width:' + pct + '%"></i></span><span>' + r.done + '/' + total + '</span></div>'; }
+    $('aRows').innerHTML = rows.length ? rows.map(function (r) {
+      return '<tr data-m="' + esc(r.email) + '"><td><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.username || r.email) + '</div><div class="em">' + esc(r.email) + (r.username ? ' · @' + esc(r.username) : '') + '</div></div></div></td>' +
+        '<td>' + plansHtml(r) + '</td><td>' + day(r.joined) + '</td><td>' + prog(r) + '</td><td>' + when(r.last_login, 'Never') + '</td><td>' + when(r.last_seen) + '</td><td>' + (r.comments || '<span class="muted">0</span>') + '</td></tr>';
+    }).join('') : '<tr><td colspan="7" class="muted">No members match.</td></tr>';
+    $('aCards').innerHTML = rows.map(function (r) {
+      return '<div class="mcard" data-m="' + esc(r.email) + '"><div class="who2"><span class="av">' + esc(initials(r.name || r.email)) + '</span><div style="min-width:0"><div class="nm">' + esc(r.name || r.email) + '</div><div class="em">' + esc(r.email) + '</div></div></div>' +
+        '<div>' + plansHtml(r) + '</div>' + prog(r) + '<div class="row"><span>Signed in ' + when(r.last_login, 'never') + '</span><span>Joined ' + day(r.joined) + '</span></div></div>';
+    }).join('') || '<div class="muted">No members match.</div>';
+  }
+  function openMember(e) { var t = e.target.closest('[data-m]'); if (t) location.hash = 'member/' + encodeURIComponent(t.getAttribute('data-m')); }
+  $('aRows').addEventListener('click', openMember); $('aCards').addEventListener('click', openMember);
+
+  function profile(email) {
+    show('vProfile'); window.scrollTo(0, 0);
+    $('pBody').innerHTML = '<div class="empty" style="padding:40px 0">Loading ' + esc(email) + ' from Whop and GHL…</div>';
+    api('GET', 'profile', null, '&email=' + encodeURIComponent(email)).then(function (p) {
+      if (decodeURIComponent(location.hash.slice(8)) !== email) return;
+      var total = p.progress.total || 1, pct = Math.round(p.progress.done * 100 / total), g = p.ghl || {};
+      var nm = p.name || g.name || p.username || email;
+      var plans = p.plans.filter(function (x) { return x.sniper; });
+      var other = p.plans.filter(function (x) { return !x.sniper; });
+      function planRow(x) {
+        var live = ['active', 'trialing', 'past_due', 'completed'].indexOf(x.status) > -1;
+        return '<div class="plan"><div class="t"><span>' + esc(x.plan) + '</span><span class="pill ' + (live ? 'live' : 'dead') + '">' + esc(x.status === 'completed' ? 'paid' : x.status) + '</span></div>' +
+          '<small>Joined ' + day(x.joined) + (x.paid ? ' · paid $' + x.paid.toLocaleString() : '') + (x.monthly ? ' · $' + x.monthly + '/mo' : '') + (x.renews ? ' · renews ' + day(x.renews) : '') + (x.cancelling ? ' · cancelling' : '') + '</small></div>';
+      }
+      var trader = (p.forms || []).map(function (f) {
+        return '<div class="fh"><span>' + esc(f.form) + '</span><span>' + (f.at ? day(f.at) : '') + '</span></div><dl class="qa">' +
+          f.answers.map(function (a) { return '<div><dt>' + esc(a.name) + '</dt><dd>' + esc(a.value) + '</dd></div>'; }).join('') + '</dl>';
+      }).join('<div style="height:22px"></div>');
+      if (!trader && p.application && p.application.length) trader = '<div class="fh"><span>Website application</span></div><dl class="qa">' + p.application.map(function (a) { return '<div><dt>' + esc(a.name) + '</dt><dd>' + esc(a.value) + '</dd></div>'; }).join('') + '</dl>';
+      if (!trader) trader = (p.missing_access || []).indexOf('forms') > -1
+        ? '<div class="warn">The site can\'t read GHL forms yet, so the Trader Profile Form answers can\'t show. In GHL: Settings → Private Integrations → edit the site\'s integration → add the <b>View Forms</b> and <b>View Custom Fields</b> scopes.</div>'
+        : '<div class="empty">No Trader Profile Form answers for this email yet.</div>';
+      var fields = (g.fields || []).map(function (f) { return '<div><dt>' + esc(f.name) + '</dt><dd>' + esc(f.value) + '</dd></div>'; }).join('');
+      $('pBody').innerHTML =
+        '<div class="pf-top"><span class="av lg">' + esc(initials(nm)) + '</span><div style="min-width:0"><div class="pf-n">' + esc(nm) + '</div>' +
+        '<div class="pf-sub"><span>' + esc(email) + '</span>' + (p.username ? '<span>@' + esc(p.username) + '</span>' : '') + (g.phone ? '<span>' + esc(g.phone) + '</span>' : '') + (g.country ? '<span>' + esc(g.country) + '</span>' : '') + '</div>' +
+        '<div style="margin-top:12px">' + plans.map(function (x) { return '<span class="pill ' + planCls(x.plan) + '">' + esc(short(x.plan)) + '</span>'; }).join('') + (p.access ? '<span class="pill live">Has course access</span>' : '<span class="pill dead">No access</span>') + '</div></div>' +
+        '<div class="pf-acts">' + (g.url ? '<a class="btn btn-g btn-sm" href="' + esc(g.url) + '" target="_blank" rel="noopener">Open in GHL ↗</a>' : '') + '</div></div>' +
+        '<div class="kpis"><div class="kpi"><b>' + pct + '%</b><span>Course progress</span><small>' + p.progress.done + ' of ' + p.progress.total + ' lessons</small></div>' +
+        '<div class="kpi"><b>' + (p.last_login ? ago(p.last_login) : 'Never') + '</b><span>Last sign-in</span><small>' + (p.logins || 0) + ' sign-in' + (p.logins === 1 ? '' : 's') + '</small></div>' +
+        '<div class="kpi"><b>' + (p.last_seen ? ago(p.last_seen) : '—') + '</b><span>Last active</span><small>' + (p.progress.recent[0] ? esc(p.progress.recent[0].title) : 'Hasn\'t watched yet') + '</small></div>' +
+        '<div class="kpi"><b>' + p.comments.length + '</b><span>Comments</span></div></div>' +
+        '<div class="pf-grid"><div>' +
+          '<div class="box"><span class="ey">Trader profile</span><h3>About ' + esc((nm || '').split(' ')[0]) + '</h3>' + trader + '</div>' +
+          '<div class="box"><span class="ey">Course</span><h3>Progress by module</h3>' + p.progress.modules.map(function (m) {
+            return '<div class="mrow"><span>' + esc(m.title) + '</span><span class="mini"><i style="width:' + Math.round(m.done * 100 / (m.total || 1)) + '%"></i></span><b>' + m.done + '/' + m.total + '</b></div>'; }).join('') +
+            (p.progress.recent.length ? '<div class="fh" style="margin-top:18px"><span>Recently watched</span></div>' + p.progress.recent.map(function (r) {
+              return '<div class="rl"><a href="#' + esc(r.id) + '">' + (r.done ? '✓ ' : '') + esc(r.title) + '</a><small>' + ago(r.at) + '</small></div>'; }).join('') : '') + '</div>' +
+          '<div class="box"><span class="ey">Discussion</span><h3>Their comments</h3>' + (p.comments.length ? p.comments.map(function (c) {
+            return '<div class="cm"><a href="#' + esc(c.lesson) + '">' + esc(c.title || 'Lesson') + ' · ' + ago(c.at) + '</a><p>' + esc(c.body) + '</p></div>'; }).join('') : '<div class="empty">No comments yet.</div>') + '</div>' +
+        '</div><div>' +
+          '<div class="box"><span class="ey">Whop</span><h3>Plans &amp; payments</h3>' + plans.map(planRow).join('') +
+            (other.length ? '<div class="fh" style="margin-top:18px"><span>Other products</span></div>' + other.map(planRow).join('') : '') + '</div>' +
+          '<div class="box"><span class="ey">GHL</span><h3>Contact</h3>' + (g.id ? '<dl class="qa">' +
+            (g.added ? '<div><dt>In GHL since</dt><dd>' + day(g.added) + '</dd></div>' : '') + (g.source ? '<div><dt>Source</dt><dd>' + esc(g.source) + '</dd></div>' : '') +
+            (g.timezone ? '<div><dt>Timezone</dt><dd>' + esc(g.timezone) + '</dd></div>' : '') + fields + '</dl>' +
+            (g.tags && g.tags.length ? '<div class="fh" style="margin-top:18px"><span>Tags</span></div><div class="tags">' + g.tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') + '</div>' : '')
+            : '<div class="empty">No GHL contact on this email.</div>') + '</div>' +
+        '</div></div>';
+    }).catch(function (x) { if (x && x.signin) return signOut(x.error); $('pBody').innerHTML = '<div class="err" style="padding:30px 0">' + esc((x && x.error) || 'Couldn\'t load this member.') + '</div>'; });
+  }
+
   // ----- discussion -----
   function loadComments(l) {
     $('clist').innerHTML = '<div class="empty">Loading the discussion…</div>'; $('cCount').textContent = ''; $('cErr').textContent = '';
@@ -581,9 +775,9 @@ img{max-width:100%}
     }).join('') : '<div class="empty">No comments yet. Be the first to ask Jay a question about this lesson.</div>';
   }
   function item(c, replies) {
-    var coach = c.role === 'coach';
+    var coach = c.role === 'coach' || c.role === 'team';
     return '<div class="c' + (coach ? ' coach' : '') + '" data-c="' + c.id + '"><span class="av' + (coach ? ' coach' : '') + '">' + esc(initials(c.author)) + '</span><div class="c-m">' +
-      '<div class="c-h"><span class="c-a">' + esc(c.author) + '</span>' + (coach ? '<span class="badge">Coach</span>' : '') + '<span class="c-t">' + ago(c.at) + '</span></div>' +
+      '<div class="c-h"><span class="c-a">' + esc(c.author) + '</span>' + (coach ? '<span class="badge">' + (c.role === 'team' ? 'Team' : 'Coach') + '</span>' : '') + '<span class="c-t">' + ago(c.at) + '</span></div>' +
       '<div class="c-b">' + esc(c.body) + '</div>' +
       '<div class="c-x">' + (!c.parent ? '<button type="button" data-reply="' + c.id + '">Reply</button>' : '') + (c.can_delete ? '<button type="button" data-del="' + c.id + '">Delete</button>' : '') + '</div>' +
       '<div class="c-r" data-rbox="' + c.id + '"></div>' + replies + '</div></div>';
