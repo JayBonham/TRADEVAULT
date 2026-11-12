@@ -51,6 +51,22 @@ def whop_progress(fresh=False):
         after = info.get("end_cursor") or ""
         if not (info.get("has_next_page") and after):
             break
+    try:  # Whop's own "last active" per student also counts rewatching, which adds no new completion
+        after = ""
+        for _ in range(20):
+            page = W.whop("GET", "/api/v1/course_students?course_id=%s&first=100%s" % (COURSE, "&after=" + after if after else ""))
+            for st in page.get("data") or []:
+                u = st.get("user") if isinstance(st.get("user"), dict) else {}
+                at = st.get("last_interaction_at")
+                if u.get("id") and at:
+                    rec = out.setdefault(u["id"], {"done": set(), "last": None})
+                    rec["last"] = max(filter(None, [rec["last"], str(at)]))
+            info = page.get("page_info") or {}
+            after = info.get("end_cursor") or ""
+            if not (info.get("has_next_page") and after):
+                break
+    except Exception as e:
+        log("JB_ADMIN_STUDENTS_ERR", e)
     _wprog.update(at=time.time(), data=out)
     return out
 
