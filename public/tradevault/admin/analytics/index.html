@@ -300,6 +300,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
   var SNAME = { aff: 'Affiliates', web: 'Webinar', direct: 'Direct' };
   var SCOL = { aff: 'var(--s-aff)', web: 'var(--s-web)', direct: 'var(--s-direct)' };
   var RANK = { tools: 0, partner: 0, community: 1, elite: 2 };
+  var TEST_CODES = /^(alexcommunity|alextester|tvtest)/i; // our own test codes, kept out of the codes table
   var CB_LIMIT = 0.009; // Visa's early-warning chargeback ratio
 
   var D = null, range = '30', pass = '', custom = {};
@@ -803,7 +804,9 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 
     /* discount codes */
     var pr = D.promos || {}, byCode = {}, firstN = 0, firstCoded = 0;
+    var isTest = function (id) { return pr[id] && TEST_CODES.test(pr[id].code || ''); };
     S.pays.forEach(function (p) {
+      if (p.pc && isTest(p.pc)) return;
       if (p.newCust) { firstN++; if (p.pc) firstCoded++; }
       if (!p.pc) return;
       var r = byCode[p.pc] = byCode[p.pc] || { pays: 0, rev: 0, mids: {}, tiers: {} };
