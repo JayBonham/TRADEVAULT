@@ -648,14 +648,14 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       '<div class="grid">' +
       card('c8', 'rev', 'Revenue by ' + gran, 'Net of refunds · ' + w.label, '<div class="big">' + usd(S.net) + '<small>' + (S.refunds ? usd(S.refunds) + ' refunded' : 'no refunds') + '</small></div>', true) +
       card('c4', 'mix', 'Members by tier', int(live.length) + ' live memberships', '') +
-      card('c7', 'upg', 'Upgrades', 'Members moving up a tier · ' + w.label, '<div class="big" id="upgBig"></div>') +
-      card('c5', 'codes', 'Discount codes', 'Payments that used a Whop promo code · ' + w.label, '<div class="big" id="codesBig"></div>') +
       card('c12', 'src', 'Where sales come from', 'Each customer counted by how they arrived · ' + w.label, '<div class="big" id="srcBig"></div>') +
       card('c12', 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of now', '') +
       card('c7', 'act', 'Active members', 'Live memberships over the ' + w.label, '', true) +
       card('c5', 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>') +
       card('c7', 'upc', 'Upcoming billings', 'Renewals due in the next 30 days (memberships set to cancel are left out)', '<div class="big">' + usd(upSum) + '<small>' + int(upcoming.length) + ' renewals</small></div>') +
       card('c5', 'risk', 'Revenue at risk', 'Failed payments, cancellations and disputes', '') +
+      card('c7', 'upg', 'Upgrades', 'Members moving up a tier · ' + w.label, '<div class="big" id="upgBig"></div>') +
+      card('c5', 'codes', 'Discount codes', 'Payments that used a Whop promo code · ' + w.label, '<div class="big" id="codesBig"></div>') +
       card('c5', 'why', 'Why members cancel', 'Reason picked on Whop · ' + w.label, '') +
       card('c7', 'feed', 'Recent payments', 'Latest TradeVault payments from Whop', '') +
       '</div>' +
