@@ -49,6 +49,9 @@
     "api/tv-support.py": {
       "maxDuration": 20
     },
+    "api/tv-stats.py": {
+      "maxDuration": 60
+    },
     "api/tv-members.py": {
       "maxDuration": 30
     },

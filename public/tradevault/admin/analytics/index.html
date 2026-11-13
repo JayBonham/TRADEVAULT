@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analytics — The Trade Vault Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="icon" href="../../assets/tv-icon.png">
+<style>
+:root{
+  --g0:#050A14; --g1:#08111F; --g2:#0E1A2E; --g3:#13223A; --card:#0B1424;
+  --hair:rgba(255,255,255,.08); --hair-2:rgba(255,255,255,.14); --grid:rgba(255,255,255,.06);
+  --tx:#EAF0FA; --tx-dim:#B3C0D4; --tx-mute:#7F8DA3;
+  --acc:#4B9EFF; --acc-rgb:75,158,255;
+  --ok:#7BE0B0; --ok-rgb:123,224,176; --warn:#F5B85C; --warn-rgb:245,184,92; --bad:#FF8F8F; --bad-rgb:255,143,143;
+  /* tiers: validated categorical order (dark), adjacent CVD ΔE ≥ 8.4 on --card */
+  --t-tools:#3987e5; --t-community:#d95926; --t-elite:#199e70; --t-partner:#c98500;
+  --pos:#3987e5; --neg:#e66767;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --display:'Instrument Sans',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--g0)}
+body{background:var(--g0);color:var(--tx);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100dvh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(900px 600px at 10% 0%,rgba(28,72,170,.24),transparent 70%),radial-gradient(800px 600px at 95% 60%,rgba(75,158,255,.07),transparent 70%),var(--g0)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+@keyframes shimmer{to{background-position:-200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mono{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute)}
+.W{padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}
+
+/* nav (same as the other admin pages) */
+.nav{padding-top:12px;padding-bottom:12px;position:sticky;top:0;z-index:20}
+.nav-in{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 18px;border-radius:18px;background:rgba(8,17,31,.78);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.brand img:first-child{width:26px;height:26px}
+.brand img+img{height:13px;width:auto}
+.brand .sep{width:1px;height:18px;background:var(--hair-2);margin:0 4px}
+.nav-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.ghost{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--hair-2);font-size:13.5px;font-weight:500;cursor:pointer;transition:background .2s}
+.ghost:hover{background:rgba(255,255,255,.08)}
+.ghost.on{background:rgba(var(--acc-rgb),.14);border-color:rgba(var(--acc-rgb),.45);color:#fff}
+.badge:not([hidden]){position:absolute;top:-8px;right:-8px;display:flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:#FF4D5E;color:#fff;font-weight:700;font-size:11.5px;line-height:1;font-variant-numeric:tabular-nums;border:2px solid var(--g0);box-shadow:0 0 14px rgba(255,77,94,.6)}
+@media(max-width:760px){.nav-in{flex-direction:column;align-items:flex-start}.nav-r{justify-content:flex-start}.hide-s{display:none}}
+
+/* page head */
+main{padding-bottom:max(48px,env(safe-area-inset-bottom,0px));max-width:1480px;margin:0 auto}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;padding:22px 2px 18px}
+.head h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,38px);letter-spacing:-.035em;line-height:1.05}
+.head p{color:var(--tx-mute);font-size:13.5px;margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-grid;grid-auto-flow:column;gap:3px;padding:3px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--hair)}
+.seg button{border:0;background:none;border-radius:9px;padding:7px 14px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--tx-mute);transition:background .2s,color .2s}
+.seg button[aria-pressed="true"]{background:rgba(255,255,255,.1);color:var(--tx)}
+.ref svg{transition:transform .3s}
+.ref.busy svg{animation:spin 1s linear infinite}
+
+.banner{margin:0 0 14px;padding:12px 16px;border-radius:14px;border:1px solid rgba(var(--warn-rgb),.4);background:rgba(var(--warn-rgb),.08);color:var(--warn);font-size:13.5px}
+.banner.bad{border-color:rgba(var(--bad-rgb),.45);background:rgba(var(--bad-rgb),.08);color:var(--bad)}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:12px}
+@media(max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{position:relative;padding:16px 16px 15px;border-radius:18px;border:1px solid var(--hair);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01)),var(--card);display:flex;flex-direction:column;gap:6px;min-width:0;animation:rise .45s var(--ease) both;overflow:hidden}
+.kpi.hero{border-color:rgba(var(--acc-rgb),.35);background:radial-gradient(300px 160px at 0% 0%,rgba(var(--acc-rgb),.18),transparent 70%),var(--card)}
+.kpi .v{font-family:var(--display);font-weight:700;font-size:clamp(24px,2.3vw,32px);letter-spacing:-.03em;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .s{font-size:12.5px;color:var(--tx-mute);display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:19px}
+.delta{display:inline-flex;align-items:center;gap:3px;font-weight:600;font-size:12px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--tx-dim)}
+.delta.up{color:var(--ok);background:rgba(var(--ok-rgb),.1)}
+.delta.down{color:var(--bad);background:rgba(var(--bad-rgb),.1)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px}
+.pill.ok{color:var(--ok);background:rgba(var(--ok-rgb),.1)}
+.pill.warn{color:var(--warn);background:rgba(var(--warn-rgb),.1)}
+.pill.bad{color:var(--bad);background:rgba(var(--bad-rgb),.12)}
+.tierbar{display:flex;gap:2px;height:6px;border-radius:999px;overflow:hidden;margin-top:4px}
+.tierbar i{display:block;height:100%}
+
+/* cards & grid */
+.grid{display:grid;gap:12px;grid-template-columns:repeat(12,minmax(0,1fr))}
+.c8{grid-column:span 8}.c4{grid-column:span 4}.c6{grid-column:span 6}.c12{grid-column:span 12}.c7{grid-column:span 7}.c5{grid-column:span 5}
+@media(max-width:1100px){.c8,.c4,.c6,.c7,.c5{grid-column:span 12}}
+.card{position:relative;min-width:0;border-radius:20px;border:1px solid var(--hair);background:var(--card);padding:18px 18px 16px;animation:rise .5s var(--ease) both}
+.card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.card-h h2{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.015em}
+.card-h .sub{font-size:12.5px;color:var(--tx-mute);margin-top:2px}
+.card-h .big{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;text-align:right;line-height:1.1}
+.card-h .big small{display:block;font-family:var(--body);font-weight:500;font-size:12px;color:var(--tx-mute);letter-spacing:0}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--tx-dim);margin-bottom:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{fill:var(--tx-mute);font-family:var(--body);font-size:11px}
+.empty{display:grid;place-items:center;min-height:160px;color:var(--tx-mute);font-size:13.5px;text-align:center}
+
+/* tooltip */
+.tip{position:fixed;z-index:50;pointer-events:none;min-width:170px;max-width:280px;padding:10px 12px;border-radius:12px;background:rgba(14,26,46,.97);border:1px solid var(--hair-2);box-shadow:0 18px 40px rgba(0,0,0,.45);font-size:12.5px;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
+.tip.on{opacity:1;transform:none}
+.tip b{display:block;font-family:var(--display);font-size:13px;margin-bottom:6px;color:var(--tx)}
+.tip .r{display:flex;align-items:center;gap:8px;justify-content:space-between;color:var(--tx-dim);line-height:1.7}
+.tip .r span{display:inline-flex;align-items:center;gap:7px}
+.tip .r i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.tip .r em{font-style:normal;color:var(--tx);font-variant-numeric:tabular-nums;font-weight:600}
+.tip .t{border-top:1px solid var(--hair);margin-top:5px;padding-top:5px}
+
+/* tier mix */
+.mix{display:flex;flex-direction:column;gap:12px}
+.mix-bar{display:flex;gap:2px;height:14px;border-radius:7px;overflow:hidden}
+.mix-bar i{display:block;height:100%;transition:flex-grow .6s var(--ease)}
+.mix-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--hair)}
+.mix-row:first-of-type{border-top:0}
+.mix-row i{width:12px;height:12px;border-radius:4px}
+.mix-row b{font-family:var(--display);font-weight:600;font-size:15px}
+.mix-row .n{font-family:var(--display);font-weight:700;font-size:20px;text-align:right;letter-spacing:-.02em}
+.mix-row .d{grid-column:2/4;display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--tx-mute)}
+
+/* table */
+.tw{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);font-weight:500;text-align:right;padding:8px 10px;border-bottom:1px solid var(--hair)}
+th:first-child,td:first-child{text-align:left}
+td{padding:12px 10px;text-align:right;border-bottom:1px solid var(--hair);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tfoot td{font-weight:600;color:var(--tx);border-top:1px solid var(--hair-2)}
+td .tn{display:inline-flex;align-items:center;gap:9px;font-weight:600}
+td .tn i{width:10px;height:10px;border-radius:3px}
+td.mute{color:var(--tx-mute)}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 2px;border-top:1px solid var(--hair)}
+.li:first-child{border-top:0}
+.li .when{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--tx-mute);width:58px;text-transform:uppercase;line-height:1.3}
+.li .who{min-width:0}
+.li .who b{display:block;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .who span{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx-mute)}
+.li .who span i{width:8px;height:8px;border-radius:2px;display:inline-block;flex:none}
+.li .amt{font-family:var(--display);font-weight:600;font-size:14.5px;text-align:right;font-variant-numeric:tabular-nums}
+.li .amt small{display:block;font-family:var(--body);font-weight:500;font-size:11.5px;color:var(--tx-mute)}
+.li .amt.neg{color:var(--bad)}
+.more{display:block;margin:10px auto 0;border:0;background:none;color:var(--acc);font-weight:600;font-size:13px;cursor:pointer}
+
+/* risk */
+.risk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+@media(max-width:520px){.risk{grid-template-columns:1fr}}
+.rk{padding:12px 14px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.025)}
+.rk .v{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.rk .s{font-size:12px;color:var(--tx-mute)}
+.tabs2{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap}
+.tabs2 button{border:1px solid var(--hair);background:none;border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--tx-mute);cursor:pointer}
+.tabs2 button[aria-pressed="true"]{color:var(--tx);background:rgba(255,255,255,.07);border-color:var(--hair-2)}
+
+/* skeleton */
+.sk{border-radius:12px;background:linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+.loading .kpi .v,.loading .kpi .s{color:transparent}
+.loading-msg{display:flex;align-items:center;gap:10px;justify-content:center;padding:60px 0 20px;color:var(--tx-mute);font-size:14px}
+.loading-msg i{width:16px;height:16px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+.foot{margin-top:18px;font-size:12px;color:var(--tx-mute);line-height:1.6;max-width:900px}
+</style>
+</head>
+<body>
+
+<header class="nav W">
+  <div class="nav-in">
+    <a href="/admin" class="brand"><img src="../../assets/tv-icon.png" alt="" width="26" height="26"><img src="../../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"><span class="sep"></span><span class="mono">Admin</span></a>
+    <div class="nav-r">
+      <a class="ghost" href="https://portal.thetradevault.co" target="_blank" rel="noopener">Portal <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+      <a class="ghost on" href="/admin/analytics" aria-current="page">Analytics</a>
+      <a class="ghost" href="/admin">Members</a>
+      <a class="ghost hide-s" href="/admin/affiliates">Affiliates</a>
+      <a class="ghost" href="/admin/support">Support<span class="badge" id="supN" hidden></span></a>
+      <button class="ghost hide-s" id="out" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="W" id="main">
+  <div class="head">
+    <div>
+      <span class="mono">TradeVault · Whop</span>
+      <h1>Analytics</h1>
+      <p id="stamp"><span class="live"></span><span id="stampT">Loading…</span></p>
+    </div>
+    <div class="ctl">
+      <div class="seg" id="range" role="group" aria-label="Date range">
+        <button type="button" data-r="30">30D</button>
+        <button type="button" data-r="90">90D</button>
+        <button type="button" data-r="365">12M</button>
+        <button type="button" data-r="all">All</button>
+      </div>
+      <button class="ghost ref" id="refresh" type="button" title="Reload from Whop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh</button>
+    </div>
+  </div>
+
+  <div id="banner"></div>
+
+  <section class="kpis" id="kpis" aria-label="Key numbers"></section>
+
+  <div id="body">
+    <div class="loading-msg"><i></i>Pulling memberships and payments from Whop…</div>
+  </div>
+</main>
+
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+(function () {
+  var API = 'https://jaybonham.com/api/tv-stats';
+  var token = '';
+  try { token = localStorage.getItem('tv_token') || ''; } catch (e) {}
+  if (!token) { location.replace('/admin-login'); return; }
+
+  var $ = function (id) { return document.getElementById(id); };
+  function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} location.replace('/admin-login'); }
+  $('out').addEventListener('click', signOut);
+
+  var TIERS = ['tools', 'community', 'elite', 'partner'];
+  var TNAME = { tools: 'Tools', community: 'Community', elite: 'Elite', partner: 'Partner' };
+  var TCOL = {}; TIERS.forEach(function (t) { TCOL[t] = 'var(--t-' + t + ')'; });
+  var LIVE = { active: 1, trialing: 1, past_due: 1 };
+  var DAY = 864e5;
+  var REASONS = { too_expensive: 'Too expensive', switching: 'Switching to another service', missing_features: 'Missing features',
+    technical_issues: 'Technical issues', bad_experience: 'Bad experience', unused: 'Not using it', other: 'Other', testing: 'Testing' };
+  var CB_LIMIT = 0.009; // Visa's early-warning chargeback ratio
+
+  var D = null, range = '30';
+  try { range = localStorage.getItem('tv_an_range') || '30'; } catch (e) {}
+
+  /* ---------- formatting ---------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function usd(n, dp) { n = n || 0; return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); }
+  function usdK(n) { var a = Math.abs(n); return a >= 1e6 ? '$' + (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : a >= 1e4 ? '$' + Math.round(n / 1e3) + 'k' : a >= 1e3 ? '$' + (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k' : '$' + Math.round(n); }
+  function pct(x, dp) { return isFinite(x) ? (x * 100).toFixed(dp == null ? 1 : dp) + '%' : '—'; }
+  function int(n) { return (n || 0).toLocaleString('en-US'); }
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function dShort(d) { return MON[d.getMonth()] + ' ' + d.getDate(); }
+  function ago(t) { var s = (Date.now() - t) / 1e3; return s < 60 ? 'just now' : s < 3600 ? Math.round(s / 60) + 'm ago' : s < 86400 ? Math.round(s / 3600) + 'h ago' : Math.round(s / 86400) + 'd ago'; }
+  function T(iso) { return iso ? new Date(iso).getTime() : null; }
+  function first(name) { return String(name || '').trim(); }
+  function titleCase(s) { s = String(s || ''); return s === s.toUpperCase() ? s.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }) : s; }
+
+  /* ---------- model ---------- */
+  function monthly(m) { return m.price && m.days ? m.price * 30.4375 / m.days : 0; }
+  function isLive(m) { return !!LIVE[m.status]; }
+  function endT(m) { return isLive(m) ? null : (T(m.end) || T(m.canceled_at) || T(m.created)); }
+  function activeAt(m, t) { var c = T(m.created); if (c == null || c > t) return false; var e = endT(m); return e == null || e > t; }
+  function paid(p) { return p.st === 'paid' && p.at; }
+
+  function prep(d) {
+    d.memberships.forEach(function (m) { m.c = T(m.created); m.x = T(m.canceled_at); m.name = titleCase(m.name); });
+    d.payments.forEach(function (p) { p.t = T(p.at); p.net = (p.amt || 0) - (p.ref || 0); p.name = titleCase(p.name); });
+    d.disputes.forEach(function (x) { x.t = T(x.at); x.name = titleCase(x.name); });
+    // A cancel is an upgrade/switch when the same Whop user starts another TradeVault membership within a week.
+    var byU = {};
+    d.memberships.forEach(function (m) { if (m.uid) (byU[m.uid] = byU[m.uid] || []).push(m); });
+    d.memberships.forEach(function (m) {
+      if (!m.x) return;
+      m.switched = (byU[m.uid] || []).some(function (o) { return o !== m && o.c && Math.abs(o.c - m.x) < 7 * DAY; });
+    });
+    // First membership per user = a new customer (upgrades aren't new members).
+    Object.keys(byU).forEach(function (u) { var a = byU[u].slice().sort(function (a, b) { return a.c - b.c; }); a[0].isNew = true; });
+    d.memberships.forEach(function (m) { if (!m.uid) m.isNew = true; });
+    return d;
+  }
+
+  function window_(r) {
+    var now = Date.now();
+    if (r === 'all') {
+      var t0 = Math.min.apply(null, D.memberships.map(function (m) { return m.c || now; }).concat(D.payments.map(function (p) { return p.t || now; })));
+      return { a: t0, b: now, prev: null, label: 'all time' };
+    }
+    var n = +r;
+    return { a: now - n * DAY, b: now, prev: { a: now - 2 * n * DAY, b: now - n * DAY }, label: r === '365' ? 'last 12 months' : 'last ' + n + ' days' };
+  }
+  function within(t, w) { return t != null && t >= w.a && t < w.b; }
+
+  function stats(w) {
+    var ps = D.payments.filter(function (p) { return paid(p) && within(p.t, w); });
+    var gross = 0, refunds = 0, byT = {};
+    TIERS.forEach(function (t) { byT[t] = 0; });
+    ps.forEach(function (p) { gross += p.amt; refunds += p.ref; byT[p.tier] = (byT[p.tier] || 0) + p.net; });
+    var refundN = ps.filter(function (p) { return p.ref > 0; }).length;
+    var disputes = D.disputes.filter(function (x) { return within(x.t, w); });
+    var cancels = D.memberships.filter(function (m) { return within(m.x, w) && !m.switched; });
+    var switches = D.memberships.filter(function (m) { return within(m.x, w) && m.switched; });
+    var news = D.memberships.filter(function (m) { return m.isNew && within(m.c, w); });
+    var atStart = D.memberships.filter(function (m) { return activeAt(m, w.a); }).length;
+    return { pays: ps, n: ps.length, gross: gross, refunds: refunds, net: gross - refunds, byT: byT, refundN: refundN,
+      disputes: disputes, cancels: cancels, switches: switches, news: news, atStart: atStart,
+      churn: (atStart + news.length) ? cancels.length / (atStart + news.length) : NaN,
+      cb: ps.length ? disputes.length / ps.length : NaN };
+  }
+
+  /* ---------- tooltip ---------- */
+  var tip = $('tip');
+  function showTip(html, ev) {
+    tip.innerHTML = html; tip.classList.add('on');
+    var r = tip.getBoundingClientRect(), x = ev.clientX + 14, y = ev.clientY + 14;
+    if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+    if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+    tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+  }
+  function hideTip() { tip.classList.remove('on'); }
+  function tipRow(color, label, val) { return '<div class="r"><span>' + (color ? '<i style="background:' + color + '"></i>' : '') + esc(label) + '</span><em>' + val + '</em></div>'; }
+
+  /* ---------- buckets ---------- */
+  function buckets(w, r) {
+    var out = [], d;
+    if (r === '30') {
+      d = new Date(w.b); d.setHours(0, 0, 0, 0); d = new Date(d.getTime() - 29 * DAY);
+      for (var i = 0; i < 30; i++) { var a = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i); out.push({ a: a.getTime(), b: a.getTime() + DAY, label: dShort(a), tick: dShort(a) }); }
+    } else if (r === '90') {
+      d = new Date(w.b); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
+      for (var k = 12; k >= 0; k--) { var s = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7 * k); out.push({ a: s.getTime(), b: s.getTime() + 7 * DAY, label: 'Week of ' + dShort(s), tick: dShort(s) }); }
+    } else {
+      var end = new Date(w.b), start = new Date(w.a);
+      var n = r === 'all' ? Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1) : 12;
+      for (var j = n - 1; j >= 0; j--) {
+        var m0 = new Date(end.getFullYear(), end.getMonth() - j, 1), m1 = new Date(end.getFullYear(), end.getMonth() - j + 1, 1);
+        out.push({ a: m0.getTime(), b: m1.getTime(), label: MON[m0.getMonth()] + ' ' + m0.getFullYear(), tick: MON[m0.getMonth()] + (m0.getMonth() === 0 || j === n - 1 ? " '" + String(m0.getFullYear()).slice(2) : '') });
+      }
+    }
+    return out;
+  }
+
+  /* ---------- svg helpers ---------- */
+  var NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  function niceMax(v) { if (v <= 0) return 4; var s = v / 4, p = Math.pow(10, Math.floor(Math.log10(s))), f = s / p; return 4 * (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * Math.max(p, 0.25); } // 4 gridlines on round numbers
+  function topRound(x, y, w, h, r) { r = Math.min(r, w / 2, h); return 'M' + x + ',' + (y + h) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + h) + 'Z'; }
+  function botRound(x, y, w, h, r) { r = Math.min(r, w / 2, h); return 'M' + x + ',' + y + 'H' + (x + w) + 'V' + (y + h - r) + 'Q' + (x + w) + ',' + (y + h) + ' ' + (x + w - r) + ',' + (y + h) + 'H' + (x + r) + 'Q' + x + ',' + (y + h) + ' ' + x + ',' + (y + h - r) + 'Z'; }
+  function frame(host, H, fmtY, maxV, minV) {
+    host.innerHTML = '';
+    var W = Math.max(280, host.clientWidth), L = 46, R = 8, Tp = 8, B = 24;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, height: H, role: 'img' });
+    host.appendChild(svg);
+    minV = minV || 0;
+    var y = function (v) { return Tp + (H - Tp - B) * (1 - (v - minV) / (maxV - minV)); };
+    var steps = 4;
+    for (var i = 0; i <= steps; i++) {
+      var v = minV + (maxV - minV) * i / steps;
+      svg.appendChild(svgEl('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: v === 0 ? 'rgba(255,255,255,.16)' : 'var(--grid)', 'stroke-width': 1 }));
+      var tx = svgEl('text', { x: L - 8, y: y(v) + 3.5, 'text-anchor': 'end' }); tx.textContent = fmtY(v); svg.appendChild(tx);
+    }
+    return { svg: svg, W: W, H: H, L: L, R: R, T: Tp, B: B, y: y, iw: W - L - R };
+  }
+  function xTicks(f, bs, xc) {
+    var every = Math.ceil(bs.length / Math.max(2, Math.floor(f.iw / 64)));
+    bs.forEach(function (b, i) {
+      if ((bs.length - 1 - i) % every) return;
+      var t = svgEl('text', { x: xc(i), y: f.H - 6, 'text-anchor': 'middle' }); t.textContent = b.tick; f.svg.appendChild(t);
+    });
+  }
+
+  // Stacked bars by tier. vals[i] = {tier: value}
+  function stacked(host, bs, vals, opts) {
+    var tot = vals.map(function (v) { return TIERS.reduce(function (s, t) { return s + (v[t] || 0); }, 0); });
+    var mx = niceMax(Math.max.apply(null, tot.concat([0])) * 1.05);
+    var f = frame(host, opts.h || 260, opts.fy, mx);
+    var bw = f.iw / bs.length, gap = Math.max(2, Math.min(10, bw * 0.28)), w = Math.max(2, bw - gap);
+    var xc = function (i) { return f.L + bw * i + bw / 2; };
+    var hl = svgEl('rect', { y: f.T, height: f.H - f.T - f.B, width: bw, fill: 'rgba(255,255,255,.04)', rx: 6, opacity: 0 });
+    f.svg.appendChild(hl);
+    bs.forEach(function (b, i) {
+      var x = xc(i) - w / 2, base = 0, segs = TIERS.filter(function (t) { return (vals[i][t] || 0) > 0; });
+      segs.forEach(function (t, k) {
+        var v = vals[i][t], y0 = f.y(base), y1 = f.y(base + v), h = y0 - y1 - (k ? 2 : 0);
+        if (h > 0) {
+          var top = k === segs.length - 1;
+          f.svg.appendChild(top ? svgEl('path', { d: topRound(x, y1, w, h, 4), fill: TCOL[t] }) : svgEl('rect', { x: x, y: y1, width: w, height: h, fill: TCOL[t] }));
+        }
+        base += v;
+      });
+    });
+    xTicks(f, bs, xc);
+    var hit = svgEl('rect', { x: f.L, y: f.T, width: f.iw, height: f.H - f.T - f.B, fill: 'transparent' });
+    f.svg.appendChild(hit);
+    hit.addEventListener('mousemove', function (ev) {
+      var r = f.svg.getBoundingClientRect(), px = (ev.clientX - r.left) * f.W / r.width;
+      var i = Math.max(0, Math.min(bs.length - 1, Math.floor((px - f.L) / bw)));
+      hl.setAttribute('x', f.L + bw * i); hl.setAttribute('opacity', 1);
+      var h = '<b>' + esc(bs[i].label) + '</b>';
+      TIERS.forEach(function (t) { if (vals[i][t]) h += tipRow(TCOL[t], TNAME[t], opts.fv(vals[i][t])); });
+      h += '<div class="t">' + tipRow('', 'Total', opts.fv(tot[i])) + (opts.extra ? opts.extra(i) : '') + '</div>';
+      showTip(h, ev);
+    });
+    hit.addEventListener('mouseleave', function () { hl.setAttribute('opacity', 0); hideTip(); });
+  }
+
+  // Stacked area of active members by tier.
+  function area(host, pts, opts) {
+    var tot = pts.map(function (p) { return TIERS.reduce(function (s, t) { return s + p.v[t]; }, 0); });
+    var mx = niceMax(Math.max.apply(null, tot.concat([1])) * 1.08);
+    var f = frame(host, opts.h || 240, function (v) { return int(Math.round(v)); }, mx);
+    var n = pts.length, xc = function (i) { return f.L + (n === 1 ? f.iw / 2 : f.iw * i / (n - 1)); };
+    var base = pts.map(function () { return 0; });
+    TIERS.forEach(function (t) {
+      var top = pts.map(function (p, i) { return base[i] + p.v[t]; });
+      if (!top.some(function (v, i) { return v > base[i]; })) { return; }
+      var d = 'M' + pts.map(function (p, i) { return xc(i) + ',' + f.y(top[i]); }).join('L') +
+        'L' + pts.map(function (p, i) { return xc(n - 1 - i) + ',' + f.y(base[n - 1 - i]); }).join('L') + 'Z';
+      f.svg.appendChild(svgEl('path', { d: d, fill: TCOL[t], 'fill-opacity': 0.28 }));
+      f.svg.appendChild(svgEl('path', { d: 'M' + pts.map(function (p, i) { return xc(i) + ',' + f.y(top[i]); }).join('L'), fill: 'none', stroke: TCOL[t], 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+      base = top;
+    });
+    xTicks(f, pts, xc);
+    var cross = svgEl('line', { y1: f.T, y2: f.H - f.B, stroke: 'rgba(255,255,255,.3)', 'stroke-width': 1, opacity: 0 });
+    var dot = svgEl('circle', { r: 4.5, fill: 'var(--tx)', stroke: 'var(--card)', 'stroke-width': 2, opacity: 0 });
+    f.svg.appendChild(cross); f.svg.appendChild(dot);
+    var hit = svgEl('rect', { x: f.L, y: f.T, width: f.iw, height: f.H - f.T - f.B, fill: 'transparent' });
+    f.svg.appendChild(hit);
+    hit.addEventListener('mousemove', function (ev) {
+      var r = f.svg.getBoundingClientRect(), px = (ev.clientX - r.left) * f.W / r.width;
+      var i = n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round((px - f.L) / f.iw * (n - 1))));
+      cross.setAttribute('x1', xc(i)); cross.setAttribute('x2', xc(i)); cross.setAttribute('opacity', 1);
+      dot.setAttribute('cx', xc(i)); dot.setAttribute('cy', f.y(tot[i])); dot.setAttribute('opacity', 1);
+      var h = '<b>' + esc(pts[i].label) + '</b>';
+      TIERS.slice().reverse().forEach(function (t) { if (pts[i].v[t]) h += tipRow(TCOL[t], TNAME[t], int(pts[i].v[t])); });
+      showTip(h + '<div class="t">' + tipRow('', 'Active', int(tot[i])) + '</div>', ev);
+    });
+    hit.addEventListener('mouseleave', function () { cross.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); hideTip(); });
+  }
+
+  // New members up, cancellations down.
+  function diverging(host, bs, up, down, opts) {
+    var mx = niceMax(Math.max.apply(null, up.concat(down, [1])) * 1.1);
+    var f = frame(host, opts.h || 240, function (v) { return int(Math.abs(Math.round(v))); }, mx, -mx);
+    var bw = f.iw / bs.length, gap = Math.max(2, Math.min(10, bw * 0.3)), w = Math.max(2, bw - gap);
+    var xc = function (i) { return f.L + bw * i + bw / 2; };
+    var hl = svgEl('rect', { y: f.T, height: f.H - f.T - f.B, width: bw, fill: 'rgba(255,255,255,.04)', rx: 6, opacity: 0 });
+    f.svg.appendChild(hl);
+    var z = f.y(0);
+    bs.forEach(function (b, i) {
+      var x = xc(i) - w / 2;
+      if (up[i]) f.svg.appendChild(svgEl('path', { d: topRound(x, f.y(up[i]), w, z - f.y(up[i]) - 1, 4), fill: 'var(--pos)' }));
+      if (down[i]) f.svg.appendChild(svgEl('path', { d: botRound(x, z + 1, w, f.y(-down[i]) - z - 1, 4), fill: 'var(--neg)' }));
+    });
+    xTicks(f, bs, xc);
+    var hit = svgEl('rect', { x: f.L, y: f.T, width: f.iw, height: f.H - f.T - f.B, fill: 'transparent' });
+    f.svg.appendChild(hit);
+    hit.addEventListener('mousemove', function (ev) {
+      var r = f.svg.getBoundingClientRect(), px = (ev.clientX - r.left) * f.W / r.width;
+      var i = Math.max(0, Math.min(bs.length - 1, Math.floor((px - f.L) / bw)));
+      hl.setAttribute('x', f.L + bw * i); hl.setAttribute('opacity', 1);
+      showTip('<b>' + esc(bs[i].label) + '</b>' + tipRow('var(--pos)', 'New members', int(up[i])) + tipRow('var(--neg)', 'Cancelled', int(down[i])) +
+        '<div class="t">' + tipRow('', 'Net', (up[i] - down[i] > 0 ? '+' : '') + int(up[i] - down[i])) + '</div>', ev);
+    });
+    hit.addEventListener('mouseleave', function () { hl.setAttribute('opacity', 0); hideTip(); });
+  }
+
+  // Horizontal ranked bars (single series).
+  function hbars(host, rows, fv) {
+    host.innerHTML = '';
+    if (!rows.length) { host.innerHTML = '<div class="empty">Nothing in this range.</div>'; return; }
+    var mx = Math.max.apply(null, rows.map(function (r) { return r.v; }));
+    rows.forEach(function (r) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:7px 0';
+      row.innerHTML = '<span style="font-size:13.5px;color:var(--tx-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.label) + '</span>' +
+        '<span class="num" style="font-weight:600;font-size:13.5px">' + fv(r.v) + '</span>' +
+        '<span style="grid-column:1/3;height:8px;border-radius:4px;background:rgba(255,255,255,.04);overflow:hidden"><i style="display:block;height:100%;width:' + Math.max(2, r.v / mx * 100) + '%;background:' + (r.c || 'var(--t-tools)') + ';border-radius:0 4px 4px 0"></i></span>';
+      if (r.tip) { row.addEventListener('mousemove', function (ev) { showTip(r.tip, ev); }); row.addEventListener('mouseleave', hideTip); }
+      host.appendChild(row);
+    });
+  }
+
+  /* ---------- render ---------- */
+  function deltaHTML(cur, prev, invert, isPct) {
+    if (prev == null || !isFinite(prev) || !isFinite(cur)) return '';
+    var diff;
+    if (isPct) { diff = (cur - prev) * 100; if (Math.abs(diff) < 0.05) return '<span class="delta">± 0</span>'; }
+    else { if (!prev) return cur ? '<span class="delta up">new</span>' : ''; diff = (cur - prev) / Math.abs(prev) * 100; }
+    var good = invert ? diff < 0 : diff > 0;
+    return '<span class="delta ' + (good ? 'up' : 'down') + '">' + (diff > 0 ? '▲ ' : '▼ ') + Math.abs(diff).toFixed(isPct ? 1 : 0) + (isPct ? ' pts' : '%') + '</span>';
+  }
+  function tierBar(vals) {
+    var tot = TIERS.reduce(function (s, t) { return s + (vals[t] || 0); }, 0);
+    if (!tot) return '';
+    return '<div class="tierbar">' + TIERS.map(function (t) { return vals[t] ? '<i style="flex:' + vals[t] + ';background:' + TCOL[t] + '"></i>' : ''; }).join('') + '</div>';
+  }
+
+  function render() {
+    var w = window_(range), S = stats(w), P = w.prev ? stats(w.prev) : null, now = Date.now();
+    var live = D.memberships.filter(isLive);
+    var users = {}; live.forEach(function (m) { users[m.uid || m.id] = 1; });
+    var cnt = {}, mrr = {}, ending = {}, canceling = {}, pastDue = [];
+    TIERS.forEach(function (t) { cnt[t] = 0; mrr[t] = 0; ending[t] = 0; canceling[t] = 0; });
+    live.forEach(function (m) {
+      cnt[m.tier]++;
+      if (m.cap) { ending[m.tier] += monthly(m); canceling[m.tier]++; } else mrr[m.tier] += monthly(m);
+      if (m.status === 'past_due') pastDue.push(m);
+    });
+    var sum = function (o) { return TIERS.reduce(function (s, t) { return s + o[t]; }, 0); };
+    var MRR = sum(mrr), END = sum(ending);
+    var upcoming = live.filter(function (m) { var e = T(m.end); return !m.cap && m.status !== 'past_due' && m.price > 0 && e && e >= now && e < now + 30 * DAY; })
+      .sort(function (a, b) { return T(a.end) - T(b.end); });
+    var up7 = upcoming.filter(function (m) { return T(m.end) < now + 7 * DAY; });
+    var upSum = upcoming.reduce(function (s, m) { return s + m.price; }, 0), up7Sum = up7.reduce(function (s, m) { return s + m.price; }, 0);
+    var activeN = Object.keys(users).length;
+    var activeStart = D.memberships.filter(function (m) { return activeAt(m, w.a); }).length;
+
+    var cbClass = !isFinite(S.cb) ? '' : S.cb >= CB_LIMIT ? 'bad' : S.cb >= CB_LIMIT * 0.6 ? 'warn' : 'ok';
+    var tiles = [
+      { hero: 1, l: 'Active members', v: int(activeN), s: deltaHTML(live.length, w.prev ? activeStart : null) + '<span>' + int(live.length) + ' memberships</span>', bar: cnt },
+      { l: 'MRR', v: usd(MRR), s: (END ? '<span class="pill warn">' + usd(END) + ' ending</span>' : '<span>Monthly recurring</span>'), bar: mrr, tipm: 1 },
+      { l: 'Revenue · ' + (range === 'all' ? 'all time' : range === '365' ? '12M' : range + 'D'), v: usd(S.net), s: deltaHTML(S.net, P && P.net) + '<span>' + int(S.n) + ' payments</span>', bar: S.byT },
+      { l: 'Next 30 days', v: usd(upSum), s: '<span>' + int(upcoming.length) + ' renewals · ' + usd(up7Sum) + ' this week</span>' },
+      { l: 'Cancellation rate', v: pct(S.churn), s: deltaHTML(S.churn, P && P.churn, true, true) + '<span>' + int(S.cancels.length) + ' cancelled' + (S.switches.length ? ' · ' + S.switches.length + ' upgraded' : '') + '</span>' },
+      { l: 'Chargeback rate', v: pct(S.cb, 2), s: (cbClass ? '<span class="pill ' + cbClass + '">' + (cbClass === 'bad' ? 'Over' : cbClass === 'warn' ? 'Near' : 'Under') + ' 0.9% limit</span>' : '') + '<span>' + int(S.disputes.length) + ' dispute' + (S.disputes.length === 1 ? '' : 's') + '</span>' }
+    ];
+    $('kpis').innerHTML = tiles.map(function (k, i) {
+      return '<div class="kpi' + (k.hero ? ' hero' : '') + '" style="animation-delay:' + i * 40 + 'ms"><span class="mono">' + esc(k.l) + '</span><div class="v num">' + k.v + '</div><div class="s">' + k.s + '</div>' + (k.bar ? tierBar(k.bar) : '') + '</div>';
+    }).join('');
+
+    var bs = buckets(w, range);
+    var gran = range === '30' ? 'day' : range === '90' ? 'week' : 'month';
+    var body = $('body');
+    body.innerHTML =
+      '<div class="grid">' +
+      card('c8', 'rev', 'Revenue by ' + gran, 'Net of refunds · ' + w.label, '<div class="big">' + usd(S.net) + '<small>' + (S.refunds ? usd(S.refunds) + ' refunded' : 'no refunds') + '</small></div>', true) +
+      card('c4', 'mix', 'Members by tier', int(live.length) + ' live memberships', '') +
+      card('c12', 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of now', '') +
+      card('c7', 'act', 'Active members', 'Live memberships over the ' + w.label, '', true) +
+      card('c5', 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>') +
+      card('c7', 'upc', 'Upcoming billings', 'Renewals due in the next 30 days (memberships set to cancel are left out)', '<div class="big">' + usd(upSum) + '<small>' + int(upcoming.length) + ' renewals</small></div>') +
+      card('c5', 'risk', 'Revenue at risk', 'Failed payments, cancellations and disputes', '') +
+      card('c5', 'why', 'Why members cancel', 'Reason picked on Whop · ' + w.label, '') +
+      card('c7', 'feed', 'Recent payments', 'Latest TradeVault payments from Whop', '') +
+      '</div>' +
+      '<p class="foot">MRR counts every live membership\'s renewal price per month; members set to cancel at the end of their period are shown as "ending" instead. Cancellation rate is cancellations ÷ (members at the start of the range + new members), and leaves out upgrades (the old membership is cancelled when a member moves tier). Chargeback rate is disputes ÷ paid payments; card networks start monitoring around 0.9%.</p>';
+
+    // revenue
+    var rv = bs.map(function () { var o = {}; TIERS.forEach(function (t) { o[t] = 0; }); o._ref = 0; o._n = 0; return o; });
+    D.payments.forEach(function (p) {
+      if (!paid(p)) return;
+      for (var i = 0; i < bs.length; i++) if (p.t >= bs[i].a && p.t < bs[i].b) { rv[i][p.tier] += p.net; rv[i]._ref += p.ref; rv[i]._n++; break; }
+    });
+    stacked($('rev'), bs, rv, { fy: usdK, fv: function (v) { return usd(v); }, extra: function (i) { return (rv[i]._ref ? tipRow('', 'Refunded', '−' + usd(rv[i]._ref)) : '') + tipRow('', 'Payments', int(rv[i]._n)); } });
+
+    // tier mix
+    var mixEl = $('mix'), liveN = live.length || 1;
+    mixEl.innerHTML = '<div class="mix"><div class="mix-bar">' + TIERS.map(function (t) { return cnt[t] ? '<i style="flex-grow:' + cnt[t] + ';background:' + TCOL[t] + '"></i>' : ''; }).join('') + '</div><div>' +
+      TIERS.map(function (t) {
+        return '<div class="mix-row"><i style="background:' + TCOL[t] + '"></i><b>' + TNAME[t] + '</b><span class="n num">' + int(cnt[t]) + '</span>' +
+          '<div class="d"><span>' + pct(cnt[t] / liveN, 0) + ' of members</span><span class="num">' + usd(mrr[t]) + ' MRR</span></div></div>';
+      }).join('') + '</div></div>';
+
+    // tier table
+    var rows = TIERS.map(function (t) {
+      var n = S.news.filter(function (m) { return m.tier === t; }).length, c = S.cancels.filter(function (m) { return m.tier === t; }).length;
+      var st = D.memberships.filter(function (m) { return m.tier === t && activeAt(m, w.a); }).length;
+      var pays = S.pays.filter(function (p) { return p.tier === t; });
+      return { t: t, live: cnt[t], mrr: mrr[t], arpu: cnt[t] - canceling[t] ? mrr[t] / (cnt[t] - canceling[t]) : 0, rev: S.byT[t] || 0, pays: pays.length,
+        news: n, cancels: c, churn: st + n ? c / (st + n) : NaN, canceling: canceling[t], ending: ending[t],
+        disp: S.disputes.filter(function (x) { return x.tier === t; }).length };
+    });
+    var totRow = { live: live.length, mrr: MRR, arpu: live.length - sum(canceling) ? MRR / (live.length - sum(canceling)) : 0, rev: S.net, pays: S.n, news: S.news.length, cancels: S.cancels.length, churn: S.churn, canceling: sum(canceling), ending: END, disp: S.disputes.length };
+    function tr(r, name) {
+      return '<td>' + name + '</td><td>' + int(r.live) + '</td><td>' + usd(r.mrr) + '</td><td>' + (r.arpu ? usd(r.arpu) : '—') + '</td><td>' + usd(r.rev) + '</td><td class="mute">' + int(r.pays) + '</td><td>' + int(r.news) + '</td><td>' + int(r.cancels) + '</td><td>' + pct(r.churn) + '</td><td>' + (r.canceling ? int(r.canceling) + ' <span class="mute">(' + usd(r.ending) + ')</span>' : '<span class="mute">0</span>') + '</td><td>' + (r.disp ? '<span style="color:var(--bad)">' + int(r.disp) + '</span>' : '<span class="mute">0</span>') + '</td>';
+    }
+    $('tbl').innerHTML = '<div class="tw"><table><thead><tr><th>Tier</th><th>Members</th><th>MRR</th><th>Avg / member</th><th>Revenue</th><th>Payments</th><th>New</th><th>Cancelled</th><th>Cancel rate</th><th>Cancelling</th><th>Disputes</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr>' + tr(r, '<span class="tn"><i style="background:' + TCOL[r.t] + '"></i>' + TNAME[r.t] + '</span>') + '</tr>'; }).join('') +
+      '</tbody><tfoot><tr>' + tr(totRow, 'All tiers') + '</tr></tfoot></table></div>';
+
+    // active over time
+    var pts = bs.map(function (b) {
+      var t = Math.min(b.b, now), v = {}; TIERS.forEach(function (x) { v[x] = 0; });
+      D.memberships.forEach(function (m) { if (activeAt(m, t)) v[m.tier]++; });
+      return { label: b.label.replace('Week of ', 'Week of '), tick: b.tick, v: v };
+    });
+    area($('act'), pts, {});
+
+    // new vs cancelled
+    var upA = bs.map(function () { return 0; }), dnA = bs.map(function () { return 0; });
+    D.memberships.forEach(function (m) {
+      for (var i = 0; i < bs.length; i++) {
+        if (m.isNew && m.c >= bs[i].a && m.c < bs[i].b) upA[i]++;
+        if (m.x && !m.switched && m.x >= bs[i].a && m.x < bs[i].b) dnA[i]++;
+      }
+    });
+    diverging($('flow'), bs, upA, dnA, {});
+    $('flow').insertAdjacentHTML('afterbegin', '<div class="legend"><span><i style="background:var(--pos)"></i>New members</span><span><i style="background:var(--neg)"></i>Cancelled</span></div>');
+
+    // upcoming
+    var days = [], dv = [];
+    var d0 = new Date(); d0.setHours(0, 0, 0, 0);
+    for (var i = 0; i < 30; i++) { var a = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() + i); days.push({ a: a.getTime(), b: a.getTime() + DAY, label: (i === 0 ? 'Today · ' : i === 1 ? 'Tomorrow · ' : '') + dShort(a), tick: dShort(a), list: [] }); dv.push({}); }
+    upcoming.forEach(function (m) {
+      var e = T(m.end);
+      for (var i = 0; i < days.length; i++) if (e >= days[i].a && e < days[i].b) { dv[i][m.tier] = (dv[i][m.tier] || 0) + m.price; days[i].list.push(m); break; }
+    });
+    var upEl = $('upc');
+    upEl.innerHTML = '<div class="legend">' + TIERS.map(function (t) { return '<span><i style="background:' + TCOL[t] + '"></i>' + TNAME[t] + '</span>'; }).join('') + '</div><div class="chart" id="upcC"></div><div class="list" id="upcL" style="margin-top:10px"></div>';
+    stacked($('upcC'), days, dv, { h: 190, fy: usdK, fv: function (v) { return usd(v); }, extra: function (i) {
+      var l = days[i].list; if (!l.length) return '';
+      return '<div class="t">' + l.slice(0, 6).map(function (m) { return tipRow(TCOL[m.tier], m.name || 'Member', usd(m.price)); }).join('') + (l.length > 6 ? '<div class="r"><span>+' + (l.length - 6) + ' more</span></div>' : '') + '</div>';
+    } });
+    listing($('upcL'), upcoming, function (m) {
+      var e = new Date(m.end);
+      var dd = Math.round((new Date(e.getFullYear(), e.getMonth(), e.getDate()) - d0) / DAY);
+      return { when: dShort(e) + '<br>' + (dd <= 0 ? 'today' : dd === 1 ? 'tomorrow' : 'in ' + dd + 'd'), name: m.name || m.email || 'Member', sub: TNAME[m.tier] + (m.email && m.name ? ' · ' + m.email : ''), tier: m.tier, amt: usd(m.price, 2), small: m.days ? 'every ' + (m.days >= 28 && m.days <= 31 ? 'month' : m.days + ' days') : '' };
+    }, 5, 'No renewals due in the next 30 days.');
+
+    // risk
+    var pdSum = pastDue.reduce(function (s, m) { return s + (m.price || 0); }, 0);
+    var openDisp = D.disputes.filter(function (x) { return /needs_response|under_review|generating/.test(x.status || ''); });
+    var capList = live.filter(function (m) { return m.cap; }).sort(function (a, b) { return T(a.end) - T(b.end); });
+    var rk = $('risk');
+    rk.innerHTML = '<div class="risk">' +
+      '<div class="rk"><div class="v num" style="color:' + (pastDue.length ? 'var(--warn)' : 'var(--tx)') + '">' + usd(pdSum) + '</div><div class="s">' + int(pastDue.length) + ' failed payment' + (pastDue.length === 1 ? '' : 's') + ' (past due)</div></div>' +
+      '<div class="rk"><div class="v num">' + usd(END) + '<span style="font-size:13px;color:var(--tx-mute);font-weight:500">/mo</span></div><div class="s">' + int(capList.length) + ' set to cancel</div></div>' +
+      '<div class="rk"><div class="v num" style="color:' + (openDisp.length ? 'var(--bad)' : 'var(--tx)') + '">' + int(openDisp.length) + '</div><div class="s">open dispute' + (openDisp.length === 1 ? '' : 's') + '</div></div></div>' +
+      '<div class="tabs2" id="rkT"><button type="button" data-k="pd" aria-pressed="true">Past due</button><button type="button" data-k="cap" aria-pressed="false">Cancelling</button><button type="button" data-k="disp" aria-pressed="false">Disputes</button><button type="button" data-k="ref" aria-pressed="false">Refunds</button></div><div class="list" id="rkL"></div>';
+    var refunds = D.payments.filter(function (p) { return p.ref > 0; }).sort(function (a, b) { return (T(b.refunded_at) || b.t) - (T(a.refunded_at) || a.t); });
+    var disps = D.disputes.slice().sort(function (a, b) { return b.t - a.t; });
+    function showRisk(k) {
+      Array.prototype.forEach.call($('rkT').children, function (b) { b.setAttribute('aria-pressed', b.dataset.k === k ? 'true' : 'false'); });
+      var L = $('rkL');
+      if (k === 'pd') listing(L, pastDue, function (m) { return { when: m.end ? dShort(new Date(m.end)) : '—', name: m.name || m.email || 'Member', sub: TNAME[m.tier] + ' · payment failed', tier: m.tier, amt: usd(m.price || 0, 2), small: 'owed' }; }, 6, 'No failed payments right now. 🎉');
+      if (k === 'cap') listing(L, capList, function (m) { return { when: m.end ? dShort(new Date(m.end)) + '<br>ends' : '—', name: m.name || m.email || 'Member', sub: TNAME[m.tier] + (m.opt ? ' · ' + (REASONS[m.opt] || m.opt) : ''), tier: m.tier, amt: usd(monthly(m), 0), small: '/mo lost' }; }, 6, 'Nobody is set to cancel.');
+      if (k === 'disp') listing(L, disps, function (x) { return { when: dShort(new Date(x.t)), name: x.name || 'Payment ' + (x.pay || ''), sub: TNAME[x.tier] + ' · ' + String(x.status || '').replace(/_/g, ' ') + (x.reason ? ' · ' + String(x.reason).replace(/_/g, ' ') : ''), tier: x.tier, amt: usd(x.amt, 2), neg: 1 }; }, 6, 'No disputes. Clean record.');
+      if (k === 'ref') listing(L, refunds, function (p) { return { when: dShort(new Date(p.refunded_at || p.at)), name: p.name || p.email || 'Member', sub: TNAME[p.tier] + ' · of ' + usd(p.amt, 2), tier: p.tier, amt: '−' + usd(p.ref, 2), neg: 1 }; }, 6, 'No refunds.');
+    }
+    $('rkT').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) showRisk(b.dataset.k); });
+    showRisk(pastDue.length ? 'pd' : capList.length ? 'cap' : 'disp');
+
+    // reasons
+    var rc = {};
+    D.memberships.forEach(function (m) { if (within(m.x, w) && !m.switched) { var k = m.opt || '_none'; (rc[k] = rc[k] || []).push(m); } });
+    hbars($('why'), Object.keys(rc).map(function (k) {
+      var l = rc[k], notes = l.filter(function (m) { return m.why; }).slice(0, 3);
+      return { label: k === '_none' ? 'No reason given' : (REASONS[k] || k), v: l.length, c: k === '_none' ? 'rgba(255,255,255,.22)' : 'var(--t-tools)',
+        tip: '<b>' + esc(k === '_none' ? 'No reason given' : (REASONS[k] || k)) + '</b>' + TIERS.map(function (t) { var n = l.filter(function (m) { return m.tier === t; }).length; return n ? tipRow(TCOL[t], TNAME[t], int(n)) : ''; }).join('') +
+          (notes.length ? '<div class="t">' + notes.map(function (m) { return '<div style="color:var(--tx-dim);line-height:1.45;margin-top:4px">“' + esc(m.why) + '”</div>'; }).join('') + '</div>' : '') };
+    }).sort(function (a, b) { return b.v - a.v; }), function (v) { return int(v); });
+
+    // feed
+    var feed = D.payments.filter(function (p) { return p.t || p.created; }).sort(function (a, b) { return (b.t || T(b.created)) - (a.t || T(a.created)); });
+    listing($('feed'), feed, function (p) {
+      var kind = p.br === 'subscription_cycle' ? 'Renewal' : p.br === 'subscription_create' || p.br === 'one_time' ? 'New' : p.br === 'subscription_update' ? 'Change' : 'Payment';
+      var failed = p.st !== 'paid', st = failed ? (String(p.sub || p.st || '').replace(/_/g, ' ')) : p.ref ? (p.ref >= p.amt ? 'refunded' : 'part refunded') : '';
+      var d = new Date(p.t || p.created);
+      return { when: dShort(d) + '<br>' + ago(d.getTime()).replace(' ago', ''), name: p.name || p.email || 'Member', sub: TNAME[p.tier] + ' · ' + kind + (st ? ' · ' + st : ''), tier: p.tier, amt: usd(p.amt, 2), neg: failed || p.ref, small: failed ? 'not paid' : p.ref ? '−' + usd(p.ref, 2) : '' };
+    }, 8, 'No payments yet.');
+  }
+
+  function card(cls, id, title, sub, right, isChart) {
+    var legend = isChart ? '<div class="legend">' + TIERS.map(function (t) { return '<span><i style="background:' + TCOL[t] + '"></i>' + TNAME[t] + '</span>'; }).join('') + '</div>' : '';
+    return '<section class="card ' + cls + '"><div class="card-h"><div><h2>' + esc(title) + '</h2><div class="sub">' + esc(sub) + '</div></div>' + right + '</div>' + legend + '<div class="chart" id="' + id + '"></div></section>';
+  }
+
+  function listing(host, items, fn, per, emptyMsg) {
+    var shown = per;
+    function draw() {
+      if (!items.length) { host.innerHTML = '<div class="empty" style="min-height:90px">' + esc(emptyMsg) + '</div>'; return; }
+      host.innerHTML = items.slice(0, shown).map(function (it) {
+        var r = fn(it);
+        return '<div class="li"><span class="when">' + r.when + '</span><div class="who"><b>' + esc(r.name) + '</b><span><i style="background:' + TCOL[r.tier] + '"></i>' + esc(r.sub) + '</span></div><div class="amt' + (r.neg ? ' neg' : '') + '">' + r.amt + (r.small ? '<small>' + esc(r.small) + '</small>' : '') + '</div></div>';
+      }).join('') + (items.length > shown ? '<button type="button" class="more">Show more (' + (items.length - shown) + ')</button>' : '');
+      var mb = host.querySelector('.more');
+      if (mb) mb.addEventListener('click', function () { shown += per * 2; draw(); });
+    }
+    host.classList.add('list');
+    draw();
+  }
+
+  /* ---------- load ---------- */
+  function skeleton() {
+    $('kpis').classList.add('loading');
+    $('kpis').innerHTML = [0, 1, 2, 3, 4, 5].map(function () { return '<div class="kpi"><span class="sk" style="height:10px;width:60%"></span><span class="sk" style="height:30px;width:80%"></span><span class="sk" style="height:12px;width:50%"></span></div>'; }).join('');
+  }
+  function stamp() { if (D) $('stampT').textContent = 'Live from Whop · updated ' + ago(D.at * 1000) + (D.cached ? '' : ''); }
+  function load(fresh) {
+    $('refresh').classList.add('busy');
+    return fetch(API + (fresh ? '?fresh=1' : ''), { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) {
+        if (r.status === 401) { signOut(); throw new Error('Session expired'); }
+        return r.json().catch(function () { return { ok: false, error: 'Bad response (' + r.status + ')' }; });
+      })
+      .then(function (d) {
+        if (!d.ok) throw new Error(d.error || 'Could not load analytics');
+        D = prep(d);
+        $('kpis').classList.remove('loading');
+        $('banner').innerHTML = d.partial ? '<div class="banner">Whop took too long to send everything, so the oldest records may be missing. Hit Refresh in a minute.</div>' : '';
+        render(); stamp();
+      })
+      .catch(function (e) {
+        $('banner').innerHTML = '<div class="banner bad">' + esc(e.message || 'Could not load analytics') + '</div>';
+        if (!D) $('body').innerHTML = '';
+      })
+      .then(function () { $('refresh').classList.remove('busy'); });
+  }
+
+  function setRange(r) {
+    range = r;
+    try { localStorage.setItem('tv_an_range', r); } catch (e) {}
+    Array.prototype.forEach.call($('range').children, function (b) { b.setAttribute('aria-pressed', b.dataset.r === r ? 'true' : 'false'); });
+    if (D) render();
+  }
+  $('range').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setRange(b.dataset.r); });
+  $('refresh').addEventListener('click', function () { load(true); });
+  var rt; addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (D) render(); }, 150); });
+  setInterval(stamp, 30000);
+  setRange(range);
+  skeleton();
+  load(false);
+
+  // Support badge, same as the other admin pages.
+  function supCount() {
+    fetch('https://jaybonham.com/api/tv-support?list=open', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (!d.ok) return; var n = (d.chats || []).filter(function (c) { return c.needs_reply; }).length; $('supN').textContent = n > 99 ? '99+' : n; $('supN').hidden = !n; })
+      .catch(function () {});
+  }
+  supCount(); setInterval(supCount, 60000);
+})();
+</script>
+</body>
+</html>
