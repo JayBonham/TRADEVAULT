@@ -10,7 +10,7 @@ GET  ?c=<channel id>[&before=<message id>][&since=<message id>][&u=<user id>]
                           reply_to}] oldest first, more, member}
        member (only when u is given): Whop memberships for that user plus our setup answers.
 POST {c, text[, reply_to]} -> {ok, message}
-Whop has no API to resolve a chat or mark it read, so that still happens in Whop.
+POST {c, action: "resolve"|"reopen"} -> {ok, resolved}
 """
 import http.client
 import json
@@ -56,7 +56,7 @@ def whop(method, path, body=None, extra=None):
             msg = raw[:200].decode("utf-8", "replace")
         if r.status in (401, 403):
             msg = ("Whop refused (%s). The Whop API key needs the support_chat:read and "
-                   "support_chat:message:create permissions. %s" % (r.status, msg)).strip()
+                   "support_chat:message:create permissions (and permission to resolve support chats). %s" % (r.status, msg)).strip()
         raise WhopError(r.status, msg or "Whop error %s" % r.status)
     return json.loads(raw or b"{}")
 
@@ -265,6 +265,18 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
+        action = b.get("action")
+        if action in ("resolve", "reopen"):
+            if not ID_RE.match(cid):
+                return self._json(400, {"ok": False, "error": "Invalid chat"})
+            try:
+                whop("POST", "/channels/%s/%s" % (quote(cid), action), {})
+            except WhopError as e:
+                if e.status != 409:  # 409: already in that state
+                    log("TV_SUPPORT_%s_ERR:" % action.upper(), e.status, e)
+                    return self._json(502, {"ok": False, "error": str(e)})
+            log("TV_SUPPORT", action, cid)
+            return self._json(200, {"ok": True, "resolved": action == "resolve"})
         text = str(b.get("text") or "").strip()
         reply = str(b.get("reply_to") or "")
         if not ID_RE.match(cid) or not text or len(text) > 5000 or (reply and not ID_RE.match(reply)):
