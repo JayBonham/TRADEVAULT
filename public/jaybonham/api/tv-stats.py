@@ -226,7 +226,10 @@ class handler(BaseHTTPRequestHandler):
             return self._json(403, {"ok": False, "locked": True, "error": "Wrong password"})
         if not WHOP_API_KEY:
             return self._json(500, {"ok": False, "error": "WHOP_API_KEY is not set in Vercel"})
-        fresh = parse_qs(urlparse(self.path).query).get("fresh") == ["1"]
+        qs = parse_qs(urlparse(self.path).query)
+        if qs.get("check") == ["1"]:
+            return self._json(200, {"ok": True})  # password only, so the page can unlock before the Whop pull
+        fresh = qs.get("fresh") == ["1"]
         if not fresh and _CACHE["body"] and time.time() - _CACHE["at"] < CACHE_TTL:
             return self._json(200, dict(_CACHE["body"], cached=True))
         try:

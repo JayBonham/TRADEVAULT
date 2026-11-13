@@ -727,6 +727,7 @@ td.mute{color:var(--tx-mute)}
       })
       .catch(function (e) {
         if (e.locked) { lockFail(); return; }
+        if (!$('lock').hidden) { lockErr(e.message || 'Could not load analytics'); return; }
         $('banner').innerHTML = '<div class="banner bad">' + esc(e.message || 'Could not load analytics') + '</div>';
         if (!D) $('body').innerHTML = '';
       })
@@ -745,6 +746,9 @@ td.mute{color:var(--tx-mute)}
   setInterval(stamp, 30000);
   setRange(range);
   skeleton();
+  function lockErr(msg) {
+    $('lockB').disabled = false; $('lockB').textContent = 'Unlock'; $('lockE').textContent = msg;
+  }
   function lockFail() {
     pass = ''; $('lock').hidden = false; $('lockB').disabled = false; $('lockB').textContent = 'Unlock';
     $('lockE').textContent = 'Wrong password, try again.'; $('lockP').value = ''; $('lockP').focus();
@@ -754,7 +758,15 @@ td.mute{color:var(--tx-mute)}
     e.preventDefault();
     var v = $('lockP').value; if (!v) { $('lockP').focus(); return; }
     pass = v; $('lockE').textContent = ''; $('lockB').disabled = true; $('lockB').textContent = 'Unlocking…';
-    load(false);
+    fetch(API + '?check=1', { headers: { 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass } })
+      .then(function (r) {
+        if (r.status === 401) { signOut(); return; }
+        if (r.status === 403) { lockFail(); return; }
+        if (!r.ok) throw new Error('Server error (' + r.status + ')');
+        $('lock').hidden = true; // right password: show the loader while Whop is pulled
+        load(false);
+      })
+      .catch(function (e) { lockErr((e && e.message) || 'Could not reach the server'); });
   });
   $('lockP').focus();
 
