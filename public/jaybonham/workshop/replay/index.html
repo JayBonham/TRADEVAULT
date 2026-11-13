@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Workshop Replay — Jay Bonham</title>
+<title>Replay: The Secrets of a Hedge Fund Trader | Jay Bonham</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +26,17 @@
 .cta{margin-top:44px}
 .cta h2{font-size:clamp(28px,3.6vw,42px);max-width:20ch;margin:0 auto}
 .cta p{color:var(--tx-dim);max-width:54ch;margin:16px auto 28px}
+.learn{margin-top:72px;text-align:left}
+.learn h2{font-size:clamp(26px,3.2vw,36px);text-align:center;max-width:22ch;margin:0 auto 32px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:960px;margin:0 auto}
+.grid .card{padding:26px 28px;display:flex;flex-direction:column;gap:8px}
+.grid small{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+.grid b{font-family:var(--display);font-size:20px;letter-spacing:-.01em;line-height:1.25}
+.grid p{color:var(--tx-dim);font-size:15.5px;line-height:1.5;margin:0}
+.cta .card{max-width:820px;margin:0 auto;padding:clamp(28px,4vw,48px)}
+.cta ul{max-width:520px;margin:0 auto 28px;text-align:left}
 footer{padding-block:40px 48px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
 @media(max-width:600px){.cta .btn{width:100%}}
 </style>
 <script src="/vt.js" defer></script>
@@ -43,7 +53,7 @@ footer{padding-block:40px 48px}
       </svg>
       <div><div class="brand-n">Jay Bonham</div><div class="brand-s">Precision under pressure</div></div>
     </a>
-    <a href="/apply" class="btn" data-vt-cta>Book a call</a>
+    <a href="/schedule-call" class="btn" data-vt-cta>Book a call</a>
   </div>
 </header>
 
@@ -51,8 +61,8 @@ footer{padding-block:40px 48px}
 <section class="top">
   <div class="W">
     <span class="kick reveal"><b>Replay</b>Free live workshop</span>
-    <h1 class="reveal d1">How pros <span class="hl">actually trade.</span></h1>
-    <p class="sub reveal d2">Jay's full workshop: the habits that separate a losing trader from a long-term winning trader, and the process to run on every trade.</p>
+    <h1 class="reveal d1">The secrets of a <span class="hl">hedge fund trader.</span></h1>
+    <p class="sub reveal d2">The full recording from Jay's live workshop. How the pros manage risk, the five steps behind every trade, and Killshot running live on gold and US30.</p>
 
     <div class="vid reveal d2" id="vid">
       <div class="wait">
@@ -62,11 +72,28 @@ footer{padding-block:40px 48px}
       </div>
     </div>
 
+    <div class="learn">
+      <h2 class="reveal">What's in <span class="hl">the replay</span></h2>
+      <div class="grid">
+        <div class="card reveal"><small>Secret 01</small><b>Hedge funds don't predict. They price risk.</b><p>Why the pros decide what they'll lose before they think about what they'll make.</p></div>
+        <div class="card reveal d1"><small>The process</small><b>Every trade. Same five steps.</b><p>The routine Jay runs on every trade, so you stop trading on hunches and other people's calls.</p></div>
+        <div class="card reveal"><small>Live demo</small><b>Killshot on gold and US30</b><p>Jay walks through real charts and shows what makes a setup worth taking.</p></div>
+        <div class="card reveal d1"><small>The roadmap</small><b>The five stages every trader climbs</b><p>From gambler to professional: see where you are now and what moves you up a stage.</p></div>
+      </div>
+    </div>
+
     <div class="cta reveal">
-      <h2>Ready to take it <span class="hl">further?</span></h2>
-      <p>The Sniper Academy is Jay's 12-week mentorship, by application only. Book a call with the team to go through where you're at and whether it's the right fit.</p>
-      <a href="/apply" class="btn" data-vt-cta id="applyBtn">Book my call <span class="arr">→</span></a>
-      <span class="note">60-second application · No commitment</span>
+      <div class="card hot">
+        <h2>Want Jay to look at <span class="hl">your trading?</span></h2>
+        <p>Book a free strategy call. It takes 20 minutes and there's no hard sell.</p>
+        <ul class="ticks">
+          <li>We look at where your trading is now and what's holding you back</li>
+          <li>We map out your plan to reach the next stage</li>
+          <li>We check whether the Sniper Academy is right for you. If it isn't, we'll say so</li>
+        </ul>
+        <a href="/schedule-call" class="btn" data-vt-cta id="applyBtn">Book my strategy call <span class="arr">→</span></a>
+        <span class="note">Free · 20 minutes · Limited spots each month</span>
+      </div>
     </div>
   </div>
 </section>
@@ -82,18 +109,19 @@ footer{padding-block:40px 48px}
 <script>
 (function () {
   // Paste the replay link here. An .mp4 / .m3u8 file plays in a video player; anything else (an embed link) loads in a frame.
-  var VIDEO = 'https://assets.cdn.filesafe.space/gjD9eQ5iWb8X6zNbltKP/media/6aed357f42ff25478ce34246.mp4';
+  var VIDEO = 'https://files.leadconnectorhq.com/file/6af70905893246071f51674b/gmt20261113-010918-recording-1920x1080.mp4';
   if (VIDEO) {
     var box = document.getElementById('vid'), el;
     if (/\.(mp4|webm|mov|m3u8)(\?|$)/i.test(VIDEO)) {
-      el = document.createElement('video'); el.src = VIDEO + '#t=0.5'; el.controls = true; el.playsInline = true; el.preload = 'metadata';
+      el = document.createElement('video'); el.src = VIDEO + '#t=0.5'; el.controls = true; el.playsInline = true; el.preload = 'metadata'; el.poster = '/assets/webinar/jay-host.webp';
+      el.addEventListener('play', function () { try { fbq('trackCustom', 'Replay_Play'); } catch (e) {} }, { once: true });
     } else {
       el = document.createElement('iframe'); el.src = VIDEO; el.allow = 'autoplay; fullscreen; picture-in-picture'; el.allowFullscreen = true; el.title = 'Workshop replay';
     }
     box.innerHTML = ''; box.appendChild(el);
   }
   var a = document.getElementById('applyBtn');
-  if (a) a.addEventListener('click', function () { try { fbq('trackCustom', 'Replay_ApplyClick'); } catch (e) {} });
+  if (a) a.addEventListener('click', function () { try { fbq('trackCustom', 'Replay_BookClick'); } catch (e) {} });
   var y = document.querySelector('[data-yr]'); if (y) y.textContent = new Date().getFullYear();
 
   var els = document.querySelectorAll('.reveal');
