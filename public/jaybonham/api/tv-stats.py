@@ -108,8 +108,9 @@ def pay_title(p):
 def db_side():
     """From our own tables: names/emails for rows Whop leaves bare, plus where each buyer came from
     (affiliate referral, webinar registration). Each part is best-effort."""
-    out = {"names": {}, "emails": {}, "affiliates": {}, "aff_codes": {}, "webinar": {}}
+    out = {"names": {}, "emails": {}, "affiliates": {}, "aff_codes": {}, "webinar": {}, "commissions": {}, "err": None}
     if not DATABASE_URL:
+        out["err"] = "DATABASE_URL is not set"
         return out
     try:
         import psycopg2
@@ -117,6 +118,7 @@ def db_side():
         cur = c.cursor()
     except Exception as e:
         log("TV_STATS_DB_ERR:", e)
+        out["err"] = str(e)[:160]
         return out
     def rows(sql):
         try:
@@ -124,6 +126,7 @@ def db_side():
             return cur.fetchall()
         except Exception as e:  # a table that doesn't exist yet
             log("TV_STATS_DB_Q:", e)
+            out["err"] = str(e)[:160]
             c.rollback()
             return []
     for mid, name, email, wid in rows("SELECT membership_id, name, email, whop_id FROM tv_payments ORDER BY paid_at"):
@@ -132,6 +135,10 @@ def db_side():
         out["emails"][wid] = (email or "").lower()
     for email, name, code, at in rows("SELECT r.email, a.name, a.code, r.created_at FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id"):
         out["affiliates"][email.lower()] = {"name": name, "code": code, "at": at.isoformat() if at else None}
+    # The affiliate portal's own record: every payment that earned an affiliate commission.
+    for wid, name in rows("""SELECT m.whop_id, a.name FROM tv_aff_commissions m JOIN tv_affiliates a ON a.id = m.affiliate_id
+                             WHERE m.kind = 'commission' AND m.status <> 'void'"""):
+        out["commissions"][wid] = name
     for code, name in rows("SELECT lower(code), name FROM tv_affiliates"):
         out["aff_codes"][code] = name
     for email, at in rows("SELECT lower(email), MIN(created_at) FROM jb_webinar_regs WHERE email IS NOT NULL GROUP BY lower(email)"):
@@ -147,11 +154,27 @@ def promo_codes(deadline):
         rows, _ = pages("/promo_codes?account_id=%s&first=100" % WHOP_COMPANY, deadline, 10)
     except Exception as e:
         log("TV_STATS_PROMOS:", e)
+        out["_err"] = str(e)[:160]
         return out
     for p in rows:
         if p.get("id"):
             out[p["id"]] = {"code": p.get("code") or "", "type": p.get("promo_type"), "off": p.get("amount_off"),
-                            "status": p.get("status"), "uses": p.get("uses")}
+                            "status": p.get("status"), "uses": p.get("uses"), "mids": []}
+    # Which memberships used each code, from Whop's own filter (list payments don't reliably carry the code).
+    def used(pid):
+        try:
+            got, _ = pages("/memberships?account_id=%s&first=100&promo_code_ids=%s" % (WHOP_COMPANY, pid), deadline, 10)
+        except Exception as e:
+            log("TV_STATS_PROMO_USES:", pid, e)
+            return pid, []
+        got = [m for m in got if m.get("id") and m.get("promo_code_id") in (None, pid)]
+        if len(got) > 2 * (out[pid]["uses"] or 0) + 5:
+            log("TV_STATS_PROMO_FILTER_IGNORED:", pid, len(got))  # Whop ignored the filter: don't tag everyone
+            return pid, []
+        return pid, [m["id"] for m in got]
+    with ThreadPoolExecutor(8) as ex:
+        for pid, mids in ex.map(used, [k for k, v in out.items() if v.get("uses")]):
+            out[pid]["mids"] = mids
     return out
 
 
@@ -199,9 +222,12 @@ def load():
             "ref": money(p.get("refunded_amount")) or 0, "refunded_at": p.get("refunded_at"),
             "st": p.get("status"), "sub": p.get("substatus"), "br": p.get("billing_reason"),
             "disp": p.get("dispute_created_at"), "name": name, "email": email,
-            "pc": p.get("promo_code_id"), "aff": str(meta.get("tv_ref") or "").lower() or None,
+            "pc": p.get("promo_code_id") or ((p.get("promo_code") or {}).get("id") if isinstance(p.get("promo_code"), dict) else None),
+            "aff": str(meta.get("tv_ref") or "").lower() or None, "affn": side["commissions"].get(str(p.get("id"))),
             "upg": bool(meta.get("tv_upgrade_from"))})
 
+    perr = promos.pop("_err", None)
+    code_of = {mid: pid for pid, v in promos.items() for mid in v.pop("mids", [])}
     out_m = []
     for m in mems:
         prod = m.get("product") if isinstance(m.get("product"), dict) else {}
@@ -216,7 +242,7 @@ def load():
             "end": m.get("current_period_end") or m.get("expires_at"), "cap": bool(m.get("cancel_at_period_end")),
             "price": money(m.get("renewal_price")), "days": m.get("billing_period_days"),
             "opt": m.get("cancel_option"), "why": (m.get("cancellation_reason") or "")[:200],
-            "name": name, "email": email, "pc": m.get("promo_code_id")})
+            "name": name, "email": email, "pc": m.get("promo_code_id") or code_of.get(m.get("id"))})
 
     out_d, by_pay = [], {p["id"]: p for p in out_p}
     if disps is not None:
@@ -242,7 +268,10 @@ def load():
     affs = {e: a for e, a in side["affiliates"].items() if e in buyers}
     return {"ok": True, "at": int(time.time()), "products": prods, "memberships": out_m, "payments": out_p,
             "disputes": out_d, "promos": promos,
-            "sources": {"affiliates": affs, "aff_codes": side["aff_codes"], "webinar": web}, "partial": not (m_ok and p_ok), "disputes_source": "whop" if disps is not None else "payments"}
+            "sources": {"affiliates": affs, "aff_codes": side["aff_codes"], "webinar": web},
+            "diag": {"db": side["err"], "promos": perr, "promo_count": len(promos), "commissions": len(side["commissions"]),
+                     "emails": sum(1 for p in out_p if p["email"]), "webinar_regs": len(side["webinar"]),
+                     "coded_members": len(code_of)}, "partial": not (m_ok and p_ok), "disputes_source": "whop" if disps is not None else "payments"}
 
 
 def pass_ok(given):

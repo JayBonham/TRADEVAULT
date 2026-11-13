@@ -359,22 +359,25 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
         mrr: monthly(m) - (old ? monthly(old) : 0), paid: fp ? fp.net : 0, pc: (fp && fp.pc) || m.pc });
     });
 
-    // Where each customer came from, decided by their first payment: affiliate referral (or a checkout carrying
-    // an affiliate code), else a webinar sign-up before buying, else direct.
+    // Where each customer came from: an affiliate if any of their payments earned an affiliate commission (the
+    // affiliate portal's own record), else a webinar sign-up before their first payment, else direct.
     var src = d.sources || { affiliates: {}, aff_codes: {}, webinar: {} };
+    var memPc = {}; d.memberships.forEach(function (m) { if (m.pc) memPc[m.id] = m.pc; });
     var cust = {};
     d.payments.slice().sort(function (a, b) { return (a.t || 0) - (b.t || 0); }).forEach(function (p) {
-      var key = (p.email || '').toLowerCase() || p.uid || p.mid || p.id;
+      if (!p.pc && p.mid && memPc[p.mid]) p.pc = memPc[p.mid];
+      var e = (p.email || '').toLowerCase(), key = e || p.uid || p.mid || p.id;
       p.ck = key;
-      if (cust[key] || !paid(p)) return;
-      var e = (p.email || '').toLowerCase(), a = src.affiliates[e], c = { first: p.id };
-      if (a) { c.src = 'aff'; c.aff = a.name; }
-      else if (p.aff && src.aff_codes[p.aff]) { c.src = 'aff'; c.aff = src.aff_codes[p.aff]; }
-      else if (src.webinar[e] && T(src.webinar[e]) <= p.t + DAY) c.src = 'web';
-      else c.src = 'direct';
-      cust[key] = c;
+      var c = cust[key] = cust[key] || { src: null };
+      if (p.affn && !c.aff) c.aff = p.affn;
+      else if (!c.aff && src.affiliates[e]) c.aff = src.affiliates[e].name;
+      else if (!c.aff && p.aff && src.aff_codes[p.aff]) c.aff = src.aff_codes[p.aff];
+      if (!c.first && paid(p)) { c.first = p.id; c.web = !!(src.webinar[e] && T(src.webinar[e]) <= p.t + DAY); }
     });
-    d.payments.forEach(function (p) { var c = cust[p.ck] || { src: 'direct' }; p.src = c.src; p.affName = c.aff; p.newCust = c.first === p.id; });
+    d.payments.forEach(function (p) {
+      var c = cust[p.ck];
+      p.src = c.aff ? 'aff' : c.web ? 'web' : 'direct'; p.affName = c.aff; p.newCust = c.first === p.id;
+    });
     return d;
   }
 
@@ -646,8 +649,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       card('c4', 'mix', 'Members by tier', int(live.length) + ' live memberships', '') +
       card('c7', 'upg', 'Upgrades', 'Members moving up a tier · ' + w.label, '<div class="big" id="upgBig"></div>') +
       card('c5', 'codes', 'Discount codes', 'Payments that used a Whop promo code · ' + w.label, '<div class="big" id="codesBig"></div>') +
-      card('c7', 'src', 'Where sales come from', 'Each customer counted by how they first arrived · ' + w.label, '<div class="big" id="srcBig"></div>') +
-      card('c5', 'affs', 'Top affiliates', 'Revenue from their referred members · ' + w.label, '') +
+      card('c12', 'src', 'Where sales come from', 'Each customer counted by how they arrived · ' + w.label, '<div class="big" id="srcBig"></div>') +
       card('c12', 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of now', '') +
       card('c7', 'act', 'Active members', 'Live memberships over the ' + w.label, '', true) +
       card('c5', 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>') +
@@ -809,7 +811,9 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     });
     $('codesBig').innerHTML = (firstN ? pct(firstCoded / firstN, 0) : '—') + '<small>of new customers used a code</small>';
     var codes = Object.keys(byCode).map(function (id) { var r = byCode[id]; r.id = id; r.p = pr[id] || {}; return r; }).sort(function (a, b) { return b.rev - a.rev; });
-    if (!codes.length) $('codes').innerHTML = '<div class="empty">No codes used in this range.</div>';
+    var dg = D.diag || {};
+    if (!codes.length) $('codes').innerHTML = '<div class="empty">' + (dg.promos ? 'Whop wouldn\'t list the promo codes: ' + esc(dg.promos) + '<br>Give the API key read access to promo codes in Whop.' :
+      dg.promo_count === 0 ? 'Whop returned no promo codes for this account.' : 'No codes used in this range.') + '</div>';
     else {
       var mbyId = {}; D.memberships.forEach(function (m) { mbyId[m.id] = m; });
       $('codes').innerHTML = '<div class="tw"><table class="sm"><thead><tr><th>Code</th><th>Discount</th><th>Members</th><th>Still active</th><th>Revenue</th></tr></thead><tbody>' +
@@ -836,22 +840,11 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       }).join('') + '</div></div></div>';
     var sb = bs.map(function () { return { aff: 0, web: 0, direct: 0 }; });
     S.pays.forEach(function (p) { for (var i = 0; i < bs.length; i++) if (p.t >= bs[i].a && p.t < bs[i].b) { sb[i][p.src] += p.net; break; } });
+    var dg2 = D.diag || {};
+    if (dg2.db || (!dg2.commissions && !Object.keys((D.sources || {}).webinar || {}).length)) {
+      $('src').insertAdjacentHTML('beforeend', '<p class="foot" style="margin-top:12px">' + (dg2.db ? 'Couldn\'t read affiliate and webinar records: ' + esc(dg2.db) : 'No affiliate commissions or webinar sign-ups were found to match against.') + '</p>');
+    }
     stacked($('srcC'), bs, sb, { h: 220, keys: SRC, col: SCOL, names: SNAME, fy: usdK, fv: function (v) { return usd(v); } });
-
-    /* top affiliates */
-    var A = {}, allTime = {};
-    S.pays.forEach(function (p) {
-      if (p.src !== 'aff') return;
-      var r = A[p.affName] = A[p.affName] || { name: p.affName || 'Affiliate', rev: 0, news: 0, cust: {} };
-      r.rev += p.net; r.cust[p.ck] = 1; if (p.newCust) r.news++;
-    });
-    D.payments.forEach(function (p) { if (p.src === 'aff' && paid(p)) allTime[p.affName] = (allTime[p.affName] || 0) + p.net; });
-    var aff = Object.keys(A).map(function (k) { return A[k]; }).sort(function (a, b) { return b.rev - a.rev; });
-    listing($('affs'), aff, function (r) {
-      var n = Object.keys(r.cust).length;
-      return { when: '#' + (aff.indexOf(r) + 1), name: r.name, sub: int(r.news) + ' new · ' + int(n) + ' paying member' + (n === 1 ? '' : 's'), dot: 'var(--s-aff)',
-        amt: usd(r.rev), small: usd(allTime[r.name] || 0) + ' all time' };
-    }, 6, 'No affiliate sales in this range.');
   }
 
   function card(cls, id, title, sub, right, isChart) {
