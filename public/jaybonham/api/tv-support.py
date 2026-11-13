@@ -121,6 +121,25 @@ def _msg(m):
             "deleted": bool(m.get("deleted_at"))}
 
 
+def shape(cid):
+    d = whop("GET", "/messages?channel_id=%s&first=8&direction=desc" % quote(cid))
+    out = []
+    for m in d.get("data") or []:
+        if not isinstance(m, dict):
+            continue
+        row = {"keys": sorted(m.keys())}
+        for k, v in m.items():
+            if k in ("content", "plain_content", "text", "attachments", "embeds", "link_previews", "gifs", "poll"):
+                continue
+            if isinstance(v, dict):
+                row[k] = {kk: (vv if not isinstance(vv, (dict, list)) else "<%s>" % type(vv).__name__) for kk, vv in v.items()
+                          if kk not in ("content", "plain_content", "text")}
+            elif not isinstance(v, list):
+                row[k] = v
+        out.append(row)
+    return out
+
+
 def messages(cid, before, since):
     q = "/messages?channel_id=%s&first=50" % quote(cid)
     if since:
@@ -129,12 +148,6 @@ def messages(cid, before, since):
         q += "&direction=desc" + ("&before_message_id=" + quote(before) if before else "")
     d = whop("GET", q)
     raw = [m for m in d.get("data") or [] if isinstance(m, dict)]
-    if raw and not since:
-        r0 = raw[0]
-        log("TV_SUPPORT_SHAPE keys=%s author_keys=%s user_keys=%s team=%r" % (
-            sorted(r0.keys()), sorted((r0.get("author") or {}).keys()) if isinstance(r0.get("author"), dict) else r0.get("author"),
-            sorted((r0.get("user") or {}).keys()) if isinstance(r0.get("user"), dict) else r0.get("user"),
-            r0.get("author_is_team_member", r0.get("is_team_member"))))
     msgs = [_msg(m) for m in d.get("data") or [] if isinstance(m, dict) and not m.get("deleted_at")]
     msgs.sort(key=lambda m: m["at"])
     more = bool((d.get("page_info") or {}).get("has_next_page")) if not since else False
@@ -233,6 +246,8 @@ class handler(BaseHTTPRequestHandler):
                 for v in (before, since, uid):
                     if v and not ID_RE.match(v):
                         return self._json(400, {"ok": False, "error": "Invalid request"})
+                if qs.get("debug") == "1":
+                    return self._json(200, {"ok": True, "shape": shape(cid)})
                 with ThreadPoolExecutor(2) as ex:
                     fm = ex.submit(messages, cid, before, since)
                     fu = ex.submit(member, uid) if uid else None
