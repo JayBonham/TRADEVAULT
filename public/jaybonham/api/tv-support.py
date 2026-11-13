@@ -61,11 +61,38 @@ def whop(method, path, body=None, extra=None):
     return json.loads(raw or b"{}")
 
 
+def _pic(u):
+    p = u.get("profile_picture")
+    if isinstance(p, dict):
+        p = p.get("url") or p.get("source_url") or ""
+    return p or u.get("profile_pic_url") or u.get("profile_picture_url") or u.get("avatar_url") or ""
+
+
 def _user(u):
     u = u if isinstance(u, dict) else {}
-    pic = u.get("profile_picture") if isinstance(u.get("profile_picture"), dict) else {}
     return {"id": u.get("id") or "", "name": u.get("name") or "", "username": u.get("username") or "",
-            "avatar": pic.get("url") or ""}
+            "avatar": _pic(u)}
+
+
+_PICS = {}  # user id -> profile picture url ("" when none); lives as long as the warm function
+
+
+def fill_avatars(users):
+    """Whop leaves the picture off chat authors, so look each user up once and remember it."""
+    want = list({u["id"] for u in users if u.get("id") and not u.get("avatar") and u["id"] not in _PICS})[:30]
+
+    def one(uid):
+        try:
+            _PICS[uid] = _pic(whop("GET", "/users/" + quote(uid)))
+        except Exception as e:
+            log("TV_SUPPORT_PIC:", uid, e)
+            _PICS[uid] = ""
+    if want:
+        with ThreadPoolExecutor(min(10, len(want))) as ex:
+            list(ex.map(one, want))
+    for u in users:
+        if u.get("id") and not u.get("avatar"):
+            u["avatar"] = _PICS.get(u["id"], "")
 
 
 def _files(lst):
@@ -99,6 +126,7 @@ def list_chats(view, after):
         chats.append({"id": ch.get("id"), "user": _user(cu), "name": ch.get("custom_name") or "",
                       "last": last, "at": ch.get("last_message_at") or (last or {}).get("at") or "",
                       "needs_reply": bool(ch.get("needs_reply")), "resolved": bool(ch.get("resolved_at"))})
+    fill_avatars([c["user"] for c in chats])
     pi = d.get("page_info") or {}
     return chats, (pi.get("end_cursor") if pi.get("has_next_page") else None)
 
@@ -114,6 +142,8 @@ def _msg(m):
     aid = m.get("author_user_id") or m.get("user_id") or au.get("id") or ""
     if not isinstance(aid, str):
         aid = ""
+    if aid and not au.get("id"):
+        au = dict(au, id=aid)
     team = m.get("author_is_team_member")
     if team is None:
         team = m.get("is_team_member")
@@ -136,6 +166,7 @@ def messages(cid, before, since):
     d = whop("GET", q)
     raw = [m for m in d.get("data") or [] if isinstance(m, dict)]
     msgs = [_msg(m) for m in d.get("data") or [] if isinstance(m, dict) and not m.get("deleted_at")]
+    fill_avatars([m["author"] for m in msgs])
     msgs.sort(key=lambda m: m["at"])
     more = bool((d.get("page_info") or {}).get("has_next_page")) if not since else False
     return msgs, more
