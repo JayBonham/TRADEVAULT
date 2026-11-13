@@ -168,6 +168,20 @@ td.mute{color:var(--tx-mute)}
 .loading .kpi .v,.loading .kpi .s{color:transparent}
 .loading-msg{display:flex;align-items:center;gap:10px;justify-content:center;padding:60px 0 20px;color:var(--tx-mute);font-size:14px}
 .loading-msg i{width:16px;height:16px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+/* lock */
+.lock{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(3,7,14,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.lock form{width:min(380px,100%);padding:26px 24px 22px;border-radius:22px;border:1px solid var(--hair-2);background:radial-gradient(320px 180px at 50% 0%,rgba(var(--acc-rgb),.16),transparent 70%),var(--g1);box-shadow:0 30px 80px rgba(0,0,0,.55);display:grid;gap:14px;text-align:center;animation:rise .35s var(--ease) both}
+.lock .ic{width:52px;height:52px;margin:0 auto 2px;border-radius:16px;display:grid;place-items:center;background:rgba(var(--acc-rgb),.12);border:1px solid rgba(var(--acc-rgb),.35);color:var(--acc)}
+.lock h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.lock p{font-size:13.5px;color:var(--tx-mute);margin-top:-8px}
+.lock input{width:100%;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--hair-2);background:rgba(255,255,255,.04);color:var(--tx);font:inherit;font-size:15px;outline:0;text-align:center;letter-spacing:.04em}
+.lock input:focus{border-color:var(--acc);box-shadow:0 0 0 4px rgba(var(--acc-rgb),.12)}
+.lock .err{color:var(--bad);font-size:13px;min-height:18px;margin-top:-6px}
+.lock button{min-height:46px;border:0;border-radius:12px;background:linear-gradient(160deg,#3D8DF5,#2A6FD6);color:#fff;font-family:var(--display);font-weight:600;font-size:15px;cursor:pointer}
+.lock button:disabled{opacity:.6;cursor:wait}
+.lock a{font-size:13px;color:var(--tx-mute)}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.lock form.no{animation:shake .35s}
 .foot{margin-top:18px;font-size:12px;color:var(--tx-mute);line-height:1.6;max-width:900px}
 </style>
 </head>
@@ -214,6 +228,18 @@ td.mute{color:var(--tx-mute)}
   </div>
 </main>
 
+<div class="lock" id="lock">
+  <form id="lockF" autocomplete="off">
+    <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <h2>Analytics is locked</h2>
+    <p>Enter the analytics password to see revenue and member numbers.</p>
+    <input type="password" id="lockP" placeholder="Password" aria-label="Analytics password" autofocus>
+    <div class="err" id="lockE" role="alert"></div>
+    <button type="submit" id="lockB">Unlock</button>
+    <a href="/admin">← Back to members</a>
+  </form>
+</div>
+
 <div class="tip" id="tip" role="tooltip"></div>
 
 <script>
@@ -236,7 +262,7 @@ td.mute{color:var(--tx-mute)}
     technical_issues: 'Technical issues', bad_experience: 'Bad experience', unused: 'Not using it', other: 'Other', testing: 'Testing' };
   var CB_LIMIT = 0.009; // Visa's early-warning chargeback ratio
 
-  var D = null, range = '30';
+  var D = null, range = '30', pass = ''; // asked for on every visit, kept only in memory
   try { range = localStorage.getItem('tv_an_range') || '30'; } catch (e) {}
 
   /* ---------- formatting ---------- */
@@ -685,19 +711,22 @@ td.mute{color:var(--tx-mute)}
   function stamp() { if (D) $('stampT').textContent = 'Live from Whop · updated ' + ago(D.at * 1000) + (D.cached ? '' : ''); }
   function load(fresh) {
     $('refresh').classList.add('busy');
-    return fetch(API + (fresh ? '?fresh=1' : ''), { headers: { 'Authorization': 'Bearer ' + token } })
+    return fetch(API + (fresh ? '?fresh=1' : ''), { headers: { 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass } })
       .then(function (r) {
         if (r.status === 401) { signOut(); throw new Error('Session expired'); }
+        if (r.status === 403) { var e = new Error('Wrong password'); e.locked = true; throw e; }
         return r.json().catch(function () { return { ok: false, error: 'Bad response (' + r.status + ')' }; });
       })
       .then(function (d) {
         if (!d.ok) throw new Error(d.error || 'Could not load analytics');
         D = prep(d);
+        $('lock').hidden = true;
         $('kpis').classList.remove('loading');
         $('banner').innerHTML = d.partial ? '<div class="banner">Whop took too long to send everything, so the oldest records may be missing. Hit Refresh in a minute.</div>' : '';
         render(); stamp();
       })
       .catch(function (e) {
+        if (e.locked) { lockFail(); return; }
         $('banner').innerHTML = '<div class="banner bad">' + esc(e.message || 'Could not load analytics') + '</div>';
         if (!D) $('body').innerHTML = '';
       })
@@ -716,7 +745,18 @@ td.mute{color:var(--tx-mute)}
   setInterval(stamp, 30000);
   setRange(range);
   skeleton();
-  load(false);
+  function lockFail() {
+    pass = ''; $('lock').hidden = false; $('lockB').disabled = false; $('lockB').textContent = 'Unlock';
+    $('lockE').textContent = 'Wrong password, try again.'; $('lockP').value = ''; $('lockP').focus();
+    var f = $('lockF'); f.classList.remove('no'); void f.offsetWidth; f.classList.add('no');
+  }
+  $('lockF').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('lockP').value; if (!v) { $('lockP').focus(); return; }
+    pass = v; $('lockE').textContent = ''; $('lockB').disabled = true; $('lockB').textContent = 'Unlocking…';
+    load(false);
+  });
+  $('lockP').focus();
 
   // Support badge, same as the other admin pages.
   function supCount() {

@@ -1,12 +1,15 @@
 """TradeVault analytics for the admin dashboard (thetradevault.co/admin/analytics). Admin token required.
 
-GET [?fresh=1] -> {ok, at, products:{id: tier}, memberships:[...], payments:[...], disputes:[...], partial}
+GET [?fresh=1]   header X-Analytics-Pass: the analytics password (403 {locked} without it)
+ -> {ok, at, products:{id: tier}, memberships:[...], payments:[...], disputes:[...], partial}
 Every TradeVault membership, payment and dispute from Whop, trimmed to what the dashboard needs;
 the page computes members, MRR, revenue, renewals, churn and chargebacks from these rows.
 Only TradeVault products count (title contains "TradeVault", or one of its store routes). Results are
 cached per instance for two minutes; ?fresh=1 reloads. Needs the Whop key's payment:dispute:read
 permission for disputes (without it, disputes come from the payments' own dispute fields).
 """
+import hashlib
+import hmac
 import http.client
 import json
 import os
@@ -25,6 +28,10 @@ WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 TV_ROUTES = {"sniper-tools", "sniper-community-3c", "sniper-elite-3d", "tradevault-tools-partner-killshot",
              "tradevault-tools-partner-smartshot", "tradevault-tools-partner-killshot-smartshot",
              "tradevault-tools-jay-live"}
+# Second lock on top of the admin login: the analytics password, kept only as a salted hash
+# (the repo is public). Env TV_ANALYTICS_PASSWORD replaces it when set.
+PASS_SALT = "1cd0c4abafd232acb8a6124e4e3ba085"
+PASS_HASH = "a784bb07a38b075cb9d8d316dcf961c49448e6d3c3bc4686703477a07d31f129"
 CACHE_TTL = 120
 BUDGET = 45  # seconds of Whop paging before returning what we have (maxDuration is 60)
 _CACHE = {"at": 0, "body": None}
@@ -195,6 +202,15 @@ def load():
             "disputes": out_d, "partial": not (m_ok and p_ok), "disputes_source": "whop" if disps is not None else "payments"}
 
 
+def pass_ok(given):
+    given = (given or "").strip()
+    env = os.environ.get("TV_ANALYTICS_PASSWORD", "")
+    if env:
+        return hmac.compare_digest(given.encode(), env.encode())
+    h = hashlib.pbkdf2_hmac("sha256", given.encode(), bytes.fromhex(PASS_SALT), 300000).hex()
+    return hmac.compare_digest(h, PASS_HASH)
+
+
 class handler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -206,6 +222,8 @@ class handler(BaseHTTPRequestHandler):
         auth = self.headers.get("Authorization", "")
         if not (auth.startswith("Bearer ") and verify_token(auth[7:])):
             return self._json(401, {"ok": False, "error": "Unauthorized"})
+        if not pass_ok(self.headers.get("X-Analytics-Pass")):
+            return self._json(403, {"ok": False, "locked": True, "error": "Wrong password"})
         if not WHOP_API_KEY:
             return self._json(500, {"ok": False, "error": "WHOP_API_KEY is not set in Vercel"})
         fresh = parse_qs(urlparse(self.path).query).get("fresh") == ["1"]
@@ -226,7 +244,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Analytics-Pass")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
         if raw:
