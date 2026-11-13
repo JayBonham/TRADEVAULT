@@ -103,6 +103,11 @@ def list_chats(view, after):
     return chats, (pi.get("end_cursor") if pi.get("has_next_page") else None)
 
 
+def _gifs(lst):
+    return [{"name": g.get("title") or "GIF", "type": "image/gif", "url": g.get("preview_url") or g.get("url") or "",
+             "w": g.get("width"), "h": g.get("height")} for g in lst or [] if isinstance(g, dict)]
+
+
 def _msg(m):
     # Whop returns either the documented shape (author / author_user_id) or the older one (user / user_id)
     au = m.get("author") if isinstance(m.get("author"), dict) else m.get("user") if isinstance(m.get("user"), dict) else {}
@@ -117,27 +122,9 @@ def _msg(m):
             "team": team, "kind": m.get("message_type") or "regular",
             "author": _user(au), "author_id": aid,
             "custom": ((m.get("custom_author") or {}).get("display_name") or "") if isinstance(m.get("custom_author"), dict) else "",
-            "files": _files(m.get("attachments")), "reply_to": m.get("replying_to_message_id"),
+            "files": _files(m.get("attachments")) + _gifs(m.get("gifs")), "reply_to": m.get("replying_to_message_id"),
+            "extra": bool(m.get("embeds") or m.get("poll") or m.get("link_previews")),
             "deleted": bool(m.get("deleted_at"))}
-
-
-def shape(cid):
-    d = whop("GET", "/messages?channel_id=%s&first=8&direction=desc" % quote(cid))
-    out = []
-    for m in d.get("data") or []:
-        if not isinstance(m, dict):
-            continue
-        row = {"keys": sorted(m.keys())}
-        for k, v in m.items():
-            if k in ("content", "plain_content", "text", "attachments", "embeds", "link_previews", "gifs", "poll"):
-                continue
-            if isinstance(v, dict):
-                row[k] = {kk: (vv if not isinstance(vv, (dict, list)) else "<%s>" % type(vv).__name__) for kk, vv in v.items()
-                          if kk not in ("content", "plain_content", "text")}
-            elif not isinstance(v, list):
-                row[k] = v
-        out.append(row)
-    return out
 
 
 def messages(cid, before, since):
@@ -246,8 +233,6 @@ class handler(BaseHTTPRequestHandler):
                 for v in (before, since, uid):
                     if v and not ID_RE.match(v):
                         return self._json(400, {"ok": False, "error": "Invalid request"})
-                if qs.get("debug") == "1":
-                    return self._json(200, {"ok": True, "shape": shape(cid)})
                 with ThreadPoolExecutor(2) as ex:
                     fm = ex.submit(messages, cid, before, since)
                     fu = ex.submit(member, uid) if uid else None

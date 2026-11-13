@@ -492,6 +492,7 @@ button,input,textarea{font:inherit;color:inherit}
       row.appendChild(avatar(m.custom ? { name: m.custom, id: m.custom } : who, 'sm'));
       var col = el('div', 'col');
       if (m.text) { var b = el('div', 'bub'); b.innerHTML = md(m.text); col.appendChild(b); }
+      else if (!(m.files || []).length) { var e = el('div', 'bub'); e.style.fontStyle = 'italic'; e.style.opacity = '.7'; e.textContent = m.extra ? 'Sent a poll or link card. Open in Whop to see it' : 'Sent something that only shows in Whop'; col.appendChild(e); }
       (m.files || []).forEach(function (f) {
         if (/^image\//.test(f.type) && f.url) { var a = el('a', 'pic'); a.href = f.url; a.target = '_blank'; a.rel = 'noopener'; var img = new Image(); img.alt = f.name; img.loading = 'lazy'; img.src = f.url; a.appendChild(img); col.appendChild(a); }
         else { var fa = el(f.url ? 'a' : 'div', 'file'); if (f.url) { fa.href = f.url; fa.target = '_blank'; fa.rel = 'noopener'; } fa.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>'; fa.appendChild(el('span', null, f.name)); col.appendChild(fa); }
@@ -620,22 +621,6 @@ button,input,textarea{font:inherit;color:inherit}
   setInterval(function () { if (!document.hidden) loadList(false); }, 20000);
   setInterval(function () { if (!document.hidden && cur && msgs.length) loadMsgs(false); }, 6000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { loadList(false); if (cur && msgs.length) loadMsgs(false); } });
-
-  // #debug: show which fields Whop sends for the open chat's messages (no message text)
-  if (location.hash === '#debug') {
-    var dbg = el('div'); dbg.style.cssText = 'position:fixed;left:16px;bottom:16px;z-index:200;display:flex;gap:8px';
-    var db = el('button', 'ghost', 'Copy debug info for this chat'); db.type = 'button'; db.style.background = '#FF4D5E'; db.style.color = '#fff';
-    db.addEventListener('click', function () {
-      if (!cur) { toast('Open a chat first'); return; }
-      db.textContent = 'Loading…';
-      call('GET', 'c=' + encodeURIComponent(cur.id) + '&debug=1').then(function (d) {
-        var txt = JSON.stringify({ customer: cur.user.id, shape: d.shape });
-        var done = function () { db.textContent = 'Copied ✓ paste it to Claude'; };
-        if (navigator.clipboard) navigator.clipboard.writeText(txt).then(done, function () { prompt('Copy this', txt); });
-      }).catch(function (x) { db.textContent = 'Failed: ' + (x.msg || ''); });
-    });
-    dbg.appendChild(db); document.body.appendChild(dbg);
-  }
 
   loadList(true);
 })();
