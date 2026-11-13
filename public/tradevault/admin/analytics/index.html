@@ -18,6 +18,7 @@
   --ok:#7BE0B0; --ok-rgb:123,224,176; --warn:#F5B85C; --warn-rgb:245,184,92; --bad:#FF8F8F; --bad-rgb:255,143,143;
   /* tiers: validated categorical order (dark), adjacent CVD ΔE ≥ 8.4 on --card */
   --t-tools:#3987e5; --t-community:#d95926; --t-elite:#199e70; --t-partner:#c98500;
+  --s-aff:#9085e9; --s-web:#d55181; --s-direct:#56657C; /* sources: violet/magenta validated, Direct is neutral */
   --pos:#3987e5; --neg:#e66767;
   --ease:cubic-bezier(.22,1,.36,1);
   --display:'Instrument Sans',system-ui,sans-serif;
@@ -172,7 +173,7 @@ td.mute{color:var(--tx-mute)}
 
 /* risk */
 .risk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
-@media(max-width:520px){.risk{grid-template-columns:1fr}}
+@media(max-width:520px){.risk{gap:6px}.rk{padding:10px}.rk .v{font-size:17px}.rk .v span{display:none}.rk .s{font-size:11px;line-height:1.35}}
 .rk{padding:12px 14px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.025)}
 .rk .v{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em}
 .rk .s{font-size:12px;color:var(--tx-mute)}
@@ -199,6 +200,13 @@ td.mute{color:var(--tx-mute)}
 .lock a{font-size:13px;color:var(--tx-mute)}
 @keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .lock form.no{animation:shake .35s}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.src2{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:center}
+@media(max-width:640px){.two,.src2{grid-template-columns:1fr}}
+table.sm{min-width:440px}
+.code{font-family:var(--mono);font-size:12.5px;padding:2px 8px;border-radius:7px;background:rgba(255,255,255,.06);border:1px solid var(--hair-2);letter-spacing:.02em}
+td .tiers{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}
+td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 .foot{margin-top:18px;font-size:12px;color:var(--tx-mute);line-height:1.6;max-width:900px}
 </style>
 </head>
@@ -288,6 +296,10 @@ td.mute{color:var(--tx-mute)}
   var DAY = 864e5;
   var REASONS = { too_expensive: 'Too expensive', switching: 'Switching to another service', missing_features: 'Missing features',
     technical_issues: 'Technical issues', bad_experience: 'Bad experience', unused: 'Not using it', other: 'Other', testing: 'Testing' };
+  var SRC = ['aff', 'web', 'direct'];
+  var SNAME = { aff: 'Affiliates', web: 'Webinar', direct: 'Direct' };
+  var SCOL = { aff: 'var(--s-aff)', web: 'var(--s-web)', direct: 'var(--s-direct)' };
+  var RANK = { tools: 0, partner: 0, community: 1, elite: 2 };
   var CB_LIMIT = 0.009; // Visa's early-warning chargeback ratio
 
   var D = null, range = '30', pass = '', custom = {};
@@ -328,6 +340,41 @@ td.mute{color:var(--tx-mute)}
     // First membership per user = a new customer (upgrades aren't new members).
     Object.keys(byU).forEach(function (u) { var a = byU[u].slice().sort(function (a, b) { return a.c - b.c; }); a[0].isNew = true; });
     d.memberships.forEach(function (m) { if (!m.uid) m.isNew = true; });
+
+    // Upgrades: a new membership whose user cancelled another TradeVault membership within a week of it
+    // (or whose checkout came through /upgrade). Higher tier = upgrade, lower = downgrade.
+    var upgPaid = {}; d.payments.forEach(function (p) { if (p.upg && p.mid) upgPaid[p.mid] = 1; });
+    var firstPay = {};
+    d.payments.slice().sort(function (a, b) { return (a.t || 0) - (b.t || 0); }).forEach(function (p) { if (p.mid && paid(p) && !firstPay[p.mid]) firstPay[p.mid] = p; });
+    d.moves = [];
+    d.memberships.forEach(function (m) {
+      if (m.isNew && !upgPaid[m.id]) return;
+      var old = (byU[m.uid] || []).filter(function (o) { return o !== m && o.x && o.c < m.c && Math.abs(o.x - m.c) < 7 * DAY; })
+        .sort(function (a, b) { return Math.abs(a.x - m.c) - Math.abs(b.x - m.c); })[0];
+      if (!old && !upgPaid[m.id]) return;
+      var dir = old ? Math.sign(RANK[m.tier] - RANK[old.tier]) : 1;
+      if (old && !dir && !upgPaid[m.id]) return; // same tier: a plan change, not a move
+      var fp = firstPay[m.id];
+      d.moves.push({ m: m, from: old ? old.tier : null, to: m.tier, t: m.c, up: dir >= 0, name: m.name || (old && old.name) || m.email,
+        mrr: monthly(m) - (old ? monthly(old) : 0), paid: fp ? fp.net : 0, pc: (fp && fp.pc) || m.pc });
+    });
+
+    // Where each customer came from, decided by their first payment: affiliate referral (or a checkout carrying
+    // an affiliate code), else a webinar sign-up before buying, else direct.
+    var src = d.sources || { affiliates: {}, aff_codes: {}, webinar: {} };
+    var cust = {};
+    d.payments.slice().sort(function (a, b) { return (a.t || 0) - (b.t || 0); }).forEach(function (p) {
+      var key = (p.email || '').toLowerCase() || p.uid || p.mid || p.id;
+      p.ck = key;
+      if (cust[key] || !paid(p)) return;
+      var e = (p.email || '').toLowerCase(), a = src.affiliates[e], c = { first: p.id };
+      if (a) { c.src = 'aff'; c.aff = a.name; }
+      else if (p.aff && src.aff_codes[p.aff]) { c.src = 'aff'; c.aff = src.aff_codes[p.aff]; }
+      else if (src.webinar[e] && T(src.webinar[e]) <= p.t + DAY) c.src = 'web';
+      else c.src = 'direct';
+      cust[key] = c;
+    });
+    d.payments.forEach(function (p) { var c = cust[p.ck] || { src: 'direct' }; p.src = c.src; p.affName = c.aff; p.newCust = c.first === p.id; });
     return d;
   }
 
@@ -431,7 +478,8 @@ td.mute{color:var(--tx-mute)}
 
   // Stacked bars by tier. vals[i] = {tier: value}
   function stacked(host, bs, vals, opts) {
-    var tot = vals.map(function (v) { return TIERS.reduce(function (s, t) { return s + (v[t] || 0); }, 0); });
+    var KEYS = opts.keys || TIERS, COL = opts.col || TCOL, NAME = opts.names || TNAME;
+    var tot = vals.map(function (v) { return KEYS.reduce(function (s, t) { return s + (v[t] || 0); }, 0); });
     var mx = niceMax(Math.max.apply(null, tot.concat([0])) * 1.05);
     var f = frame(host, opts.h || 260, opts.fy, mx);
     var bw = f.iw / bs.length, gap = Math.max(2, Math.min(10, bw * 0.28)), w = Math.max(2, bw - gap);
@@ -439,12 +487,12 @@ td.mute{color:var(--tx-mute)}
     var hl = svgEl('rect', { y: f.T, height: f.H - f.T - f.B, width: bw, fill: 'rgba(255,255,255,.04)', rx: 6, opacity: 0 });
     f.svg.appendChild(hl);
     bs.forEach(function (b, i) {
-      var x = xc(i) - w / 2, base = 0, segs = TIERS.filter(function (t) { return (vals[i][t] || 0) > 0; });
+      var x = xc(i) - w / 2, base = 0, segs = KEYS.filter(function (t) { return (vals[i][t] || 0) > 0; });
       segs.forEach(function (t, k) {
         var v = vals[i][t], y0 = f.y(base), y1 = f.y(base + v), h = y0 - y1 - (k ? 2 : 0);
         if (h > 0) {
           var top = k === segs.length - 1;
-          f.svg.appendChild(top ? svgEl('path', { d: topRound(x, y1, w, h, 4), fill: TCOL[t] }) : svgEl('rect', { x: x, y: y1, width: w, height: h, fill: TCOL[t] }));
+          f.svg.appendChild(top ? svgEl('path', { d: topRound(x, y1, w, h, 4), fill: COL[t] }) : svgEl('rect', { x: x, y: y1, width: w, height: h, fill: COL[t] }));
         }
         base += v;
       });
@@ -457,7 +505,7 @@ td.mute{color:var(--tx-mute)}
       var i = Math.max(0, Math.min(bs.length - 1, Math.floor((px - f.L) / bw)));
       hl.setAttribute('x', f.L + bw * i); hl.setAttribute('opacity', 1);
       var h = '<b>' + esc(bs[i].label) + '</b>';
-      TIERS.forEach(function (t) { if (vals[i][t]) h += tipRow(TCOL[t], TNAME[t], opts.fv(vals[i][t])); });
+      KEYS.forEach(function (t) { if (vals[i][t]) h += tipRow(COL[t], NAME[t], opts.fv(vals[i][t])); });
       h += '<div class="t">' + tipRow('', 'Total', opts.fv(tot[i])) + (opts.extra ? opts.extra(i) : '') + '</div>';
       showTip(h, ev);
     });
@@ -596,6 +644,10 @@ td.mute{color:var(--tx-mute)}
       '<div class="grid">' +
       card('c8', 'rev', 'Revenue by ' + gran, 'Net of refunds · ' + w.label, '<div class="big">' + usd(S.net) + '<small>' + (S.refunds ? usd(S.refunds) + ' refunded' : 'no refunds') + '</small></div>', true) +
       card('c4', 'mix', 'Members by tier', int(live.length) + ' live memberships', '') +
+      card('c7', 'upg', 'Upgrades', 'Members moving up a tier · ' + w.label, '<div class="big" id="upgBig"></div>') +
+      card('c5', 'codes', 'Discount codes', 'Payments that used a Whop promo code · ' + w.label, '<div class="big" id="codesBig"></div>') +
+      card('c7', 'src', 'Where sales come from', 'Each customer counted by how they first arrived · ' + w.label, '<div class="big" id="srcBig"></div>') +
+      card('c5', 'affs', 'Top affiliates', 'Revenue from their referred members · ' + w.label, '') +
       card('c12', 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of now', '') +
       card('c7', 'act', 'Active members', 'Live memberships over the ' + w.label, '', true) +
       card('c5', 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>') +
@@ -711,6 +763,8 @@ td.mute{color:var(--tx-mute)}
           (notes.length ? '<div class="t">' + notes.map(function (m) { return '<div style="color:var(--tx-dim);line-height:1.45;margin-top:4px">“' + esc(m.why) + '”</div>'; }).join('') + '</div>' : '') };
     }).sort(function (a, b) { return b.v - a.v; }), function (v) { return int(v); });
 
+    renderGrowth(w, S, bs);
+
     // feed
     var feed = D.payments.filter(function (p) { return p.t || p.created; }).sort(function (a, b) { return (b.t || T(b.created)) - (a.t || T(a.created)); });
     listing($('feed'), feed, function (p) {
@@ -719,6 +773,85 @@ td.mute{color:var(--tx-mute)}
       var d = new Date(p.t || p.created);
       return { when: dShort(d) + '<br>' + ago(d.getTime()).replace(' ago', ''), name: p.name || p.email || 'Member', sub: TNAME[p.tier] + ' · ' + kind + (st ? ' · ' + st : ''), tier: p.tier, amt: usd(p.amt, 2), neg: failed || p.ref, small: failed ? 'not paid' : p.ref ? '−' + usd(p.ref, 2) : '' };
     }, 8, 'No payments yet.');
+  }
+
+  function renderGrowth(w, S, bs) {
+    /* upgrades */
+    var mv = D.moves.filter(function (x) { return within(x.t, w); }).sort(function (a, b) { return b.t - a.t; });
+    var ups = mv.filter(function (x) { return x.up; }), downs = mv.filter(function (x) { return !x.up; });
+    var mrrAdd = ups.reduce(function (s, x) { return s + x.mrr; }, 0), upPaid = ups.reduce(function (s, x) { return s + x.paid; }, 0);
+    $('upgBig').innerHTML = int(ups.length) + '<small>upgrade' + (ups.length === 1 ? '' : 's') + (downs.length ? ' · ' + downs.length + ' downgrade' + (downs.length === 1 ? '' : 's') : '') + '</small>';
+    var paths = {};
+    ups.forEach(function (x) { var k = (x.from || '?') + '>' + x.to; (paths[k] = paths[k] || []).push(x); });
+    var base = D.memberships.filter(function (m) { return RANK[m.tier] < 2 && activeAt(m, w.a); }).length + D.memberships.filter(function (m) { return m.isNew && RANK[m.tier] < 2 && within(m.c, w); }).length;
+    $('upg').innerHTML = '<div class="risk"><div class="rk"><div class="v num">' + (base ? pct(ups.length / base) : '—') + '</div><div class="s">of lower-tier members upgraded</div></div>' +
+      '<div class="rk"><div class="v num" style="color:var(--ok)">+' + usd(mrrAdd) + '<span style="font-size:13px;color:var(--tx-mute);font-weight:500">/mo</span></div><div class="s">MRR added</div></div>' +
+      '<div class="rk"><div class="v num">' + usd(upPaid) + '</div><div class="s">paid to upgrade</div></div></div>' +
+      '<div class="two"><div><div class="mono" style="margin-bottom:4px">Paths</div><div id="upgP"></div></div><div><div class="mono" style="margin-bottom:4px">Latest</div><div id="upgL"></div></div></div>';
+    hbars($('upgP'), Object.keys(paths).map(function (k) {
+      var l = paths[k], f = k.split('>')[0], t = k.split('>')[1], lab = (TNAME[f] || 'Earlier plan') + ' → ' + TNAME[t];
+      return { label: lab, v: l.length, c: TCOL[t],
+        tip: '<b>' + esc(lab) + '</b>' + tipRow('', 'Upgrades', int(l.length)) + tipRow('', 'MRR added', '+' + usd(l.reduce(function (s, x) { return s + x.mrr; }, 0))) };
+    }).sort(function (a, b) { return b.v - a.v; }), function (v) { return int(v); });
+    listing($('upgL'), mv, function (x) {
+      var code = x.pc && D.promos && D.promos[x.pc] ? D.promos[x.pc].code : '';
+      return { when: dShort(new Date(x.t)), name: x.name || 'Member', sub: (TNAME[x.from] || 'Earlier plan') + ' → ' + TNAME[x.to] + (code ? ' · ' + code : ''), tier: x.to,
+        amt: (x.mrr >= 0 ? '+' : '−') + usd(Math.abs(x.mrr)), small: '/mo', neg: !x.up };
+    }, 4, 'No upgrades in this range.');
+
+    /* discount codes */
+    var pr = D.promos || {}, byCode = {}, firstN = 0, firstCoded = 0;
+    S.pays.forEach(function (p) {
+      if (p.newCust) { firstN++; if (p.pc) firstCoded++; }
+      if (!p.pc) return;
+      var r = byCode[p.pc] = byCode[p.pc] || { pays: 0, rev: 0, mids: {}, tiers: {} };
+      r.pays++; r.rev += p.net; if (p.mid) r.mids[p.mid] = 1; r.tiers[p.tier] = (r.tiers[p.tier] || 0) + 1;
+    });
+    $('codesBig').innerHTML = (firstN ? pct(firstCoded / firstN, 0) : '—') + '<small>of new customers used a code</small>';
+    var codes = Object.keys(byCode).map(function (id) { var r = byCode[id]; r.id = id; r.p = pr[id] || {}; return r; }).sort(function (a, b) { return b.rev - a.rev; });
+    if (!codes.length) $('codes').innerHTML = '<div class="empty">No codes used in this range.</div>';
+    else {
+      var mbyId = {}; D.memberships.forEach(function (m) { mbyId[m.id] = m; });
+      $('codes').innerHTML = '<div class="tw"><table class="sm"><thead><tr><th>Code</th><th>Discount</th><th>Members</th><th>Still active</th><th>Revenue</th></tr></thead><tbody>' +
+        codes.map(function (r) {
+          var p = r.p, off = p.off == null ? '—' : p.type === 'percentage' ? Math.round(p.off <= 1 ? p.off * 100 : p.off) + '%' : usd(p.off);
+          var mids = Object.keys(r.mids), act = mids.filter(function (id) { return mbyId[id] && isLive(mbyId[id]); }).length;
+          return '<tr><td><span class="code">' + esc(p.code || r.id.slice(0, 14)) + '</span>' + (p.status && p.status !== 'active' ? ' <span class="pill warn">' + esc(p.status) + '</span>' : '') +
+            '<span class="tiers">' + TIERS.filter(function (t) { return r.tiers[t]; }).map(function (t) { return '<i style="background:' + TCOL[t] + '" title="' + TNAME[t] + '"></i>'; }).join('') + '</span></td>' +
+            '<td>' + off + '</td><td>' + int(mids.length || r.pays) + '</td><td>' + (mids.length ? int(act) + ' <span class="mute">(' + pct(act / mids.length, 0) + ')</span>' : '—') + '</td><td>' + usd(r.rev) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    /* sources */
+    var sv = {}, sn = {};
+    SRC.forEach(function (k) { sv[k] = 0; sn[k] = 0; });
+    S.pays.forEach(function (p) { sv[p.src] += p.net; if (p.newCust) sn[p.src]++; });
+    var tot = SRC.reduce(function (s, k) { return s + sv[k]; }, 0), newTot = SRC.reduce(function (s, k) { return s + sn[k]; }, 0);
+    $('srcBig').innerHTML = int(newTot) + '<small>new customers</small>';
+    $('src').innerHTML = '<div class="legend">' + SRC.map(function (k) { return '<span><i style="background:' + SCOL[k] + '"></i>' + SNAME[k] + '</span>'; }).join('') + '</div>' +
+      '<div class="two src2"><div class="chart" id="srcC"></div><div class="mix"><div class="mix-bar">' + SRC.map(function (k) { return sv[k] > 0 ? '<i style="flex-grow:' + sv[k] + ';background:' + SCOL[k] + '"></i>' : ''; }).join('') + '</div><div>' +
+      SRC.map(function (k) {
+        return '<div class="mix-row"><i style="background:' + SCOL[k] + '"></i><b>' + SNAME[k] + '</b><span class="n num">' + usd(sv[k]) + '</span>' +
+          '<div class="d"><span>' + (tot ? pct(sv[k] / tot, 0) : '—') + ' of revenue</span><span class="num">' + int(sn[k]) + ' new customer' + (sn[k] === 1 ? '' : 's') + '</span></div></div>';
+      }).join('') + '</div></div></div>';
+    var sb = bs.map(function () { return { aff: 0, web: 0, direct: 0 }; });
+    S.pays.forEach(function (p) { for (var i = 0; i < bs.length; i++) if (p.t >= bs[i].a && p.t < bs[i].b) { sb[i][p.src] += p.net; break; } });
+    stacked($('srcC'), bs, sb, { h: 220, keys: SRC, col: SCOL, names: SNAME, fy: usdK, fv: function (v) { return usd(v); } });
+
+    /* top affiliates */
+    var A = {}, allTime = {};
+    S.pays.forEach(function (p) {
+      if (p.src !== 'aff') return;
+      var r = A[p.affName] = A[p.affName] || { name: p.affName || 'Affiliate', rev: 0, news: 0, cust: {} };
+      r.rev += p.net; r.cust[p.ck] = 1; if (p.newCust) r.news++;
+    });
+    D.payments.forEach(function (p) { if (p.src === 'aff' && paid(p)) allTime[p.affName] = (allTime[p.affName] || 0) + p.net; });
+    var aff = Object.keys(A).map(function (k) { return A[k]; }).sort(function (a, b) { return b.rev - a.rev; });
+    listing($('affs'), aff, function (r) {
+      var n = Object.keys(r.cust).length;
+      return { when: '#' + (aff.indexOf(r) + 1), name: r.name, sub: int(r.news) + ' new · ' + int(n) + ' paying member' + (n === 1 ? '' : 's'), dot: 'var(--s-aff)',
+        amt: usd(r.rev), small: usd(allTime[r.name] || 0) + ' all time' };
+    }, 6, 'No affiliate sales in this range.');
   }
 
   function card(cls, id, title, sub, right, isChart) {
@@ -732,7 +865,7 @@ td.mute{color:var(--tx-mute)}
       if (!items.length) { host.innerHTML = '<div class="empty" style="min-height:90px">' + esc(emptyMsg) + '</div>'; return; }
       host.innerHTML = items.slice(0, shown).map(function (it) {
         var r = fn(it);
-        return '<div class="li"><span class="when">' + r.when + '</span><div class="who"><b>' + esc(r.name) + '</b><span><i style="background:' + TCOL[r.tier] + '"></i>' + esc(r.sub) + '</span></div><div class="amt' + (r.neg ? ' neg' : '') + '">' + r.amt + (r.small ? '<small>' + esc(r.small) + '</small>' : '') + '</div></div>';
+        return '<div class="li"><span class="when">' + r.when + '</span><div class="who"><b>' + esc(r.name) + '</b><span><i style="background:' + (r.dot || TCOL[r.tier]) + '"></i>' + esc(r.sub) + '</span></div><div class="amt' + (r.neg ? ' neg' : '') + '">' + r.amt + (r.small ? '<small>' + esc(r.small) + '</small>' : '') + '</div></div>';
       }).join('') + (items.length > shown ? '<button type="button" class="more">Show more (' + (items.length - shown) + ')</button>' : '');
       var mb = host.querySelector('.more');
       if (mb) mb.addEventListener('click', function () { shown += per * 2; draw(); });

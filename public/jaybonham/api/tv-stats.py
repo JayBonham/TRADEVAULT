@@ -105,21 +105,54 @@ def pay_title(p):
     return title, str(prod.get("route") or "")
 
 
-def db_names():
-    """membership_id -> (name, email) from our own payment records, for rows Whop leaves nameless."""
+def db_side():
+    """From our own tables: names/emails for rows Whop leaves bare, plus where each buyer came from
+    (affiliate referral, webinar registration). Each part is best-effort."""
+    out = {"names": {}, "emails": {}, "affiliates": {}, "aff_codes": {}, "webinar": {}}
     if not DATABASE_URL:
-        return {}
+        return out
     try:
         import psycopg2
         c = psycopg2.connect(DATABASE_URL, connect_timeout=5)
         cur = c.cursor()
-        cur.execute("SELECT membership_id, name, email FROM tv_payments WHERE membership_id IS NOT NULL ORDER BY paid_at")
-        out = {r[0]: (r[1] or "", r[2] or "") for r in cur.fetchall()}
-        c.close()
-        return out
     except Exception as e:
         log("TV_STATS_DB_ERR:", e)
-        return {}
+        return out
+    def rows(sql):
+        try:
+            cur.execute(sql)
+            return cur.fetchall()
+        except Exception as e:  # a table that doesn't exist yet
+            log("TV_STATS_DB_Q:", e)
+            c.rollback()
+            return []
+    for mid, name, email, wid in rows("SELECT membership_id, name, email, whop_id FROM tv_payments ORDER BY paid_at"):
+        if mid:
+            out["names"][mid] = (name or "", email or "")
+        out["emails"][wid] = (email or "").lower()
+    for email, name, code, at in rows("SELECT r.email, a.name, a.code, r.created_at FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id"):
+        out["affiliates"][email.lower()] = {"name": name, "code": code, "at": at.isoformat() if at else None}
+    for code, name in rows("SELECT lower(code), name FROM tv_affiliates"):
+        out["aff_codes"][code] = name
+    for email, at in rows("SELECT lower(email), MIN(created_at) FROM jb_webinar_regs WHERE email IS NOT NULL GROUP BY lower(email)"):
+        if at:
+            out["webinar"][email] = at.isoformat()
+    c.close()
+    return out
+
+
+def promo_codes(deadline):
+    out = {}
+    try:
+        rows, _ = pages("/promo_codes?account_id=%s&first=100" % WHOP_COMPANY, deadline, 10)
+    except Exception as e:
+        log("TV_STATS_PROMOS:", e)
+        return out
+    for p in rows:
+        if p.get("id"):
+            out[p["id"]] = {"code": p.get("code") or "", "type": p.get("promo_type"), "off": p.get("amount_off"),
+                            "status": p.get("status"), "uses": p.get("uses")}
+    return out
 
 
 def load():
@@ -130,7 +163,8 @@ def load():
         fm = ex.submit(pages, "/memberships?" + q + "&order=created_at&direction=desc", deadline)
         fp = ex.submit(pages, "/payments?" + q + "&order=created_at&direction=desc", deadline)
         fd = ex.submit(pages, "/disputes?" + q, deadline, 20)
-        fn = ex.submit(db_names)
+        fn = ex.submit(db_side)
+        fc = ex.submit(promo_codes, deadline)
         mems, m_ok = fm.result()
         pays, p_ok = fp.result()
         try:
@@ -138,7 +172,9 @@ def load():
         except Exception as e:
             log("TV_STATS_DISPUTES:", e)
             disps, d_ok = None, False
-        names = fn.result()
+        side = fn.result()
+        promos = fc.result()
+        names = side["names"]
 
     out_p, who = [], {}
     for p in pays:
@@ -151,7 +187,8 @@ def load():
             prods[pid] = {"tier": tier, "title": title}
         user = p.get("user") if isinstance(p.get("user"), dict) else {}
         name = str(user.get("name") or user.get("username") or "")
-        email = str(p.get("customer_email") or user.get("email") or "")
+        email = str(p.get("customer_email") or user.get("email") or side["emails"].get(str(p.get("id"))) or "")
+        meta = p.get("metadata") if isinstance(p.get("metadata"), dict) else {}
         mid = p.get("membership_id") or ((p.get("membership") or {}).get("id") if isinstance(p.get("membership"), dict) else p.get("membership"))
         if mid and mid not in who and (name or email):
             who[mid] = (name, email)  # newest payment first
@@ -161,7 +198,9 @@ def load():
             "amt": money(p.get("usd_total")) or money(p.get("total")) or money(p.get("subtotal")) or 0,
             "ref": money(p.get("refunded_amount")) or 0, "refunded_at": p.get("refunded_at"),
             "st": p.get("status"), "sub": p.get("substatus"), "br": p.get("billing_reason"),
-            "disp": p.get("dispute_created_at"), "name": name, "email": email})
+            "disp": p.get("dispute_created_at"), "name": name, "email": email,
+            "pc": p.get("promo_code_id"), "aff": str(meta.get("tv_ref") or "").lower() or None,
+            "upg": bool(meta.get("tv_upgrade_from"))})
 
     out_m = []
     for m in mems:
@@ -177,7 +216,7 @@ def load():
             "end": m.get("current_period_end") or m.get("expires_at"), "cap": bool(m.get("cancel_at_period_end")),
             "price": money(m.get("renewal_price")), "days": m.get("billing_period_days"),
             "opt": m.get("cancel_option"), "why": (m.get("cancellation_reason") or "")[:200],
-            "name": name, "email": email})
+            "name": name, "email": email, "pc": m.get("promo_code_id")})
 
     out_d, by_pay = [], {p["id"]: p for p in out_p}
     if disps is not None:
@@ -198,8 +237,12 @@ def load():
                 out_d.append({"id": p["id"], "tier": p["tier"], "at": p["disp"] or p["at"], "amt": p["amt"],
                               "status": p["sub"], "reason": None, "pay": p["id"], "name": p["name"], "due": None})
 
+    buyers = {p["email"].lower() for p in out_p if p["email"]}
+    web = {e: at for e, at in side["webinar"].items() if e in buyers}
+    affs = {e: a for e, a in side["affiliates"].items() if e in buyers}
     return {"ok": True, "at": int(time.time()), "products": prods, "memberships": out_m, "payments": out_p,
-            "disputes": out_d, "partial": not (m_ok and p_ok), "disputes_source": "whop" if disps is not None else "payments"}
+            "disputes": out_d, "promos": promos,
+            "sources": {"affiliates": affs, "aff_codes": side["aff_codes"], "webinar": web}, "partial": not (m_ok and p_ok), "disputes_source": "whop" if disps is not None else "payments"}
 
 
 def pass_ok(given):
