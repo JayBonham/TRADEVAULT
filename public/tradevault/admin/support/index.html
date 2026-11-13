@@ -78,7 +78,7 @@ button,input,textarea{font:inherit;color:inherit}
 .row .nm{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .row .tm{font-size:11.5px;color:var(--tx-mute);flex:none}
 .row .pv{display:flex;align-items:center;gap:8px;margin-top:2px}
-.row .pv span{font-size:13px;color:var(--tx-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.row .pv span:not(.wait):not(.tagr){font-size:13px;color:var(--tx-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .row.need .nm{color:#fff}
 .row.need .pv span{color:var(--tx-dim)}
 .dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px rgba(var(--acc-rgb),.8)}
@@ -134,7 +134,7 @@ button,input,textarea{font:inherit;color:inherit}
 
 /* composer */
 .comp{padding:12px 14px 14px;border-top:1px solid var(--hair)}
-.box{display:flex;align-items:flex-end;gap:10px;padding:8px 8px 8px 16px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid var(--hair-2);transition:border-color .2s,box-shadow .2s}
+.box{display:flex;align-items:flex-end;gap:6px;padding:8px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid var(--hair-2);transition:border-color .2s,box-shadow .2s}
 .box:focus-within{border-color:rgba(var(--acc-rgb),.6);box-shadow:0 0 0 4px rgba(var(--acc-rgb),.1)}
 .box textarea{flex:1;min-width:0;resize:none;border:0;outline:0;background:none;font-size:14.5px;line-height:1.45;max-height:180px;padding:7px 0}
 .box textarea::placeholder{color:#5A6A80}
@@ -147,6 +147,51 @@ button,input,textarea{font:inherit;color:inherit}
 .snips::-webkit-scrollbar{display:none}
 .snip{flex:none;border:1px solid var(--hair-2);background:rgba(255,255,255,.03);border-radius:999px;padding:5px 12px;font-size:12.5px;color:var(--tx-dim);cursor:pointer;white-space:nowrap}
 .snip:hover{background:rgba(255,255,255,.07);color:var(--tx)}
+
+/* waiting time */
+.wait{flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.wait.amber{color:var(--warn);border:1px solid rgba(var(--warn-rgb),.45);background:rgba(var(--warn-rgb),.08)}
+.wait.red{color:#FF6B78;border:1px solid rgba(255,107,120,.5);background:rgba(255,107,120,.1)}
+.row.late .tm{color:var(--warn)}
+.row.later .tm{color:#FF6B78}
+.bell{width:34px;height:34px;border-radius:10px;border:1px solid var(--hair-2);background:rgba(255,255,255,.04);display:grid;place-items:center;cursor:pointer;color:var(--tx-mute)}
+.bell[aria-pressed="true"]{color:var(--acc);border-color:rgba(var(--acc-rgb),.5);background:rgba(var(--acc-rgb),.1)}
+.ib-t .r{display:flex;align-items:center;gap:10px}
+/* attachments in the composer */
+.clip{width:36px;height:36px;border-radius:10px;border:0;background:none;color:var(--tx-mute);display:grid;place-items:center;cursor:pointer;flex:none}
+.clip:hover{color:var(--tx);background:rgba(255,255,255,.06)}
+.att{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px;border-radius:14px;border:1px solid var(--hair-2);background:rgba(255,255,255,.03);width:fit-content;max-width:100%}
+.att img{width:56px;height:56px;border-radius:10px;object-fit:cover}
+.att span{font-size:13px;color:var(--tx-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.att button{border:0;background:rgba(255,255,255,.06);color:var(--tx-dim);width:28px;height:28px;border-radius:8px;cursor:pointer}
+.comp.drag .box{border-color:var(--acc);box-shadow:0 0 0 4px rgba(var(--acc-rgb),.18)}
+.snip.edit{border-style:dashed;color:var(--tx-mute)}
+/* saved replies editor */
+#sn{margin:auto;width:min(620px,calc(100vw - 32px));max-height:min(760px,calc(100dvh - 40px));background:var(--g2);color:var(--tx);border:1px solid var(--hair-2);border-radius:18px;padding:0;overflow:hidden}
+#sn::backdrop{background:rgba(2,6,14,.72)}
+#sn .in{display:flex;flex-direction:column;max-height:inherit}
+#sn header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 14px;border-bottom:1px solid var(--hair)}
+#sn h2{font-family:var(--display);font-size:20px;letter-spacing:-.02em}
+#sn header p{font-size:13px;color:var(--tx-mute);margin-top:4px}
+#sn header code{font-family:var(--mono);font-size:11.5px;color:var(--tx-dim);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:5px}
+#snList{overflow-y:auto;padding:14px 22px;display:grid;gap:10px}
+.sni{border:1px solid var(--hair);border-radius:14px;padding:12px;display:grid;gap:8px;background:rgba(255,255,255,.02)}
+.sni input,.sni textarea{width:100%;border:1px solid var(--hair-2);background:var(--g1);border-radius:10px;padding:8px 11px;font-size:14px;outline:0;resize:vertical}
+.sni input{font-family:var(--display);font-weight:600}
+.sni input:focus,.sni textarea:focus{border-color:var(--acc)}
+.sni .acts{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sni .acts span{font-size:12px;color:var(--tx-mute)}
+.mini{border:1px solid var(--hair-2);background:rgba(255,255,255,.04);border-radius:9px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.mini.go{background:var(--acc);border-color:var(--acc);color:#fff}
+.mini.del{color:#FF8F8F;border-color:rgba(255,143,143,.35);background:none}
+.mini:disabled{opacity:.5;cursor:wait}
+#sn footer{padding:14px 22px 18px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;gap:10px}
+/* access action in the member panel */
+.acc-b{border:0;background:var(--acc);color:#fff;border-radius:999px;padding:7px 14px;font-family:var(--display);font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 6px 20px rgba(var(--acc-rgb),.3)}
+.kv>.acc-b{flex:none;overflow:visible;white-space:nowrap}
+.acc-b:disabled{opacity:.6;cursor:wait}
+.live-ok{color:var(--ok);font-weight:600}
+.warn-t{color:var(--warn)}
 
 /* member panel */
 .side{overflow-y:auto}
@@ -227,7 +272,7 @@ button,input,textarea{font:inherit;color:inherit}
   <!-- inbox -->
   <section class="pane inbox" aria-label="Support chats">
     <div class="ib-h">
-      <div class="ib-t"><h1>Support</h1><span class="live" id="live"><i></i><span id="upd">Live from Whop</span></span></div>
+      <div class="ib-t"><h1>Support</h1><div class="r"><span class="live" id="live"><i></i><span id="upd">Live</span></span><button class="bell" id="bell" type="button" aria-pressed="false" title="Desktop alerts and sound for new messages"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button></div></div>
       <div class="seg" role="group" aria-label="Show">
         <button type="button" data-v="open" aria-pressed="true">Open <em id="cOpen" hidden>0</em></button>
         <button type="button" data-v="all" aria-pressed="false">All</button>
@@ -254,7 +299,10 @@ button,input,textarea{font:inherit;color:inherit}
     <div class="msgs" id="msgs" hidden></div>
     <div class="comp" id="comp" hidden>
       <div class="snips" id="snips"></div>
+      <div class="att" id="att" hidden><img id="attImg" alt=""><span id="attName"></span><button type="button" id="attX" aria-label="Remove image">✕</button></div>
       <form class="box" id="form">
+        <button class="clip" type="button" id="clip" aria-label="Attach an image" title="Attach an image (or paste / drop one)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.1l-8.9 8.9a5.5 5.5 0 0 1-7.8-7.8l8.9-8.9a3.7 3.7 0 0 1 5.2 5.2l-8.9 8.9a1.8 1.8 0 0 1-2.6-2.6l8.2-8.2"/></svg></button>
+        <input type="file" id="file" accept="image/*" hidden>
         <textarea id="txt" rows="1" placeholder="Write a reply…" aria-label="Reply" maxlength="5000"></textarea>
         <button class="send" id="send" type="submit" aria-label="Send" disabled><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </form>
@@ -268,6 +316,14 @@ button,input,textarea{font:inherit;color:inherit}
     <div id="sideBody" class="state"><h3>Member details</h3>Open a chat to see who you're talking to: their plan, setup and Whop memberships.</div>
   </aside>
 </main>
+
+<dialog id="sn" aria-labelledby="snH">
+  <div class="in">
+    <header><div><h2 id="snH">Saved replies</h2><p>Shared with everyone on the admin. Use <code>{first}</code> <code>{email}</code> <code>{tradingview}</code> <code>{setup_link}</code> and they're filled in for the member.</p></div><button class="icon-b" type="button" id="snX" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.6"/></svg></button></header>
+    <div id="snList"></div>
+    <footer><button class="mini" type="button" id="snAdd">+ New reply</button><button class="mini go" type="button" id="snDone">Done</button></footer>
+  </div>
+</dialog>
 
 <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastBtn" hidden></button></div>
 
@@ -374,14 +430,16 @@ button,input,textarea{font:inherit;color:inherit}
       box.appendChild(s); return;
     }
     shown.forEach(function (c, i) {
-      var r = el('button', 'row' + (c.needs_reply ? ' need' : '')); r.type = 'button';
+      var waited = c.needs_reply && c.at ? (Date.now() - new Date(c.at)) / 3600000 : 0;
+      var r = el('button', 'row' + (c.needs_reply ? ' need' : '') + (waited >= 24 ? ' later' : waited >= 4 ? ' late' : '')); r.type = 'button';
       r.style.animationDelay = Math.min(i * 15, 240) + 'ms';
       r.setAttribute('aria-current', cur && cur.id === c.id ? 'true' : 'false');
       r.appendChild(avatar(c.user));
       var body = el('div'); body.style.minWidth = '0';
       var top = el('div', 'top'); top.appendChild(el('span', 'nm', title(c))); top.appendChild(el('span', 'tm', ago(c.at)));
       var pv = el('div', 'pv'); pv.appendChild(el('span', null, preview(c)));
-      if (c.needs_reply) { var d = el('i', 'dot'); d.title = 'Waiting on a reply'; pv.appendChild(d); }
+      if (c.needs_reply && waited >= 4) { var w = el('span', 'wait ' + (waited >= 24 ? 'red' : 'amber'), 'Waiting ' + (waited >= 48 ? Math.floor(waited / 24) + 'd' : Math.floor(waited) + 'h')); w.title = 'Waiting on a reply for ' + Math.floor(waited) + ' hours'; pv.appendChild(w); }
+      else if (c.needs_reply) { var d = el('i', 'dot'); d.title = 'Waiting on a reply'; pv.appendChild(d); }
       else if (c.resolved) pv.appendChild(el('span', 'tagr', 'Resolved'));
       body.appendChild(top); body.appendChild(pv); r.appendChild(body);
       r.addEventListener('click', function () { openChat(c); });
@@ -418,8 +476,8 @@ button,input,textarea{font:inherit;color:inherit}
       }
       if (older) next = d.next;
       if (cur) { var same = chats.filter(function (c) { return c.id === cur.id; })[0]; if (same) { same.needs_reply = cur.sentHere ? false : same.needs_reply; } }
-      listAt = Date.now(); $('upd').textContent = 'Live from Whop';
-      renderList();
+      listAt = Date.now();
+      renderList(); if (!older && view !== 'resolved') checkNew();
     }).catch(function (x) {
       if (chats.length) { toast('Couldn’t refresh chats: ' + (x.msg || 'network error')); return; }
       var box = $('list'); box.innerHTML = '';
@@ -450,7 +508,7 @@ button,input,textarea{font:inherit;color:inherit}
     headState();
     $('msgs').innerHTML = '<div class="state"><div class="loader"></div></div>';
     sidePlaceholder();
-    $('txt').value = draft(c.id); grow(); $('send').disabled = !$('txt').value.trim();
+    clearImage(); $('txt').value = draft(c.id); grow(); $('send').disabled = !$('txt').value.trim();
     renderList();
     if (window.innerWidth > 820) $('txt').focus();
     loadMsgs(true);
@@ -519,7 +577,7 @@ button,input,textarea{font:inherit;color:inherit}
         var meta = el('div', 'meta');
         if (m.failed) { meta.appendChild(el('span', 'err', 'Not sent · ')); var rb = el('button', null, 'Retry'); rb.type = 'button'; rb.addEventListener('click', function () { retry(m); }); meta.appendChild(rb); }
         else if (m.pending) meta.textContent = 'Sending…';
-        else meta.textContent = (mine && m.author && (m.author.name || m.author.username) ? (m.custom || m.author.name || m.author.username) + ' · ' : !mine && m.custom ? m.custom + ' · ' : '') + clock(m.at);
+        else meta.textContent = (mine && m.sent_by ? 'Sent by ' + m.sent_by + ' · ' : mine && m.author && (m.author.name || m.author.username) ? (m.custom || m.author.name || m.author.username) + ' · ' : !mine && m.custom ? m.custom + ' · ' : '') + clock(m.at);
         col.appendChild(meta);
       } else col.appendChild(el('div', 'gap'));
       row.appendChild(col); box.appendChild(row);
@@ -556,27 +614,65 @@ button,input,textarea{font:inherit;color:inherit}
   function draft(id) { try { return localStorage.getItem('tv_sup_d_' + id) || ''; } catch (e) { return drafts[id] || ''; } }
   function saveDraft(id, v) { drafts[id] = v; try { v ? localStorage.setItem('tv_sup_d_' + id, v) : localStorage.removeItem('tv_sup_d_' + id); } catch (e) {} }
   function grow() { var t = $('txt'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 180) + 'px'; }
-  $('txt').addEventListener('input', function () { grow(); $('send').disabled = !this.value.trim(); if (cur) saveDraft(cur.id, this.value); });
+  $('txt').addEventListener('input', function () { grow(); $('send').disabled = !this.value.trim() && !pending; if (cur) saveDraft(cur.id, this.value); });
   $('txt').addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && window.innerWidth > 820) { e.preventDefault(); send(); }
   });
   $('form').addEventListener('submit', function (e) { e.preventDefault(); send(); });
 
+  var pending = null; // {name, type, data(base64), url}
+  function setImage(f) {
+    if (!f || !/^image\//.test(f.type)) { if (f) toast('Only images can be attached'); return; }
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function () {
+      // shrink big screenshots so they upload fast (max 1600px, JPEG unless it's a small PNG/GIF)
+      var max = 1600, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+      var keep = (f.type === 'image/gif' || f.type === 'image/png') && f.size < 1.5e6 && k === 1;
+      var done = function (blob, type, name) {
+        var rd = new FileReader();
+        rd.onload = function () {
+          pending = { name: name, type: type, data: String(rd.result).split(',')[1], url: url };
+          $('attImg').src = url; $('attName').textContent = name; $('att').hidden = false; $('send').disabled = false;
+        };
+        rd.readAsDataURL(blob);
+      };
+      if (keep) return done(f, f.type, f.name || 'image.png');
+      var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+      var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(function (b) { if (!b) return toast('Couldn’t read that image'); if (b.size > 3e6) return toast('That image is too big'); done(b, 'image/jpeg', (f.name || 'image').replace(/\.[a-z0-9]+$/i, '') + '.jpg'); }, 'image/jpeg', .86);
+    };
+    img.onerror = function () { toast('Couldn’t read that image'); };
+    img.src = url;
+  }
+  function clearImage() { pending = null; $('att').hidden = true; $('file').value = ''; $('send').disabled = !$('txt').value.trim(); }
+  $('clip').addEventListener('click', function () { $('file').click(); });
+  $('file').addEventListener('change', function () { setImage(this.files[0]); });
+  $('attX').addEventListener('click', clearImage);
+  $('txt').addEventListener('paste', function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) if (items[i].kind === 'file' && /^image\//.test(items[i].type)) { e.preventDefault(); setImage(items[i].getAsFile()); return; }
+  });
+  ['dragenter', 'dragover'].forEach(function (ev) { $('thread').addEventListener(ev, function (e) { if (cur && e.dataTransfer && [].indexOf.call(e.dataTransfer.types, 'Files') >= 0) { e.preventDefault(); $('comp').classList.add('drag'); } }); });
+  ['dragleave', 'drop'].forEach(function (ev) { $('thread').addEventListener(ev, function (e) { $('comp').classList.remove('drag'); if (ev === 'drop' && cur && e.dataTransfer.files.length) { e.preventDefault(); setImage(e.dataTransfer.files[0]); } }); });
+
   function key() { return 'tvs-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); }
   function send() {
     var text = $('txt').value.trim();
-    if (!cur || !text) return;
-    var m = { id: 'local-' + key(), key: key(), local: true, pending: true, text: text, at: new Date().toISOString(), files: [], chat: cur.id };
-    msgs.push(m); $('txt').value = ''; saveDraft(cur.id, ''); grow(); $('send').disabled = true;
+    if (!cur || !(text || pending)) return;
+    var im = pending;
+    var m = { id: 'local-' + key(), key: key(), local: true, pending: true, text: text, at: new Date().toISOString(), files: im ? [{ name: im.name, type: im.type, url: im.url }] : [], image: im, chat: cur.id };
+    msgs.push(m); $('txt').value = ''; saveDraft(cur.id, ''); grow(); clearImage(); $('send').disabled = true;
     renderMsgs('bottom'); deliver(m);
   }
   function deliver(m) {
     var c = cur;
-    call('POST', '', { c: m.chat, text: m.text, key: m.key }).then(function (d) {
+    var body = { c: m.chat, text: m.text, key: m.key };
+    if (m.image) body.image = { name: m.image.name, type: m.image.type, data: m.image.data };
+    call('POST', '', body).then(function (d) {
       var i = msgs.indexOf(m);
       if (cur === c && i >= 0) { msgs[i] = d.message; renderMsgs('bottom'); }
       var row = chats.filter(function (x) { return x.id === m.chat; })[0];
-      if (row) { row.needs_reply = false; row.last = { text: m.text, at: d.message.at || m.at, mine: true, files: 0 }; row.at = row.last.at; chats.sort(function (a, b) { return (b.at || '').localeCompare(a.at || ''); }); renderList(); }
+      if (row) { row.needs_reply = false; row.last = { text: m.text, at: d.message.at || m.at, mine: true, files: m.image ? 1 : 0 }; row.at = row.last.at; chats.sort(function (a, b) { return (b.at || '').localeCompare(a.at || ''); }); renderList(); }
       if (c) c.sentHere = true;
       if (cur === c) { c.needs_reply = false; headState(); }
     }).catch(function (x) {
@@ -587,20 +683,55 @@ button,input,textarea{font:inherit;color:inherit}
   }
   function retry(m) { m.failed = false; m.pending = true; renderMsgs('keep'); deliver(m); }
 
-  // quick replies (fills the box; you still hit send)
-  var SNIPS = [
-    ['Hey 👋', function () { return 'Hey ' + first() + ', thanks for reaching out! '; }],
-    ['Looking into it', function () { return 'Thanks ' + first() + ', I’m looking into this now and will get back to you shortly.'; }],
-    ['Access is live', function () { return 'You’re all set ' + first() + '! Your TradingView access is live. Refresh TradingView and you’ll find the scanner under Indicators → Invite-only scripts.'; }],
-    ['Setup page', function () { return 'To get your scanner access, fill in your setup page here (it takes a minute): https://thetradevault.co/setup' + (member && member.email ? '?email=' + encodeURIComponent(member.email) : '') + ' Once it’s in, we’ll get you added.'; }],
-    ['Anything else?', function () { return 'Anything else I can help with?'; }]
-  ];
+  // saved replies (shared, stored on the server); clicking one fills the box, you still hit send
+  var snips = [], me = '';
   function first() { var n = (member && member.name) || (cur && (cur.user.name || '')) || ''; return n.split(' ')[0] || 'there'; }
-  SNIPS.forEach(function (s) {
-    var b = el('button', 'snip', s[0]); b.type = 'button';
-    b.addEventListener('click', function () { var t = $('txt'); t.value = (t.value ? t.value.replace(/\s*$/, ' ') : '') + s[1](); t.dispatchEvent(new Event('input')); t.focus(); t.setSelectionRange(t.value.length, t.value.length); });
-    $('snips').appendChild(b);
-  });
+  function fill(t) {
+    var mb = memberFor === (cur && cur.id) ? member : null;
+    var setup = 'https://thetradevault.co/setup' + (mb && mb.email ? '?email=' + encodeURIComponent(mb.email) : '');
+    return t.replace(/\{first\}/g, first()).replace(/\{email\}/g, (mb && mb.email) || '').replace(/\{tradingview\}/g, (mb && mb.tradingview) || '').replace(/\{setup_link\}/g, setup);
+  }
+  function renderSnips() {
+    var box = $('snips'); box.innerHTML = '';
+    snips.forEach(function (sn) {
+      var b = el('button', 'snip', sn.label); b.type = 'button'; b.title = sn.body;
+      b.addEventListener('click', function () { var t = $('txt'); t.value = (t.value ? t.value.replace(/\s*$/, ' ') : '') + fill(sn.body); t.dispatchEvent(new Event('input')); t.focus(); t.setSelectionRange(t.value.length, t.value.length); });
+      box.appendChild(b);
+    });
+    var e = el('button', 'snip edit', snips.length ? '✎ Edit replies' : '+ Add a saved reply'); e.type = 'button';
+    e.addEventListener('click', openSnips); box.appendChild(e);
+  }
+  function loadSnips() { return call('GET', 'snippets=1').then(function (d) { snips = d.snippets || []; me = d.me || ''; renderSnips(); }).catch(function () { renderSnips(); }); }
+  function snItem(sn) {
+    var w = el('div', 'sni');
+    var lb = el('input'); lb.placeholder = 'Button name, e.g. Upgrade to Elite'; lb.maxLength = 40; lb.value = sn ? sn.label : '';
+    var tx = el('textarea'); tx.rows = 3; tx.placeholder = 'The message. Use {first} for their first name.'; tx.value = sn ? sn.body : '';
+    var acts = el('div', 'acts'), note = el('span', null, sn ? '' : 'New'), btns = el('div'); btns.style.display = 'flex'; btns.style.gap = '8px';
+    var del = el('button', 'mini del', sn ? 'Delete' : 'Cancel'); del.type = 'button';
+    var save = el('button', 'mini go', 'Save'); save.type = 'button'; save.disabled = !!sn;
+    [lb, tx].forEach(function (f) { f.addEventListener('input', function () { save.disabled = false; note.textContent = 'Unsaved'; }); });
+    save.addEventListener('click', function () {
+      save.disabled = true; save.textContent = 'Saving…';
+      call('POST', '', { action: 'snippet_save', id: sn ? sn.id : 0, label: lb.value, body: tx.value }).then(function (d) {
+        snips = d.snippets; renderSnips(); if (!sn) { renderSnEditor(); return; } note.textContent = 'Saved ✓'; save.textContent = 'Save';
+      }).catch(function (x) { note.textContent = x.msg || 'Couldn’t save'; save.disabled = false; save.textContent = 'Save'; });
+    });
+    del.addEventListener('click', function () {
+      if (!sn) { w.remove(); return; }
+      if (!del.classList.contains('sure')) { del.classList.add('sure'); del.textContent = 'Really delete?'; setTimeout(function () { del.classList.remove('sure'); del.textContent = 'Delete'; }, 3000); return; }
+      del.disabled = true;
+      call('POST', '', { action: 'snippet_delete', id: sn.id }).then(function (d) { snips = d.snippets; renderSnips(); w.remove(); })
+        .catch(function (x) { note.textContent = x.msg || 'Couldn’t delete'; del.disabled = false; });
+    });
+    btns.appendChild(del); btns.appendChild(save); acts.appendChild(note); acts.appendChild(btns);
+    w.appendChild(lb); w.appendChild(tx); w.appendChild(acts);
+    return w;
+  }
+  function renderSnEditor() { var l = $('snList'); l.innerHTML = ''; snips.forEach(function (sn) { l.appendChild(snItem(sn)); }); }
+  function openSnips() { renderSnEditor(); $('sn').showModal(); }
+  $('snAdd').addEventListener('click', function () { var it = snItem(null); $('snList').appendChild(it); it.querySelector('input').focus(); it.scrollIntoView({ block: 'nearest' }); });
+  $('snDone').addEventListener('click', function () { $('sn').close(); });
+  $('snX').addEventListener('click', function () { $('sn').close(); });
 
   /* ---------- member panel ---------- */
   var TIER = { tools: 'Tools', community: 'Community', elite: 'Elite' };
@@ -636,6 +767,7 @@ button,input,textarea{font:inherit;color:inherit}
     var s1 = el('div', 'sec'); s1.appendChild(el('span', 'mono', 'TradeVault'));
     s1.appendChild(kv('Email', mb.email ? copyable(mb.email) : '—'));
     s1.appendChild(kv('Setup', mb.tier ? (mb.setup || mb.tradingview ? '✓ Done' : 'Not yet') : '—'));
+    if (mb.contact_id && mb.tier) s1.appendChild(kv('Scanner access', accessCell(mb)));
     s1.appendChild(kv('TradingView', mb.tradingview ? copyable(mb.tradingview) : '—'));
     if (mb.telegram) s1.appendChild(kv('Telegram', copyable('@' + String(mb.telegram).replace(/^@/, ''))));
     if (mb.educator) s1.appendChild(kv('Educator', EDU[mb.educator] || mb.educator));
@@ -653,9 +785,83 @@ button,input,textarea{font:inherit;color:inherit}
     });
     b.appendChild(s2);
   }
+  function accessCell(mb) {
+    if (mb.ended) return el('span', 'warn-t', 'Membership ended');
+    if (mb.assigned === true) return el('span', 'live-ok', '✓ Live');
+    if (mb.assigned == null) return el('span', null, 'Unknown');
+    if (!(mb.setup || mb.tradingview)) return el('span', 'warn-t', 'Waiting on setup');
+    var b = el('button', 'acc-b', 'Mark complete ✓'); b.type = 'button';
+    b.title = 'Same as Completed on the Members board: moves them to Assigned and emails them that access is live';
+    b.addEventListener('click', function () {
+      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = 'Added in TradingView? Confirm'; setTimeout(function () { if (b.isConnected && b.classList.contains('sure')) { b.classList.remove('sure'); b.textContent = 'Mark complete ✓'; } }, 4000); return; }
+      b.disabled = true; b.textContent = 'Saving…';
+      fetch('https://jaybonham.com/api/tv-members', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'assign', c: mb.contact_id }) })
+        .then(function (r) { return r.json(); }).then(function (d) {
+          if (!d.ok) throw { msg: d.error };
+          mb.assigned = true; renderSide(); toast('Access marked complete. The "access is live" email is on its way.');
+        }).catch(function (x) { b.disabled = false; b.classList.remove('sure'); b.textContent = 'Mark complete ✓'; toast('Couldn’t update: ' + ((x && x.msg) || 'network error')); });
+    });
+    return b;
+  }
   $('info').addEventListener('click', function () { $('side').classList.add('open'); });
   $('sideX').addEventListener('click', function () { $('side').classList.remove('open'); });
   $('back').addEventListener('click', function () { $('app').classList.remove('chat'); cur = null; renderList(); $('side').classList.remove('open'); });
+
+  /* ---------- alerts: desktop notification + sound for new customer messages ---------- */
+  var alertsOn = false, seen = null, actx = null;
+  try { alertsOn = localStorage.getItem('tv_sup_alerts') === '1'; } catch (e) {}
+  function bellState() { $('bell').setAttribute('aria-pressed', alertsOn); $('bell').title = alertsOn ? 'Alerts on: click to turn off' : 'Turn on desktop alerts and sound for new messages'; }
+  bellState();
+  $('bell').addEventListener('click', function () {
+    alertsOn = !alertsOn;
+    try { localStorage.setItem('tv_sup_alerts', alertsOn ? '1' : '0'); } catch (e) {}
+    if (alertsOn) {
+      try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+      if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().then(function () { toast(Notification.permission === 'granted' ? 'Alerts on. You’ll get a desktop alert and a sound for new messages.' : 'Alerts on (sound only). Your browser blocked desktop notifications.'); });
+      else toast('Alerts on' + ('Notification' in window && Notification.permission === 'granted' ? '.' : ' (sound only).'));
+      ding();
+    } else toast('Alerts off.');
+    bellState();
+  });
+  function ding() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      [880, 1320].forEach(function (f, i) {
+        var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * .13;
+        o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.18, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + .35);
+        o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + .4);
+      });
+    } catch (e) {}
+  }
+  var flash = null, baseTitle = '';
+  function titleFlash(msg) {
+    if (flash || !document.hidden) return;
+    var on = false; flash = setInterval(function () { on = !on; document.title = on ? msg : baseTitle; }, 1200);
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && flash) { clearInterval(flash); flash = null; renderList(); } });
+  var lastCheck = 0;
+  function checkNew() {
+    // new = a customer message newer than our previous check (first load only sets the baseline)
+    var fresh = [], since = lastCheck;
+    chats.forEach(function (c) {
+      var t = c.last && !c.last.mine && c.needs_reply ? Date.parse(c.last.at) : 0;
+      if (since && t > since) fresh.push(c);
+    });
+    lastCheck = Math.max(Date.now() - 5000, since);
+    if (!fresh.length) return;
+    baseTitle = document.title;
+    titleFlash('💬 ' + (fresh.length > 1 ? fresh.length + ' new messages' : display(fresh[0].user)));
+    if (!alertsOn) return;
+    ding();
+    if ('Notification' in window && Notification.permission === 'granted' && (document.hidden || !document.hasFocus())) {
+      fresh.slice(0, 3).forEach(function (c) {
+        try {
+          var n = new Notification(display(c.user), { body: plain(c.last.text) || 'Sent a file', icon: c.user.avatar || '../../assets/tv-icon.png', tag: 'tvs-' + c.id });
+          n.onclick = function () { window.focus(); openChat(c); n.close(); };
+        } catch (e) {}
+      });
+    }
+  }
 
   /* ---------- live updates ---------- */
   function sizeNav() { document.documentElement.style.setProperty('--navh', $('nav').offsetHeight + 'px'); }
@@ -664,6 +870,7 @@ button,input,textarea{font:inherit;color:inherit}
   setInterval(function () { if (!document.hidden && cur && msgs.length) loadMsgs(false); }, 6000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { loadList(false); if (cur && msgs.length) loadMsgs(false); } });
 
+  loadSnips();
   loadList(true);
 })();
 </script>

@@ -11,6 +11,11 @@ GET  ?c=<channel id>[&before=<message id>][&since=<message id>][&u=<user id>]
        member (only when u is given): Whop memberships for that user plus our setup answers.
 POST {c, text[, reply_to]} -> {ok, message}
 POST {c, action: "resolve"|"reopen"} -> {ok, resolved}
+POST {c, text?, image: {name, type, data(base64)}} -> uploads the image to Whop and sends it attached
+GET  ?snippets=1 -> {ok, snippets:[{id,label,body}]}   (saved replies, shared by every admin)
+POST {action: "snippet_save", id?, label, body} / {action: "snippet_delete", id}
+Sent replies are recorded with the admin who sent them (tv_support_sent) so the inbox can show
+"sent by"; Whop itself posts every reply as the API key's owner.
 """
 import http.client
 import json
@@ -24,9 +29,40 @@ from urllib.parse import parse_qs, quote, urlparse
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _auth import verify_token
+import base64
+import time
 
 WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
+GHL_API_KEY = os.environ.get("GHL_API_KEY", "")
+ASSIGNED_TAG = "tv-access-granted"
+MAX_IMAGE = 3 * 1024 * 1024
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS tv_support_snippets (
+    id         SERIAL PRIMARY KEY,
+    label      TEXT NOT NULL,
+    body       TEXT NOT NULL,
+    position   INTEGER NOT NULL DEFAULT 0,
+    updated_by TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS tv_support_sent (
+    message_id TEXT PRIMARY KEY,
+    chat_id    TEXT NOT NULL,
+    sent_by    TEXT NOT NULL,
+    sent_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS tv_support_sent_chat ON tv_support_sent (chat_id);
+"""
+# Saved replies the table starts with. {first} {email} {setup_link} {tradingview} are filled in per member.
+DEFAULT_SNIPPETS = [
+    ("Hey 👋", "Hey {first}, thanks for reaching out! "),
+    ("Looking into it", "Thanks {first}, I'm looking into this now and will get back to you shortly."),
+    ("Access is live", "You're all set {first}! Your TradingView access is live. Refresh TradingView and you'll find the scanner under Indicators → Invite-only scripts."),
+    ("Setup page", "To get your scanner access, fill in your setup page here (it takes a minute): {setup_link} Once it's in, we'll get you added."),
+    ("Upgrade to Elite", "Use the coupon code: elite_upgrade\nThat will allow you to upgrade to Elite and pay the difference.\n\nYou can pay here: https://whop.com/sniper-academy-603f/sniper-elite-3d/"),
+    ("Anything else?", "Anything else I can help with?"),
+]
 WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 ID_RE = re.compile(r"^[A-Za-z0-9_-]{4,80}$")
 VIEWS = {"open": "true", "resolved": "false", "all": None}
@@ -167,9 +203,152 @@ def messages(cid, before, since):
     raw = [m for m in d.get("data") or [] if isinstance(m, dict)]
     msgs = [_msg(m) for m in d.get("data") or [] if isinstance(m, dict) and not m.get("deleted_at")]
     fill_avatars([m["author"] for m in msgs])
+    by = senders([m["id"] for m in msgs if m.get("id")])
+    for m in msgs:
+        if m["id"] in by:
+            m["sent_by"] = by[m["id"]]
     msgs.sort(key=lambda m: m["at"])
     more = bool((d.get("page_info") or {}).get("has_next_page")) if not since else False
     return msgs, more
+
+
+_schema_ready = False
+
+
+def db():
+    global _schema_ready
+    import psycopg2
+    conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
+    if not _schema_ready:
+        cur = conn.cursor()
+        cur.execute(SCHEMA)
+        conn.commit()
+        _schema_ready = True
+    return conn
+
+
+def snippets():
+    conn = db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM tv_support_snippets")
+        if cur.fetchone()[0] == 0:
+            for i, (label, body) in enumerate(DEFAULT_SNIPPETS):
+                cur.execute("INSERT INTO tv_support_snippets (label, body, position, updated_by) VALUES (%s, %s, %s, 'default')",
+                            (label, body, i))
+            conn.commit()
+        cur.execute("SELECT id, label, body FROM tv_support_snippets ORDER BY position, id")
+        return [{"id": r[0], "label": r[1], "body": r[2]} for r in cur.fetchall()]
+    finally:
+        conn.close()
+
+
+def snippet_save(sid, label, body, who):
+    conn = db()
+    try:
+        cur = conn.cursor()
+        if sid:
+            cur.execute("UPDATE tv_support_snippets SET label=%s, body=%s, updated_by=%s, updated_at=NOW() WHERE id=%s",
+                        (label, body, who, sid))
+        else:
+            cur.execute("""INSERT INTO tv_support_snippets (label, body, position, updated_by)
+                           VALUES (%s, %s, COALESCE((SELECT MAX(position) + 1 FROM tv_support_snippets), 0), %s)""",
+                        (label, body, who))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def snippet_delete(sid):
+    conn = db()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM tv_support_snippets WHERE id=%s", (sid,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def record_sent(mid, cid, who):
+    if not (DATABASE_URL and mid and who):
+        return
+    try:
+        conn = db()
+        try:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO tv_support_sent (message_id, chat_id, sent_by) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+                        (mid, cid, who))
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        log("TV_SUPPORT_SENT_DB:", e)
+
+
+def senders(ids):
+    if not (DATABASE_URL and ids):
+        return {}
+    try:
+        conn = db()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT message_id, sent_by FROM tv_support_sent WHERE message_id = ANY(%s)", (list(ids),))
+            return dict(cur.fetchall())
+        finally:
+            conn.close()
+    except Exception as e:
+        log("TV_SUPPORT_SENT_DB:", e)
+        return {}
+
+
+def ghl_assigned(contact_id):
+    """True/False from the member's GHL tags, None when GHL can't say."""
+    if not (GHL_API_KEY and contact_id):
+        return None
+    try:
+        c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=8)
+        c.request("GET", "/contacts/" + quote(contact_id), None,
+                  {"Authorization": "Bearer " + GHL_API_KEY, "Version": "2021-07-28", "Accept": "application/json"})
+        r = c.getresponse()
+        d = json.loads(r.read() or b"{}")
+        if r.status >= 300:
+            return None
+        return ASSIGNED_TAG in [str(t).lower() for t in (d.get("contact") or {}).get("tags") or []]
+    except Exception as e:
+        log("TV_SUPPORT_GHL:", e)
+        return None
+
+
+def upload_image(img):
+    """Browser sends the image base64; Whop wants it PUT to a presigned URL, then ready."""
+    name = re.sub(r"[^A-Za-z0-9._-]", "_", str(img.get("name") or "image.jpg"))[:80] or "image.jpg"
+    ctype = str(img.get("type") or "image/jpeg")
+    if not ctype.startswith("image/"):
+        raise WhopError(400, "Only images can be sent")
+    data = base64.b64decode(str(img.get("data") or ""), validate=False)
+    if not data or len(data) > MAX_IMAGE:
+        raise WhopError(400, "Image is empty or too big (3MB max)")
+    f = whop("POST", "/files", {"filename": name})
+    url = f.get("upload_url")
+    if not url:
+        raise WhopError(502, "Whop didn't return an upload URL")
+    u = urlparse(url)
+    h = {"Content-Type": ctype}
+    h.update({k: v for k, v in (f.get("upload_headers") or {}).items() if isinstance(v, str)})
+    c = http.client.HTTPSConnection(u.netloc, timeout=20)
+    c.request("PUT", u.path + ("?" + u.query if u.query else ""), data, h)
+    r = c.getresponse()
+    r.read()
+    if r.status >= 300:
+        raise WhopError(502, "Image upload failed (%s)" % r.status)
+    for _ in range(12):
+        st = whop("GET", "/files/" + quote(f["id"]))
+        if st.get("upload_status") == "ready":
+            break
+        if st.get("upload_status") == "failed":
+            raise WhopError(502, "Whop couldn't process the image")
+        time.sleep(0.5)
+    return f["id"]
 
 
 def _db_member(membership_ids):
@@ -187,13 +366,14 @@ def _db_member(membership_ids):
             if not row:
                 return {}
             out = {"email": row[0] or "", "name": row[1] or ""}
-            cur.execute("""SELECT tier, setup_at, educator, scanner, tradingview, telegram, purchased_at
+            cur.execute("""SELECT tier, setup_at, educator, scanner, tradingview, telegram, purchased_at, contact_id, removed_at, ended_at
                            FROM tv_members WHERE lower(email) = lower(%s)
                            ORDER BY purchased_at DESC NULLS LAST LIMIT 1""", (out["email"],))
             r = cur.fetchone()
             if r:
                 out.update({"tier": r[0] or "", "setup": bool(r[1]), "educator": r[2] or "", "scanner": r[3] or "",
-                            "tradingview": r[4] or "", "telegram": r[5] or ""})
+                            "tradingview": r[4] or "", "telegram": r[5] or "", "contact_id": r[7] or "",
+                            "ended": bool(r[9])})
             return out
         finally:
             conn.close()
@@ -226,6 +406,8 @@ def member(uid):
     out = {"memberships": ms}
     out.update(_db_member([m["id"] for m in ms if m["id"]]))
     # Whop metadata fills anything our DB doesn't have
+    if out.get("contact_id"):
+        out["assigned"] = ghl_assigned(out["contact_id"])
     for k, mk in (("tier", "tv_tier"), ("tradingview", "tv_tradingview"), ("telegram", "tv_telegram"),
                   ("educator", "tv_educator"), ("scanner", "tv_scanners")):
         if not out.get(k) and meta.get(mk):
@@ -243,7 +425,8 @@ class handler(BaseHTTPRequestHandler):
 
     def _authed(self):
         auth = self.headers.get("Authorization", "")
-        if not auth.startswith("Bearer ") or not verify_token(auth[7:]):
+        self.who = verify_token(auth[7:]) if auth.startswith("Bearer ") else None
+        if not self.who:
             self._json(401, {"ok": False, "error": "Unauthorized"})
             return False
         if not WHOP_API_KEY:
@@ -256,6 +439,8 @@ class handler(BaseHTTPRequestHandler):
             return
         qs = {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}
         try:
+            if qs.get("snippets") == "1":
+                return self._json(200, {"ok": True, "snippets": snippets(), "me": self.who})
             cid = qs.get("c", "")
             if cid:
                 if not ID_RE.match(cid):
@@ -291,12 +476,29 @@ class handler(BaseHTTPRequestHandler):
         if not self._authed():
             return
         try:
-            length = min(int(self.headers.get("Content-Length", 0)), 20000)
+            length = min(int(self.headers.get("Content-Length", 0)), 4_500_000)
             b = json.loads(self.rfile.read(length) or b"{}")
         except Exception:
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
         action = b.get("action")
+        if action in ("snippet_save", "snippet_delete"):
+            try:
+                sid = int(b.get("id") or 0)
+                if action == "snippet_delete":
+                    if not sid:
+                        return self._json(400, {"ok": False, "error": "Invalid reply"})
+                    snippet_delete(sid)
+                else:
+                    label = str(b.get("label") or "").strip()[:40]
+                    body = str(b.get("body") or "").strip()[:5000]
+                    if not label or not body:
+                        return self._json(400, {"ok": False, "error": "Give it a name and a message"})
+                    snippet_save(sid, label, body, self.who)
+                return self._json(200, {"ok": True, "snippets": snippets()})
+            except Exception as e:
+                log("TV_SUPPORT_SNIPPET_ERR:", e)
+                return self._json(502, {"ok": False, "error": str(e)})
         if action in ("resolve", "reopen"):
             if not ID_RE.match(cid):
                 return self._json(400, {"ok": False, "error": "Invalid chat"})
@@ -310,9 +512,19 @@ class handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "resolved": action == "resolve"})
         text = str(b.get("text") or "").strip()
         reply = str(b.get("reply_to") or "")
-        if not ID_RE.match(cid) or not text or len(text) > 5000 or (reply and not ID_RE.match(reply)):
+        img = b.get("image") if isinstance(b.get("image"), dict) else None
+        if not ID_RE.match(cid) or not (text or img) or len(text) > 5000 or (reply and not ID_RE.match(reply)):
             return self._json(400, {"ok": False, "error": "Invalid message"})
-        body = {"channel_id": cid, "content": text, "auto_detect_links": True}
+        body = {"channel_id": cid, "content": text, "auto_detect_links": bool(text)}
+        if img:
+            try:
+                body["attachments"] = [{"id": upload_image(img)}]
+            except WhopError as e:
+                log("TV_SUPPORT_UPLOAD_ERR:", e.status, e)
+                return self._json(502, {"ok": False, "error": str(e)})
+            except Exception as e:
+                log("TV_SUPPORT_UPLOAD_ERR:", e)
+                return self._json(502, {"ok": False, "error": "Image upload failed: %s" % e})
         if reply:
             body["replying_to_message_id"] = reply
         key = str(b.get("key") or "")[:100] or str(uuid.uuid4())
@@ -324,8 +536,11 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             log("TV_SUPPORT_SEND_ERR:", e)
             return self._json(502, {"ok": False, "error": str(e)})
-        log("TV_SUPPORT_SENT", cid)
-        self._json(200, {"ok": True, "message": _msg(m)})
+        log("TV_SUPPORT_SENT", cid, self.who)
+        msg = _msg(m)
+        record_sent(msg.get("id"), cid, self.who)
+        msg["sent_by"] = self.who
+        self._json(200, {"ok": True, "message": msg})
 
     def _json(self, status, body):
         self.send_response(status)
