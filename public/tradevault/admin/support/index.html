@@ -63,7 +63,9 @@ button,input,textarea{font:inherit;color:inherit}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--hair)}
 .seg button{border:0;background:none;border-radius:9px;padding:7px 6px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--tx-mute);display:flex;align-items:center;justify-content:center;gap:7px;transition:background .2s,color .2s}
 .seg button[aria-pressed="true"]{background:rgba(255,255,255,.09);color:var(--tx)}
-.seg em{font-style:normal;font-family:var(--mono);font-size:10.5px;padding:1px 7px;border-radius:999px;background:var(--acc);color:#fff}
+.seg em{font-style:normal;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:#FF4D5E;color:#fff;box-shadow:0 0 12px rgba(255,77,94,.55)}
+.ghost{position:relative}
+.badge{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#FF4D5E;color:#fff;font-family:var(--display);font-weight:700;font-size:12.5px;line-height:22px;text-align:center;border:2px solid var(--g0);box-shadow:0 0 14px rgba(255,77,94,.6)}
 .search{display:flex;align-items:center;gap:8px;padding:0 12px;min-height:38px;border-radius:11px;background:rgba(255,255,255,.035);border:1px solid var(--hair-2)}
 .search:focus-within{border-color:var(--acc)}
 .search input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:14px}
@@ -204,7 +206,7 @@ button,input,textarea{font:inherit;color:inherit}
     <div class="nav-r">
       <a class="ghost" href="/admin">Members</a>
       <a class="ghost hide-s" href="/admin/affiliates">Affiliates</a>
-      <a class="ghost on" href="/admin/support" aria-current="page">Support</a>
+      <a class="ghost on" href="/admin/support" aria-current="page">Support<span class="badge" id="navN" hidden></span></a>
       <button class="ghost hide-s" id="out" type="button">Sign out</button>
     </div>
   </div>
@@ -298,6 +300,7 @@ button,input,textarea{font:inherit;color:inherit}
     return a;
   }
   function display(u) { return (u && (u.name || u.username)) || 'Whop user'; }
+  function title(c) { return (c.user && (c.user.name || c.user.username)) || c.name || 'Whop user'; }
   function ago(iso) {
     if (!iso) return '';
     var d = new Date(iso), s = (Date.now() - d) / 1000;
@@ -344,7 +347,7 @@ button,input,textarea{font:inherit;color:inherit}
     box.innerHTML = '';
     var shown = chats.filter(function (c) { return !needle || [c.user.name, c.user.username, c.name, c.last && c.last.text].join(' ').toLowerCase().indexOf(needle) >= 0; });
     var open = chats.filter(function (c) { return c.needs_reply; }).length;
-    if (view === 'open') { $('cOpen').textContent = open; $('cOpen').hidden = !open; }
+    if (view === 'open') { $('cOpen').textContent = open; $('cOpen').hidden = !open; $('navN').textContent = open; $('navN').hidden = !open; }
     document.title = (open && view === 'open' ? '(' + open + ') ' : '') + 'Support — The Trade Vault Admin';
     if (!shown.length) {
       var s = el('div', 'state');
@@ -358,7 +361,7 @@ button,input,textarea{font:inherit;color:inherit}
       r.setAttribute('aria-current', cur && cur.id === c.id ? 'true' : 'false');
       r.appendChild(avatar(c.user));
       var body = el('div'); body.style.minWidth = '0';
-      var top = el('div', 'top'); top.appendChild(el('span', 'nm', c.name || display(c.user))); top.appendChild(el('span', 'tm', ago(c.at)));
+      var top = el('div', 'top'); top.appendChild(el('span', 'nm', title(c))); top.appendChild(el('span', 'tm', ago(c.at)));
       var pv = el('div', 'pv'); pv.appendChild(el('span', null, preview(c)));
       if (c.needs_reply) { var d = el('i', 'dot'); d.title = 'Waiting on a reply'; pv.appendChild(d); }
       else if (c.resolved) pv.appendChild(el('span', 'tagr', 'Resolved'));
@@ -425,7 +428,7 @@ button,input,textarea{font:inherit;color:inherit}
     $('app').classList.add('chat');
     $('pick').hidden = true; $('thH').hidden = false; $('msgs').hidden = false; $('comp').hidden = false;
     var av = $('thAv'); av.replaceWith(avatar(c.user)); $('thH').children[1].id = 'thAv';
-    $('thName').textContent = c.name || display(c.user);
+    $('thName').textContent = title(c);
     $('thSub').textContent = (c.user.username ? '@' + c.user.username : '') + (c.resolved ? ' · Resolved' : c.needs_reply ? ' · Waiting on a reply' : '');
     $('msgs').innerHTML = '<div class="state"><div class="loader"></div></div>';
     sidePlaceholder();
@@ -466,7 +469,12 @@ button,input,textarea{font:inherit;color:inherit}
       renderMsgs('none'); box.scrollTop = box.scrollHeight - h;
     }).catch(function (x) { toast('Couldn’t load older messages: ' + (x.msg || 'network error')); btn.disabled = false; btn.textContent = 'Load earlier messages'; });
   }
-  function isMine(m) { return cur && cur.user.id ? m.author_id !== cur.user.id : m.team; }
+  // ours = written by anyone other than the customer. Fall back to Whop's team flag when no author comes back.
+  function isMine(m) {
+    if (m.author_id && cur && cur.user.id) return m.author_id !== cur.user.id;
+    if (typeof m.team === 'boolean') return m.team;
+    return false;
+  }
   function renderMsgs(scroll) {
     var box = $('msgs'), nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
     box.innerHTML = '';
@@ -480,7 +488,7 @@ button,input,textarea{font:inherit;color:inherit}
       var mine = m.local || isMine(m), nx = msgs[i + 1];
       var nxMine = nx && (nx.local || isMine(nx)), nxSameAuthor = nx && nx.kind !== 'system' && nxMine === mine && (mine || nx.author_id === m.author_id) && dayLabel(nx.at || '') === day;
       var row = el('div', 'm' + (mine ? ' me' : '') + (nxSameAuthor ? '' : ' last') + (m.pending ? ' pending' : '') + (m.failed ? ' failed' : ''));
-      var who = mine ? (m.local ? { name: 'You' } : m.author) : (m.author && m.author.id ? m.author : cur.user);
+      var who = mine ? (m.local || !(m.author && (m.author.name || m.author.username)) ? { name: 'You', id: 'you' } : m.author) : (m.author && (m.author.name || m.author.username) ? m.author : cur.user);
       row.appendChild(avatar(m.custom ? { name: m.custom, id: m.custom } : who, 'sm'));
       var col = el('div', 'col');
       if (m.text) { var b = el('div', 'bub'); b.innerHTML = md(m.text); col.appendChild(b); }

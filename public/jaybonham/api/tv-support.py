@@ -104,9 +104,18 @@ def list_chats(view, after):
 
 
 def _msg(m):
-    return {"id": m.get("id"), "text": m.get("content") or "", "at": m.get("created_at") or "",
-            "team": bool(m.get("author_is_team_member")), "kind": m.get("message_type") or "regular",
-            "author": _user(m.get("author")), "author_id": m.get("author_user_id") or "",
+    # Whop returns either the documented shape (author / author_user_id) or the older one (user / user_id)
+    au = m.get("author") if isinstance(m.get("author"), dict) else m.get("user") if isinstance(m.get("user"), dict) else {}
+    aid = m.get("author_user_id") or m.get("user_id") or au.get("id") or ""
+    if not isinstance(aid, str):
+        aid = ""
+    team = m.get("author_is_team_member")
+    if team is None:
+        team = m.get("is_team_member")
+    return {"id": m.get("id"), "text": m.get("content") if m.get("content") is not None else (m.get("plain_content") or m.get("text") or ""),
+            "at": m.get("created_at") or "",
+            "team": team, "kind": m.get("message_type") or "regular",
+            "author": _user(au), "author_id": aid,
             "custom": ((m.get("custom_author") or {}).get("display_name") or "") if isinstance(m.get("custom_author"), dict) else "",
             "files": _files(m.get("attachments")), "reply_to": m.get("replying_to_message_id"),
             "deleted": bool(m.get("deleted_at"))}
@@ -119,6 +128,13 @@ def messages(cid, before, since):
     else:
         q += "&direction=desc" + ("&before_message_id=" + quote(before) if before else "")
     d = whop("GET", q)
+    raw = [m for m in d.get("data") or [] if isinstance(m, dict)]
+    if raw and not since:
+        r0 = raw[0]
+        log("TV_SUPPORT_SHAPE keys=%s author_keys=%s user_keys=%s team=%r" % (
+            sorted(r0.keys()), sorted((r0.get("author") or {}).keys()) if isinstance(r0.get("author"), dict) else r0.get("author"),
+            sorted((r0.get("user") or {}).keys()) if isinstance(r0.get("user"), dict) else r0.get("user"),
+            r0.get("author_is_team_member", r0.get("is_team_member"))))
     msgs = [_msg(m) for m in d.get("data") or [] if isinstance(m, dict) and not m.get("deleted_at")]
     msgs.sort(key=lambda m: m["at"])
     more = bool((d.get("page_info") or {}).get("has_next_page")) if not since else False
