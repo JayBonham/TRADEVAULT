@@ -52,7 +52,7 @@ button{font:inherit;color:inherit}
 .ghost:hover{background:rgba(255,255,255,.08)}
 .ghost.on{background:rgba(var(--acc-rgb),.14);border-color:rgba(var(--acc-rgb),.45);color:#fff}
 .badge:not([hidden]){position:absolute;top:-8px;right:-8px;display:flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:#FF4D5E;color:#fff;font-weight:700;font-size:11.5px;line-height:1;font-variant-numeric:tabular-nums;border:2px solid var(--g0);box-shadow:0 0 14px rgba(255,77,94,.6)}
-@media(max-width:760px){.nav-in{flex-direction:column;align-items:flex-start}.nav-r{justify-content:flex-start}.hide-s{display:none}}
+@media(max-width:760px){.nav{position:static}.nav-in{flex-direction:column;align-items:flex-start}.nav-r{justify-content:flex-start}.hide-s{display:none}}
 
 /* page head */
 main{padding-bottom:max(48px,env(safe-area-inset-bottom,0px));max-width:1480px;margin:0 auto}
@@ -64,6 +64,23 @@ main{padding-bottom:max(48px,env(safe-area-inset-bottom,0px));max-width:1480px;m
 .seg{display:inline-grid;grid-auto-flow:column;gap:3px;padding:3px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--hair)}
 .seg button{border:0;background:none;border-radius:9px;padding:7px 14px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--tx-mute);transition:background .2s,color .2s}
 .seg button[aria-pressed="true"]{background:rgba(255,255,255,.1);color:var(--tx)}
+.ctl{position:relative}
+.seg .cus{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.pick{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(360px,calc(100vw - 32px));padding:16px;border-radius:18px;border:1px solid var(--hair-2);background:var(--g1);box-shadow:0 24px 60px rgba(0,0,0,.55);display:grid;gap:12px;animation:rise .2s var(--ease) both}
+.pk-h{display:flex;justify-content:space-between;align-items:center}
+.pk-h b{font-family:var(--display);font-size:15px}
+.pk-h button{border:0;background:none;color:var(--tx-mute);cursor:pointer;font-size:14px;padding:4px 6px}
+.pk-p{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pk-p button{border:1px solid var(--hair);background:rgba(255,255,255,.03);border-radius:10px;padding:7px 10px;font-size:13px;color:var(--tx-dim);cursor:pointer;text-align:left}
+.pk-p button:hover{background:rgba(var(--acc-rgb),.12);border-color:rgba(var(--acc-rgb),.4);color:var(--tx)}
+.pk-d{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pk-d label{display:grid;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
+.pk-d input{min-height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--hair-2);background:rgba(255,255,255,.04);color:var(--tx);font:inherit;font-size:14px;letter-spacing:0;text-transform:none;outline:0;min-width:0;width:100%}
+.pk-d input:focus{border-color:var(--acc)}
+.pk-e{color:var(--bad);font-size:12.5px;min-height:0}
+.pk-e:empty{display:none}
+.pk-go{min-height:42px;border:0;border-radius:11px;background:linear-gradient(160deg,#3D8DF5,#2A6FD6);color:#fff;font-family:var(--display);font-weight:600;font-size:14.5px;cursor:pointer}
+@media(max-width:620px){.seg{grid-auto-flow:row;grid-template-columns:repeat(4,1fr)}.seg .cus{grid-column:1/-1;justify-content:center}.pick{left:0;right:auto}}
 .ref svg{transition:transform .3s}
 .ref.busy svg{animation:spin 1s linear infinite}
 
@@ -214,7 +231,18 @@ td.mute{color:var(--tx-mute)}
         <button type="button" data-r="90">90D</button>
         <button type="button" data-r="365">12M</button>
         <button type="button" data-r="all">All</button>
+        <button type="button" data-r="custom" id="cusB" aria-haspopup="dialog" aria-expanded="false" class="cus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="cusL">Custom</span></button>
       </div>
+      <form class="pick" id="pick" hidden aria-label="Pick dates">
+        <div class="pk-h"><b>Date range</b><button type="button" id="pkX" aria-label="Close">✕</button></div>
+        <div class="pk-p" id="pkP"></div>
+        <div class="pk-d">
+          <label>From<input type="date" id="pkF" required></label>
+          <label>To<input type="date" id="pkT" required></label>
+        </div>
+        <div class="pk-e" id="pkE" role="alert"></div>
+        <button type="submit" class="pk-go">Apply</button>
+      </form>
       <button class="ghost ref" id="refresh" type="button" title="Reload from Whop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh</button>
     </div>
   </div>
@@ -262,7 +290,8 @@ td.mute{color:var(--tx-mute)}
     technical_issues: 'Technical issues', bad_experience: 'Bad experience', unused: 'Not using it', other: 'Other', testing: 'Testing' };
   var CB_LIMIT = 0.009; // Visa's early-warning chargeback ratio
 
-  var D = null, range = '30', pass = ''; // asked for on every visit, kept only in memory
+  var D = null, range = '30', pass = '', custom = {};
+  try { custom = JSON.parse(localStorage.getItem('tv_an_custom') || '{}') || {}; } catch (e) {} // asked for on every visit, kept only in memory
   try { range = localStorage.getItem('tv_an_range') || '30'; } catch (e) {}
 
   /* ---------- formatting ---------- */
@@ -308,6 +337,12 @@ td.mute{color:var(--tx-mute)}
       var t0 = Math.min.apply(null, D.memberships.map(function (m) { return m.c || now; }).concat(D.payments.map(function (p) { return p.t || now; })));
       return { a: t0, b: now, prev: null, label: 'all time' };
     }
+    if (r === 'custom') {
+      var a = dayStart(custom.from), t = new Date(dayStart(custom.to));
+      var b = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1).getTime(); // the To day is included
+      var len = b - a;
+      return { a: a, b: b, prev: { a: a - len, b: a }, label: fmtRange(custom.from, custom.to), custom: 1 };
+    }
     var n = +r;
     return { a: now - n * DAY, b: now, prev: { a: now - 2 * n * DAY, b: now - n * DAY }, label: r === '365' ? 'last 12 months' : 'last ' + n + ' days' };
   }
@@ -343,22 +378,25 @@ td.mute{color:var(--tx-mute)}
   function tipRow(color, label, val) { return '<div class="r"><span>' + (color ? '<i style="background:' + color + '"></i>' : '') + esc(label) + '</span><em>' + val + '</em></div>'; }
 
   /* ---------- buckets ---------- */
-  function buckets(w, r) {
-    var out = [], d;
-    if (r === '30') {
-      d = new Date(w.b); d.setHours(0, 0, 0, 0); d = new Date(d.getTime() - 29 * DAY);
-      for (var i = 0; i < 30; i++) { var a = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i); out.push({ a: a.getTime(), b: a.getTime() + DAY, label: dShort(a), tick: dShort(a) }); }
-    } else if (r === '90') {
-      d = new Date(w.b); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
-      for (var k = 12; k >= 0; k--) { var s = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7 * k); out.push({ a: s.getTime(), b: s.getTime() + 7 * DAY, label: 'Week of ' + dShort(s), tick: dShort(s) }); }
+  // Bars per day up to ~6 weeks, per week up to ~7 months, per month beyond.
+  function granOf(w) { var d = (w.b - w.a) / DAY; return d <= 45 ? 'day' : d <= 200 ? 'week' : 'month'; }
+  function buckets(w) {
+    var out = [], g = granOf(w), s0 = new Date(w.a), d;
+    if (g === 'day') {
+      d = new Date(s0.getFullYear(), s0.getMonth(), s0.getDate());
+      for (; d.getTime() < w.b; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1))
+        out.push({ a: d.getTime(), b: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime(), label: dShort(d) + ' ' + d.getFullYear(), tick: dShort(d) });
+    } else if (g === 'week') {
+      d = new Date(s0.getFullYear(), s0.getMonth(), s0.getDate() - ((s0.getDay() + 6) % 7)); // Monday
+      for (; d.getTime() < w.b; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7))
+        out.push({ a: d.getTime(), b: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7).getTime(), label: 'Week of ' + dShort(d), tick: dShort(d) });
     } else {
-      var end = new Date(w.b), start = new Date(w.a);
-      var n = r === 'all' ? Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1) : 12;
-      for (var j = n - 1; j >= 0; j--) {
-        var m0 = new Date(end.getFullYear(), end.getMonth() - j, 1), m1 = new Date(end.getFullYear(), end.getMonth() - j + 1, 1);
-        out.push({ a: m0.getTime(), b: m1.getTime(), label: MON[m0.getMonth()] + ' ' + m0.getFullYear(), tick: MON[m0.getMonth()] + (m0.getMonth() === 0 || j === n - 1 ? " '" + String(m0.getFullYear()).slice(2) : '') });
-      }
+      d = new Date(s0.getFullYear(), s0.getMonth(), 1);
+      for (; d.getTime() < w.b; d = new Date(d.getFullYear(), d.getMonth() + 1, 1))
+        out.push({ a: d.getTime(), b: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(), label: MON[d.getMonth()] + ' ' + d.getFullYear(), tick: MON[d.getMonth()] + (d.getMonth() === 0 || !out.length ? " '" + String(d.getFullYear()).slice(2) : '') });
     }
+    // Clip the first and last bucket to the range, so the bars add up to the totals.
+    if (out.length) { out[0].a = Math.max(out[0].a, w.a); out[out.length - 1].b = Math.min(out[out.length - 1].b, w.b); }
     return out;
   }
 
@@ -542,7 +580,7 @@ td.mute{color:var(--tx-mute)}
     var tiles = [
       { hero: 1, l: 'Active members', v: int(activeN), s: deltaHTML(live.length, w.prev ? activeStart : null) + '<span>' + int(live.length) + ' memberships</span>', bar: cnt },
       { l: 'MRR', v: usd(MRR), s: (END ? '<span class="pill warn">' + usd(END) + ' ending</span>' : '<span>Monthly recurring</span>'), bar: mrr, tipm: 1 },
-      { l: 'Revenue · ' + (range === 'all' ? 'all time' : range === '365' ? '12M' : range + 'D'), v: usd(S.net), s: deltaHTML(S.net, P && P.net) + '<span>' + int(S.n) + ' payments</span>', bar: S.byT },
+      { l: 'Revenue · ' + (range === 'all' ? 'all time' : range === '365' ? '12M' : range === 'custom' ? 'range' : range + 'D'), v: usd(S.net), s: deltaHTML(S.net, P && P.net) + '<span>' + int(S.n) + ' payments</span>', bar: S.byT },
       { l: 'Next 30 days', v: usd(upSum), s: '<span>' + int(upcoming.length) + ' renewals · ' + usd(up7Sum) + ' this week</span>' },
       { l: 'Cancellation rate', v: pct(S.churn), s: deltaHTML(S.churn, P && P.churn, true, true) + '<span>' + int(S.cancels.length) + ' cancelled' + (S.switches.length ? ' · ' + S.switches.length + ' upgraded' : '') + '</span>' },
       { l: 'Chargeback rate', v: pct(S.cb, 2), s: (cbClass ? '<span class="pill ' + cbClass + '">' + (cbClass === 'bad' ? 'Over' : cbClass === 'warn' ? 'Near' : 'Under') + ' 0.9% limit</span>' : '') + '<span>' + int(S.disputes.length) + ' dispute' + (S.disputes.length === 1 ? '' : 's') + '</span>' }
@@ -551,8 +589,8 @@ td.mute{color:var(--tx-mute)}
       return '<div class="kpi' + (k.hero ? ' hero' : '') + '" style="animation-delay:' + i * 40 + 'ms"><span class="mono">' + esc(k.l) + '</span><div class="v num">' + k.v + '</div><div class="s">' + k.s + '</div>' + (k.bar ? tierBar(k.bar) : '') + '</div>';
     }).join('');
 
-    var bs = buckets(w, range);
-    var gran = range === '30' ? 'day' : range === '90' ? 'week' : 'month';
+    var bs = buckets(w);
+    var gran = granOf(w);
     var body = $('body');
     body.innerHTML =
       '<div class="grid">' +
@@ -735,12 +773,63 @@ td.mute{color:var(--tx-mute)}
   }
 
   function setRange(r) {
+    if (r === 'custom' && !(custom.from && custom.to)) r = '30';
     range = r;
-    try { localStorage.setItem('tv_an_range', r); } catch (e) {}
+    try { localStorage.setItem('tv_an_range', r); localStorage.setItem('tv_an_custom', JSON.stringify(custom)); } catch (e) {}
     Array.prototype.forEach.call($('range').children, function (b) { b.setAttribute('aria-pressed', b.dataset.r === r ? 'true' : 'false'); });
+    $('cusL').textContent = r === 'custom' ? fmtRange(custom.from, custom.to) : 'Custom';
     if (D) render();
   }
-  $('range').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setRange(b.dataset.r); });
+  $('range').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.r === 'custom') { openPick(); return; }
+    closePick(); setRange(b.dataset.r);
+  });
+
+  /* ---------- custom dates ---------- */
+  function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function dayStart(v) { var p = String(v).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).getTime(); }
+  function fmtRange(a, b) {
+    var x = new Date(dayStart(a)), y = new Date(dayStart(b)), yr = new Date().getFullYear();
+    var f = function (d, withY) { return dShort(d) + (withY ? ', ' + d.getFullYear() : ''); };
+    if (a === b) return f(x, x.getFullYear() !== yr);
+    var sameY = x.getFullYear() === y.getFullYear();
+    return f(x, !sameY) + ' – ' + f(y, !sameY || y.getFullYear() !== yr);
+  }
+  function presets() {
+    var n = new Date(), y = n.getFullYear(), m = n.getMonth(), q = Math.floor(m / 3) * 3;
+    var mon = new Date(y, m, n.getDate() - ((n.getDay() + 6) % 7));
+    return [
+      ['Today', n, n], ['Yesterday', new Date(y, m, n.getDate() - 1), new Date(y, m, n.getDate() - 1)],
+      ['This week', mon, n], ['Last week', new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() - 7), new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() - 1)],
+      ['This month', new Date(y, m, 1), n], ['Last month', new Date(y, m - 1, 1), new Date(y, m, 0)],
+      ['This quarter', new Date(y, q, 1), n], ['Last quarter', new Date(y, q - 3, 1), new Date(y, q, 0)],
+      ['This year', new Date(y, 0, 1), n], ['Last year', new Date(y - 1, 0, 1), new Date(y - 1, 11, 31)]
+    ];
+  }
+  function openPick() {
+    var p = $('pick'), today = ymd(new Date());
+    if (!p.hidden) { closePick(); return; }
+    $('pkF').max = $('pkT').max = today;
+    $('pkF').value = custom.from || ymd(new Date(Date.now() - 29 * DAY)); $('pkT').value = custom.to || today;
+    $('pkE').textContent = '';
+    $('pkP').innerHTML = presets().map(function (x, i) { return '<button type="button" data-i="' + i + '">' + x[0] + '</button>'; }).join('');
+    p.hidden = false; $('cusB').setAttribute('aria-expanded', 'true');
+  }
+  function closePick() { $('pick').hidden = true; $('cusB').setAttribute('aria-expanded', 'false'); }
+  function apply(from, to) {
+    if (!from || !to) { $('pkE').textContent = 'Pick both dates.'; return; }
+    if (from > to) { var t = from; from = to; to = t; }
+    custom = { from: from, to: to }; closePick(); setRange('custom');
+  }
+  $('pkP').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var x = presets()[+b.dataset.i]; apply(ymd(x[1]), ymd(x[2]));
+  });
+  $('pick').addEventListener('submit', function (e) { e.preventDefault(); apply($('pkF').value, $('pkT').value); });
+  $('pkX').addEventListener('click', closePick);
+  document.addEventListener('click', function (e) { if (!$('pick').hidden && !e.target.closest('#pick') && !e.target.closest('#cusB')) closePick(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePick(); });
   $('refresh').addEventListener('click', function () { load(true); });
   var rt; addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (D) render(); }, 150); });
   setInterval(stamp, 30000);
