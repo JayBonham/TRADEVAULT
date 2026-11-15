@@ -389,6 +389,7 @@ a{color:inherit}
   };
   Chart.prototype.load = function (s, n) {
     this.s = s; this.n = n; this.p = 0; this.trades = []; this.marks = []; this.pops = []; this.snap = true;
+    if (!this.o.bare) { this.ksOn = false; this.ksA = 0; }
   };
   // where price is inside a forming candle: open -> nearer extreme -> other extreme -> close
   Chart.prototype.partial = function (k, p) {
@@ -427,9 +428,13 @@ a{color:inherit}
     var top = 16, ph = H - bottom - top, L = this.lo, Hh = this.hi;
     var Y = function (v) { return top + (Hh - v) / (Hh - L) * ph; };
     var dec = s.sym === 'GOLD' ? 1 : 0, tf = s.tf || 900, nn = this.n - 1;
+    // Killshot overlay: off while the player decides, fades in once they've called it
+    if (this.o.bare) this.ksA = 1; else this.ksA += ((this.ksOn ? 1 : 0) - this.ksA) * (RM ? 1 : 0.09);
+    var ka = this.ksA;
 
     // trend shading (Killshot style)
     // drawn as solid runs so there are no seams between candles
+    x.globalAlpha = ka;
     for (k = first; k < last;) {
       var bullK = s.e[k][0] > s.e[k][1], k2 = k;
       while (k2 + 1 < last && (s.e[k2 + 1][0] > s.e[k2 + 1][1]) === bullK) k2++;
@@ -437,6 +442,7 @@ a{color:inherit}
       x.fillStyle = bullK ? C.bull : C.bear; x.fillRect(xa, top, xb - xa, ph);
       k = k2 + 1;
     }
+    x.globalAlpha = 1;
     // grid + axis
     if (!this.o.bare) {
       var step = niceStep((Hh - L) / 5), g0 = Math.ceil(L / step) * step;
@@ -456,6 +462,8 @@ a{color:inherit}
     }
     // EMAs
     // support / resistance lines from confirmed swings (Killshot style)
+    if (ka > 0.01) {
+    x.globalAlpha = ka;
     (s.ln || []).forEach(function (l) {
       if (l[0] + 8 > nn || l[2] < first) return;
       var e2 = Math.min(l[2], nn); if (e2 <= l[0]) return;
@@ -465,16 +473,17 @@ a{color:inherit}
     // point of control
     if (s.p && nn >= 0) {
       var pv = s.p[nn], py0 = Y(pv);
-      x.strokeStyle = C.poc; x.lineWidth = 1.6; x.globalAlpha = .9;
-      x.beginPath(); x.moveTo(X(Math.max(first, last - 70)), py0); x.lineTo(W - axisW - 2, py0); x.stroke(); x.globalAlpha = 1;
+      x.strokeStyle = C.poc; x.lineWidth = 1.6; x.globalAlpha = .9 * ka;
+      x.beginPath(); x.moveTo(X(Math.max(first, last - 70)), py0); x.lineTo(W - axisW - 2, py0); x.stroke(); x.globalAlpha = ka;
     }
     [[2, C.e200, 2.2], [1, C.slow, 1.6], [0, C.fast, 1.5]].forEach(function (m) {
-      x.strokeStyle = m[1]; x.lineWidth = m[2]; x.globalAlpha = 0.9; x.beginPath();
+      x.strokeStyle = m[1]; x.lineWidth = m[2]; x.globalAlpha = 0.9 * ka; x.beginPath();
       for (var k2 = first, st = false; k2 < Math.min(last, this.n); k2++) {
         var yy = Y(s.e[k2][m[0]]); if (!st) { x.moveTo(X(k2), yy); st = true; } else x.lineTo(X(k2), yy);
       }
       x.stroke(); x.globalAlpha = 1;
     }, this);
+    }
     // trades (position tool boxes)
     var self = this;
     this.trades.forEach(function (t) {
@@ -507,7 +516,8 @@ a{color:inherit}
       x.fillRect(cx - bw / 2, Math.min(yo, yc), bw, Math.max(1.2, Math.abs(yc - yo)));
     }
     // indicator markers (only once the indicator would have printed them)
-    (s.mk || []).forEach(function (m) {
+    x.globalAlpha = ka;
+    if (ka > 0.01) (s.mk || []).forEach(function (m) {
       if (m[2] > nn || m[0] < first) return;
       var cc = s.c[m[0]], mx = X(m[0]);
       switch (m[1]) {
@@ -521,6 +531,7 @@ a{color:inherit}
         case 8: star(x, mx, Y(cc[2]) + 14, 7, C.buy); break;
       }
     });
+    x.globalAlpha = 1;
     // signal stars + setup bracket
     this.marks.forEach(function (m) {
       if (m.k < first) return;
@@ -547,7 +558,16 @@ a{color:inherit}
       tag(x, g.x0 + cw * 1.2, g.ye + (t.d === 1 ? -12 : 12), W < 520 ? t.label.replace('KILLSHOT', 'KS') : t.label, t.ghost ? C.you : C.ks, 'left', lim);
     });
     // Killshot dashboard + watermark
-    if (!this.o.bare && s.f && nn >= 0) {
+    if (!this.o.bare && ka < 0.98) {
+      x.globalAlpha = 1 - ka; x.font = '700 10px "JetBrains Mono", monospace';
+      var offT = 'KILLSHOT OFF · YOUR READ', ow = x.measureText(offT).width + 20, ox = W < 620 ? 8 : Math.round((W - axisW - ow) / 2);
+      x.fillStyle = 'rgba(16,20,32,.92)'; roundRect(x, ox, 8, ow, 24, 12); x.fill();
+      x.strokeStyle = 'rgba(255,255,255,.14)'; roundRect(x, ox, 8, ow, 24, 12); x.stroke();
+      x.fillStyle = '#AEBBD0'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(offT, ox + 10, 20.5);
+      x.globalAlpha = 1;
+    }
+    if (!this.o.bare && s.f && nn >= 0 && ka > 0.02) {
+      x.globalAlpha = ka;
       var fl = s.f[nn], small = W < 620;
       var cols = small ? ['M3', 'M15', 'H1', 'H4'] : ['M3', 'M15', 'M30', 'H1', 'H4'], bitOf = { M3: 0, M15: 1, M30: 2, H1: 3, H4: 4 };
       var cwid = small ? 34 : 40, rowh = small ? 16 : 18, lw = small ? 44 : 50;
@@ -573,6 +593,7 @@ a{color:inherit}
       x.font = '600 ' + (small ? 10 : 12) + 'px Inter, system-ui, sans-serif'; x.textAlign = small ? 'left' : 'right'; x.textBaseline = small ? 'top' : 'alphabetic';
       x.fillStyle = 'rgba(167,120,255,.75)';
       if (small) x.fillText('KILLSHOT', tx0, ty0 + rowh * 2 + 6); else x.fillText('KILLSHOT', W - axisW - 10, H - bottom - 8);
+      x.globalAlpha = 1;
     }
     // last price tag
     if (!this.o.bare && last > 0) {
@@ -681,7 +702,7 @@ a{color:inherit}
     $('mkName').textContent = s.sym === 'GOLD' ? 'Gold' : 'US30';
     var d = new Date((s.t0 + s.at * (s.tf || 900)) * 1000);
     $('mkSub').textContent = 'XAU · ' + ((s.tf || 900) / 60) + 'M · ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()].toUpperCase();
-    status('Round ' + (G.i + 1) + ' of 5', 'Watch the chart. A setup is forming…');
+    status('Chart ' + (G.i + 1) + ' of 5', 'Killshot is off. Read the chart yourself…');
     setBtns(false); banner(false); $('ff').style.opacity = G.i < 2 ? 1 : 0;
     $('timer').style.transition = 'none'; $('timer').style.transform = 'scaleX(0)';
     lastT = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
@@ -729,7 +750,7 @@ a{color:inherit}
   function decide() {
     G.phase = 'decide'; G.wait = 0;
     cv.marks.push({ type: 'zone', k: G.s.at });
-    status('Your call', 'Buy, sell, or skip it?');
+    status('Your call', 'Killshot is off. Buy, sell, or skip?');
     setBtns(true);
     var tm = $('timer'); tm.style.transition = 'none'; tm.style.transform = 'scaleX(1)';
     requestAnimationFrame(function () { requestAnimationFrame(function () { tm.style.transition = 'transform 7s linear'; tm.style.transform = 'scaleX(0)'; }); });
@@ -737,7 +758,7 @@ a{color:inherit}
   }
   function choose(d, timedOut) {
     if (!G || G.phase !== 'decide') return;
-    G.choice = d; setBtns(false);
+    G.choice = d; setBtns(false); cv.ksOn = true;
     if (d) $(d === 1 ? 'bBuy' : 'bSell').classList.add('pick');
     var tm = $('timer'); tm.style.transition = 'none'; tm.style.transform = 'scaleX(0)';
     var s = G.s;
@@ -749,7 +770,7 @@ a{color:inherit}
     if (d && d !== s.d) { G.youT = mkTrade(s, d, 'YOU ' + (d === 1 ? 'BUY' : 'SELL')); G.youT.ghost = true; cv.trades.push(G.youT); }
     else if (d === s.d) G.youT = G.ksT;
     var said = timedOut ? 'Too slow. Skipped.' : d === 0 ? 'You skipped.' : 'You went ' + (d === 1 ? 'long' : 'short') + '.';
-    status(said, 'Killshot ' + (s.d === 1 ? 'bought' : 'sold') + ' at ' + fmt(s.entry, s.sym === 'GOLD' ? 1 : 0) + '. Watch it play out.');
+    status(said, 'Killshot on: it flagged a ' + (s.d === 1 ? 'buy' : 'sell') + ' right here. Watch it play out.');
     G.phase = 'play'; cv.p = 0;
   }
   function settle(k) {
