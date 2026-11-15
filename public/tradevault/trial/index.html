@@ -641,7 +641,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 /* playbook slide fan */
 .media.book.slides{display:block;position:relative;overflow:hidden}
 .sfan{position:absolute;inset:0;perspective:900px}
-.sl{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:16/10;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.5);
+.sl{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:16/9.6;background-size:cover!important;background-position:center!important;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.5);
   background:radial-gradient(ellipse 90% 120% at 0% 0%,rgba(75,158,255,.35),transparent 60%),linear-gradient(150deg,#0F2448,#081329);padding:9% 8%;display:flex;flex-direction:column;justify-content:space-between;transition:transform .6s var(--ease)}
 .sl small{font:500 7px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#6CB1FF}
 .sl b{font:700 15px var(--display);letter-spacing:-.02em;line-height:1.05;color:#EAF0FA}
@@ -653,6 +653,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .sl:nth-child(5){transform:translate(-50%,-44%)}
 .card:hover .sl:nth-child(1){transform:translate(-104%,-66%) rotate(-13deg) scale(.82)}
 .card:hover .sl:nth-child(2){transform:translate(4%,-66%) rotate(13deg) scale(.82)}
+.media.shot img{object-fit:cover;object-position:center top}
 .slides .mono{position:absolute;left:0;right:0;bottom:12px;text-align:center}
 
 .pv-count{display:flex;flex-direction:column;align-items:flex-end;font:500 9px var(--mono);letter-spacing:.16em;text-transform:uppercase}
@@ -1096,26 +1097,20 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
     </div>
     <div class="get">
       <article class="card reveal">
-        <div class="media"><img src="../assets/jay-charts.webp" alt="Educator teaching at a trading desk" loading="lazy">
+        <div class="media shot"><img src="/assets/portal/lesson-killshot.webp" alt="A Killshot Bootcamp lesson in the members portal" loading="lazy">
           <span class="chip"><span class="play"><svg width="8" height="9" viewBox="0 0 8 9"><path d="M0 0l8 4.5L0 9z" fill="#fff"/></svg></span>110+ HD lessons</span></div>
         <div class="bd"><h3>Video lessons</h3><p>110+ HD lessons across 18 modules. Watch your educators explain, execute and review exactly how they trade. On demand, forever.</p></div>
       </article>
       <article class="card reveal d1">
         <div class="media book slides">
-          <div class="sfan" aria-hidden="true">
-            <div class="sl"><small>Killshot Bootcamp · 05</small><b>What are the stars?</b><i></i></div>
-            <div class="sl"><small>Killshot Bootcamp · 06</small><b>Backtest Killshot</b><i></i></div>
-            <div class="sl"><small>Killshot Bootcamp · 01</small><b>What is Killshot?</b><i></i></div>
-            <div class="sl"><small>Killshot Bootcamp · 03</small><b>What are the EMAs?</b><i></i></div>
-            <div class="sl"><small>Killshot Bootcamp · 04</small><b>What is the POC?</b><i></i></div>
-          </div>
+          <div class="sfan" aria-hidden="true"><div class="sl" style="background-image:url(/assets/portal/slide-sessions.webp)"></div><div class="sl" style="background-image:url(/assets/portal/slide-consistency.webp)"></div><div class="sl" style="background-image:url(/assets/portal/slide-rr.webp)"></div><div class="sl" style="background-image:url(/assets/portal/slide-risk.webp)"></div><div class="sl" style="background-image:url(/assets/portal/slide-candles.webp)"></div></div>
           <span class="mono" style="font-size:9.5px">Slides with every lesson</span>
         </div>
         <div class="bd"><h3>Lesson slides</h3><p>Every lesson comes with its slide deck to download and keep. Have the rules in front of you, even away from the screen.</p></div>
       </article>
       <article class="card reveal d2">
-        <div class="media"><img src="../assets/jay-training.webp" alt="Live trading session with Killshot signals" loading="lazy" style="object-position:80% 0%">
-          <span class="chip live">Live now</span></div>
+        <div class="media shot"><img src="/assets/portal/recordings.webp" alt="Live session recordings in the members portal" loading="lazy" style="object-position:left top">
+          <span class="chip live" style="top:auto;bottom:14px">Every session recorded</span></div>
         <div class="bd"><h3>Live sessions</h3><p>Your educators trade live every session: pre-market prep, live execution, post-session review. Real decisions in real markets, not recordings from last month.</p></div>
       </article>
     </div>
