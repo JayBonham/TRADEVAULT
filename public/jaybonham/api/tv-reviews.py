@@ -97,11 +97,9 @@ class handler(BaseHTTPRequestHandler):
 
     def _json(self, status, body):
         self.send_response(status)
-        origin = self.headers.get("Origin", "")
-        if origin in ORIGINS or origin.startswith("http://localhost"):
-            self.send_header("Access-Control-Allow-Origin", origin)
-            self.send_header("Vary", "Origin")
-            self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        # public, read-only data that the CDN caches, so one origin-independent header
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
         self.send_header("Content-Type", "application/json")
         self.send_header("Cache-Control", "public, max-age=600" if status == 200 else "no-store")
         self.end_headers()

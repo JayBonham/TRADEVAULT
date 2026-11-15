@@ -198,6 +198,10 @@ h2{font-size:clamp(34px,4.8vw,60px)}
 .ui-body{padding:18px;display:grid;gap:10px}
 .ui-chart{border-radius:12px;background:rgba(0,0,0,.22);border:1px solid var(--hair);padding:8px 8px 4px}
 .ui-chart svg{display:block;width:100%;height:auto}
+.ks-chart{padding:0;overflow:hidden;background:#060B16}
+.ks-chart canvas{display:block;width:100%;height:clamp(190px,24vw,250px)}
+.st.stop{background:rgba(255,77,99,.12);color:#FF8F8F}
+.ks-up{color:#6FB3FF;font-weight:600}.ks-dn{color:#FF8F8F;font-weight:600}
 .ui-rows{display:grid;gap:6px}
 .ui-rows div{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--hair);font-size:13px}
 .ui-rows b{font-weight:600}
@@ -449,6 +453,147 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   .seq-panel,.seq-txt{transition:none!important}
   .pill .dot,.ui-top em::before,.live-chip::before,.play,.get .chip.live::before{animation:none}
 }
+.wrev{margin:0 0 34px}
+.wrev-h{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.wrev-score{display:flex;align-items:center;gap:12px;padding:10px 18px;border-radius:16px;border:1px solid rgba(255,200,80,.35);background:rgba(255,200,80,.07)}
+.wrev-score b{font-family:var(--display);font-size:34px;letter-spacing:-.04em;line-height:1}
+.wrev-stars{color:#FFC94D;font-size:18px;letter-spacing:2px}
+.wrev-h p{color:var(--tx-dim);font-size:15px}
+.wrev-h p b{color:var(--tx)}
+.wrev-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.wrev-c{display:flex;flex-direction:column;gap:10px;padding:20px;border-radius:18px;border:1px solid var(--hair);background:rgba(255,255,255,.025);min-width:0}
+.wrev-c .st5{color:#FFC94D;letter-spacing:2px;font-size:14px}
+.wrev-c p{font-size:15px;color:var(--tx-dim);line-height:1.55;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.wrev-c p.open{-webkit-line-clamp:unset}
+.wrev-c footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--tx-mute);padding:0;border:0}
+.wrev-c footer b{color:var(--tx);font-weight:600}
+.wrev-c .vf{font-family:var(--mono,monospace);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#7BE0B0}
+@media(max-width:900px){.wrev-grid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(270px,82%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.wrev-c{scroll-snap-align:start}}
+
+/* ---- portal preview (hero) ---- */
+.pv{--ps:#0A1322;--ps2:#0E1A2E;--pl:rgba(255,255,255,.09);--pt2:#B3C0D4;--pm:#7F8DA3;margin-top:clamp(48px,7vh,72px);border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.15);background:#050A14;
+  box-shadow:0 50px 120px rgba(0,0,0,.55),0 0 0 1px rgba(75,158,255,.08),0 0 80px rgba(75,158,255,.08);text-align:left}
+.pv-bar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--pl);background:rgba(255,255,255,.02)}
+.pv-bar i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.14)}
+.pv-bar span{margin:0 auto;font:500 11px var(--mono);color:var(--pm);padding:4px 14px;border-radius:999px;background:rgba(255,255,255,.04)}
+.pv-bar em{font-style:normal;font:500 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--warn,#F5B85C)}
+.pv-app{display:grid;grid-template-columns:196px minmax(0,1fr);height:clamp(470px,52vw,560px)}
+.pv-side{display:flex;flex-direction:column;gap:3px;padding:16px 10px;border-right:1px solid var(--pl);background:rgba(8,17,31,.78)}
+.pv-logo{display:flex;align-items:center;gap:8px;padding:2px 8px 16px}
+.pv-logo img+img{height:9px;width:auto;opacity:.9}
+.pv-side button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;border:0;background:none;color:var(--pm);font:500 13.5px var(--body);cursor:pointer;text-align:left;transition:background .2s,color .2s}
+.pv-side button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.pv-side button:hover{color:var(--tx)}
+.pv-side button.on{background:rgba(255,255,255,.07);color:var(--tx);box-shadow:inset 0 0 0 1px var(--pl)}
+.pv-side button.on svg{color:#4B9EFF}
+.pv-next{margin-top:auto;display:grid;gap:2px;padding:12px;border-radius:14px;background:linear-gradient(160deg,rgba(75,158,255,.14),rgba(255,255,255,.02));border:1px solid var(--pl);font-size:12px}
+.pv-next small,.pv-eb{font:500 9.5px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:#6CB1FF}
+.pv-next b{font:600 13px var(--display);color:var(--tx)}
+.pv-next span{color:var(--pm)}
+.pv-next em{font-style:normal;font:500 11px var(--mono);color:#4B9EFF;margin-top:4px}
+.pv-main{position:relative;overflow:hidden}
+.pv-view{position:absolute;inset:0;padding:20px 22px;display:flex;flex-direction:column;gap:14px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .45s var(--ease),transform .45s var(--ease);overflow:hidden}
+.pv-view.on{opacity:1;transform:none;pointer-events:auto}
+.pv-hello{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.pv-hello h4{font:700 24px var(--display);letter-spacing:-.03em;margin-top:4px;color:var(--tx)}
+.pv-ghost{font:600 12.5px var(--display);padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:var(--tx);white-space:nowrap}
+.pv-pill{display:inline-flex;font:600 12.5px var(--display);padding:8px 16px;border-radius:999px;background:#fff;color:#07101F;box-shadow:0 8px 30px rgba(75,158,255,.25);white-space:nowrap}
+.pv-tz{font-size:12px;color:var(--pm)}.pv-tz b{color:var(--tx)}
+.pv-card{border-radius:18px;border:1px solid var(--pl);background:var(--ps);background-image:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));padding:14px 16px;min-width:0}
+.pv-ch{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:12.5px}
+.pv-ch b{font:600 14px var(--display);color:var(--tx)}
+.pv-ch span{color:var(--pm)}
+.pv-av{border-radius:50%;object-fit:cover;object-position:center 18%;box-shadow:0 0 0 2px var(--ed);background:#0E1A2E;flex:none}
+.pv-hero{display:grid;grid-template-columns:1.1fr 1fr;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:var(--ps);overflow:hidden;min-height:0;flex:1.2}
+.pv-hero-l{padding:16px 18px;display:flex;flex-direction:column;gap:9px}
+.pv-hero h5,.pv-resume h5{font:700 21px var(--display);letter-spacing:-.03em;line-height:1.1;color:var(--tx)}
+.pv-who{display:flex;align-items:center;flex-wrap:wrap;gap:4px 9px;font-size:12.5px}.pv-who b{color:var(--tx);font-weight:600}.pv-who span{color:var(--pm)}
+.pv-cd{display:flex;gap:6px}
+.pv-cd span{width:52px;padding:6px 0;border-radius:10px;background:rgba(5,10,20,.55);border:1px solid var(--pl);text-align:center}
+.pv-cd b{display:block;font:700 20px var(--display);letter-spacing:-.03em;color:var(--tx);font-variant-numeric:tabular-nums}
+.pv-cd small{font:500 8px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--pm)}
+.pv-btns{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+.pv-hero-r{position:relative;background:linear-gradient(170deg,#0B1628,#0E1D35)}
+.pv-hero-r img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 15%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+.pv-chip{position:absolute;right:12px;bottom:12px;font:500 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:rgba(5,10,20,.8);border:1px solid rgba(75,158,255,.5);color:#6CB1FF}
+.pv-2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;flex:1;min-height:0}
+.pv-row{display:grid;grid-template-columns:76px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--pl);font-size:11.5px;color:var(--pm)}
+.pv-row small{font:500 10px var(--mono);letter-spacing:.06em}
+.pv-row span b{display:block;color:var(--tx);font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-row em{font-style:normal;font:500 10px var(--mono)}
+.pv-big{display:block;font:700 30px var(--display);letter-spacing:-.04em;line-height:1}
+.up{color:#3fcf97!important}
+.pv-sub{display:block;font-size:12px;color:var(--pm);margin-top:3px}
+.pv-spark{display:block;width:100%;height:42px;margin:8px 0}
+.pv-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pv-mini span{padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--pl)}
+.pv-mini small,.pv-tiles small{display:block;font:500 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--pm)}
+.pv-mini b{font:700 17px var(--display);color:var(--tx)}
+/* schedule */
+.pv-nextup{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:18px;border:1px solid var(--pl);background:linear-gradient(100deg,rgba(75,158,255,.16) 12%,var(--ps) 60%);box-shadow:inset 4px 0 0 var(--ed)}
+.pv-nextup div{flex:1;min-width:0}.pv-nextup b{display:block;font:700 17px var(--display);color:var(--tx)}.pv-nextup span{font-size:12px;color:var(--pm)}
+.pv-cal{flex:1;min-height:0;display:grid;grid-template-columns:44px repeat(5,minmax(0,1fr));border-radius:18px;border:1px solid var(--pl);background:var(--ps);overflow:hidden}
+.pv-hours{display:flex;flex-direction:column;justify-content:space-between;padding:34px 0 4px;font:500 9px var(--mono);color:var(--pm);text-align:center}
+.pv-col{display:flex;flex-direction:column;border-left:1px solid var(--pl);min-width:0}
+.pv-dh{display:flex;align-items:baseline;justify-content:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--pl)}
+.pv-dh small{font:500 9.5px var(--mono);letter-spacing:.14em;color:var(--pm)}.pv-dh b{font:700 15px var(--display);color:var(--tx)}
+.pv-col.today .pv-dh small{color:#4B9EFF}.pv-col.today .pv-dh b{background:#4B9EFF;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-grid;place-items:center;font-size:12px}
+.pv-day{position:relative;flex:1;background:repeating-linear-gradient(180deg,transparent 0,transparent calc(25% - 1px),rgba(255,255,255,.05) calc(25% - 1px),rgba(255,255,255,.05) 25%)}
+.pv-ev{position:absolute;left:4px;right:4px;min-height:34px;border-radius:9px;padding:3px 6px;overflow:hidden;background:color-mix(in srgb,var(--ed) 18%,#0E1A2E);border:1px solid color-mix(in srgb,var(--ed) 45%,transparent);box-shadow:inset 3px 0 0 var(--ed)}
+.pv-ev small{display:block;font:500 9px var(--mono);color:var(--pt2)}.pv-ev b{display:block;font-size:10.5px;font-weight:600;color:var(--tx);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-now{position:absolute;left:0;right:0;height:2px;background:#E5484D}.pv-now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#E5484D}
+/* journal */
+.pv-conn{display:inline-flex;align-items:center;gap:7px;font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--pt2)}
+.pv-conn i{width:7px;height:7px;border-radius:50%;background:#3fcf97;box-shadow:0 0 8px #3fcf97}
+.pv-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pv-tiles span{padding:8px 12px;border-radius:16px;border:1px solid var(--pl);background:var(--ps)}
+.pv-tiles b{display:block;font:700 22px var(--display);letter-spacing:-.04em;color:var(--tx)}
+.pv-tiles i{display:none}
+.pv-2.j{grid-template-columns:1.6fr 1fr;flex:none;height:128px}
+.pv-eq{display:block;width:100%;height:76px}
+.pv-rad{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.pv-rad i{height:20px;border-radius:5px;display:grid;place-items:center;font:700 11px var(--body);font-style:normal;background:rgba(255,255,255,.05);color:#fff}
+.pv-rad i.ok{background:#9085e9}.pv-rad i.er{background:#c24f93}.pv-rad i.na{background:none;border:1px dashed rgba(255,255,255,.35);color:var(--pm)}
+.pv-note{font-size:11.5px;color:var(--pm);margin-top:10px}.pv-note b{color:var(--tx)}
+.pv-heat{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.pv-heat i{height:20px;border-radius:7px;font-style:normal;padding:3px 5px;background:rgba(255,255,255,.03);display:flex;flex-direction:column;justify-content:space-between}
+.pv-heat i.e{background:none}.pv-heat i.o{opacity:.5}
+.pv-heat b{font:600 9px var(--mono);color:var(--pt2)}.pv-heat s{text-decoration:none;font:600 9.5px var(--mono);color:#fff;align-self:flex-end}
+/* academy + recordings */
+.pv-resume{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;padding:14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:var(--ps)}
+.pv-resume>div:last-child{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.pv-thumb{position:relative;aspect-ratio:16/9;border-radius:14px;background:#0E1A2E center/cover;overflow:hidden}
+.pv-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(5,10,20,.85))}
+.pv-play{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:#fff;z-index:1;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.pv-play::before{content:"";position:absolute;left:21px;top:16px;border-left:15px solid #07101F;border-top:10px solid transparent;border-bottom:10px solid transparent}
+.pv-thumb em{position:absolute;right:10px;bottom:8px;z-index:1;font-style:normal;font:500 10px var(--mono);color:#fff}
+.pv-new{position:absolute;left:8px;top:8px;z-index:1;font:500 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#4B9EFF;color:#fff}
+.pv-prog{width:100%;height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.pv-prog i{display:block;height:100%;background:linear-gradient(90deg,#4B9EFF,#3fcf97)}
+.pv-path,.pv-rail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pv-rail{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pv-course,.pv-rc{display:flex;flex-direction:column;gap:5px;min-width:0}
+.pv-cover{position:relative;aspect-ratio:16/6.4;border-radius:12px;background:#0E1A2E center/cover}
+.pv-cover span{position:absolute;left:8px;top:8px;font:500 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(5,10,20,.8);color:#6CB1FF;border:1px solid rgba(75,158,255,.45)}
+.pv-course b,.pv-rc b{font:600 14px var(--display);color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-course small,.pv-rc small{font-size:11px;color:var(--pm)}
+.pv-cap{margin-top:14px;text-align:center;font-size:13px;color:var(--tx-mute)}.pv-cap span{opacity:.75}
+@media(max-width:860px){
+  .pv-app{grid-template-columns:1fr;height:auto}
+  .pv-side{flex-direction:row;overflow-x:auto;gap:4px;padding:8px;border-right:0;border-bottom:1px solid var(--pl)}
+  .pv-logo,.pv-next{display:none}
+  .pv-side button{flex:none;padding:8px 12px}
+  .pv-main{height:560px}
+  .pv-view{padding:14px}
+  .pv-hero{grid-template-columns:1fr 110px}
+  .pv-2,.pv-2.j,.pv-resume{grid-template-columns:1fr}
+  .pv-2>.pv-card:last-child,.pv-2.j>.pv-card:last-child,.pv-hello .pv-ghost{display:none}
+  .pv-tiles{grid-template-columns:1fr 1fr}
+  .pv-path{grid-template-columns:1fr 1fr}.pv-path .pv-course:last-child{display:none}
+  .pv-rail{grid-template-columns:1fr 1fr}.pv-rail .pv-rc:nth-child(n+3){display:none}
+  .pv-cal{grid-template-columns:34px repeat(5,minmax(0,1fr))}.pv-ev b{font-size:9px}.pv-ev small{display:none}
+  .pv-nextup .pv-pill{display:none}
+  .pv-bar span{font-size:10px}
+}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -511,15 +656,95 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
       <span class="note">From $49.99 / month · Upgrade any time</span>
     </div>
 
-    <div class="frame reveal">
-      <span class="live-chip">Your educators</span>
-      <div class="crew">
-        <figure class="cut jay"><img src="assets/jay-bonham-cut.webp" alt="Jay Bonham"><figcaption><b>Jay Bonham</b><span>Founder · Killshot</span></figcaption></figure>
-        <figure class="cut"><img src="assets/tyler-collins-cut.webp" alt="Tyler Collins"><figcaption><b>Tyler Collins</b><span>Gold &amp; NQ · Smartshot</span></figcaption></figure>
-        <figure><img src="assets/andrew-bridges.jpg" alt="Andrew Bridges" style="object-position:center 12%"><figcaption><b>Andrew Bridges</b><span>Indices · Spectrum</span></figcaption></figure>
-        <figure><img src="assets/adam-haase.webp" style="object-position:center 20%" alt="Adam Haase"><figcaption><b>Adam Haase</b><span>US30 · Killshot</span></figcaption></figure>
+    <div class="pv reveal" id="pv" aria-label="Preview of the members portal">
+      <div class="pv-bar"><i></i><i></i><i></i><span>portal.thetradevault.co</span><em>Example data</em></div>
+      <div class="pv-app">
+        <nav class="pv-side" role="tablist" aria-label="Portal areas">
+          <div class="pv-logo"><img src="/assets/tv-icon.png" alt="" width="22" height="22"><img src="/assets/tv-logo.png" alt="The Trade Vault" height="10"></div>
+          <button type="button" role="tab" class="on" data-v="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+          <button type="button" role="tab" data-v="sched"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Schedule</button>
+          <button type="button" role="tab" data-v="journal"><svg viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7 15l4-5 3 3 5-6"/></svg>Journal</button>
+          <button type="button" role="tab" data-v="academy"><svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>Academy</button>
+          <button type="button" role="tab" data-v="rec"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg>Recordings</button>
+          <div class="pv-next"><small>Next live</small><b>Gold 3-Minute Killshot</b><span>Jay · Tue, 14:30</span><em data-pv-cd>in 1d 3h 05m</em></div>
+        </nav>
+        <div class="pv-main">
+
+          <section class="pv-view on" data-view="home">
+            <div class="pv-hello"><div><small class="pv-eb">Your vault</small><h4>Welcome back, <span data-pv-name>Sam</span></h4></div><span class="pv-ghost">Full schedule</span></div>
+            <div class="pv-hero">
+              <div class="pv-hero-l">
+                <small class="pv-eb">Next live session</small>
+                <h5>Gold 3-Minute Killshot Session</h5>
+                <p class="pv-who"><img class="pv-av" src="/assets/jay-bonham-cut.webp" alt="" style="--ed:#4B9EFF;width:28px;height:28px" loading="lazy"><b>Jay Bonham</b><span>Tue 17 Nov · 90 min</span></p>
+                <div class="pv-cd"><span><b data-pv-d>01</b><small>Days</small></span><span><b data-pv-h>03</b><small>Hrs</small></span><span><b data-pv-m>05</b><small>Min</small></span><span><b data-pv-s>12</b><small>Sec</small></span></div>
+                <div class="pv-btns"><span class="pv-pill">Open the room</span><span class="pv-ghost">Add to calendar</span></div>
+              </div>
+              <div class="pv-hero-r"><img src="/assets/jay-bonham-cut.webp" alt="" loading="lazy"><span class="pv-chip">Killshot</span></div>
+            </div>
+            <div class="pv-2">
+              <div class="pv-card"><div class="pv-ch"><b>Coming up</b><span>Week view →</span></div>
+                <div class="pv-row"><small>TUE 09:00</small><img class="pv-av" src="/assets/tyler-collins-cut.webp" alt="" style="--ed:#9085e9;width:26px;height:26px" loading="lazy"><span><b>Gold Smartshot London</b>Tyler Collins</span><em>60m</em></div>
+                <div class="pv-row"><small>WED 13:00</small><img class="pv-av" src="/assets/andrew-bridges.jpg" alt="" style="--ed:#22D39A;width:26px;height:26px" loading="lazy"><span><b>Spectrum Indices</b>Andrew Bridges</span><em>60m</em></div>
+                <div class="pv-row"><small>WED 15:00</small><img class="pv-av" src="/assets/adam-haase.webp" alt="" style="--ed:#F5B85C;width:26px;height:26px" loading="lazy"><span><b>US30 Killshot Live</b>Adam Haase</span><em>60m</em></div>
+              </div>
+              <div class="pv-card"><div class="pv-ch"><b>Journal · this month</b><span>Open →</span></div>
+                <b class="pv-big up">+$2,418.50</b><span class="pv-sub">34 trades · 21 W / 13 L</span>
+                <svg class="pv-spark" viewBox="0 0 200 50" preserveAspectRatio="none"><polyline points="0.0,48.0 6.1,45.9 12.1,44.9 18.2,42.6 24.2,39.5 30.3,38.1 36.4,39.7 42.4,36.6 48.5,35.2 54.5,32.1 60.6,29.0 66.7,30.2 72.7,27.7 78.8,28.7 84.8,31.4 90.9,32.7 97.0,31.1 103.0,30.3 109.1,27.9 115.2,24.7 121.2,26.7 127.3,24.7 133.3,23.3 139.4,20.2 145.5,19.2 151.5,16.6 157.6,14.4 163.6,11.6 169.7,8.0 175.8,9.0 181.8,11.5 187.9,10.0 193.9,12.0 200.0,14.6" fill="none" stroke="#3fcf97" stroke-width="2"/></svg>
+                <div class="pv-mini"><span><small>Win rate</small><b>62%</b></span><span><small>Profit factor</small><b>1.84</b></span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="pv-view" data-view="sched">
+            <div class="pv-hello"><div><small class="pv-eb">Live sessions</small><h4>Schedule</h4></div><span class="pv-tz">Times in <b>Europe/London</b></span></div>
+            <div class="pv-nextup" style="--ed:#4B9EFF"><img class="pv-av" src="/assets/jay-bonham-cut.webp" alt="" style="--ed:#4B9EFF;width:40px;height:40px" loading="lazy"><div><small class="pv-eb">Next up</small><b>Gold 3-Minute Killshot</b><span>Jay Bonham · Tue 17 Nov, 14:30 · 90 min</span></div><span class="pv-pill">Open waiting room</span></div>
+            <div class="pv-cal"><div class="pv-hours"><span>09:00</span><span>11:30</span><span>14:00</span><span>16:30</span><span>19:00</span></div><div class="pv-col"><span class="pv-dh"><small>MON</small><b>16</b></span><div class="pv-day"><div class="pv-ev" style="--ed:#4B9EFF;top:45.00%;height:15.00%"><small>13:30</small><b>London Killshot Open</b></div><div class="pv-ev" style="--ed:#F5B85C;top:55.00%;height:10.00%"><small>14:30</small><b>US30 New York Open</b></div></div></div><div class="pv-col today"><span class="pv-dh"><small>TUE</small><b>17</b></span><div class="pv-day"><div class="pv-ev" style="--ed:#9085e9;top:-0.00%;height:10.00%"><small>09:00</small><b>Gold Smartshot London</b></div><div class="pv-ev" style="--ed:#4B9EFF;top:55.00%;height:15.00%"><small>14:30</small><b>Gold 3-Minute Killshot</b></div><i class="pv-now" style="top:52%"></i></div></div><div class="pv-col"><span class="pv-dh"><small>WED</small><b>18</b></span><div class="pv-day"><div class="pv-ev" style="--ed:#22D39A;top:40.00%;height:10.00%"><small>13:00</small><b>Spectrum Indices</b></div><div class="pv-ev" style="--ed:#F5B85C;top:60.00%;height:10.00%"><small>15:00</small><b>US30 Killshot Live</b></div></div></div><div class="pv-col"><span class="pv-dh"><small>THU</small><b>19</b></span><div class="pv-day"><div class="pv-ev" style="--ed:#9085e9;top:-0.00%;height:10.00%"><small>09:00</small><b>Gold Smartshot London</b></div><div class="pv-ev" style="--ed:#4B9EFF;top:55.00%;height:15.00%"><small>14:30</small><b>Gold 3-Minute Killshot</b></div></div></div><div class="pv-col"><span class="pv-dh"><small>FRI</small><b>20</b></span><div class="pv-day"><div class="pv-ev" style="--ed:#22D39A;top:40.00%;height:10.00%"><small>13:00</small><b>Spectrum Indices</b></div><div class="pv-ev" style="--ed:#F5B85C;top:55.00%;height:10.00%"><small>14:30</small><b>Friday US30 Review</b></div></div></div></div>
+          </section>
+
+          <section class="pv-view" data-view="journal">
+            <div class="pv-hello"><div><small class="pv-eb">TradeVault Journal</small><h4>November</h4></div><span class="pv-conn"><i></i>MT5 connector · live</span></div>
+            <div class="pv-tiles"><span><small>Net result</small><b class="up">+$2,418.50</b><i>after swap and commission</i></span><span><small>Win rate</small><b>62%</b><i>21 W · 13 L</i></span><span><small>Profit factor</small><b>1.84</b><i>gross profit ÷ loss</i></span><span><small>Max drawdown</small><b>−$612</b><i>peak to trough</i></span></div>
+            <div class="pv-2 j">
+              <div class="pv-card"><div class="pv-ch"><b>Cumulative net result</b><span class="up">+$2,418.50</span></div>
+                <svg class="pv-eq" viewBox="0 0 520 150" preserveAspectRatio="none"><defs><linearGradient id="pvg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4B9EFF" stop-opacity=".28"/><stop offset="1" stop-color="#4B9EFF" stop-opacity="0"/></linearGradient></defs><polygon points="0,150 0.0,140.0 15.8,133.3 31.5,130.3 47.3,122.9 63.0,113.3 78.8,108.9 94.5,113.8 110.3,104.0 126.1,99.7 141.8,89.8 157.6,80.2 173.3,84.1 189.1,76.0 204.8,79.2 220.6,87.7 236.4,91.7 252.1,86.7 267.9,84.3 283.6,76.7 299.4,66.7 315.2,72.8 330.9,66.5 346.7,62.0 362.4,52.3 378.2,49.2 393.9,41.2 409.7,34.1 425.5,25.4 441.2,14.0 457.0,17.0 472.7,25.1 488.5,20.2 504.2,26.6 520.0,34.7 520,150" fill="url(#pvg)"/><polyline points="0.0,140.0 15.8,133.3 31.5,130.3 47.3,122.9 63.0,113.3 78.8,108.9 94.5,113.8 110.3,104.0 126.1,99.7 141.8,89.8 157.6,80.2 173.3,84.1 189.1,76.0 204.8,79.2 220.6,87.7 236.4,91.7 252.1,86.7 267.9,84.3 283.6,76.7 299.4,66.7 315.2,72.8 330.9,66.5 346.7,62.0 362.4,52.3 378.2,49.2 393.9,41.2 409.7,34.1 425.5,25.4 441.2,14.0 457.0,17.0 472.7,25.1 488.5,20.2 504.2,26.6 520.0,34.7" fill="none" stroke="#4B9EFF" stroke-width="2.2"/></svg>
+              </div>
+              <div class="pv-card"><div class="pv-ch"><b>Rules sequence</b><span>14 of 20</span></div>
+                <div class="pv-rad"><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="er">!</i><i class="ok">✓</i><i class="ok">✓</i><i class="ok">✓</i><i class="er">!</i><i class="na">?</i><i></i><i></i><i></i><i></i><i></i></div>
+                <p class="pv-note">Judge every trade on one question: <b>did I follow my rules?</b></p>
+              </div>
+            </div>
+            <div class="pv-card"><div class="pv-ch"><b>November 2026</b><span>Mon – Sun</span></div><div class="pv-heat"><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="e"></i><i class="o"><b>1</b></i><i style="background:rgba(27,175,122,0.44)"><b>2</b><s>+$225</s></i><i style="background:rgba(27,175,122,0.74)"><b>3</b><s>+$489</s></i><i style="background:rgba(27,175,122,0.67)"><b>4</b><s>+$422</s></i><i style="background:rgba(27,175,122,0.41)"><b>5</b><s>+$202</s></i><i style="background:rgba(27,175,122,0.61)"><b>6</b><s>+$375</s></i><i class="o"><b>7</b></i><i class="o"><b>8</b></i><i style="background:rgba(27,175,122,0.32)"><b>9</b><s>+$122</s></i><i style="background:rgba(27,175,122,0.35)"><b>10</b><s>+$150</s></i><i style="background:rgba(27,175,122,0.52)"><b>11</b><s>+$295</s></i><i style="background:rgba(27,175,122,0.27)"><b>12</b><s>+$81</s></i><i style="background:rgba(27,175,122,0.66)"><b>13</b><s>+$417</s></i><i class="o"><b>14</b></i><i class="o"><b>15</b></i><i class="o"><b>16</b></i><i class="o"><b>17</b></i><i class="o"><b>18</b></i><i class="o"><b>19</b></i><i class="o"><b>20</b></i><i class="o"><b>21</b></i><i class="o"><b>22</b></i><i class="o"><b>23</b></i><i class="o"><b>24</b></i><i class="o"><b>25</b></i><i class="o"><b>26</b></i><i class="o"><b>27</b></i><i class="o"><b>28</b></i><i class="o"><b>29</b></i><i class="o"><b>30</b></i></div></div>
+          </section>
+
+          <section class="pv-view" data-view="academy">
+            <div class="pv-hello"><div><small class="pv-eb">The Academy</small><h4>Learn the system</h4></div><span class="pv-tz"><b>24</b> of 112 lessons done</span></div>
+            <div class="pv-resume"><div class="pv-thumb" style="background-image:url(/assets/jay-training.webp)"><i class="pv-play"></i><em>4:57</em></div>
+              <div><small class="pv-eb">Pick up where you left off</small><h5>What is a pip?</h5><span class="pv-sub">Basic · Module 3: Early terms and understanding · Lesson 2</span><div class="pv-prog"><i style="width:23%"></i></div><span class="pv-pill">Resume lesson</span></div></div>
+            <div class="pv-path">
+              <div class="pv-course"><div class="pv-cover" style="background-image:url(/assets/killshot-graphic.webp)"><span>Level 1</span></div><b>Basic</b><small>9 modules · 53 lessons</small><div class="pv-prog"><i style="width:23%"></i></div></div>
+              <div class="pv-course"><div class="pv-cover" style="background-image:url(/assets/smartshot-graphic.webp)"><span>Level 2</span></div><b>Intermediate</b><small>Journal, technicals, psychology</small><div class="pv-prog"><i style="width:0"></i></div></div>
+              <div class="pv-course"><div class="pv-cover" style="background-image:url(/assets/spectrum-graphic.webp)"><span>Level 3</span></div><b>Advanced</b><small>Wyckoff, supply &amp; demand, Killshot advanced</small><div class="pv-prog"><i style="width:0"></i></div></div>
+            </div>
+          </section>
+
+          <section class="pv-view" data-view="rec">
+            <div class="pv-hello"><div><small class="pv-eb">Every session, saved</small><h4>Recordings</h4></div><span class="pv-tz">Every live session is recorded</span></div>
+            <div class="pv-resume"><div class="pv-thumb" style="background-image:url(/assets/jay-charts.webp)"><i class="pv-play"></i><em>1 h 05 min</em></div>
+              <div><small class="pv-eb">Latest session</small><h5>Gold 3-Minute Killshot Session</h5><p class="pv-who"><img class="pv-av" src="/assets/jay-bonham-cut.webp" alt="" style="--ed:#4B9EFF;width:26px;height:26px" loading="lazy"><b>Jay Bonham</b><span>Fri 13 Nov</span></p><span class="pv-pill">Watch now</span></div></div>
+            <div class="pv-rail">
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/killshot-graphic.webp)"><span class="pv-new">New</span><em>58 min</em></div><b>US30 New York Open</b><small>Adam · Thu 12 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/smartshot-graphic.webp)"><span class="pv-new">New</span><em>1 h 02 min</em></div><b>Gold Smartshot London</b><small>Tyler · Thu 12 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/spectrum-graphic.webp)"><em>47 min</em></div><b>Spectrum Indices</b><small>Andrew · Wed 11 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/jay-training.webp)"><em>1 h 21 min</em></div><b>London Killshot Open</b><small>Jay · Mon 9 Nov</small></div>
+            </div>
+          </section>
+
+        </div>
       </div>
     </div>
+    <p class="pv-cap">The members portal: live schedule, recordings, Academy and your trading journal in one place. <span>Example data shown.</span></p>
+
   </div>
 </section>
 
@@ -634,17 +859,18 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
               <h3>The scanner finds the setup. <span class="hl">You make the call.</span></h3>
               <p>Killshot, Smartshot and Spectrum watch the markets for you and flag the setups that match the rules. Nothing fires on a hunch.</p>
             </div>
-            <div class="seq-panel ui" aria-hidden="true">
-              <div class="ui-top"><b>Killshot</b><span>US30 · 5m</span><em>Live</em></div>
+            <div class="seq-panel ui ks-panel" data-ks-panel aria-label="Killshot replaying real gold 3-minute charts">
+              <div class="ui-top"><b>Killshot</b><span>XAUUSD · 3m · replay</span><em>Live</em></div>
               <div class="ui-body">
-                <div class="ui-chart"><svg viewBox="0 0 560 140" role="presentation"><line x1="0" x2="560" y1="103.2" y2="103.2" stroke="rgba(255,255,255,.22)" stroke-dasharray="4 4"/><text x="552" y="98.2" text-anchor="end" fill="rgba(255,255,255,.4)" font-family="JetBrains Mono,monospace" font-size="9" letter-spacing="1.5">POC</text><polyline points="24,112.8 62,110.6 100,106.6 138,96.4 176,90.1 214,91.7 252,96.9 290,98.3 328,91.9 366,81.1 404,73.8 442,66.9 480,56.6 518,46.6" fill="none" stroke="#4B9EFF" stroke-width="1.6" opacity=".85"/><line x1="24" x2="24" y1="87.2" y2="122.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="17" y="96.8" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="62" x2="62" y1="90.4" y2="112.8" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="55" y="96.8" width="14" height="9.6" rx="2" fill="rgba(255,255,255,.38)"/><line x1="100" x2="100" y1="77.6" y2="109.6" stroke="#7BE0B0" stroke-width="1.4"/><rect x="93" y="84.0" width="14" height="22.4" rx="2" fill="#7BE0B0"/><line x1="138" x2="138" y1="64.8" y2="90.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="131" y="71.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="176" x2="176" y1="68.0" y2="87.2" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="169" y="71.2" width="14" height="9.6" rx="2" fill="rgba(255,255,255,.38)"/><line x1="214" x2="214" y1="74.4" y2="100.0" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="207" y="80.8" width="14" height="12.8" rx="2" fill="rgba(255,255,255,.38)"/><line x1="252" x2="252" y1="87.2" y2="106.4" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="245" y="93.6" width="14" height="6.4" rx="2" fill="rgba(255,255,255,.38)"/><line x1="290" x2="290" y1="80.8" y2="104.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="283" y="87.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="328" x2="328" y1="61.6" y2="90.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="321" y="68.0" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="366" x2="366" y1="48.8" y2="74.4" stroke="#7BE0B0" stroke-width="1.4"/><rect x="359" y="55.2" width="14" height="12.8" rx="2" fill="#7BE0B0"/><line x1="404" x2="404" y1="52.0" y2="66.4" stroke="rgba(255,255,255,.38)" stroke-width="1.4"/><rect x="397" y="55.2" width="14" height="6.4" rx="2" fill="rgba(255,255,255,.38)"/><line x1="442" x2="442" y1="36.0" y2="64.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="435" y="42.4" width="14" height="19.2" rx="2" fill="#7BE0B0"/><line x1="480" x2="480" y1="26.4" y2="48.8" stroke="#7BE0B0" stroke-width="1.4"/><rect x="473" y="32.8" width="14" height="9.6" rx="2" fill="#7BE0B0"/><line x1="518" x2="518" y1="16.8" y2="39.2" stroke="#7BE0B0" stroke-width="1.4"/><rect x="511" y="23.2" width="14" height="9.6" rx="2" fill="#7BE0B0"/><path d="M290 112.8l1.8 3.9 4.2.5-3.1 2.9.8 4.2-3.7-2.1-3.7 2.1.8-4.2-3.1-2.9 4.2-.5z" fill="#4B9EFF"/></svg></div>
+                <div class="ui-chart ks-chart"><canvas data-ks-live aria-hidden="true"></canvas></div>
                 <div class="ui-rows">
-                  <div><b>US30</b><span>Star printed at POC</span><i class="st go">Setup</i></div>
-                  <div><b>NAS100</b><span>Pulling back to EMA</span><i class="st wait">Watch</i></div>
-                  <div><b>XAUUSD</b><span>Inside the range</span><i class="st">No trade</i></div>
+                  <div data-ks-row="signal"><b>Signal</b><span>Watching for a stretched extreme</span><i class="st wait">Scanning</i></div>
+                  <div data-ks-row="trend"><b>Trend</b><span>M3 · M15 · H1 · H4</span><i class="st">–</i></div>
+                  <div data-ks-row="poc"><b>POC</b><span>Point of Control</span><i class="st">–</i></div>
                 </div>
               </div>
-              <div class="ui-foot"><span><i>Scanner</i>Killshot</span><span><i>Session</i>NY open</span><span class="hot"><i>Next</i>Run the checklist</span></div>
+              <div class="ui-foot"><span><i>Scanner</i>Killshot</span><span><i>Market</i>Gold · 3m</span><span class="hot"><i>Next</i>Run the checklist</span></div>
+            </div>
             </div>
           </div>
 
@@ -730,7 +956,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         </div>
       </div>
     </div>
-    <p class="disc">Mock-ups for illustration only. Not real trades, signals or results.</p>
+    <p class="disc">Step 1 replays past gold 3-minute charts with a preview of the Killshot overlay. Other steps are mock-ups. Not live trades or financial advice.</p>
   </div>
 </section>
 
@@ -813,8 +1039,12 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
   <div class="W">
     <div class="head reveal">
       <span class="kick"><b>06</b>The community</span>
-      <h2>Inside the <span class="hl">community.</span></h2>
-      <p class="lede">Direct messages and screenshots from active members. Not manufactured quotes, not cherry-picked highlights.</p>
+      <h2>Rated <span class="hl">5 stars</span> by members.</h2>
+      <p class="lede">Verified Whop reviews, plus direct messages and screenshots from active members.</p>
+    </div>
+        <div class="wrev" id="wrev" hidden>
+      <div class="wrev-h"><div class="wrev-score"><b id="wrevAvg">5.0</b><span class="wrev-stars" aria-hidden="true">★★★★★</span></div><p><span id="wrevN"></span> verified reviews on <b>Whop</b>, where members join and pay.</p></div>
+      <div class="wrev-grid" id="wrevGrid"></div>
     </div>
     <div class="tslider-wrap reveal">
       <div class="tslider-vp">
@@ -1063,6 +1293,45 @@ function lbOpen(i){lbIdx=i;lbShow();lbEl.classList.add('open');document.body.sty
 function lbClose(e){if(e&&e.target!==lbEl&&!e.target.closest('.lb-close'))return;lbEl.classList.remove('open');document.body.style.overflow=''}
 function lbNav(dir,e){if(e)e.stopPropagation();lbIdx=(lbIdx+dir+lbSrcs.length)%lbSrcs.length;lbShow()}
 document.addEventListener('keydown',e=>{if(!lbEl.classList.contains('open'))return;if(e.key==='Escape')lbClose();if(e.key==='ArrowRight')lbNav(1);if(e.key==='ArrowLeft')lbNav(-1)});
+</script>
+<script src="/assets/ks-live.js" defer></script>
+<script>
+/* Live Whop reviews (published, 4-5 stars with text) from /api/tv-reviews; the section stays hidden if they can't load. */
+(function () {
+  fetch('https://jaybonham.com/api/tv-reviews').then(function (r) { return r.json(); }).then(function (d) {
+    if (!d.ok || !d.reviews || !d.reviews.length) return;
+    var g = document.getElementById('wrevGrid');
+    document.getElementById('wrevAvg').textContent = d.avg ? d.avg.toFixed(1) : '5.0';
+    document.getElementById('wrevN').textContent = d.count;
+    d.reviews.slice(0, 6).forEach(function (r) {
+      var c = document.createElement('article'); c.className = 'wrev-c';
+      var st = document.createElement('span'); st.className = 'st5'; st.textContent = '★★★★★'.slice(0, r.stars); c.appendChild(st);
+      var p = document.createElement('p'); p.textContent = r.text.replace(/^[⭐★\s]+/, ''); p.addEventListener('click', function () { p.classList.toggle('open'); }); c.appendChild(p);
+      var f = document.createElement('footer'); var n = document.createElement('b'); n.textContent = r.name; f.appendChild(n);
+      var v = document.createElement('span'); v.className = 'vf'; v.textContent = 'Verified on Whop'; f.appendChild(v); c.appendChild(f);
+      g.appendChild(c);
+    });
+    document.getElementById('wrev').hidden = false;
+  }).catch(function () {});
+})();
+</script>
+<script>
+/* Portal preview: tabs switch the screen; it auto-tours until someone clicks. Countdown ticks to the next Tue 14:30 London. */
+(function () {
+  var pv = document.getElementById('pv'); if (!pv) return;
+  var tabs = pv.querySelectorAll('.pv-side button'), views = pv.querySelectorAll('.pv-view'), order = ['home', 'sched', 'journal', 'academy', 'rec'], i = 0, auto = true, vis = false;
+  function show(v) { tabs.forEach(function (t) { var on = t.getAttribute('data-v') === v; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); }); views.forEach(function (w) { w.classList.toggle('on', w.getAttribute('data-view') === v); }); i = order.indexOf(v); }
+  tabs.forEach(function (t) { t.addEventListener('click', function () { auto = false; show(t.getAttribute('data-v')); }); });
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { vis = e[0].isIntersecting; }).observe(pv); else vis = true;
+  setInterval(function () { if (auto && vis && !document.hidden) show(order[(i + 1) % order.length]); }, 4200);
+  try { var n = localStorage.getItem('bk_name'); if (n) pv.querySelectorAll('[data-pv-name]').forEach(function (e) { e.textContent = n.split(' ')[0].slice(0, 16); }); } catch (e) {}
+  function nextSession() { var d = new Date(), t = new Date(d); t.setUTCHours(14, 30, 0, 0); var add = (2 - t.getUTCDay() + 7) % 7; t.setUTCDate(t.getUTCDate() + add); if (t <= d) t.setUTCDate(t.getUTCDate() + 7); return t; }
+  var target = nextSession(), q = function (s) { return pv.querySelector(s); }, p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+  function tick() { var s = Math.max(0, Math.floor((target - new Date()) / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+    q('[data-pv-d]').textContent = p2(d); q('[data-pv-h]').textContent = p2(h); q('[data-pv-m]').textContent = p2(m); q('[data-pv-s]').textContent = p2(s % 60);
+    q('[data-pv-cd]').textContent = 'in ' + d + 'd ' + h + 'h ' + p2(m) + 'm'; }
+  tick(); setInterval(tick, 1000);
+})();
 </script>
 </body>
 </html>
