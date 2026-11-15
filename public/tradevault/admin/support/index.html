@@ -210,6 +210,9 @@ button,input,textarea{font:inherit;color:inherit}
 .tier::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .tier.community{color:var(--acc);border-color:rgba(var(--acc-rgb),.4);background:rgba(var(--acc-rgb),.08)}
 .tier.elite{color:var(--warn);border-color:rgba(var(--warn-rgb),.4);background:rgba(var(--warn-rgb),.08)}
+.alt{background:rgba(var(--warn-rgb),.05)}
+.alt .mono{color:var(--warn)}
+.alt .note b{color:var(--tx);font-weight:600}
 .ms{padding:12px 14px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.025);display:grid;gap:4px}
 .ms b{font-size:14px;font-weight:600}
 .ms .s{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--tx-mute)}
@@ -767,24 +770,40 @@ button,input,textarea{font:inherit;color:inherit}
     if (!mb) { var n = el('div', 'sec'); n.appendChild(el('p', 'note', 'Couldn’t load their membership details.')); b.appendChild(n); return; }
     var s1 = el('div', 'sec'); s1.appendChild(el('span', 'mono', 'TradeVault'));
     s1.appendChild(kv('Email', mb.email ? copyable(mb.email) : '—'));
+    if (mb.whop_email && (mb.whop_email || '').toLowerCase() !== (mb.email || '').toLowerCase()) s1.appendChild(kv('Whop login', copyable(mb.whop_email)));
     s1.appendChild(kv('Setup', mb.tier ? (mb.setup || mb.tradingview ? '✓ Done' : 'Not yet') : '—'));
     if (mb.contact_id && mb.tier) s1.appendChild(kv('Scanner access', accessCell(mb)));
     s1.appendChild(kv('TradingView', mb.tradingview ? copyable(mb.tradingview) : '—'));
     if (mb.telegram) s1.appendChild(kv('Telegram', copyable('@' + String(mb.telegram).replace(/^@/, ''))));
     if (mb.educator) s1.appendChild(kv('Educator', EDU[mb.educator] || mb.educator));
     if (mb.scanner) s1.appendChild(kv('Scanner', String(mb.scanner).split(',').map(function (x) { return x.charAt(0).toUpperCase() + x.slice(1); }).join(', ')));
-    if (!mb.email && !mb.tier) s1.appendChild(el('p', 'note', 'Not matched to a TradeVault purchase. They may be on another Whop product.'));
+    var typed = mb.typed || [];
+    if (!mb.email && !mb.tier && !typed.length) s1.appendChild(el('p', 'note', 'Not matched to a TradeVault purchase. They may be on another Whop product.'));
     b.appendChild(s1);
+    typed.forEach(function (t) {
+      var a = el('div', 'sec alt'); a.appendChild(el('span', 'mono', 'Purchase on another email'));
+      var n = el('p', 'note'); n.appendChild(document.createTextNode('They bought with ')); n.appendChild(el('b', null, t.lookup));
+      n.appendChild(document.createTextNode(', which isn’t the Whop account they’re chatting from' + (mb.whop_email ? ' (' + mb.whop_email + ')' : '') + '.'));
+      a.appendChild(n);
+      a.appendChild(kv('Email', copyable(t.lookup)));
+      if (t.name) a.appendChild(kv('Name', t.name));
+      if (t.tier) { var tp = el('span', 'tier ' + t.tier, TIER[t.tier] || t.tier); a.appendChild(kv('Plan', tp)); }
+      a.appendChild(kv('Setup', t.tier ? (t.setup || t.tradingview ? '✓ Done' : 'Not yet') : '—'));
+      if (t.tradingview) a.appendChild(kv('TradingView', copyable(t.tradingview)));
+      (t.memberships || []).forEach(function (m) { a.appendChild(msCard(m)); });
+      b.appendChild(a);
+    });
     var s2 = el('div', 'sec'); s2.appendChild(el('span', 'mono', 'Whop memberships'));
     if (!(mb.memberships || []).length) s2.appendChild(el('p', 'note', mb.error ? 'Couldn’t read memberships: ' + mb.error : 'No memberships found.'));
-    (mb.memberships || []).forEach(function (m) {
-      var c = el('div', 'ms');
-      var t = el('div', 's'); t.style.color = 'var(--tx)'; t.appendChild(el('b', null, m.product || 'Membership')); t.appendChild(statusPill(m.status || 'unknown', m.cancelling)); c.appendChild(t);
-      var d = el('div', 's'); d.appendChild(el('span', null, 'Since ' + (shortDate(m.since) || '—')));
-      if (m.renews && /active|trialing|past_due/.test(m.status)) d.appendChild(el('span', null, (m.cancelling ? 'Ends ' : 'Renews ') + shortDate(m.renews)));
-      c.appendChild(d); s2.appendChild(c);
-    });
+    (mb.memberships || []).forEach(function (m) { s2.appendChild(msCard(m)); });
     b.appendChild(s2);
+  }
+  function msCard(m) {
+    var c = el('div', 'ms');
+    var t = el('div', 's'); t.style.color = 'var(--tx)'; t.appendChild(el('b', null, m.product || 'Membership')); t.appendChild(statusPill(m.status || 'unknown', m.cancelling)); c.appendChild(t);
+    var d = el('div', 's'); d.appendChild(el('span', null, 'Since ' + (shortDate(m.since) || '—')));
+    if (m.renews && /active|trialing|past_due/.test(m.status)) d.appendChild(el('span', null, (m.cancelling ? 'Ends ' : 'Renews ') + shortDate(m.renews)));
+    c.appendChild(d); return c;
   }
   function accessCell(mb) {
     if (mb.ended) return el('span', 'warn-t', 'Membership ended');

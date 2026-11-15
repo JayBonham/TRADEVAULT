@@ -8,7 +8,8 @@ GET  ?list=open|all|resolved[&after=cursor]
 GET  ?c=<channel id>[&before=<message id>][&since=<message id>][&u=<user id>]
        -> {ok, messages:[{id, text, at, team, author:{id,name,username,avatar}, files:[...],
                           reply_to}] oldest first, more, member}
-       member (only when u is given): Whop memberships for that user plus our setup answers.
+       member (only when u is given): Whop memberships for that user plus our setup answers, the email on
+       their Whop account (whop_email), and purchases found under any email they typed in the chat (typed).
 POST {c, text[, reply_to]} -> {ok, message}
 POST {c, action: "resolve"|"reopen"} -> {ok, resolved}
 POST {c, text?, image: {name, type, data(base64)}} -> uploads the image to Whop and sends it attached
@@ -17,6 +18,7 @@ POST {action: "snippet_save", id?, label, body} / {action: "snippet_delete", id}
 Sent replies are recorded with the admin who sent them (tv_support_sent) so the inbox can show
 "sent by"; Whop itself posts every reply as the API key's owner.
 """
+import datetime
 import http.client
 import json
 import os
@@ -46,6 +48,12 @@ CREATE TABLE IF NOT EXISTS tv_support_snippets (
     updated_by TEXT,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS tv_support_state (
+    chat_id  TEXT PRIMARY KEY,
+    resolved BOOLEAN NOT NULL,
+    by_who   TEXT,
+    at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS tv_support_sent (
     message_id TEXT PRIMARY KEY,
     chat_id    TEXT NOT NULL,
@@ -65,7 +73,10 @@ DEFAULT_SNIPPETS = [
 ]
 WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 ID_RE = re.compile(r"^[A-Za-z0-9_-]{4,80}$")
-VIEWS = {"open": "true", "resolved": "false", "all": None}
+VIEWS = ("open", "resolved", "all")
+# Whop marks a chat resolved by itself once the team replies, so Open/Resolved here follow the Resolve
+# button instead (tv_support_state). Chats Whop resolved before this went live keep Whop's state.
+WHOP_RESOLVED_BEFORE = 1794700800  # 2026-11-15 00:00 UTC
 
 
 def log(*a):
@@ -141,30 +152,98 @@ def _files(lst):
     return out
 
 
+def _ts(v):
+    """Whop timestamps come as ISO strings or unix seconds."""
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str) and v:
+        if v.isdigit():
+            return float(v)
+        try:
+            return datetime.datetime.fromisoformat(v.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return 0.0
+    return 0.0
+
+
+def chat_states(ids):
+    """chat id -> (resolved, at epoch) from the Resolve/Reopen button."""
+    if not (DATABASE_URL and ids):
+        return {}
+    try:
+        conn = db()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT chat_id, resolved, EXTRACT(EPOCH FROM at) FROM tv_support_state WHERE chat_id = ANY(%s)", (list(ids),))
+            return {r[0]: (bool(r[1]), float(r[2])) for r in cur.fetchall()}
+        finally:
+            conn.close()
+    except Exception as e:
+        log("TV_SUPPORT_STATE_DB:", e)
+        return {}
+
+
+def set_state(cid, resolved, who):
+    if not DATABASE_URL:
+        return
+    conn = db()
+    try:
+        cur = conn.cursor()
+        cur.execute("""INSERT INTO tv_support_state (chat_id, resolved, by_who, at) VALUES (%s, %s, %s, NOW())
+                       ON CONFLICT (chat_id) DO UPDATE SET resolved = EXCLUDED.resolved, by_who = EXCLUDED.by_who, at = NOW()""",
+                    (cid, resolved, who))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _is_resolved(ch, last, state):
+    """Resolved only when someone pressed Resolve, and the customer hasn't written since."""
+    cust_at = _ts(last["at"]) if last and not last["mine"] else 0.0
+    if state is not None:
+        resolved, at = state
+        return resolved and cust_at <= at
+    w = _ts(ch.get("resolved_at"))
+    return bool(w) and w < WHOP_RESOLVED_BEFORE and cust_at <= w
+
+
 def list_chats(view, after):
-    q = "/support_channels?account_id=%s&first=50&include_last_message=true&order=last_post_sent_at&direction=desc" % WHOP_COMPANY
-    if VIEWS.get(view):
-        q += "&open=" + VIEWS[view]
-    if after:
-        q += "&after=" + quote(after)
-    d = whop("GET", q)
-    chats = []
-    for ch in d.get("data") or []:
-        cu = ch.get("customer_user") if isinstance(ch.get("customer_user"), dict) else {}
-        lm = ch.get("last_message") if isinstance(ch.get("last_message"), dict) else None
-        last = None
-        if lm:
-            last = {"text": lm.get("content") or "", "at": lm.get("created_at") or "",
-                    "mine": bool(cu.get("id")) and lm.get("user_id") != cu.get("id"),
-                    "files": len(lm.get("attachments") or [])}
-        if view == "resolved" and not ch.get("resolved_at"):
-            continue
-        chats.append({"id": ch.get("id"), "user": _user(cu), "name": ch.get("custom_name") or "",
-                      "last": last, "at": ch.get("last_message_at") or (last or {}).get("at") or "",
-                      "needs_reply": bool(ch.get("needs_reply")), "resolved": bool(ch.get("resolved_at"))})
+    """Whop's own open/resolved filter can't be used (it drops a chat as soon as we reply), so pages are
+    read unfiltered and sorted into Open/Resolved here."""
+    want = 25 if view != "all" else 1
+    chats, cursor, pages = [], after, 0
+    while True:
+        q = "/support_channels?account_id=%s&first=50&include_last_message=true&order=last_post_sent_at&direction=desc" % WHOP_COMPANY
+        if cursor:
+            q += "&after=" + quote(cursor)
+        d = whop("GET", q)
+        page = []
+        for ch in d.get("data") or []:
+            if not isinstance(ch, dict):
+                continue
+            cu = ch.get("customer_user") if isinstance(ch.get("customer_user"), dict) else {}
+            lm = ch.get("last_message") if isinstance(ch.get("last_message"), dict) else None
+            last = None
+            if lm:
+                last = {"text": lm.get("content") or "", "at": lm.get("created_at") or "",
+                        "mine": bool(cu.get("id")) and lm.get("user_id") != cu.get("id"),
+                        "files": len(lm.get("attachments") or [])}
+            page.append((ch, cu, last))
+        states = chat_states([ch.get("id") for ch, _, _ in page if ch.get("id")])
+        for ch, cu, last in page:
+            resolved = _is_resolved(ch, last, states.get(ch.get("id")))
+            if (view == "open" and resolved) or (view == "resolved" and not resolved):
+                continue
+            chats.append({"id": ch.get("id"), "user": _user(cu), "name": ch.get("custom_name") or "",
+                          "last": last, "at": ch.get("last_message_at") or (last or {}).get("at") or "",
+                          "needs_reply": bool(ch.get("needs_reply")) and not resolved, "resolved": resolved})
+        pages += 1
+        pi = d.get("page_info") or {}
+        cursor = pi.get("end_cursor") if pi.get("has_next_page") else None
+        if not cursor or len(chats) >= want or pages >= 4:
+            break
     fill_avatars([c["user"] for c in chats])
-    pi = d.get("page_info") or {}
-    return chats, (pi.get("end_cursor") if pi.get("has_next_page") else None)
+    return chats, cursor
 
 
 def _gifs(lst):
@@ -382,14 +461,13 @@ def _db_member(membership_ids):
         return {}
 
 
-def member(uid):
-    try:
-        d = whop("GET", "/memberships?account_id=%s&user_id=%s&first=25" % (WHOP_COMPANY, quote(uid)))
-    except WhopError as e:
-        log("TV_SUPPORT_MEMBERSHIPS:", e)
-        return {"memberships": [], "error": str(e)}
+EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+
+
+def _fmt_memberships(raw):
+    """Whop memberships -> panel rows (best first) plus any tv_* metadata on them."""
     ms, meta = [], {}
-    for m in d.get("data") or []:
+    for m in raw:
         if not isinstance(m, dict):
             continue
         prod = m.get("product") if isinstance(m.get("product"), dict) else {}
@@ -403,16 +481,110 @@ def member(uid):
     rank = {"active": 0, "trialing": 0, "past_due": 1, "canceling": 1, "expiring": 1}
     ms.sort(key=lambda m: m["since"], reverse=True)
     ms.sort(key=lambda m: rank.get(m["status"], 2))
+    return ms, meta
+
+
+def _with_db(ms, meta):
     out = {"memberships": ms}
     out.update(_db_member([m["id"] for m in ms if m["id"]]))
-    # Whop metadata fills anything our DB doesn't have
     if out.get("contact_id"):
         out["assigned"] = ghl_assigned(out["contact_id"])
+    # Whop metadata fills anything our DB doesn't have
     for k, mk in (("tier", "tv_tier"), ("tradingview", "tv_tradingview"), ("telegram", "tv_telegram"),
                   ("educator", "tv_educator"), ("scanner", "tv_scanners")):
         if not out.get(k) and meta.get(mk):
             out[k] = meta[mk]
     return out
+
+
+def _member_email(mb):
+    u = mb.get("user") if isinstance(mb.get("user"), dict) else {}
+    return (mb.get("email") or u.get("email") or "").strip()
+
+
+def whop_email(uid):
+    """The email on the Whop account that's chatting. Checked against the user id, so an ignored filter can't
+    hand back someone else's."""
+    try:
+        d = whop("GET", "/members?account_id=%s&user_ids=%s&first=10" % (WHOP_COMPANY, quote(uid)))
+        for mb in d.get("data") or []:
+            u = mb.get("user") if isinstance(mb, dict) and isinstance(mb.get("user"), dict) else {}
+            if (u.get("id") or mb.get("user_id")) == uid and _member_email(mb):
+                return _member_email(mb)
+    except Exception as e:
+        log("TV_SUPPORT_WHOP_EMAIL:", e)
+    return ""
+
+
+def by_email(email):
+    """Purchases under an email the customer typed in the chat. Often a different Whop account from the one
+    chatting (e.g. Apple Pay checkout with another email)."""
+    ids = []
+    if DATABASE_URL:
+        try:
+            import psycopg2
+            conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
+            try:
+                cur = conn.cursor()
+                cur.execute("""SELECT membership_id FROM tv_payments WHERE lower(email) = lower(%s) AND membership_id <> ''
+                               GROUP BY membership_id ORDER BY max(paid_at) DESC LIMIT 5""", (email,))
+                ids = [r[0] for r in cur.fetchall() if r[0]]
+            finally:
+                conn.close()
+        except Exception as e:
+            log("TV_SUPPORT_BYEMAIL_DB:", e)
+    seen = {}
+
+    def one(mid):
+        try:
+            return whop("GET", "/memberships/" + quote(mid))
+        except Exception as e:
+            log("TV_SUPPORT_BYEMAIL_MEM:", mid, e)
+    for m in filter(None, [one(mid) for mid in ids]):
+        seen[m.get("id")] = m
+    try:
+        found = whop("GET", "/members?account_id=%s&query=%s&first=10" % (WHOP_COMPANY, quote(email)))
+        for mb in found.get("data") or []:
+            if not isinstance(mb, dict) or _member_email(mb).lower() != email.lower() or not mb.get("id"):
+                continue
+            page = whop("GET", "/memberships?account_id=%s&member_id=%s&first=25" % (WHOP_COMPANY, quote(mb["id"])))
+            for m in page.get("data") or []:
+                if isinstance(m, dict):
+                    seen.setdefault(m.get("id"), m)
+    except Exception as e:
+        log("TV_SUPPORT_BYEMAIL_SEARCH:", e)
+    if not seen:
+        return None
+    out = _with_db(*_fmt_memberships(list(seen.values())))
+    out["lookup"] = email
+    return out
+
+
+def member(uid):
+    with ThreadPoolExecutor(2) as ex:
+        fe = ex.submit(whop_email, uid)
+        try:
+            d = whop("GET", "/memberships?account_id=%s&user_id=%s&first=25" % (WHOP_COMPANY, quote(uid)))
+        except WhopError as e:
+            log("TV_SUPPORT_MEMBERSHIPS:", e)
+            return {"memberships": [], "error": str(e), "whop_email": fe.result()}
+        out = _with_db(*_fmt_memberships(d.get("data") or []))
+        out["whop_email"] = fe.result()
+    return out
+
+
+def typed_emails(msgs, uid, known):
+    """Emails the customer wrote in the chat that aren't already on their record."""
+    skip = {e.lower() for e in known if e}
+    found = []
+    for m in msgs:
+        if m.get("team") or (uid and m.get("author_id") and m["author_id"] != uid):
+            continue
+        for e in EMAIL_RE.findall(m.get("text") or ""):
+            e = e.strip(".").lower()
+            if e not in skip and e not in found:
+                found.append(e)
+    return found[-3:]
 
 
 class handler(BaseHTTPRequestHandler):
@@ -455,7 +627,12 @@ class handler(BaseHTTPRequestHandler):
                     msgs, more = fm.result()
                     body = {"ok": True, "messages": msgs, "more": more}
                     if fu:
-                        body["member"] = fu.result()
+                        mb = fu.result()
+                        emails = typed_emails(msgs, uid, [mb.get("email"), mb.get("whop_email")])
+                        if emails:
+                            with ThreadPoolExecutor(len(emails)) as ex2:
+                                mb["typed"] = [x for x in ex2.map(by_email, emails) if x]
+                        body["member"] = mb
                 return self._json(200, body)
             view = qs.get("list", "open")
             if view not in VIEWS:
@@ -508,6 +685,11 @@ class handler(BaseHTTPRequestHandler):
                 if e.status != 409:  # 409: already in that state
                     log("TV_SUPPORT_%s_ERR:" % action.upper(), e.status, e)
                     return self._json(502, {"ok": False, "error": str(e)})
+            try:
+                set_state(cid, action == "resolve", self.who)
+            except Exception as e:
+                log("TV_SUPPORT_STATE_DB:", e)
+                return self._json(502, {"ok": False, "error": "Saved in Whop, but couldn't save it here: %s" % e})
             log("TV_SUPPORT", action, cid)
             return self._json(200, {"ok": True, "resolved": action == "resolve"})
         text = str(b.get("text") or "").strip()
