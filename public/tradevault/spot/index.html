@@ -162,6 +162,13 @@ a{color:inherit}
 .ladder i.me::after{color:var(--tx)}
 .ladder{margin-bottom:18px}
 @media(max-width:560px){.ladder i::after{display:none}.ladder i.me::after{display:block}.ladder i:nth-child(n+4).me::after{left:auto;right:0}}
+.vsk{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vsk>div{padding:18px;border-radius:18px;border:1px solid var(--hair);background:rgba(255,255,255,.025);display:flex;flex-direction:column;gap:3px}
+.vsk>div.ks{border-color:rgba(34,211,154,.45);background:linear-gradient(160deg,rgba(34,211,154,.12),rgba(255,255,255,.01))}
+.vsk .mono{color:var(--tx-mute)}
+.vsk .ks .mono{color:var(--buy)}
+.vsk b{font:700 clamp(30px,6vw,44px) var(--mono);letter-spacing:-.04em;line-height:1.05}
+.vsk small{font-size:13px;color:var(--tx-dim)}
 .speed{font-size:14.5px;color:var(--tx-mute);max-width:60ch;margin-top:-8px}
 .bs-tease{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:14px;border:1px dashed rgba(var(--ks-rgb),.45);background:rgba(3,6,13,.5)}
 .bs-tease .mono{color:var(--ks)}
@@ -296,6 +303,10 @@ a{color:inherit}
     <div class="rank">
       <div class="rk-score"><span class="mono" id="rkLbl">Chart-read score</span><b><span id="eScore">0</span><small>/100</small></b><small id="eSpot"></small></div>
       <div class="ladder" id="ladder" aria-hidden="true"><i data-r="Rookie"></i><i data-r="Apprentice"></i><i data-r="Trader"></i><i data-r="Sharpshooter"></i><i data-r="Sniper"></i></div>
+    </div>
+    <div class="vsk" aria-label="You versus Killshot">
+      <div><span class="mono">You</span><b id="vYou"></b><small id="vYouS"></small></div>
+      <div class="ks"><span class="mono">With Killshot</span><b id="vKs"></b><small id="vKsS"></small></div>
     </div>
     <p class="verdict" id="verdict"></p>
     <p class="speed" id="speed" hidden></p>
@@ -792,10 +803,13 @@ a{color:inherit}
     $('endH').innerHTML = (idx >= 3 ? 'Sharp. ' : 'Nice run. ') + 'You\'ve unlocked <em>7 days free.</em>';
     $('eScore').textContent = sc; $('eSpot').textContent = 'Spotted ' + G.spot + ' of 5 setups';
     Array.prototype.forEach.call($('ladder').children, function (b, i) { b.className = (i <= idx ? 'on' : '') + (i === idx ? ' me' : ''); });
+    var kw = G.log.filter(function (l) { return l.ks > 0; }).length, kR = Math.round(G.ks * 10) / 10;
+    $('vYou').textContent = G.spot + '/5'; $('vYouS').textContent = 'setups you caught';
+    $('vKs').textContent = kw + '/5'; $('vKsS').textContent = 'trades hit target · ' + sign(kR) + 'R';
     var v;
-    if (idx >= 3) v = '<b>Sharp read.</b> You spotted these the way Killshot does. Imagine it finding them for you on every timeframe, all day, so you only show up for the good ones.';
-    else if (idx === 2) v = '<b>Nice work.</b> You caught ' + G.spot + ' of 5. With Killshot on your charts, you\'d have had every one of them flagged the moment it formed.';
-    else v = '<b>Good first run.</b> Reading charts cold is hard. That\'s exactly why Killshot exists: it marks the setup for you, so you learn what a real one looks like.';
+    if (idx >= 3) v = '<b>Sharp read.</b> You caught ' + G.spot + ' of 5. Killshot flagged all five the moment they formed, so on a live chart you\'d never miss one while you\'re away from the screen.';
+    else if (idx === 2) v = '<b>Not bad, and this is hard.</b> 3-minute gold moves fast. With Killshot on your chart, all five were flagged as they formed and ' + kw + ' of 5 hit their target.';
+    else v = '<b>Reading 3-minute gold cold is brutal.</b> With Killshot on your chart, every one of these setups was flagged as it formed, and ' + kw + ' of 5 hit their target for ' + sign(kR) + 'R.';
     $('verdict').innerHTML = v;
     $('passRank').textContent = rk; $('passScore').textContent = sc + '/100';
     $('passNo').textContent = 'No. ' + String(Math.floor(1000 + Math.random() * 9000));
