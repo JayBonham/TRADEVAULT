@@ -463,6 +463,23 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .trialtag{display:inline-block;margin-left:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#7BE0B0;border:1px solid rgba(123,224,176,.45);background:rgba(123,224,176,.08);vertical-align:middle}
 .amt b.free{color:#fff}
 .btn.off,.btn-g.off{opacity:.55;pointer-events:none}
+.price{grid-template-columns:minmax(0,620px);justify-content:center}
+.price .pcard.hot .pf{columns:2;column-gap:28px}
+@media(max-width:620px){.price .pcard.hot .pf{columns:1}}
+.cmp-sec{padding-top:0}
+#yourChart{scroll-margin-top:150px}
+.cmp{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--hair-2);background:#050A14;box-shadow:0 30px 80px rgba(0,0,0,.5);user-select:none;touch-action:pan-y}
+.cmp img{display:block;width:100%;height:auto}
+.cmp-top{position:absolute;inset:0;clip-path:inset(0 50% 0 0)}
+.cmp-top img{width:100%;height:100%;object-fit:cover}
+.cmp-bar{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 18px rgba(75,158,255,.8);pointer-events:none}
+.cmp-bar i{position:absolute;top:50%;left:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.cmp-bar i::before{content:"‹ ›";position:absolute;inset:0;display:grid;place-items:center;color:#07101F;font:700 15px var(--display);letter-spacing:2px}
+.cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.cmp-l{position:absolute;bottom:14px;padding:6px 12px;border-radius:999px;font-family:var(--mono,monospace);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:rgba(5,10,20,.85);border:1px solid var(--hair-2);pointer-events:none}
+.cmp-l.off{left:14px;color:var(--tx-dim)}
+.cmp-l.on{right:14px;color:var(--acc);border-color:rgba(var(--acc-rgb),.5)}
+.cmp-hint{text-align:center;margin-top:12px;font-size:13px;color:var(--tx-mute)}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -482,8 +499,8 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
 <body>
 <div class="passbar" role="region" aria-label="Your Killshot pass">
   <span class="tk">🎟 Killshot pass</span>
-  <span><b id="pbName">Your pass is unlocked:</b> 7 days free<span class="pb-l"> on any plan</span>.</span>
-  <a href="#pricing">Choose<span class="pb-l"> your plan</span> ↓</a>
+  <span><b id="pbName">Your pass is unlocked:</b> 7 days of Elite free<span class="pb-l">, nothing to pay today</span>.</span>
+  <a href="#pricing">Start<span class="pb-l"> my 7 days</span> ↓</a>
 </div>
 
 <!-- NAV -->
@@ -527,7 +544,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <a href="#pricing" class="btn">Start 7 days free <span class="arr">→</span></a>
         <a href="#curriculum" class="btn-g">View curriculum</a>
       </div>
-      <span class="note">7 days free on any plan · Cancel any time in the 7 days</span>
+      <span class="note">7 days of Elite free · Cancel any time in the 7 days</span>
     </div>
 
     <div class="frame reveal">
@@ -539,6 +556,27 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <figure><img src="../assets/adam-haase.webp" style="object-position:center 20%" alt="Adam Haase"><figcaption><b>Adam Haase</b><span>US30 · Killshot</span></figcaption></figure>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- YOUR CHART: KILLSHOT OFF VS ON (from the chart game) -->
+<section class="sec cmp-sec" id="yourChart" hidden>
+  <div class="W">
+    <div class="head">
+      <span class="kick"><b>●</b>Your chart</span>
+      <h2>Same chart. <span class="hl">Killshot off vs on.</span></h2>
+      <p class="lede" id="cmpLede"></p>
+    </div>
+    <div class="cmp" id="cmp">
+      <img id="cmpKs" alt="Your chart with Killshot on">
+      <div class="cmp-top" id="cmpTop"><img id="cmpNaked" alt="Your chart with Killshot off"></div>
+      <span class="cmp-l off">Off</span>
+      <span class="cmp-l on">Killshot on</span>
+      <div class="cmp-bar" id="cmpBar"><i></i></div>
+      <input type="range" min="0" max="100" value="50" id="cmpR" aria-label="Drag to compare Killshot off and on">
+    </div>
+    <p class="cmp-hint">Drag to compare</p>
+    <div style="display:flex;justify-content:center;margin-top:22px"><a href="#pricing" class="btn">Start my 7 days of Elite free <span class="arr">→</span></a></div>
   </div>
 </section>
 
@@ -881,39 +919,10 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
   <div class="W">
     <div class="head reveal">
       <span class="kick"><b>08</b>Pricing</span>
-      <h2>Pick your plan. <span class="hl">First 7 days free.</span></h2>
-      <p class="lede">Your Killshot pass works on every plan. Nothing to pay today, and if it's not for you, cancel in the first 7 days and you won't be charged.</p>
+      <h2>The full Vault. <span class="hl">First 7 days free.</span></h2>
+      <p class="lede">Your Killshot pass unlocks 7 days of Elite: every educator, every scanner, every Academy and the signals. Nothing to pay today, and if it's not for you, cancel in the first 7 days and you won't be charged.</p>
     </div>
     <div class="price">
-      <article class="card pcard reveal">
-        <div class="plan">Tradevault Tools</div>
-        <h3>Tools</h3>
-        <p class="ptag">All three scanners on their own. For traders who already have a system.</p>
-        <div class="amt"><b class="free">Free</b><span>for 7 days</span></div>
-        <div class="start">Then <strong>$49.99</strong> / month · <strong>$0</strong> due today</div>
-        <a href="#pricing" class="btn-g off" data-trial="tools" target="_blank" rel="noopener">Start 7 days free</a>
-        <ul class="pf">
-          <li>All three scanners: Killshot, Smartshot and Spectrum</li>
-          <li>Scanner bootcamps: learn to read every signal</li>
-          <li>No startup fee</li>
-          <li>Upgrade to Community or Elite any time</li>
-        </ul>
-      </article>
-      <article class="card pcard reveal d1">
-        <div class="plan">Tradevault Community</div>
-        <h3>Community</h3>
-        <p class="ptag">Pick your educator and their scanner, plus the Basic Academy.</p>
-        <div class="amt"><b class="free">Free</b><span>for 7 days</span></div>
-        <div class="start">Then <strong>$99.99</strong> / month · <strong>$0</strong> due today</div>
-        <a href="#pricing" class="btn-g off" data-trial="community" target="_blank" rel="noopener">Start 7 days free</a>
-        <ul class="pf">
-          <li>Choose 1 educator: Jay, Adam, Tyler or Andrew</li>
-          <li>Choose 1 scanner: Killshot, Smartshot or Spectrum</li>
-          <li>Basic Academy: fundamentals, market structure, risk management and execution</li>
-          <li>Live sessions with your educator</li>
-          <li>Tradevault Community Telegram</li>
-        </ul>
-      </article>
       <article class="card pcard hot reveal d2">
         <div class="plan">Tradevault Elite <span class="tag">Full Vault</span></div>
         <h3>Elite</h3>
@@ -964,7 +973,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <a href="#pricing" class="btn">Start my 7 days free <span class="arr">→</span></a>
         <a href="#curriculum" class="btn-g">View the curriculum</a>
       </div>
-      <span class="note">7 days free on any plan · Cancel any time in the 7 days</span>
+      <span class="note">7 days of Elite free · Cancel any time in the 7 days</span>
     </div>
   </div>
 </section>
@@ -1086,13 +1095,30 @@ document.addEventListener('keydown',e=>{if(!lbEl.classList.contains('open'))retu
 <script>
 /* Trial checkout links: paste the Whop 7-day-trial plan links here once the products exist.
    Until a link is set its button stays greyed out, so nobody lands on a full-price checkout by mistake. */
-var TRIAL_LINKS = { tools: '', community: '', elite: '' };
+var TRIAL_LINKS = { elite: 'https://whop.com/sniper-academy-603f/tradevault-elite-copy-e7/' };
 (function () {
   document.querySelectorAll('[data-trial]').forEach(function (a) {
     var u = TRIAL_LINKS[a.getAttribute('data-trial')];
+    // from an affiliate link: check out through /api/tv-checkout so the trial is credited to them
+    var r = ''; try { var t = JSON.parse(localStorage.getItem('tv_ref') || 'null'); if (t && Date.now() - t.t < 60 * 864e5) r = t.c; } catch (e) {}
+    if (!r) { var m = document.cookie.match(/(?:^|; )tv_ref=([a-z0-9_]{3,20})/); if (m) r = m[1]; }
+    if (u && r && a.getAttribute('data-trial') === 'elite') u = 'https://jaybonham.com/api/tv-checkout?plan=elite_trial&ref=' + encodeURIComponent(r);
     if (u) { a.href = u; a.classList.remove('off'); }
     else { a.textContent = 'Trial opens soon'; a.removeAttribute('target'); }
   });
+  // their own chart from the game, Killshot off vs on
+  try {
+    var raw = null; try { raw = sessionStorage.getItem('bk_shots'); } catch (e) {} if (!raw) raw = localStorage.getItem('bk_shots');
+    var sh = raw && JSON.parse(raw);
+    if (sh && /^data:image\/jpeg;base64,/.test(sh.naked) && /^data:image\/jpeg;base64,/.test(sh.ks)) {
+      document.getElementById('cmpKs').src = sh.ks; document.getElementById('cmpNaked').src = sh.naked;
+      document.getElementById('cmpLede').textContent = 'Chart ' + sh.chart + ' from your game. You ' + sh.you + '. With Killshot on, the ' + sh.side + ' at ' + sh.entry + ' was flagged the moment it formed: ' + sh.r + 'R.';
+      document.getElementById('yourChart').hidden = false;
+      var rg = document.getElementById('cmpR'), top = document.getElementById('cmpTop'), bar = document.getElementById('cmpBar');
+      var set = function () { var v = rg.value; top.style.clipPath = 'inset(0 ' + (100 - v) + '% 0 0)'; bar.style.left = v + '%'; };
+      rg.addEventListener('input', set); set();
+    }
+  } catch (e) {}
   try { var n = localStorage.getItem('bk_name'); if (n) document.getElementById('pbName').textContent = n.split(' ')[0].slice(0, 20) + ', your pass:'; } catch (e) {}
 })();
 </script>

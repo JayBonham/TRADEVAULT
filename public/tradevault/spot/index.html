@@ -315,8 +315,8 @@ a{color:inherit}
       <div class="pass-l">
         <div class="pass-h"><img src="../assets/tv-icon.png" alt="" width="22" height="22"><span class="mono">Killshot pass</span><span class="mono pass-no" id="passNo"></span></div>
         <b class="pass-big">7 days free</b>
-        <span class="pass-sub">Killshot, Smartshot, Spectrum, live sessions and the full Academy.</span>
-        <div class="pass-meta"><span><small>Rank</small><b id="passRank"></b></span><span><small>Score</small><b id="passScore"></b></span><span><small>Valid on</small><b>Any plan</b></span></div>
+        <span class="pass-sub">Full Elite access: every scanner, every educator, live sessions, signals and the full Academy.</span>
+        <div class="pass-meta"><span><small>Rank</small><b id="passRank"></b></span><span><small>Score</small><b id="passScore"></b></span><span><small>Plan</small><b>Elite</b></span></div>
       </div>
       <div class="pass-r" aria-hidden="true"><span>ADMIT ONE</span></div>
       <div class="stamp" id="stamp" hidden>Claimed ✓</div>
@@ -324,7 +324,7 @@ a{color:inherit}
 
     <form class="gate" id="gate" novalidate>
       <h3>Claim your pass.</h3>
-      <p>Add your details to claim it, then pick the plan you want your 7 free days on.</p>
+      <p>Add your details to claim it, then start your 7 days of Elite.</p>
       <div class="f2">
         <div class="inp"><label for="fName">First name</label><input id="fName" autocomplete="given-name" required></div>
         <div class="inp"><label for="fEmail">Email</label><input id="fEmail" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></div>
@@ -337,8 +337,8 @@ a{color:inherit}
 
     <div class="claimed" id="claimed" hidden>
       <h3>Pass claimed<span id="clName"></span>. You're in.</h3>
-      <p>Next: pick the plan you want your 7 free days on.</p>
-      <a class="go" href="/trial#pricing" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:12px;padding:0 26px">Choose my plan →</a>
+      <p>Next: start your 7 days of Elite.</p>
+      <a class="go" href="/trial#yourChart" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:12px;padding:0 26px">Start my 7 days →</a>
     </div>
 
     <div class="rounds" id="rounds" hidden></div>
@@ -348,7 +348,8 @@ a{color:inherit}
       <h3>Killshot on your own charts, flagging setups like these for you.</h3>
       <ul>
         <li>Killshot, Smartshot and Spectrum on your TradingView</li>
-        <li>Live trading sessions with our educators</li>
+        <li>Live trading sessions with all four educators</li>
+        <li>Gold trade signals</li>
         <li>The full Academy, from basics to the scanner bootcamps</li>
       </ul>
     </div>
@@ -402,6 +403,17 @@ a{color:inherit}
     hi = Math.max(hi, px); lo = Math.min(lo, px);
     return [o, hi, lo, px];
   };
+  // a still of the current view, Killshot off (naked) or on, same framing both times
+  Chart.prototype.shot = function (naked) {
+    var keep = { a: this.ksA, on: this.ksOn, t: this.trades, m: this.marks, p: this.pops };
+    this.pops = [];
+    if (naked) { this.ksA = 0; this.ksOn = false; this.trades = []; this.marks = []; } else { this.ksA = 1; this.ksOn = true; }
+    this.freeze = true; this.draw(); this.freeze = false;
+    var src = this.cv, w = Math.min(1200, src.width), h = Math.round(src.height * w / src.width), out = '';
+    try { var o = document.createElement('canvas'); o.width = w; o.height = h; var oc = o.getContext('2d'); oc.fillStyle = '#050A14'; oc.fillRect(0, 0, w, h); oc.drawImage(src, 0, 0, w, h); out = o.toDataURL('image/jpeg', 0.8); } catch (e) {}
+    this.ksA = keep.a; this.ksOn = keep.on; this.trades = keep.t; this.marks = keep.m; this.pops = keep.p;
+    return out;
+  };
   Chart.prototype.price = function () {
     if (!this.s) return 0;
     return this.p > 0 && this.n < this.s.c.length ? this.partial(this.n, this.p)[3] : this.s.c[Math.max(0, this.n - 1)][3];
@@ -423,13 +435,13 @@ a{color:inherit}
     }
     this.trades.forEach(function (t) { lo = Math.min(lo, t.stop, t.target); hi = Math.max(hi, t.stop, t.target); });
     var pad = (hi - lo) * 0.1 || 1; lo -= pad; hi += pad;
-    if (this.snap) { this.lo = lo; this.hi = hi; this.snap = false; }
+    if (this.freeze) {} else if (this.snap) { this.lo = lo; this.hi = hi; this.snap = false; }
     else { var a = RM ? 1 : 0.12; this.lo += (lo - this.lo) * a; this.hi += (hi - this.hi) * a; }
     var top = 16, ph = H - bottom - top, L = this.lo, Hh = this.hi;
     var Y = function (v) { return top + (Hh - v) / (Hh - L) * ph; };
     var dec = s.sym === 'GOLD' ? 1 : 0, tf = s.tf || 900, nn = this.n - 1;
     // Killshot overlay: off while the player decides, fades in once they've called it
-    if (this.o.bare) this.ksA = 1; else this.ksA += ((this.ksOn ? 1 : 0) - this.ksA) * (RM ? 1 : 0.09);
+    if (this.o.bare) this.ksA = 1; else if (!this.freeze) this.ksA += ((this.ksOn ? 1 : 0) - this.ksA) * (RM ? 1 : 0.09);
     var ka = this.ksA;
 
     // trend shading (Killshot style)
@@ -741,7 +753,8 @@ a{color:inherit}
     } else if (G.phase === 'after') {
       G.wait += dt;
       if (G.wait > 450 && !G.shown) roundResult();
-      if (G.wait > 2600) { G.shown = false; return nextRound(); }
+      if (G.wait > 1800 && !G.shot && G.log.length) { G.shot = true; var lg = G.log[G.log.length - 1]; lg.naked = cv.shot(true); lg.ksImg = cv.shot(false); }
+      if (G.wait > 2600) { G.shown = false; G.shot = false; return nextRound(); }
     }
     cv.draw();
     raf = requestAnimationFrame(loop);
@@ -817,7 +830,18 @@ a{color:inherit}
   function sign(v) { v = Math.round(v * 10) / 10; return (v > 0 ? '+' : '') + v.toFixed(1); }
 
   /* ======================= end ======================= */
+  function saveShots() {
+    // the most convincing chart: one they missed that Killshot won, else any Killshot win, else the last
+    var L = G.log.filter(function (l) { return l.naked && l.ksImg; });
+    var best = L.filter(function (l) { return l.choice !== l.s.d && l.ks > 0; })[0] || L.filter(function (l) { return l.ks > 0; })[0] || L[L.length - 1];
+    if (!best) return;
+    var i = G.log.indexOf(best), s = best.s;
+    var data = JSON.stringify({ naked: best.naked, ks: best.ksImg, chart: i + 1, side: s.d === 1 ? 'buy' : 'sell', entry: fmt(s.entry, 1), r: sign(best.ks),
+      you: best.choice === 0 ? 'skipped it' : best.choice === s.d ? 'spotted it' : 'went the other way' });
+    try { sessionStorage.setItem('bk_shots', data); } catch (e) { try { localStorage.setItem('bk_shots', data); } catch (e2) {} }
+  }
   function finish() {
+    saveShots();
     cancelAnimationFrame(raf); show('end');
     var sc = G.score, rk = rankOf(sc), idx = ['Rookie', 'Apprentice', 'Trader', 'Sharpshooter', 'Sniper'].indexOf(rk);
     $('endKick').textContent = (G.daily ? 'Today\'s 5 charts' : 'Practice round') + ' · done';
@@ -887,7 +911,7 @@ a{color:inherit}
         try { localStorage.setItem('bk_lead', em); localStorage.setItem('bk_name', n); } catch (x) {}
         unlock(true); confetti();
         $('pass').scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' });
-        setTimeout(function () { location.href = '/trial' + (body.aff ? '?ref=' + encodeURIComponent(body.aff) : '') + '#pricing'; }, 2200);
+        setTimeout(function () { location.href = '/trial' + (body.aff ? '?ref=' + encodeURIComponent(body.aff) : '') + '#yourChart'; }, 2200);
       })
       .catch(function (x) { go.disabled = false; go.textContent = 'Claim my 7 days free →'; $('fErr').textContent = (x && x.msg) || 'Couldn\'t claim it. Check your connection and try again.'; });
   });

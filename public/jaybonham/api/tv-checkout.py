@@ -1,4 +1,4 @@
-"""TradeVault checkout with the affiliate attached. Route: /api/tv-checkout?plan=tools|community|elite&ref=CODE
+"""TradeVault checkout with the affiliate attached. Route: /api/tv-checkout?plan=tools|community|elite|elite_trial&ref=CODE
 
 The pricing buttons on thetradevault.co send visitors who came through an affiliate link here.
 We create a Whop checkout session for that plan with metadata {"tv_ref": CODE} and redirect to it;
@@ -23,6 +23,33 @@ from _tv_whop import PRODUCTS, STORE, plan_id
 WHOP_API_KEY = os.environ.get("WHOP_API_KEY", "")
 REDIRECT = "https://thetradevault.co/setup"
 CODE_RE = re.compile(r"^[a-z0-9_]{3,20}$")
+# The 7-day Elite trial is its own Whop product (thetradevault.co/trial). Its plan id comes from env
+# TV_PLAN_ELITE_TRIAL, else it's looked up once by the product's store route and remembered.
+TRIAL_ROUTE = "tradevault-elite-copy-e7"
+TRIAL_PAGE = STORE + TRIAL_ROUTE + "/"
+
+
+def trial_plan(cur):
+    env = os.environ.get("TV_PLAN_ELITE_TRIAL", "").strip()
+    if env:
+        return env
+    cur.execute("CREATE TABLE IF NOT EXISTS tv_whop_plans (tier TEXT PRIMARY KEY, plan_id TEXT NOT NULL)")
+    cur.execute("SELECT plan_id FROM tv_whop_plans WHERE tier = 'elite_trial'")
+    row = cur.fetchone()
+    if row:
+        return row[0]
+    from _tv_whop import WHOP_COMPANY
+    prods = _whop("GET", "/api/v1/products?account_id=%s&first=100" % WHOP_COMPANY).get("data") or []
+    prod = next((p for p in prods if isinstance(p, dict) and p.get("route") == TRIAL_ROUTE), None)
+    if not prod:
+        return None
+    plans = _whop("GET", "/api/v1/plans?account_id=%s&product_ids=%s&first=20" % (WHOP_COMPANY, prod["id"])).get("data") or []
+    plans = [p for p in plans if isinstance(p, dict) and (p.get("product") or {}).get("id", prod["id"]) == prod["id"]]
+    pick = next((p for p in plans if p.get("trial_period_days")), plans[0] if plans else None)
+    if not pick:
+        return None
+    cur.execute("INSERT INTO tv_whop_plans (tier, plan_id) VALUES ('elite_trial', %s) ON CONFLICT (tier) DO NOTHING", (pick["id"],))
+    return pick["id"]
 
 
 def log(*a):
@@ -50,9 +77,9 @@ class handler(BaseHTTPRequestHandler):
         q = parse_qs(urlparse(self.path).query)
         tier = (q.get("plan") or [""])[0].strip().lower()
         code = (q.get("ref") or [""])[0].strip().lower()
-        if tier not in PRODUCTS:
+        if tier not in PRODUCTS and tier != "elite_trial":
             return self._go(STORE)
-        fallback = PRODUCTS[tier][1]
+        fallback = TRIAL_PAGE if tier == "elite_trial" else PRODUCTS[tier][1]
         if not (WHOP_API_KEY and CODE_RE.match(code)):
             return self._go(fallback)
         try:
@@ -62,7 +89,7 @@ class handler(BaseHTTPRequestHandler):
             if not cur.fetchone():
                 c.close()
                 return self._go(fallback, "affiliate not active")
-            pid = plan_id(cur, tier)
+            pid = trial_plan(cur) if tier == "elite_trial" else plan_id(cur, tier)
             c.commit()
             c.close()
             if not pid:
@@ -70,7 +97,7 @@ class handler(BaseHTTPRequestHandler):
                 return self._go(fallback, "no plan id for " + tier)
             cfg = _whop("POST", "/api/v1/checkout_configurations", {
                 "mode": "payment", "variant_id": pid, "plan_id": pid, "redirect_url": REDIRECT,
-                "metadata": {"tv_ref": code, "tv_tier": tier}})
+                "metadata": {"tv_ref": code, "tv_tier": "elite" if tier == "elite_trial" else tier}})
             url = cfg.get("purchase_url") or ""
             if url.startswith("/"):
                 url = "https://whop.com" + url
