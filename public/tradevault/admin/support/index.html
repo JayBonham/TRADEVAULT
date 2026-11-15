@@ -781,9 +781,16 @@ button,input,textarea{font:inherit;color:inherit}
     if (!mb.email && !mb.tier && !typed.length) s1.appendChild(el('p', 'note', 'Not matched to a TradeVault purchase. They may be on another Whop product.'));
     b.appendChild(s1);
     typed.forEach(function (t) {
-      var a = el('div', 'sec alt'); a.appendChild(el('span', 'mono', 'Purchase on another email'));
-      var n = el('p', 'note'); n.appendChild(document.createTextNode('They bought with ')); n.appendChild(el('b', null, t.lookup));
-      n.appendChild(document.createTextNode(', which isn’t the Whop account they’re chatting from' + (mb.whop_email ? ' (' + mb.whop_email + ')' : '') + '.'));
+      var byName = t.via === 'name';
+      var a = el('div', 'sec alt'); a.appendChild(el('span', 'mono', byName ? 'Possible match: same name' : 'Purchase on another email'));
+      var n = el('p', 'note');
+      if (byName) {
+        n.appendChild(document.createTextNode('A purchase under the same name, ')); n.appendChild(el('b', null, t.matched_name));
+        n.appendChild(document.createTextNode(', on ' + t.lookup + '. Probably them on another Whop account, but check before moving access.'));
+      } else {
+        n.appendChild(document.createTextNode('They bought with ')); n.appendChild(el('b', null, t.lookup));
+        n.appendChild(document.createTextNode(', which isn’t the Whop account they’re chatting from' + (mb.whop_email ? ' (' + mb.whop_email + ')' : '') + '.'));
+      }
       a.appendChild(n);
       a.appendChild(kv('Email', copyable(t.lookup)));
       if (t.name) a.appendChild(kv('Name', t.name));

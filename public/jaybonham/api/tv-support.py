@@ -502,18 +502,74 @@ def _member_email(mb):
     return (mb.get("email") or u.get("email") or "").strip()
 
 
-def whop_email(uid):
-    """The email on the Whop account that's chatting. Checked against the user id, so an ignored filter can't
-    hand back someone else's."""
+def whop_account(uid):
+    """(email, name) on the Whop account that's chatting. Checked against the user id, so an ignored filter
+    can't hand back someone else's."""
+    email = name = ""
     try:
         d = whop("GET", "/members?account_id=%s&user_ids=%s&first=10" % (WHOP_COMPANY, quote(uid)))
         for mb in d.get("data") or []:
             u = mb.get("user") if isinstance(mb, dict) and isinstance(mb.get("user"), dict) else {}
-            if (u.get("id") or mb.get("user_id")) == uid and _member_email(mb):
-                return _member_email(mb)
+            if (u.get("id") or mb.get("user_id")) == uid:
+                email = _member_email(mb)
+                name = (u.get("name") or mb.get("name") or "").strip()
+                break
     except Exception as e:
         log("TV_SUPPORT_WHOP_EMAIL:", e)
-    return ""
+    if not name:
+        try:
+            name = (whop("GET", "/users/" + quote(uid)).get("name") or "").strip()
+        except Exception as e:
+            log("TV_SUPPORT_WHOP_NAME:", e)
+    return email, name
+
+
+def _full_name(n):
+    """Only a real-looking full name is worth matching on: two or more words, letters only."""
+    n = " ".join((n or "").split())
+    parts = n.split(" ")
+    return n if len(parts) >= 2 and all(re.fullmatch(r"[^\W\d_](?:[^\W\d_]|['.-])*", p) for p in parts) and len(n) >= 5 else ""
+
+
+def by_name(name, skip):
+    """Purchases under exactly the same full name (another Whop account, same person, usually)."""
+    name = _full_name(name)
+    if not name:
+        return []
+    emails = []
+    if DATABASE_URL:
+        try:
+            import psycopg2
+            conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
+            try:
+                cur = conn.cursor()
+                cur.execute("""SELECT lower(email) FROM tv_payments WHERE lower(trim(name)) = lower(%s) AND email <> ''
+                               GROUP BY lower(email) ORDER BY max(paid_at) DESC LIMIT 3""", (name,))
+                emails = [r[0] for r in cur.fetchall()]
+            finally:
+                conn.close()
+        except Exception as e:
+            log("TV_SUPPORT_BYNAME_DB:", e)
+    try:
+        found = whop("GET", "/members?account_id=%s&query=%s&first=10" % (WHOP_COMPANY, quote(name)))
+        for mb in found.get("data") or []:
+            u = mb.get("user") if isinstance(mb, dict) and isinstance(mb.get("user"), dict) else {}
+            nm = " ".join((u.get("name") or mb.get("name") or "").split()).lower()
+            e = _member_email(mb).lower()
+            if nm == name.lower() and e and e not in emails:
+                emails.append(e)
+    except Exception as e:
+        log("TV_SUPPORT_BYNAME_SEARCH:", e)
+    skip = {x.lower() for x in skip if x}
+    emails = [e for e in emails if e not in skip][:3]
+    if not emails:
+        return []
+    with ThreadPoolExecutor(len(emails)) as ex:
+        hits = [x for x in ex.map(by_email, emails) if x]
+    for h in hits:
+        h["via"] = "name"
+        h["matched_name"] = name
+    return hits
 
 
 def by_email(email):
@@ -562,14 +618,15 @@ def by_email(email):
 
 def member(uid):
     with ThreadPoolExecutor(2) as ex:
-        fe = ex.submit(whop_email, uid)
+        fe = ex.submit(whop_account, uid)
         try:
             d = whop("GET", "/memberships?account_id=%s&user_id=%s&first=25" % (WHOP_COMPANY, quote(uid)))
         except WhopError as e:
             log("TV_SUPPORT_MEMBERSHIPS:", e)
-            return {"memberships": [], "error": str(e), "whop_email": fe.result()}
+            email, name = fe.result()
+            return {"memberships": [], "error": str(e), "whop_email": email, "whop_name": name}
         out = _with_db(*_fmt_memberships(d.get("data") or []))
-        out["whop_email"] = fe.result()
+        out["whop_email"], out["whop_name"] = fe.result()
     return out
 
 
@@ -632,6 +689,10 @@ class handler(BaseHTTPRequestHandler):
                         if emails:
                             with ThreadPoolExecutor(len(emails)) as ex2:
                                 mb["typed"] = [x for x in ex2.map(by_email, emails) if x]
+                        # nothing on this account and nothing from a typed email: try the same full name
+                        if not (mb.get("tier") or mb.get("typed")):
+                            mb["typed"] = by_name(mb.get("whop_name") or mb.get("name"),
+                                                  [mb.get("email"), mb.get("whop_email")] + emails)
                         body["member"] = mb
                 return self._json(200, body)
             view = qs.get("list", "open")
