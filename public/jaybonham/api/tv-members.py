@@ -2,7 +2,8 @@
 GET  -> {ok, members:[{id, name, email, tier, setup, assigned, educator, scanner,
                        tradingview, telegram, joined}]}
         everyone tagged tradevault-purchased (set by the Whop webhook), read live from GHL.
-POST {action: "assign"|"unassign"|"revoked", c}
+POST {action: "assign"|"unassign"|"revoked"|"hide", c}
+   hide: takes a test or junk contact off the board (GHL tag tv-hidden; remove the tag in GHL to bring it back)
         assign adds tv-access-granted; the GHL "Access Granted" workflow triggers on that tag,
         moves the card and emails the member. unassign removes the tag (no email is unsent).
         revoked: their Whop membership ended (ended=true, set by whop-hook) and they've been taken
@@ -28,6 +29,7 @@ MEMBER_TAG = "tradevault-purchased"
 ASSIGNED_TAG = "tv-access-granted"
 DONE_TAG = "tv-setup-complete"
 PARTNER_TAG = "tradevault-partner"
+HIDDEN_TAG = "tv-hidden"
 TIERS = (("tradevault-elite", "elite"), ("tradevault-community", "community"), ("tradevault-tools", "tools"))
 EDUCATORS = {"jay": "Jay Bonham", "adam": "Adam Haase", "tyler": "Tyler Collins", "andrew": "Andrew Bridges"}
 SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spectrum"}
@@ -182,6 +184,7 @@ class handler(BaseHTTPRequestHandler):
                 c = data.get("contact") if status < 300 else None
                 if c and MEMBER_TAG in [t.lower() for t in c.get("tags") or []]:
                     contacts.append(c)
+            contacts = [c for c in contacts if HIDDEN_TAG not in [t.lower() for t in c.get("tags") or []]]
             members = [_member(c, ids, db) for c in contacts]
             # set up before the DB copy existed: read their note once, then keep it in the DB
             for m in [m for m in members if m["setup"] and not m["tradingview"]][:25]:
@@ -210,10 +213,11 @@ class handler(BaseHTTPRequestHandler):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
         action = b.get("action")
-        if not CID_RE.match(cid) or action not in ("assign", "unassign", "revoked"):
+        if not CID_RE.match(cid) or action not in ("assign", "unassign", "revoked", "hide"):
             return self._json(400, {"ok": False, "error": "Invalid request"})
-        method = "POST" if action == "assign" else "DELETE"
-        status, _, raw = _ghl(method, "/contacts/" + cid + "/tags", {"tags": [ASSIGNED_TAG]})
+        method = "POST" if action in ("assign", "hide") else "DELETE"
+        tag = HIDDEN_TAG if action == "hide" else ASSIGNED_TAG
+        status, _, raw = _ghl(method, "/contacts/" + cid + "/tags", {"tags": [tag]})
         if status >= 300:
             return self._json(502, {"ok": False, "error": "GHL %s: %s" % (status, raw[:200].decode(errors="replace"))})
         if action == "revoked":
