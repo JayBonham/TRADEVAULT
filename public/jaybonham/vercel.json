@@ -61,6 +61,9 @@
     "api/tv-checkout.py": {
       "maxDuration": 15
     },
+    "api/tv-pass.py": {
+      "maxDuration": 15
+    },
     "api/jb-webinar.py": {
       "maxDuration": 15
     },
