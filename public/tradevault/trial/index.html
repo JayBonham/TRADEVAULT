@@ -472,10 +472,10 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 @media(max-width:620px){.price .pcard.hot .pf{columns:1}}
 .cmp-sec{padding-top:0}
 #yourChart{scroll-margin-top:150px}
-.cmp{position:relative;max-width:900px;margin:0 auto;aspect-ratio:16/9;border-radius:20px;overflow:hidden;border:1px solid var(--hair-2);background:#050A14;box-shadow:0 30px 80px rgba(0,0,0,.5);user-select:none;touch-action:pan-y}
-.cmp img{display:block;width:100%;height:100%;object-fit:cover;object-position:85% 50%}
+.cmp{position:relative;max-width:900px;margin:0 auto;aspect-ratio:16/8.5;border-radius:20px;overflow:hidden;border:1px solid var(--hair-2);background:#050A14;box-shadow:0 30px 80px rgba(0,0,0,.5);user-select:none;touch-action:pan-y}
+.cmp canvas{display:block;width:100%;height:100%;background:#060B16}
 .cmp-top{position:absolute;inset:0;clip-path:inset(0 50% 0 0)}
-.cmp-top img{width:100%;height:100%;object-fit:cover;object-position:85% 50%}
+.cmp-top{background:#060B16}
 .cmp-bar{position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 18px rgba(75,158,255,.8);pointer-events:none}
 .cmp-bar i{position:absolute;top:50%;left:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4)}
 .cmp-bar i::before{content:"‹ ›";position:absolute;inset:0;display:grid;place-items:center;color:#07101F;font:700 15px var(--display);letter-spacing:2px}
@@ -483,6 +483,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .cmp-l{position:absolute;bottom:14px;padding:6px 12px;border-radius:999px;font-family:var(--mono,monospace);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:rgba(5,10,20,.85);border:1px solid var(--hair-2);pointer-events:none}
 .cmp-l.off{left:14px;color:var(--tx-dim)}
 .cmp-l.on{right:14px;color:var(--acc);border-color:rgba(var(--acc-rgb),.5)}
+@media(max-width:620px){.cmp{aspect-ratio:4/3.6}}
 .cmp-hint{text-align:center;margin-top:12px;font-size:13px;color:var(--tx-mute)}
 .wrev{margin:0 0 34px}
 .wrev-h{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:18px}
@@ -615,7 +616,9 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   .pv-side button{flex:none;padding:8px 12px}
   .pv-main{height:560px}
   .pv-view{padding:14px}
-  .pv-hero{grid-template-columns:1fr 110px}
+  .pv-hero{grid-template-columns:1fr;flex:none}
+  .pv-hero-r{display:none}
+  .pv-hero-l{background:radial-gradient(ellipse 90% 120% at 100% 0%,rgba(75,158,255,.16),transparent 60%)}
   .pv-2,.pv-2.j,.pv-resume{grid-template-columns:1fr}
   .pv-2>.pv-card:last-child,.pv-2.j>.pv-card:last-child,.pv-hello .pv-ghost{display:none}
   .pv-tiles{grid-template-columns:1fr 1fr}
@@ -859,12 +862,12 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
       <p class="lede" id="cmpLede"></p>
     </div>
     <div class="cmp" id="cmp">
-      <img id="cmpKs" alt="Your chart with Killshot on">
-      <div class="cmp-top" id="cmpTop"><img id="cmpNaked" alt="Your chart with Killshot off"></div>
-      <span class="cmp-l off">Off</span>
+      <canvas id="cmpKs" aria-label="Your chart with Killshot on"></canvas>
+      <div class="cmp-top" id="cmpTop"><canvas id="cmpNaked" aria-label="Your chart with Killshot off"></canvas></div>
+      <span class="cmp-l off">Killshot off</span>
       <span class="cmp-l on">Killshot on</span>
       <div class="cmp-bar" id="cmpBar"><i></i></div>
-      <input type="range" min="0" max="100" value="50" id="cmpR" aria-label="Drag to compare Killshot off and on">
+      <input type="range" min="0" max="100" value="38" id="cmpR" aria-label="Drag to compare Killshot off and on">
     </div>
     <p class="cmp-hint">Drag to compare</p>
     <div style="display:flex;justify-content:center;margin-top:22px"><a href="#pricing" class="btn">Start my 7 days of Elite free <span class="arr">→</span></a></div>
@@ -1412,13 +1415,19 @@ var TRIAL_LINKS = { elite: 'https://whop.com/sniper-academy-603f/tradevault-elit
   try {
     var raw = null; try { raw = sessionStorage.getItem('bk_shots'); } catch (e) {} if (!raw) raw = localStorage.getItem('bk_shots');
     var sh = raw && JSON.parse(raw);
-    if (sh && /^data:image\/jpeg;base64,/.test(sh.naked) && /^data:image\/jpeg;base64,/.test(sh.ks)) {
-      document.getElementById('cmpKs').src = sh.ks; document.getElementById('cmpNaked').src = sh.naked;
-      document.getElementById('cmpLede').textContent = 'Chart ' + sh.chart + ' from your game. You ' + sh.you + '. With Killshot on, the ' + sh.side + ' at ' + sh.entry + ' was flagged the moment it formed: ' + sh.r + 'R.';
-      document.getElementById('yourChart').hidden = false;
-      var rg = document.getElementById('cmpR'), top = document.getElementById('cmpTop'), bar = document.getElementById('cmpBar');
-      var set = function () { var v = rg.value; top.style.clipPath = 'inset(0 ' + (100 - v) + '% 0 0)'; bar.style.left = v + '%'; };
-      rg.addEventListener('input', set); set();
+    if (sh && sh.id != null) {
+      fetch('/spot/setups.json').then(function (r) { return r.json(); }).then(function (pool) {
+        var st = pool.filter(function (x) { return x.id === sh.id && (!sh.t0 || x.t0 === sh.t0); })[0];
+        if (!st || !window.KSStill) return;
+        document.getElementById('cmpLede').textContent = 'Chart ' + sh.chart + ' from your game. You ' + sh.you + '. With Killshot on, the ' + sh.side + ' at ' + sh.entry + ' was flagged the moment it formed and hit its target: ' + sh.r + 'R.';
+        document.getElementById('yourChart').hidden = false;
+        var draw = function () { KSStill(document.getElementById('cmpKs'), st, false); KSStill(document.getElementById('cmpNaked'), st, true); };
+        requestAnimationFrame(draw); window.addEventListener('resize', draw);
+        var rg = document.getElementById('cmpR'), top = document.getElementById('cmpTop'), bar = document.getElementById('cmpBar');
+        var set = function () { var v = rg.value; top.style.clipPath = 'inset(0 ' + (100 - v) + '% 0 0)'; bar.style.left = v + '%'; };
+        rg.addEventListener('input', set); set();
+        if (location.hash === '#yourChart') setTimeout(function () { document.getElementById('yourChart').scrollIntoView({ block: 'start' }); }, 50);
+      }).catch(function () {});
     }
   } catch (e) {}
   try { var n = localStorage.getItem('bk_name'); if (n) document.getElementById('pbName').textContent = n.split(' ')[0].slice(0, 20) + ', your pass:'; } catch (e) {}

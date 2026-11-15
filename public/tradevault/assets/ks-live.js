@@ -62,18 +62,19 @@
     }
   };
   Live.prototype.draw = function () {
-    var x = this.x, s = this.s, W = this.w, H = this.h, axis = 52, right = 10, plotW = W - axis - right;
+    var x = this.x, s = this.s, W = this.w, H = this.h, axis = 52, right = this.still ? Math.min(150, W * .24) : 10, plotW = W - axis - right;
     x.clearRect(0, 0, W, H);
-    var cw = plotW / Math.max(46, Math.min(90, plotW / 7)), last = this.n, first = Math.max(0, last - Math.ceil(plotW / cw) - 1), nn = last - 1;
+    var cw = this.still ? plotW / (W < 520 ? 26 : 44) : plotW / Math.max(46, Math.min(90, plotW / 7)), last = this.n, first = Math.max(0, last - Math.ceil(plotW / cw) - 1), nn = last - 1;
     var X = function (k) { return W - axis - right - (last - 1 - k) * cw - cw / 2; };
     var lo = Infinity, hi = -Infinity, k, c;
     for (k = first; k < last; k++) { c = s.c[k]; lo = Math.min(lo, c[2]); hi = Math.max(hi, c[1]); }
     if (this.trade) { lo = Math.min(lo, this.trade.stop, this.trade.target); hi = Math.max(hi, this.trade.stop, this.trade.target); }
-    var pad = (hi - lo) * .12 || 1; lo -= pad; hi += pad;
+    var pad = (hi - lo) * (this.still ? .2 : .12) || 1; lo -= pad; hi += pad;
     if (this.lo === null || RM) { this.lo = lo; this.hi = hi; } else { this.lo += (lo - this.lo) * .1; this.hi += (hi - this.hi) * .1; }
     var top = 8, ph = H - top - 18, L = this.lo, Hh = this.hi, Y = function (v) { return top + (Hh - v) / (Hh - L) * ph; };
+    var nk = this.naked;
     // trend shading
-    for (k = first; k < last;) {
+    for (k = first; k < last && !nk;) {
       var b = s.e[k][0] > s.e[k][1], k2 = k;
       while (k2 + 1 < last && (s.e[k2 + 1][0] > s.e[k2 + 1][1]) === b) k2++;
       x.fillStyle = b ? C.bull : C.bear; var xa = Math.floor(X(k) - cw / 2); x.fillRect(xa, top, Math.ceil(X(k2) + cw / 2) - xa, ph); k = k2 + 1;
@@ -83,20 +84,20 @@
     x.font = '500 10px "JetBrains Mono", monospace'; x.textBaseline = 'middle'; x.textAlign = 'left';
     for (var g = Math.ceil(L / step) * step; g < Hh; g += step) { var gy = Y(g); x.strokeStyle = C.grid; x.lineWidth = 1; x.beginPath(); x.moveTo(0, gy); x.lineTo(W - axis, gy); x.stroke(); x.fillStyle = C.axis; x.fillText(fmt(g), W - axis + 6, gy); }
     // S/R lines + POC
-    (s.ln || []).forEach(function (l) {
+    if (!nk) (s.ln || []).forEach(function (l) {
       if (l[0] + 8 > nn || l[2] < first) return; var e2 = Math.min(l[2], nn); if (e2 <= l[0]) return;
       x.strokeStyle = l[3] === 1 ? 'rgba(34,211,154,.6)' : 'rgba(255,77,99,.65)'; x.lineWidth = 1.1;
       x.beginPath(); x.moveTo(X(Math.max(l[0], first)), Y(l[1])); x.lineTo(X(e2), Y(l[1])); x.stroke();
     });
-    if (s.p && nn >= 0) { var py = Y(s.p[nn]); x.strokeStyle = C.e200; x.lineWidth = 1.4; x.beginPath(); x.moveTo(X(Math.max(first, last - 60)), py); x.lineTo(W - axis, py); x.stroke(); }
+    if (s.p && nn >= 0 && !nk) { var py = Y(s.p[nn]); x.strokeStyle = C.e200; x.lineWidth = 1.4; x.beginPath(); x.moveTo(X(Math.max(first, last - 60)), py); x.lineTo(W - axis, py); x.stroke(); }
     // EMAs
-    [[2, C.e200, 2], [1, C.slow, 1.5], [0, C.fast, 1.4]].forEach(function (mm) {
+    if (!nk) [[2, C.e200, 2], [1, C.slow, 1.5], [0, C.fast, 1.4]].forEach(function (mm) {
       x.strokeStyle = mm[1]; x.lineWidth = mm[2]; x.beginPath();
       for (var j = first, st = false; j < last; j++) { var yy = Y(s.e[j][mm[0]]); if (!st) { x.moveTo(X(j), yy); st = true; } else x.lineTo(X(j), yy); }
       x.stroke();
     });
     // trade box
-    var t = this.trade;
+    var t = nk ? null : this.trade;
     if (t) {
       var x0 = X(t.at) - cw / 2, x1 = t.exit != null ? X(t.exit) + cw / 2 : W - axis - 4, ye = Y(t.entry), yt = Y(t.target), ys = Y(t.stop);
       x.fillStyle = 'rgba(34,211,154,.16)'; x.fillRect(x0, Math.min(ye, yt), x1 - x0, Math.abs(yt - ye));
@@ -111,7 +112,7 @@
       x.fillStyle = up ? C.up : C.dn; var yo = Y(c[0]), yc = Y(c[3]); x.fillRect(cx - bw / 2, Math.min(yo, yc), bw, Math.max(1.2, Math.abs(yc - yo)));
     }
     // markers
-    (s.mk || []).forEach(function (mk) {
+    if (!nk) (s.mk || []).forEach(function (mk) {
       if (mk[2] > nn || mk[0] < first) return; var cc = s.c[mk[0]], mx = X(mk[0]);
       switch (mk[1]) {
         case 1: star(x, mx, Y(cc[1]) - 7, 2.6, C.yel, 6); break; case 2: star(x, mx, Y(cc[2]) + 7, 2.6, C.yel, 6); break;
@@ -120,6 +121,15 @@
         case 7: star(x, mx, Y(cc[1]) - 12, 6, C.sell); break; case 8: star(x, mx, Y(cc[2]) + 12, 6, C.buy); break;
       }
     });
+    if (t && this.tags) {
+      var tg = function (tx, xx, yy, col) { x.font = '700 11px "JetBrains Mono", monospace'; var tw = x.measureText(tx).width + 14; xx = Math.min(xx, W - axis - tw - 4);
+        x.fillStyle = 'rgba(5,10,20,.88)'; x.fillRect(xx, yy - 10, tw, 20); x.strokeStyle = col; x.lineWidth = 1; x.strokeRect(xx + .5, yy - 9.5, tw - 1, 19); x.fillStyle = col; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(tx, xx + 7, yy + .5); };
+      var tx0 = X(t.exit != null ? t.exit : t.at) + cw, L3 = [['TARGET ' + fmt(t.target), Y(t.target), C.buy], ['ENTRY ' + fmt(t.entry), Y(t.entry), '#EAF0FA'], ['STOP ' + fmt(t.stop), Y(t.stop), C.sell]];
+      L3.sort(function (a, b) { return a[1] - b[1]; });
+      for (var q = 1; q < 3; q++) if (L3[q][1] - L3[q - 1][1] < 23) L3[q][1] = L3[q - 1][1] + 23;
+      L3.forEach(function (l) { tg(l[0], tx0, l[1], l[2]); });
+      x.font = '500 10px "JetBrains Mono", monospace';
+    }
     if (t) { var sc = s.c[t.at]; star(x, X(t.at), t.d === 1 ? Y(sc[2]) + 13 : Y(sc[1]) - 13, 7.5, t.d === 1 ? C.buy : C.sell); }
     // last price
     var lp = s.c[nn][3], ly = Y(lp);
@@ -133,6 +143,17 @@
     this.row('poc', 'Point of Control ' + fmt(s.p[nn]), lp > s.p[nn] ? 'Above' : 'Below', '');
   };
 
+  // one still frame of a setup, Killshot off (naked) or on, framed so the whole trade is visible
+  window.KSStill = function (cv, s, naked) {
+    var lv = Object.create(Live.prototype); lv.cv = cv; lv.x = cv.getContext('2d'); lv.panel = null; lv.resize();
+    lv.s = s; lv.naked = naked; lv.tags = !naked; lv.lo = null; lv.still = true;
+    var r = Math.abs(s.entry - s.stop), t = { d: s.d, at: s.at, entry: s.entry, stop: s.entry - s.d * r, target: s.entry + s.d * s.rr * r, res: null, exit: null };
+    for (var k = s.at + 1; k < s.c.length; k++) { var c = s.c[k];
+      if (t.d === 1 ? c[2] <= t.stop : c[1] >= t.stop) { t.res = 'loss'; t.exit = k; break; }
+      if (t.d === 1 ? c[1] >= t.target : c[2] <= t.target) { t.res = 'win'; t.exit = k; break; } }
+    lv.trade = t; lv.n = Math.min(s.c.length, (t.exit || s.at) + 2);
+    lv.draw();
+  };
   function boot(pool) {
     document.querySelectorAll('canvas[data-ks-live]').forEach(function (cv) {
       var lv = new Live(cv, cv.closest('[data-ks-panel]'), pool), last = 0, vis = true;
