@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spot the Setup — The Trade Vault</title>
-<meta name="description" content="Real gold and US30 charts. Call the trade before it plays out and see what the Killshot scanner spotted. 5 charts, 60 seconds.">
+<meta name="description" content="Real gold charts. Call the trade before it plays out and see what the Killshot scanner spotted. 5 charts, 60 seconds.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#050A14">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,7 +93,7 @@ a{color:inherit}
 @keyframes bump{30%{transform:scale(1.08)}}
 .stage{position:relative;min-height:0}
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer}
-.ff{white-space:nowrap;position:absolute;left:50%;top:14px;transform:translateX(-50%);font:500 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);padding:6px 12px;border-radius:999px;background:rgba(3,6,13,.7);border:1px solid var(--hair);pointer-events:none;transition:opacity .3s}
+.ff{white-space:nowrap;position:absolute;left:50%;bottom:34px;transform:translateX(-50%);font:500 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--tx-mute);padding:6px 12px;border-radius:999px;background:rgba(3,6,13,.7);border:1px solid var(--hair);pointer-events:none;transition:opacity .3s}
 .ff.fast{color:var(--tx);border-color:var(--hair-2)}
 .banner{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);opacity:0;pointer-events:none;text-align:center;padding:18px 26px;border-radius:18px;
   background:rgba(5,10,20,.88);border:1px solid var(--hair-2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:opacity .35s,transform .35s var(--ease);min-width:240px}
@@ -238,9 +238,9 @@ a{color:inherit}
     <span class="pill"><i></i>Free chart game</span>
   </header>
   <div class="hero">
-    <span class="kick mono" id="introKick">Gold · US30 · Real charts</span>
+    <span class="kick mono" id="introKick">Gold · 3-minute · Real charts</span>
     <h1>Can you spot the <em>setup?</em></h1>
-    <p class="sub">Real gold and US30 charts print in front of you. Call the trade before it plays out, then see what our Killshot scanner spotted. 5 charts. About 60 seconds. Get your trader rank.</p>
+    <p class="sub">Real gold charts print in front of you, candle by candle. Call the trade before it plays out, then see what our Killshot scanner spotted. 5 charts. About 60 seconds. Get your trader rank.</p>
     <div class="cta">
       <button class="play" id="playBtn" type="button">Play now <span aria-hidden="true">→</span></button>
       <small>Free. No sign-up to play.</small>
@@ -251,7 +251,7 @@ a{color:inherit}
       <div><b>03</b>Get your rank, Rookie to Sniper</div>
     </div>
   </div>
-  <p class="foot">Replays of past gold and US30 futures charts. Results are hypothetical and in R (multiples of the risk on each trade). Education only, not financial advice.</p>
+  <p class="foot">Replays of past gold futures charts. Results are hypothetical and in R (multiples of the risk on each trade). Education only, not financial advice.</p>
 </section>
 
 <!-- ============ GAME ============ -->
@@ -345,7 +345,7 @@ a{color:inherit}
     <div class="again">
       <button class="ghost" id="againBtn" type="button">Practice: 5 more charts ↻</button>
     </div>
-    <p class="fine">Replays of past gold and US30 futures charts (15-minute). Calls in this preview are sample setups. Results are hypothetical, in R (multiples of the risk on each trade), and past performance doesn't guarantee future results. Education only, not financial advice.</p>
+    <p class="fine">Replays of past gold futures charts (3-minute). Signals are a preview recreation of Killshot. Results are hypothetical, in R (multiples of the risk on each trade), and past performance doesn't guarantee future results. Education only, not financial advice.</p>
   </div>
 </section>
 
@@ -357,8 +357,8 @@ a{color:inherit}
   var C = {
     grid: 'rgba(255,255,255,.045)', axis: '#76849B',
     up: '#EAF0FA', dn: '#2F6BFF', wick: 'rgba(234,240,250,.55)', wickDn: 'rgba(47,107,255,.8)',
-    e20: '#3D7BFF', e50: '#FF4D63', e200: '#9AA9C2',
-    bull: 'rgba(47,107,255,.07)', bear: 'rgba(255,77,99,.06)',
+    fast: '#FF4D63', slow: '#3D7BFF', e200: '#FF9800', poc: '#FF9800',
+    bull: 'rgba(30,80,210,.17)', bear: 'rgba(120,24,46,.24)', yel: '#FFE14D', star2: '#3D7BFF',
     buy: '#22D39A', sell: '#FF4D63', you: '#EAF0FA', ks: '#4B9EFF', tx: '#EAF0FA'
   };
   var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -400,7 +400,7 @@ a{color:inherit}
     if (!s) return;
     var axisW = this.o.bare ? 0 : (W < 520 ? 60 : 70), bottom = this.o.bare ? 0 : 22;
     var rightPad = this.o.bare ? 0 : (W < 520 ? 56 : 90), plotW = W - axisW - rightPad;
-    var cw = plotW / (W < 520 ? 44 : Math.min(110, Math.max(60, plotW / 11))), vis = Math.ceil(plotW / cw) + 1;
+    var cw = plotW / (W < 520 ? 52 : Math.min(140, Math.max(70, plotW / 8.5))), vis = Math.ceil(plotW / cw) + 1;
     var last = this.n + (this.p > 0 ? 1 : 0), first = Math.max(0, last - vis);
     var X = function (k) { return W - axisW - rightPad - (last - 1 - k) * cw - cw / 2; };
     // price range (smoothed)
@@ -415,12 +415,16 @@ a{color:inherit}
     else { var a = RM ? 1 : 0.12; this.lo += (lo - this.lo) * a; this.hi += (hi - this.hi) * a; }
     var top = 16, ph = H - bottom - top, L = this.lo, Hh = this.hi;
     var Y = function (v) { return top + (Hh - v) / (Hh - L) * ph; };
-    var dec = s.sym === 'GOLD' ? 1 : 0;
+    var dec = s.sym === 'GOLD' ? 1 : 0, tf = s.tf || 900, nn = this.n - 1;
 
     // trend shading (Killshot style)
-    for (k = first; k < last; k++) {
-      var e = s.e[k]; x.fillStyle = e[0] > e[1] ? C.bull : C.bear;
-      x.fillRect(X(k) - cw / 2, top, cw + 0.5, ph);
+    // drawn as solid runs so there are no seams between candles
+    for (k = first; k < last;) {
+      var bullK = s.e[k][0] > s.e[k][1], k2 = k;
+      while (k2 + 1 < last && (s.e[k2 + 1][0] > s.e[k2 + 1][1]) === bullK) k2++;
+      var xa = Math.floor(X(k) - cw / 2), xb = Math.ceil(X(k2) + cw / 2);
+      x.fillStyle = bullK ? C.bull : C.bear; x.fillRect(xa, top, xb - xa, ph);
+      k = k2 + 1;
     }
     // grid + axis
     if (!this.o.bare) {
@@ -435,12 +439,25 @@ a{color:inherit}
       var every = Math.max(8, Math.round(90 / cw));
       for (k = first; k < last; k++) {
         if ((k + 3) % every) continue;
-        var dt = new Date((s.t0 + k * 900) * 1000);
+        var dt = new Date((s.t0 + k * tf) * 1000);
         x.fillText(pad2(dt.getUTCHours()) + ':' + pad2(dt.getUTCMinutes()), X(k), H - 6);
       }
     }
     // EMAs
-    [[2, C.e200, 1.6], [1, C.e50, 1.4], [0, C.e20, 1.4]].forEach(function (m) {
+    // support / resistance lines from confirmed swings (Killshot style)
+    (s.ln || []).forEach(function (l) {
+      if (l[0] + 8 > nn || l[2] < first) return;
+      var e2 = Math.min(l[2], nn); if (e2 <= l[0]) return;
+      x.strokeStyle = l[3] === 1 ? 'rgba(34,211,154,.6)' : 'rgba(255,77,99,.65)'; x.lineWidth = 1.2;
+      x.beginPath(); x.moveTo(X(Math.max(l[0], first)), Y(l[1])); x.lineTo(X(e2), Y(l[1])); x.stroke();
+    });
+    // point of control
+    if (s.p && nn >= 0) {
+      var pv = s.p[nn], py0 = Y(pv);
+      x.strokeStyle = C.poc; x.lineWidth = 1.6; x.globalAlpha = .9;
+      x.beginPath(); x.moveTo(X(Math.max(first, last - 70)), py0); x.lineTo(W - axisW - 2, py0); x.stroke(); x.globalAlpha = 1;
+    }
+    [[2, C.e200, 2.2], [1, C.slow, 1.6], [0, C.fast, 1.5]].forEach(function (m) {
       x.strokeStyle = m[1]; x.lineWidth = m[2]; x.globalAlpha = 0.9; x.beginPath();
       for (var k2 = first, st = false; k2 < Math.min(last, this.n); k2++) {
         var yy = Y(s.e[k2][m[0]]); if (!st) { x.moveTo(X(k2), yy); st = true; } else x.lineTo(X(k2), yy);
@@ -478,13 +495,28 @@ a{color:inherit}
       x.fillStyle = up ? C.up : C.dn;
       x.fillRect(cx - bw / 2, Math.min(yo, yc), bw, Math.max(1.2, Math.abs(yc - yo)));
     }
+    // indicator markers (only once the indicator would have printed them)
+    (s.mk || []).forEach(function (m) {
+      if (m[2] > nn || m[0] < first) return;
+      var cc = s.c[m[0]], mx = X(m[0]);
+      switch (m[1]) {
+        case 1: star(x, mx, Y(cc[1]) - 8, 3, C.yel, 6); break;
+        case 2: star(x, mx, Y(cc[2]) + 8, 3, C.yel, 6); break;
+        case 3: star(x, mx, Y(cc[1]) - 10, 4.8, C.star2, 8); break;
+        case 4: star(x, mx, Y(cc[2]) + 10, 4.8, C.star2, 8); break;
+        case 5: tri(x, mx, Y(cc[2]) + 12, 6, 1, C.star2); break;
+        case 6: tri(x, mx, Y(cc[1]) - 12, 6, -1, C.sell); break;
+        case 7: star(x, mx, Y(cc[1]) - 14, 7, C.sell); break;
+        case 8: star(x, mx, Y(cc[2]) + 14, 7, C.buy); break;
+      }
+    });
     // signal stars + setup bracket
     this.marks.forEach(function (m) {
       if (m.k < first) return;
       var cc = s.c[m.k], mx = X(m.k);
       if (m.type === 'star') {
         var my = m.d === 1 ? Y(cc[2]) + 14 : Y(cc[1]) - 14;
-        star(x, mx, my, 6.5, m.d === 1 ? C.buy : C.sell);
+        star(x, mx, my, 7.5, m.d === 1 ? C.buy : C.sell);
       } else if (m.type === 'zone') {
         var a2 = 0.35 + 0.25 * Math.sin(performance.now() / 260);
         x.strokeStyle = 'rgba(75,158,255,' + a2 + ')'; x.lineWidth = 1.5;
@@ -503,6 +535,34 @@ a{color:inherit}
       }
       tag(x, g.x0 + cw * 1.2, g.ye + (t.d === 1 ? -12 : 12), W < 520 ? t.label.replace('KILLSHOT', 'KS') : t.label, t.ghost ? C.you : C.ks, 'left', lim);
     });
+    // Killshot dashboard + watermark
+    if (!this.o.bare && s.f && nn >= 0) {
+      var fl = s.f[nn], small = W < 620;
+      var cols = small ? ['M3', 'M15', 'H1', 'H4'] : ['M3', 'M15', 'M30', 'H1', 'H4'], bitOf = { M3: 0, M15: 1, M30: 2, H1: 3, H4: 4 };
+      var cwid = small ? 34 : 40, rowh = small ? 16 : 18, lw = small ? 44 : 50;
+      var tw = lw + cwid * cols.length, tx0 = small ? 8 : Math.round((W - axisW - tw) / 2), ty0 = 8;
+      x.fillStyle = 'rgba(16,20,32,.92)'; x.fillRect(tx0, ty0, tw, rowh * (small ? 2 : 3));
+      x.font = '600 ' + (small ? 9 : 10) + 'px Inter, system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillStyle = '#C9D3E3'; x.fillText('Trend', tx0 + lw / 2, ty0 + rowh / 2);
+      cols.forEach(function (cn, i) { x.fillStyle = '#C9D3E3'; x.fillText(cn, tx0 + lw + cwid * i + cwid / 2, ty0 + rowh / 2); });
+      x.fillStyle = '#C9D3E3'; x.fillText('XAU', tx0 + lw / 2, ty0 + rowh * 1.5);
+      cols.forEach(function (cn, i) {
+        var up = fl >> bitOf[cn] & 1, cx0 = tx0 + lw + cwid * i;
+        x.fillStyle = up ? '#2F6BFF' : '#E5394B'; x.fillRect(cx0 + 1, ty0 + rowh + 1, cwid - 2, rowh - 2);
+        x.fillStyle = '#fff'; x.fillText(up ? 'Up' : 'Down', cx0 + cwid / 2, ty0 + rowh * 1.5);
+      });
+      if (!small) {
+        x.fillStyle = '#C9D3E3'; x.fillText('POC', tx0 + lw / 2, ty0 + rowh * 2.5);
+        ['M15', 'M30', 'H1'].forEach(function (cn, i) {
+          var ab = fl >> (5 + i) & 1, cx0 = tx0 + lw + cwid * i;
+          x.fillStyle = ab ? '#2F6BFF' : '#E5394B'; x.fillRect(cx0 + 1, ty0 + rowh * 2 + 1, cwid - 2, rowh - 2);
+          x.fillStyle = '#fff'; x.fillText(ab ? 'Above' : 'Below', cx0 + cwid / 2, ty0 + rowh * 2.5);
+        });
+      }
+      x.font = '600 ' + (small ? 10 : 12) + 'px Inter, system-ui, sans-serif'; x.textAlign = small ? 'left' : 'right'; x.textBaseline = small ? 'top' : 'alphabetic';
+      x.fillStyle = 'rgba(167,120,255,.75)';
+      if (small) x.fillText('KILLSHOT', tx0, ty0 + rowh * 2 + 6); else x.fillText('KILLSHOT', W - axisW - 10, H - bottom - 8);
+    }
     // last price tag
     if (!this.o.bare && last > 0) {
       var lp = this.price(), ly = Y(lp), lc = s.c[last - 1], upp = lp >= (this.n < s.c.length && this.p > 0 ? s.c[this.n][0] : lc[0]);
@@ -532,9 +592,16 @@ a{color:inherit}
     x.strokeStyle = col; x.lineWidth = 1; roundRect(x, bx, py - 9, w, 18, 5); x.stroke();
     x.fillStyle = col; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(txt, bx + 6, py + 0.5);
   }
-  function star(x, cx, cy, r, col) {
-    x.save(); x.shadowColor = col; x.shadowBlur = 14; x.fillStyle = col; x.beginPath();
-    for (var i = 0; i < 16; i++) { var a = i * Math.PI / 8 - Math.PI / 2, rr = i % 2 ? r * 0.45 : r; x.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
+  function tri(x, cx, cy, r, dir, col) {
+    x.fillStyle = col; x.beginPath();
+    if (dir === 1) { x.moveTo(cx, cy - r); x.lineTo(cx + r, cy + r * .8); x.lineTo(cx - r, cy + r * .8); }
+    else { x.moveTo(cx, cy + r); x.lineTo(cx + r, cy - r * .8); x.lineTo(cx - r, cy - r * .8); }
+    x.closePath(); x.fill();
+  }
+  function star(x, cx, cy, r, col, pts) {
+    pts = pts || 16;
+    x.save(); x.shadowColor = col; x.shadowBlur = r > 5 ? 14 : 4; x.fillStyle = col; x.beginPath();
+    for (var i = 0; i < pts; i++) { var a = i * Math.PI * 2 / pts - Math.PI / 2, rr = i % 2 ? r * 0.45 : r; x.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
     x.closePath(); x.fill(); x.restore();
   }
   function bracket(x, bx, by, w, h) {
@@ -601,8 +668,8 @@ a{color:inherit}
     cv.load(s, Math.max(20, s.at - 34));
     $('dots').children[G.i].className = 'on';
     $('mkName').textContent = s.sym === 'GOLD' ? 'Gold' : 'US30';
-    var d = new Date(s.t0 * 1000 + s.at * 900000);
-    $('mkSub').textContent = (s.sym === 'GOLD' ? 'XAU' : 'DOW') + ' · 15M · ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()].toUpperCase();
+    var d = new Date((s.t0 + s.at * (s.tf || 900)) * 1000);
+    $('mkSub').textContent = 'XAU · ' + ((s.tf || 900) / 60) + 'M · ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()].toUpperCase();
     status('Round ' + (G.i + 1) + ' of 5', 'Watch the chart. A setup is forming…');
     setBtns(false); banner(false); $('ff').style.opacity = G.i < 2 ? 1 : 0;
     $('timer').style.transition = 'none'; $('timer').style.transform = 'scaleX(0)';
@@ -737,7 +804,7 @@ a{color:inherit}
     G.log.forEach(function (l, i) {
       var s = l.s, r = document.createElement('div'); r.className = 'rd';
       var got = l.choice === s.d, ch = l.choice === 0 ? 'you skipped' : got ? 'you spotted it' : 'you went the other way';
-      var why = s.d === 1 ? 'Uptrend (blue EMA over red), pullback into the blue EMA, buyers rejected it.' : 'Downtrend (blue EMA under red), rally into the blue EMA, sellers rejected it.';
+      var why = s.d === 1 ? 'Price flushed to a fresh low, stretched well below the EMAs, and buyers rejected it with a long lower wick.' : 'Price spiked to a fresh high, stretched well above the EMAs, and sellers rejected it with a long upper wick.';
       r.innerHTML = '<span class="n">0' + (i + 1) + '</span><div class="w"><b></b><span></span></div><div class="r you"></div><div class="r ks"></div>';
       r.querySelector('.w b').textContent = (s.sym === 'GOLD' ? 'Gold' : 'US30') + ' · Killshot ' + (s.d === 1 ? 'buy' : 'sell') + ' at ' + fmt(s.entry, s.sym === 'GOLD' ? 1 : 0) + ' · ' + ch;
       r.querySelector('.w span').textContent = why;
@@ -820,7 +887,7 @@ a{color:inherit}
 
   fetch('/spot/setups.json').then(function (r) { return r.json(); }).then(function (d) {
     POOL = d; bg.resize(); bgNext(); requestAnimationFrame(bgLoop);
-    var dd = new Date(); $('introKick').textContent = 'Today\'s 5 charts · ' + dd.getDate() + ' ' + MONTHS[dd.getMonth()] + ' · Gold & US30';
+    var dd = new Date(); $('introKick').textContent = 'Today\'s 5 charts · ' + dd.getDate() + ' ' + MONTHS[dd.getMonth()] + ' · Gold 3M';
   }).catch(function () { $('playBtn').disabled = true; $('playBtn').textContent = 'Couldn’t load charts. Refresh.'; });
 })();
 </script>
