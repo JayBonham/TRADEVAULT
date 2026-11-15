@@ -407,8 +407,9 @@ a{color:inherit}
   Chart.prototype.shot = function (naked) {
     var keep = { a: this.ksA, on: this.ksOn, t: this.trades, m: this.marks, p: this.pops };
     this.pops = [];
-    if (naked) { this.ksA = 0; this.ksOn = false; this.trades = []; this.marks = []; } else { this.ksA = 1; this.ksOn = true; }
-    this.freeze = true; this.draw(); this.freeze = false;
+    if (naked) { this.ksA = 0; this.ksOn = false; this.trades = []; this.marks = []; } else { this.ksA = 1; this.ksOn = true; this.trades = this.trades.filter(function (t) { return !t.ghost; }); this.marks = this.marks.filter(function (m) { return m.type === 'star'; }); }
+    this.noTags = true;
+    this.freeze = true; this.draw(); this.freeze = false; this.noTags = false;
     var src = this.cv, w = Math.min(1200, src.width), h = Math.round(src.height * w / src.width), out = '';
     try { var o = document.createElement('canvas'); o.width = w; o.height = h; var oc = o.getContext('2d'); oc.fillStyle = '#050A14'; oc.fillRect(0, 0, w, h); oc.drawImage(src, 0, 0, w, h); out = o.toDataURL('image/jpeg', 0.8); } catch (e) {}
     this.ksA = keep.a; this.ksOn = keep.on; this.trades = keep.t; this.marks = keep.m; this.pops = keep.p;
@@ -560,7 +561,7 @@ a{color:inherit}
       }
     });
     // trade labels on top of everything
-    if (!this.o.bare) this.trades.forEach(function (t) {
+    if (!this.o.bare && !this.noTags) this.trades.forEach(function (t) {
       var g = t._g; if (!g || g.x1 < 0) return;
       var lim = W - axisW - 4, lx = Math.min(g.x1, lim) - 4;
       if (!t.ghost) {
@@ -833,8 +834,8 @@ a{color:inherit}
   function saveShots() {
     // the most convincing chart: one they missed that Killshot won, else any Killshot win, else the last
     var L = G.log.filter(function (l) { return l.naked && l.ksImg; });
-    var best = L.filter(function (l) { return l.choice !== l.s.d && l.ks > 0; })[0] || L.filter(function (l) { return l.ks > 0; })[0] || L[L.length - 1];
-    if (!best) return;
+    var best = L.filter(function (l) { return l.choice !== l.s.d && l.ks > 0; })[0] || L.filter(function (l) { return l.ks > 0; })[0];
+    if (!best) { try { sessionStorage.removeItem('bk_shots'); localStorage.removeItem('bk_shots'); } catch (e) {} return; }
     var i = G.log.indexOf(best), s = best.s;
     var data = JSON.stringify({ naked: best.naked, ks: best.ksImg, chart: i + 1, side: s.d === 1 ? 'buy' : 'sell', entry: fmt(s.entry, 1), r: sign(best.ks),
       you: best.choice === 0 ? 'skipped it' : best.choice === s.d ? 'spotted it' : 'went the other way' });

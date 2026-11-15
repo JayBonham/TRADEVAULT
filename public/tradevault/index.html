@@ -116,13 +116,13 @@ h2{font-size:clamp(34px,4.8vw,60px)}
 .mob-links a small{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.2em;color:var(--acc);margin-right:14px;vertical-align:middle}
 
 /* ── hero ── */
-.hero{padding-top:clamp(140px,20vh,190px);padding-bottom:clamp(64px,9vh,96px);text-align:center}
+.hero{padding-top:clamp(100px,12vh,132px);padding-bottom:clamp(64px,9vh,96px);text-align:center}
 .pill{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--hair-2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
   font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-dim);margin-bottom:30px}
 .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:blink 2s infinite}
 .hero h1{max-width:13ch;margin:0 auto}
-.hero .lede{margin:24px auto 0;font-size:18px;color:var(--tx-mute)}
-.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:38px}
+.hero .lede{margin:18px auto 0;font-size:18px;color:var(--tx-mute)}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
 .frame{position:relative;margin-top:clamp(56px,8vh,84px);border-radius:22px;overflow:hidden;border:1px solid var(--hair-2);background:var(--g1);
   box-shadow:0 40px 120px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04),0 0 120px rgba(var(--acc-rgb),.10)}
 .crew{display:grid;grid-template-columns:repeat(4,1fr)}
@@ -251,7 +251,7 @@ h2{font-size:clamp(34px,4.8vw,60px)}
   .seq-dots button.on{color:var(--tx)}
   .seq-dots button.on::before{background:var(--acc)}
   .seq-dots button:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
-  .disc{margin-top:-40px}
+  .disc{margin-top:16px;text-align:center}
 }
 @media(max-width:1023px){
   .seq{margin-top:48px}
@@ -471,7 +471,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 @media(max-width:900px){.wrev-grid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(270px,82%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.wrev-c{scroll-snap-align:start}}
 
 /* ---- portal preview (hero) ---- */
-.pv{--ps:#0A1322;--ps2:#0E1A2E;--pl:rgba(255,255,255,.09);--pt2:#B3C0D4;--pm:#7F8DA3;margin-top:clamp(48px,7vh,72px);border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.15);background:#050A14;
+.pv{--ps:#0A1322;margin-top:36px!important;--ps2:#0E1A2E;--pl:rgba(255,255,255,.09);--pt2:#B3C0D4;--pm:#7F8DA3;margin-top:clamp(48px,7vh,72px);border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.15);background:#050A14;
   box-shadow:0 50px 120px rgba(0,0,0,.55),0 0 0 1px rgba(75,158,255,.08),0 0 80px rgba(75,158,255,.08);text-align:left}
 .pv-bar{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--pl);background:rgba(255,255,255,.02)}
 .pv-bar i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.14)}
@@ -514,7 +514,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .pv-cd small{font:500 8px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--pm)}
 .pv-btns{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
 .pv-hero-r{position:relative;background:linear-gradient(170deg,#0B1628,#0E1D35)}
-.pv-hero-r img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 15%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+.pv-hero-r img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 30%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%);mask-image:linear-gradient(90deg,transparent,#000 22%)}
 .pv-chip{position:absolute;right:12px;bottom:12px;font:500 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:rgba(5,10,20,.8);border:1px solid rgba(75,158,255,.5);color:#6CB1FF}
 .pv-2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;flex:1;min-height:0}
 .pv-row{display:grid;grid-template-columns:76px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--pl);font-size:11.5px;color:var(--pm)}
@@ -549,14 +549,14 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .pv-tiles span{padding:8px 12px;border-radius:16px;border:1px solid var(--pl);background:var(--ps)}
 .pv-tiles b{display:block;font:700 22px var(--display);letter-spacing:-.04em;color:var(--tx)}
 .pv-tiles i{display:none}
-.pv-2.j{grid-template-columns:1.6fr 1fr;flex:none;height:128px}
-.pv-eq{display:block;width:100%;height:76px}
+.pv-2.j{grid-template-columns:1.6fr 1fr;flex:none;align-items:stretch}
+.pv-eq{display:block;width:100%;height:74px}
 .pv-rad{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
 .pv-rad i{height:20px;border-radius:5px;display:grid;place-items:center;font:700 11px var(--body);font-style:normal;background:rgba(255,255,255,.05);color:#fff}
 .pv-rad i.ok{background:#9085e9}.pv-rad i.er{background:#c24f93}.pv-rad i.na{background:none;border:1px dashed rgba(255,255,255,.35);color:var(--pm)}
-.pv-note{font-size:11.5px;color:var(--pm);margin-top:10px}.pv-note b{color:var(--tx)}
+.pv-note{font-size:11px;color:var(--pm);margin-top:8px;line-height:1.35}.pv-note b{color:var(--tx)}
 .pv-heat{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.pv-heat i{height:20px;border-radius:7px;font-style:normal;padding:3px 5px;background:rgba(255,255,255,.03);display:flex;flex-direction:column;justify-content:space-between}
+.pv-heat i{height:27px;border-radius:7px;font-style:normal;padding:3px 5px;background:rgba(255,255,255,.03);display:flex;flex-direction:column;justify-content:space-between}
 .pv-heat i.e{background:none}.pv-heat i.o{opacity:.5}
 .pv-heat b{font:600 9px var(--mono);color:var(--pt2)}.pv-heat s{text-decoration:none;font:600 9.5px var(--mono);color:#fff;align-self:flex-end}
 /* academy + recordings */
@@ -594,6 +594,66 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   .pv-nextup .pv-pill{display:none}
   .pv-bar span{font-size:10px}
 }
+
+.pv-lessons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pv-lessons div{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;border:1px solid var(--pl);background:var(--ps)}
+.pv-lessons i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 10px var(--mono);font-style:normal;border:1px dashed rgba(255,255,255,.3);color:var(--pm)}
+.pv-lessons .done i{border:0;background:#1baf7a;color:#fff}
+.pv-lessons .now{border-color:rgba(75,158,255,.5);background:rgba(75,158,255,.1);box-shadow:inset 2px 0 0 #4B9EFF}
+.pv-lessons .now i{border:0;background:#4B9EFF;color:#fff}
+.pv-lessons b{font-size:12.5px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-lessons small{font:500 10px var(--mono);color:var(--pm)}
+@media(max-width:860px){.pv-lessons{grid-template-columns:1fr}.pv-lessons div:nth-child(n+5){display:none}}
+/* playbook slide fan */
+.media.book.slides{display:block;position:relative;overflow:hidden}
+.sfan{position:absolute;inset:0;perspective:900px}
+.sl{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:16/10;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.5);
+  background:radial-gradient(ellipse 90% 120% at 0% 0%,rgba(75,158,255,.35),transparent 60%),linear-gradient(150deg,#0F2448,#081329);padding:9% 8%;display:flex;flex-direction:column;justify-content:space-between;transition:transform .6s var(--ease)}
+.sl small{font:500 7px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#6CB1FF}
+.sl b{font:700 15px var(--display);letter-spacing:-.02em;line-height:1.05;color:#EAF0FA}
+.sl i{display:block;height:2px;width:34%;background:#4B9EFF}
+.sl:nth-child(1){transform:translate(-92%,-62%) rotate(-10deg) scale(.82);opacity:.55}
+.sl:nth-child(2){transform:translate(-8%,-62%) rotate(10deg) scale(.82);opacity:.55}
+.sl:nth-child(3){transform:translate(-80%,-46%) rotate(-5deg) scale(.9);opacity:.8}
+.sl:nth-child(4){transform:translate(-20%,-46%) rotate(5deg) scale(.9);opacity:.8}
+.sl:nth-child(5){transform:translate(-50%,-44%)}
+.card:hover .sl:nth-child(1){transform:translate(-104%,-66%) rotate(-13deg) scale(.82)}
+.card:hover .sl:nth-child(2){transform:translate(4%,-66%) rotate(13deg) scale(.82)}
+.slides .mono{position:absolute;left:0;right:0;bottom:12px;text-align:center}
+
+.pv-count{display:flex;flex-direction:column;align-items:flex-end;font:500 9px var(--mono);letter-spacing:.16em;text-transform:uppercase}
+.pv-count b{font:700 22px var(--display);letter-spacing:-.03em;line-height:1}
+.pv-member{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:10px 16px;border-radius:16px;border:1px solid rgba(245,184,92,.28);background:linear-gradient(100deg,rgba(245,184,92,.12),var(--ps) 45%)}
+.pv-member small{display:block;font:500 8.5px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--pm)}
+.pv-member b{font:700 18px var(--display);letter-spacing:-.02em;color:#F5B85C}
+.pv-member ul{list-style:none;display:flex;flex-wrap:wrap;gap:4px 14px}
+.pv-member li{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx)}
+.pv-member li::before{content:"✓";width:15px;height:15px;border-radius:50%;background:#1baf7a;color:#fff;font-size:9px;display:grid;place-items:center}
+.pv-member em{font-style:normal;font:500 8.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#3fcf97}
+.pv-pathh b{font:600 15px var(--display);color:var(--tx)}
+.pv-pathh{margin-bottom:-4px}
+.pv-pn{display:flex;align-items:center;gap:8px;font:500 9.5px var(--mono);color:#4B9EFF}
+.pv-pn::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(75,158,255,.5),transparent)}
+.pv-cv{position:relative;aspect-ratio:16/6.8;border-radius:12px;overflow:hidden;padding:9px 12px;display:flex;flex-direction:column;justify-content:flex-end;
+  background:radial-gradient(ellipse 80% 120% at 100% 0%,color-mix(in srgb,var(--cc) 22%,transparent),transparent 60%),linear-gradient(160deg,#0E1A2E,#070D18);border:1px solid var(--pl);box-shadow:inset 3px 0 0 var(--cc)}
+.pv-cvlogo{position:absolute;left:12px;top:9px;display:flex;align-items:center;gap:5px;font:600 7px 'Instrument Sans',serif;letter-spacing:.06em;color:#EAF0FA}
+.pv-cvlogo img{width:12px;height:12px}
+.pv-cv small{display:flex;align-items:center;gap:6px;font:500 7px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--cc)}
+.pv-cv small i{display:flex;gap:2px}.pv-cv small u{width:8px;height:2px;background:var(--cc);display:block}
+.pv-cv b{font:700 24px var(--display);letter-spacing:-.045em;line-height:.95;color:#EAF0FA}
+.pv-cv em{font-style:normal;font-size:11px;color:var(--pt2)}
+.pv-cv svg{position:absolute;right:8px;top:30%;width:45%;height:40%}
+.pv-filt{display:flex;gap:6px;flex-wrap:wrap}
+.pv-filt span{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:999px;border:1px solid var(--pl);font-size:11.5px;color:var(--tx)}
+.pv-filt span.on{background:#EAF0FA;color:#07101F;padding:4px 12px;font-weight:600}
+.pv-by{position:absolute;left:8px;bottom:6px;z-index:1;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#fff}
+.pv-thumb.sm{aspect-ratio:16/9.5}
+.pv-view[data-view="academy"]{gap:10px}
+.pv-view[data-view="academy"] .pv-resume{padding:10px}
+.pv-view[data-view="academy"] .pv-resume .pv-thumb{aspect-ratio:16/6.2}
+.pv-view[data-view="rec"] .pv-resume .pv-thumb{aspect-ratio:16/6.2}
+.pv-view[data-view="rec"]{gap:10px}
+@media(max-width:860px){.pv-member{grid-template-columns:1fr}.pv-member em{display:none}.pv-filt span:nth-child(n+4){display:none}.pv-cv b{font-size:18px}}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -657,7 +717,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
     </div>
 
     <div class="pv reveal" id="pv" aria-label="Preview of the members portal">
-      <div class="pv-bar"><i></i><i></i><i></i><span>portal.thetradevault.co</span><em>Example data</em></div>
+      <div class="pv-bar"><i></i><i></i><i></i><span>portal.thetradevault.co</span></div>
       <div class="pv-app">
         <nav class="pv-side" role="tablist" aria-label="Portal areas">
           <div class="pv-logo"><img src="/assets/tv-icon.png" alt="" width="22" height="22"><img src="/assets/tv-logo.png" alt="The Trade Vault" height="10"></div>
@@ -680,7 +740,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
                 <div class="pv-cd"><span><b data-pv-d>01</b><small>Days</small></span><span><b data-pv-h>03</b><small>Hrs</small></span><span><b data-pv-m>05</b><small>Min</small></span><span><b data-pv-s>12</b><small>Sec</small></span></div>
                 <div class="pv-btns"><span class="pv-pill">Open the room</span><span class="pv-ghost">Add to calendar</span></div>
               </div>
-              <div class="pv-hero-r"><img src="/assets/jay-bonham-cut.webp" alt="" loading="lazy"><span class="pv-chip">Killshot</span></div>
+              <div class="pv-hero-r"><img src="/assets/jay-charts.webp" alt="" loading="lazy"><span class="pv-chip">Killshot</span></div>
             </div>
             <div class="pv-2">
               <div class="pv-card"><div class="pv-ch"><b>Coming up</b><span>Week view →</span></div>
@@ -718,25 +778,31 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
           </section>
 
           <section class="pv-view" data-view="academy">
-            <div class="pv-hello"><div><small class="pv-eb">The Academy</small><h4>Learn the system</h4></div><span class="pv-tz"><b>24</b> of 112 lessons done</span></div>
-            <div class="pv-resume"><div class="pv-thumb" style="background-image:url(/assets/jay-training.webp)"><i class="pv-play"></i><em>4:57</em></div>
-              <div><small class="pv-eb">Pick up where you left off</small><h5>What is a pip?</h5><span class="pv-sub">Basic · Module 3: Early terms and understanding · Lesson 2</span><div class="pv-prog"><i style="width:23%"></i></div><span class="pv-pill">Resume lesson</span></div></div>
+            <div class="pv-hello"><div><small class="pv-eb">The Academy</small><h4>Learn the system</h4></div><span class="pv-tz pv-count"><b>24</b>of 128 lessons done</span></div>
+            <div class="pv-member"><div><small>Your membership</small><b>Full access</b></div>
+              <ul><li>Basic</li><li>Intermediate</li><li>Advanced</li><li>Scanner Bootcamps</li><li>Killshot Bootcamp</li><li>Smartshot Bootcamp</li></ul>
+              <em>Every course is unlocked</em></div>
+            <div class="pv-resume"><div class="pv-thumb" style="background-image:url(/assets/killshot-graphic.webp)"><i class="pv-play"></i><em>4:10</em></div>
+              <div><small class="pv-eb">Pick up where you left off</small><h5>What is the POC?</h5><span class="pv-sub">Killshot Bootcamp · Lesson 4</span><div class="pv-prog"><i style="width:58%"></i></div><div class="pv-btns"><span class="pv-pill">Resume lesson</span><span class="pv-ghost">Course outline</span></div></div></div>
+            <div class="pv-pathh"><b>Your path</b></div>
             <div class="pv-path">
-              <div class="pv-course"><div class="pv-cover" style="background-image:url(/assets/killshot-graphic.webp)"><span>Level 1</span></div><b>Basic</b><small>9 modules · 53 lessons</small><div class="pv-prog"><i style="width:23%"></i></div></div>
-              <div class="pv-course"><div class="pv-cover" style="background-image:url(/assets/smartshot-graphic.webp)"><span>Level 2</span></div><b>Intermediate</b><small>Journal, technicals, psychology</small><div class="pv-prog"><i style="width:0"></i></div></div>
-              <div class="pv-course"><div class="pv-cover" style="background-image:url(/assets/spectrum-graphic.webp)"><span>Level 3</span></div><b>Advanced</b><small>Wyckoff, supply &amp; demand, Killshot advanced</small><div class="pv-prog"><i style="width:0"></i></div></div>
+              <div class="pv-course"><small class="pv-pn">01</small><div class="pv-cv" style="--cc:#4B9EFF"><span class="pv-cvlogo"><img src="/assets/tv-icon.png" alt="">THE TRADE VAULT</span><small>Level 01 <i><u></u></i></small><b>Basic</b><em>Course</em><svg viewBox="0 0 120 40" preserveAspectRatio="none"><polyline points="0,36 14,33 26,34 40,27 52,29 66,20 78,22 92,12 106,14 120,4" fill="none" stroke="#4B9EFF" stroke-width="1.4" stroke-dasharray="2 3" opacity=".7"/></svg></div></div>
+              <div class="pv-course"><small class="pv-pn">02</small><div class="pv-cv" style="--cc:#3fcf97"><span class="pv-cvlogo"><img src="/assets/tv-icon.png" alt="">THE TRADE VAULT</span><small>Level 02 <i><u></u><u></u></i></small><b>Intermediate</b><em>Course</em><svg viewBox="0 0 120 40" preserveAspectRatio="none"><polyline points="0,36 14,33 26,34 40,27 52,29 66,20 78,22 92,12 106,14 120,4" fill="none" stroke="#3fcf97" stroke-width="1.4" stroke-dasharray="2 3" opacity=".7"/></svg></div></div>
+              <div class="pv-course"><small class="pv-pn">03</small><div class="pv-cv" style="--cc:#F5B85C"><span class="pv-cvlogo"><img src="/assets/tv-icon.png" alt="">THE TRADE VAULT</span><small>Level 03 <i><u></u><u></u><u></u></i></small><b>Advanced</b><em>Course</em><svg viewBox="0 0 120 40" preserveAspectRatio="none"><polyline points="0,36 14,33 26,34 40,27 52,29 66,20 78,22 92,12 106,14 120,4" fill="none" stroke="#F5B85C" stroke-width="1.4" stroke-dasharray="2 3" opacity=".7"/></svg></div></div>
             </div>
           </section>
 
           <section class="pv-view" data-view="rec">
-            <div class="pv-hello"><div><small class="pv-eb">Every session, saved</small><h4>Recordings</h4></div><span class="pv-tz">Every live session is recorded</span></div>
-            <div class="pv-resume"><div class="pv-thumb" style="background-image:url(/assets/jay-charts.webp)"><i class="pv-play"></i><em>1 h 05 min</em></div>
-              <div><small class="pv-eb">Latest session</small><h5>Gold 3-Minute Killshot Session</h5><p class="pv-who"><img class="pv-av" src="/assets/jay-bonham-cut.webp" alt="" style="--ed:#4B9EFF;width:26px;height:26px" loading="lazy"><b>Jay Bonham</b><span>Fri 13 Nov</span></p><span class="pv-pill">Watch now</span></div></div>
+            <div class="pv-hello"><div><small class="pv-eb">Every session, saved</small><h4>Recordings</h4></div><span class="pv-tz">Up a few minutes after each session ends</span></div>
+            <div class="pv-resume"><div class="pv-thumb" style="background-image:url(/assets/jay-training.webp)"><i class="pv-play"></i><em>50 min</em></div>
+              <div><small class="pv-eb">Latest session</small><h5>Friday Backtest &amp; Rant</h5><p class="pv-who"><img class="pv-av" src="/assets/jay-bonham-cut.webp" alt="" style="--ed:#4B9EFF;width:26px;height:26px" loading="lazy"><b>Jay Bonham</b><span>Fri 13 Nov · 50 min</span></p><span class="pv-pill">Watch now</span></div></div>
+            <div class="pv-filt"><span class="on">All</span><span><img class="pv-av" src="/assets/adam-haase.webp" alt="" style="--ed:#F5B85C;width:20px;height:20px" loading="lazy">Adam Haase</span><span><img class="pv-av" src="/assets/andrew-bridges.jpg" alt="" style="--ed:#22D39A;width:20px;height:20px" loading="lazy">Andrew Bridges</span><span><img class="pv-av" src="/assets/jay-bonham-cut.webp" alt="" style="--ed:#4B9EFF;width:20px;height:20px" loading="lazy">Jay Bonham</span><span><img class="pv-av" src="/assets/tyler-collins-cut.webp" alt="" style="--ed:#9085e9;width:20px;height:20px" loading="lazy">Tyler "Tyco" Collins</span></div>
+            <div class="pv-pathh"><b>Newest</b></div>
             <div class="pv-rail">
-              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/killshot-graphic.webp)"><span class="pv-new">New</span><em>58 min</em></div><b>US30 New York Open</b><small>Adam · Thu 12 Nov</small></div>
-              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/smartshot-graphic.webp)"><span class="pv-new">New</span><em>1 h 02 min</em></div><b>Gold Smartshot London</b><small>Tyler · Thu 12 Nov</small></div>
-              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/spectrum-graphic.webp)"><em>47 min</em></div><b>Spectrum Indices</b><small>Andrew · Wed 11 Nov</small></div>
-              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/jay-training.webp)"><em>1 h 21 min</em></div><b>London Killshot Open</b><small>Jay · Mon 9 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/killshot-graphic.webp)"><span class="pv-new">New</span><span class="pv-by"><img class="pv-av" src="/assets/adam-haase.webp" alt="" style="--ed:#F5B85C;width:20px;height:20px" loading="lazy">Adam</span><em>55 min</em></div><b>Mindset + Analiza</b><small>Fri 13 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/spectrum-graphic.webp)"><span class="pv-new">New</span><span class="pv-by"><img class="pv-av" src="/assets/andrew-bridges.jpg" alt="" style="--ed:#22D39A;width:20px;height:20px" loading="lazy">Andrew</span><em>47 min</em></div><b>Spectrum ORB: London Session</b><small>Thu 12 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/killshot-graphic.webp)"><span class="pv-by"><img class="pv-av" src="/assets/adam-haase.webp" alt="" style="--ed:#F5B85C;width:20px;height:20px" loading="lazy">Adam</span><em>46 min</em></div><b>Sesja Killshot</b><small>Thu 12 Nov</small></div>
+              <div class="pv-rc"><div class="pv-thumb sm" style="background-image:url(/assets/smartshot-graphic.webp)"><span class="pv-by"><img class="pv-av" src="/assets/tyler-collins-cut.webp" alt="" style="--ed:#9085e9;width:20px;height:20px" loading="lazy">Tyco</span><em>40 min</em></div><b>Smartshot Gold Scalping</b><small>Thu 12 Nov</small></div>
             </div>
           </section>
 
@@ -956,7 +1022,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         </div>
       </div>
     </div>
-    <p class="disc">Step 1 replays past gold 3-minute charts with a preview of the Killshot overlay. Other steps are mock-ups. Not live trades or financial advice.</p>
+    <p class="disc">Step 1 replays past gold charts. Other steps are mock-ups. Not financial advice.</p>
   </div>
 </section>
 
@@ -975,11 +1041,17 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <div class="bd"><h3>Video lessons</h3><p>110+ HD lessons across 18 modules. Watch your educators explain, execute and review exactly how they trade. On demand, forever.</p></div>
       </article>
       <article class="card reveal d1">
-        <div class="media book">
-          <div class="pdf"><div></div><div></div><div><i></i><strong>5 Rules of<br>Sniper Trading</strong><em>Jay Bonham</em><u></u><u style="width:80%"></u><u style="width:65%"></u></div></div>
-          <span class="mono" style="font-size:9.5px">+ 18 module playbooks</span>
+        <div class="media book slides">
+          <div class="sfan" aria-hidden="true">
+            <div class="sl"><small>Killshot Bootcamp · 05</small><b>What are the stars?</b><i></i></div>
+            <div class="sl"><small>Killshot Bootcamp · 06</small><b>Backtest Killshot</b><i></i></div>
+            <div class="sl"><small>Killshot Bootcamp · 01</small><b>What is Killshot?</b><i></i></div>
+            <div class="sl"><small>Killshot Bootcamp · 03</small><b>What are the EMAs?</b><i></i></div>
+            <div class="sl"><small>Killshot Bootcamp · 04</small><b>What is the POC?</b><i></i></div>
+          </div>
+          <span class="mono" style="font-size:9.5px">Slides with every lesson</span>
         </div>
-        <div class="bd"><h3>PDF playbooks</h3><p>Every module includes a written guide, checklist and playbook to download and keep. Have the rules in front of you, even away from the screen.</p></div>
+        <div class="bd"><h3>Lesson slides</h3><p>Every lesson comes with its slide deck to download and keep. Have the rules in front of you, even away from the screen.</p></div>
       </article>
       <article class="card reveal d2">
         <div class="media"><img src="assets/jay-training.webp" alt="Live trading session with Killshot signals" loading="lazy" style="object-position:80% 0%">

@@ -58,11 +58,11 @@
         if (t.d === 1 ? c[2] <= t.stop : c[1] >= t.stop) { t.res = 'loss'; t.exit = k; }
         else if (t.d === 1 ? c[1] >= t.target : c[2] <= t.target) { t.res = 'win'; t.exit = k; }
       }
-      if ((this.trade && this.trade.res && this.n > this.trade.exit + 4) || this.n >= s.c.length) { this.p = 0; this.wait = 2200; break; }
+      if ((this.trade && this.trade.res && this.n > this.trade.exit + 4) || this.n >= s.c.length) { this.p = 0; this.wait = 3200; break; }
     }
   };
   Live.prototype.draw = function () {
-    var x = this.x, s = this.s, W = this.w, H = this.h, axis = 52, right = 34, plotW = W - axis - right;
+    var x = this.x, s = this.s, W = this.w, H = this.h, axis = 52, right = 10, plotW = W - axis - right;
     x.clearRect(0, 0, W, H);
     var cw = plotW / Math.max(46, Math.min(90, plotW / 7)), last = this.n, first = Math.max(0, last - Math.ceil(plotW / cw) - 1), nn = last - 1;
     var X = function (k) { return W - axis - right - (last - 1 - k) * cw - cw / 2; };
@@ -142,7 +142,7 @@
   }
   function start() {
     if (!document.querySelector('canvas[data-ks-live]')) return;
-    fetch(SRC).then(function (r) { return r.json(); }).then(boot).catch(function () {});
+    fetch(SRC).then(function (r) { return r.json(); }).then(function (d) { var w = d.filter(function (x) { return x.result === 'win'; }); boot(w.length ? w : d); }).catch(function () {});
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
