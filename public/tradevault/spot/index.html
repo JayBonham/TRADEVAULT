@@ -928,6 +928,8 @@ a{color:inherit}
 
   /* ======================= input ======================= */
   $('playBtn').addEventListener('click', function () { start(); });
+  // ?adkit=1: lets the ad-recording script reach the chart (no effect for players)
+  if (/[?&]adkit=1/.test(location.search)) window.__spot = { cv: cv, G: function () { return G; } };
   $('bBuy').addEventListener('click', function () { choose(1); });
   $('bSell').addEventListener('click', function () { choose(-1); });
   $('bSkip').addEventListener('click', function () { choose(0); });
