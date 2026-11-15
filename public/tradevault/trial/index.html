@@ -695,6 +695,44 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .pv-view[data-view="rec"] .pv-resume .pv-thumb{aspect-ratio:16/6.2}
 .pv-view[data-view="rec"]{gap:10px}
 @media(max-width:860px){.pv-member{grid-template-columns:1fr}.pv-member em{display:none}.pv-filt span:nth-child(n+4){display:none}.pv-cv b{font-size:18px}}
+
+/* curriculum: real lesson thumbnails */
+.cx{display:grid;grid-template-columns:310px minmax(0,1fr);gap:22px;align-items:start}
+.cx-mods{display:flex;flex-direction:column;gap:6px;position:sticky;top:110px}
+.cx-m{display:grid;grid-template-columns:62px minmax(0,1fr);gap:12px;align-items:center;padding:8px;border-radius:14px;border:1px solid transparent;background:none;color:inherit;text-align:left;cursor:pointer;transition:background .2s,border-color .2s}
+.cx-m:hover{background:rgba(255,255,255,.03)}
+.cx-m.on{background:rgba(75,158,255,.08);border-color:rgba(75,158,255,.45)}
+.cx-m img{width:62px;height:40px;object-fit:cover;border-radius:7px;border:1px solid var(--hair);background:#0E1A2E}
+.cx-m small{display:block;font:500 9.5px var(--mono);letter-spacing:.14em;color:var(--acc)}
+.cx-m b{display:block;font:600 14.5px var(--display);letter-spacing:-.01em;line-height:1.2;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-m span{font-size:12px;color:var(--tx-mute)}
+.cx-hero{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;align-items:center;padding:14px;border-radius:22px;border:1px solid var(--hair-2);background:linear-gradient(160deg,rgba(75,158,255,.08),rgba(255,255,255,.015) 60%)}
+.cx-big{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#0E1A2E center/cover;border:1px solid var(--hair)}
+.cx-big::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(5,10,20,.8))}
+.cx-play{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:#fff;z-index:1;box-shadow:0 12px 34px rgba(0,0,0,.45)}
+.cx-play::before{content:"";position:absolute;left:23px;top:18px;border-left:17px solid #07101F;border-top:11px solid transparent;border-bottom:11px solid transparent}
+.cx-big em{position:absolute;right:12px;bottom:10px;z-index:1;font-style:normal;font:500 11px var(--mono);color:#fff}
+.cx-info small{font:500 10px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--acc)}
+.cx-info h3{font-family:var(--display);font-size:clamp(24px,2.4vw,32px);letter-spacing:-.035em;line-height:1.05;margin:8px 0 10px}
+.cx-info p{font-size:14.5px;color:var(--tx-dim)}
+.cx-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.cx-stats span{font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:6px 10px;border-radius:999px;border:1px solid var(--hair-2);color:var(--tx-dim)}
+.cx-stats span.sl{color:#7BE0B0;border-color:rgba(123,224,176,.35)}
+.cx-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.cx-l{display:flex;flex-direction:column;gap:7px;min-width:0;animation:cxin .45s var(--ease) both}
+@keyframes cxin{from{opacity:0;transform:translateY(8px)}}
+.cx-th{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#0E1A2E center/cover;border:1px solid var(--hair)}
+.cx-th i{position:absolute;left:8px;top:8px;font:600 10px var(--mono);font-style:normal;padding:3px 7px;border-radius:999px;background:rgba(5,10,20,.8);color:var(--tx-dim)}
+.cx-th em{position:absolute;right:8px;bottom:7px;font-style:normal;font:500 10px var(--mono);padding:2px 6px;border-radius:6px;background:rgba(5,10,20,.8);color:#fff}
+.cx-th u{position:absolute;left:8px;bottom:7px;text-decoration:none;font:500 9px var(--mono);letter-spacing:.12em;padding:2px 6px;border-radius:6px;background:rgba(27,175,122,.85);color:#fff}
+.cx-l b{font-size:14px;font-weight:600;line-height:1.3;color:var(--tx);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:1023px){
+  .cx{grid-template-columns:1fr}
+  .cx-mods{position:static;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -4px}
+  .cx-m{flex:none;width:240px;scroll-snap-align:start;border-color:var(--hair)}
+  .cx-hero{grid-template-columns:1fr}
+  .cx-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -1138,31 +1176,12 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <button class="ttab" onclick="switchT('advanced',this)">Advanced</button>
       </div>
     </div>
-    <div class="reveal">
-    <div id="t-basic" class="tpanel active">
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M01</span><span class="mt">Understanding Forex <span class="mm">· 7 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is Forex — The Global Currency Exchange</div><div class="lesson">History of Forex — From Barter to Blockchain</div><div class="lesson">What you trade</div><div class="lesson">Understanding Forex Pairs</div><div class="lesson">Understanding Forex CFDs — A Basic Introduction</div><div class="lesson">Who trades in Forex? A Tale of Two Traders</div><div class="lesson">How big is the Forex market cap?</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M02</span><span class="mt">Understanding Brokers <span class="mm">· 6 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Navigating the Forex Market — Choosing the right broker</div><div class="lesson">Metatrader — Empowering Retail Traders</div><div class="lesson">What is leverage and how does it work?</div><div class="lesson">How does a broker make money? Spreads and Swap fees</div><div class="lesson">Why demo accounts are your first step</div><div class="lesson">Forex Trading — A Tale of Two Traders</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M03</span><span class="mt">Early Terms &amp; Understanding <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Understanding Candlesticks in Trading</div><div class="lesson">What is a pip?</div><div class="lesson">Buying and selling in Forex</div><div class="lesson">Understanding Lot Sizes in Forex Trading</div><div class="lesson">Forex Trading Essentials</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M04</span><span class="mt">Executing in the Markets <span class="mm">· 8 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Mastering Forex Order Types</div><div class="lesson">Understanding the Impact of Spreads in Trading</div><div class="lesson">What is margin and how does it affect trading?</div><div class="lesson">The Essential Role of Risk Management in Trading</div><div class="lesson">Mastering Risk-Reward &amp; Inverse Risk Reward</div><div class="lesson">A Guide to Trading Styles</div><div class="lesson">Mastering Timeframes — A Trader's Guide to Market Timing</div><div class="lesson">Navigating Global Markets — Understanding Trading Sessions</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M05</span><span class="mt">Platform How-to <span class="mm">· 9 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">How to Place a Trade on Desktop</div><div class="lesson">How to set a Stop Loss &amp; Take Profit on Desktop</div><div class="lesson">Break even &amp; trailing stop loss — desktop</div><div class="lesson">How to close a trade on MT5 Desktop</div><div class="lesson">How to set up MT5 and add EMAs — Desktop</div><div class="lesson">MT5 Mobile Overview</div><div class="lesson">How to place a trade, set SL &amp; TP, break even on mobile</div><div class="lesson">How to add EMAs and Fibs on Mobile</div><div class="lesson">How to use TradingView</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M06</span><span class="mt">Trading Mindset <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">The power of compound interest</div><div class="lesson">The ability to lose and move forward</div><div class="lesson">The Long-Term Trader's Mindset</div><div class="lesson">Consistency and rules</div><div class="lesson">Why trading?</div></div></div>
-    </div>
-    <div id="t-intermediate" class="tpanel">
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M07</span><span class="mt">Trading Journal <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is a Trade Journal?</div><div class="lesson">How to create a trading plan</div><div class="lesson">Train on the back-office trading journal</div><div class="lesson">The importance of back testing</div><div class="lesson">Building Winning Daily Habits</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M08</span><span class="mt">The Technical Fundamentals <span class="mm">· 7 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Understanding technical analysis</div><div class="lesson">Decoding Forex Price Action</div><div class="lesson">Understanding and Utilizing Trends in Forex</div><div class="lesson">Understanding price consolidation in Forex</div><div class="lesson">Understanding Pullbacks</div><div class="lesson">The Power of Price Action Trading</div><div class="lesson">The Fib tool, targets and reversals</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M09</span><span class="mt">Trading Tools <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Forex market fundamentals</div><div class="lesson">Understanding news — Forex Factory</div><div class="lesson">Forex indicators — Your Compass in the markets</div><div class="lesson">Market structure is King</div><div class="lesson">Top-down analysis</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M10</span><span class="mt">Killshot Bootcamp <span class="mm">· 6 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is Killshot?</div><div class="lesson">How does it work?</div><div class="lesson">What are the EMAs?</div><div class="lesson">What is the POC?</div><div class="lesson">What are the stars and how to use them</div><div class="lesson">How to use and backtest Killshot</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M11</span><span class="mt">Smartshot Bootcamp <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is Smartshot?</div><div class="lesson">How does it work?</div><div class="lesson">The rules in the signals</div><div class="lesson">The A+ and B+ setups</div><div class="lesson">How to use and backtest Smartshot</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M12</span><span class="mt">Spectrum Bootcamp <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is Spectrum?</div><div class="lesson">How does it work?</div><div class="lesson">The rules in the signals</div><div class="lesson">The A+ and B+ setups</div><div class="lesson">How to use and backtest Spectrum</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M13</span><span class="mt">Next Level Psychology <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Fear &amp; greed</div><div class="lesson">Emotional Discipline in Trading</div><div class="lesson">Strategy Discipline — the greatest lesson</div><div class="lesson">Expectations don't pay — rules do</div><div class="lesson">The trading personal development plan</div></div></div>
-    </div>
-    <div id="t-advanced" class="tpanel">
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M14</span><span class="mt">Candlestick Bootcamp <span class="mm">· 7 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">How does volume work in a candle?</div><div class="lesson">Candle anatomy</div><div class="lesson">Engulfing candles</div><div class="lesson">Expansion, rejection and trap candles</div><div class="lesson">Why wait for candle closes?</div><div class="lesson">Volume sweep candles in trading</div><div class="lesson">Double top and double bottom patterns</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M15</span><span class="mt">Mastering Supply &amp; Demand <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">What is supply and demand?</div><div class="lesson">Visualizing Market Equilibrium</div><div class="lesson">Market structure &amp; Supply and demand zones</div><div class="lesson">Understanding stop hunts, liquidity sweeps and breakouts</div><div class="lesson">Precision Forex Trading</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M16</span><span class="mt">The Wyckoff Strategy <span class="mm">· 6 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Who was Richard D. Wyckoff?</div><div class="lesson">The 4 market phases</div><div class="lesson">The Accumulation Phase</div><div class="lesson">The Distribution Phase</div><div class="lesson">The Last Spring</div><div class="lesson">Adding Wyckoff to your trading</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M17</span><span class="mt">Killshot Advanced <span class="mm">· 5 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">The Open Strategy</div><div class="lesson">The Inverse Risk Reward</div><div class="lesson">The 3-Minute Gold Strategy</div><div class="lesson">The PB &amp; J</div><div class="lesson">Integrating Indicators — The Strategic Edge</div></div></div>
-      <div class="mod" onclick="toggleM(this)"><div class="mhdr"><div class="ml"><span class="mn">M18</span><span class="mt">Advanced Psychology <span class="mm">· 10 lessons</span></span></div><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div><div class="mlessons"><div class="lesson">Identity, beliefs and Trading Personality</div><div class="lesson">Emotional Discipline &amp; Impulse Control</div><div class="lesson">Fear, Losses &amp; Risk Assessment</div><div class="lesson">Confidence, Consistency &amp; Self Trust</div><div class="lesson">Patience and High Quality Execution</div><div class="lesson">Managing Greed &amp; Emotional Highs</div><div class="lesson">Revenge Trading &amp; Emotional Recovery</div><div class="lesson">Building Elite Trading Habits &amp; Routines</div><div class="lesson">Thinking in Probabilities</div><div class="lesson">Becoming a Professional Trader through mindset</div></div></div>
-    </div>
+    <div class="cx reveal" id="cx">
+      <div class="cx-mods" id="cxMods" role="tablist" aria-label="Modules"></div>
+      <div class="cx-main">
+        <div class="cx-hero" id="cxHero"></div>
+        <div class="cx-grid" id="cxGrid"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1471,6 +1490,46 @@ var TRIAL_LINKS = { elite: 'https://whop.com/sniper-academy-603f/tradevault-elit
     q('[data-pv-d]').textContent = p2(d); q('[data-pv-h]').textContent = p2(h); q('[data-pv-m]').textContent = p2(m); q('[data-pv-s]').textContent = p2(s % 60);
     q('[data-pv-cd]').textContent = 'in ' + d + 'd ' + h + 'h ' + p2(m) + 'm'; }
   tick(); setInterval(tick, 1000);
+})();
+</script>
+<script>
+/* Curriculum from the portal: modules and lessons with their real thumbnails */
+(function () {
+  var cx = document.getElementById('cx'); if (!cx) return;
+  var data = null, cur = 'basic', mi = 0;
+  var BLURB = { basic: 'Level 1 · from your first pip to placing trades, plus the scanner bootcamps.', intermediate: 'Level 2 · your trading journal, technicals, the tools pros use and next-level psychology.', advanced: 'Level 3 · candles in depth, supply and demand, Wyckoff and advanced Killshot.' };
+  function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.textContent = h; return e; }
+  function course() { return data.filter(function (c) { return c.id === cur; })[0]; }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function render() {
+    var c = course(), mods = document.getElementById('cxMods'); mods.innerHTML = '';
+    c.modules.forEach(function (m, i) {
+      var b = el('button', 'cx-m' + (i === mi ? ' on' : '')); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', i === mi);
+      var im = el('img'); im.src = (m.lessons[0] || {}).img || ''; im.alt = ''; im.loading = 'lazy'; b.appendChild(im);
+      var d = el('div'); d.appendChild(el('small', null, 'M' + pad(m.n))); d.appendChild(el('b', null, m.title)); d.appendChild(el('span', null, m.count + ' lessons · ' + m.dur)); b.appendChild(d);
+      b.addEventListener('click', function () { mi = i; render(); var on = mods.children[mi]; if (on && mods.scrollWidth > mods.clientWidth) mods.scrollTo({ left: on.offsetLeft - 4, behavior: 'smooth' }); });
+      mods.appendChild(b);
+    });
+    var m = c.modules[mi], h = document.getElementById('cxHero'); h.innerHTML = '';
+    var big = el('div', 'cx-big'); big.style.backgroundImage = 'url(' + ((m.lessons[0] || {}).img || '') + ')'; big.appendChild(el('i', 'cx-play')); big.appendChild(el('em', null, (m.lessons[0] || {}).d || '')); h.appendChild(big);
+    var inf = el('div', 'cx-info'); inf.appendChild(el('small', null, c.name + ' · Module ' + m.n)); inf.appendChild(el('h3', null, m.title)); inf.appendChild(el('p', null, BLURB[cur] || ''));
+    var st = el('div', 'cx-stats'); st.appendChild(el('span', null, m.count + ' video lessons')); st.appendChild(el('span', null, m.dur));
+    if (m.lessons.some(function (l) { return l.s; })) st.appendChild(el('span', 'sl', 'Slides included'));
+    inf.appendChild(st); h.appendChild(inf);
+    var g = document.getElementById('cxGrid'); g.innerHTML = '';
+    m.lessons.forEach(function (l, i) {
+      var a = el('div', 'cx-l'); a.style.animationDelay = (i * 40) + 'ms';
+      var th = el('div', 'cx-th'); if (l.img) th.style.backgroundImage = 'url(' + l.img + ')';
+      th.appendChild(el('i', null, pad(i + 1))); if (l.d) th.appendChild(el('em', null, l.d)); if (l.s) th.appendChild(el('u', null, 'SLIDES'));
+      a.appendChild(th); a.appendChild(el('b', null, l.t)); g.appendChild(a);
+    });
+  }
+  window.switchT = function (id, btn) {
+    cur = id; mi = 0;
+    document.querySelectorAll('#curriculum .ttab').forEach(function (t) { t.classList.toggle('active', t === btn); });
+    if (data) render();
+  };
+  fetch('/assets/curriculum/curriculum.json').then(function (r) { return r.json(); }).then(function (d) { data = d; render(); }).catch(function () {});
 })();
 </script>
 </body>
