@@ -818,7 +818,7 @@ a{color:inherit}
   document.addEventListener('keyup', function (e) { if (e.key === ' ') setFast(false); });
   window.addEventListener('resize', function () { cv.resize(); bg.resize(); });
 
-  fetch('setups.json').then(function (r) { return r.json(); }).then(function (d) {
+  fetch('/spot/setups.json').then(function (r) { return r.json(); }).then(function (d) {
     POOL = d; bg.resize(); bgNext(); requestAnimationFrame(bgLoop);
     var dd = new Date(); $('introKick').textContent = 'Today\'s 5 charts · ' + dd.getDate() + ' ' + MONTHS[dd.getMonth()] + ' · Gold & US30';
   }).catch(function () { $('playBtn').disabled = true; $('playBtn').textContent = 'Couldn’t load charts. Refresh.'; });
