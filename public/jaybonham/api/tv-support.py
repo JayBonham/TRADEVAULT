@@ -13,6 +13,8 @@ GET  ?c=<channel id>[&before=<message id>][&since=<message id>][&u=<user id>]
 POST {c, text[, reply_to]} -> {ok, message}
 POST {c, action: "resolve"|"reopen"} -> {ok, resolved}
 POST {c, text?, image: {name, type, data(base64)}} -> uploads the image to Whop and sends it attached
+GET  ?find=<email> -> {ok, chat}  the member's support chat (opened in Whop if they have none yet),
+       for the Chat button on the members board
 GET  ?snippets=1 -> {ok, snippets:[{id,label,body}]}   (saved replies, shared by every admin)
 POST {action: "snippet_save", id?, label, body} / {action: "snippet_delete", id}
 Sent replies are recorded with the admin who sent them (tv_support_sent) so the inbox can show
@@ -647,6 +649,94 @@ def typed_emails(msgs, uid, known):
     return found[-3:]
 
 
+def user_ids_for(email):
+    """Whop user ids behind an email: the member search plus memberships we recorded under that email."""
+    uids = []
+    try:
+        d = whop("GET", "/members?account_id=%s&query=%s&first=10" % (WHOP_COMPANY, quote(email)))
+        for mb in d.get("data") or []:
+            if isinstance(mb, dict) and _member_email(mb).lower() == email.lower():
+                u = mb.get("user") if isinstance(mb.get("user"), dict) else {}
+                uid = u.get("id") or mb.get("user_id")
+                if uid and uid not in uids:
+                    uids.append(uid)
+    except Exception as e:
+        log("TV_SUPPORT_FIND_SEARCH:", e)
+    if not uids and DATABASE_URL:
+        try:
+            import psycopg2
+            conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
+            try:
+                cur = conn.cursor()
+                cur.execute("""SELECT membership_id FROM tv_payments WHERE lower(email) = lower(%s) AND membership_id <> ''
+                               GROUP BY membership_id ORDER BY max(paid_at) DESC LIMIT 3""", (email,))
+                mids = [r[0] for r in cur.fetchall() if r[0]]
+            finally:
+                conn.close()
+            for mid in mids:
+                m = whop("GET", "/memberships/" + quote(mid))
+                u = m.get("user") if isinstance(m.get("user"), dict) else {}
+                uid = u.get("id") or m.get("user_id")
+                if uid and uid not in uids:
+                    uids.append(uid)
+        except Exception as e:
+            log("TV_SUPPORT_FIND_DB:", e)
+    return uids
+
+
+def _chat_row(ch):
+    cu = ch.get("customer_user") if isinstance(ch.get("customer_user"), dict) else {}
+    lm = ch.get("last_message") if isinstance(ch.get("last_message"), dict) else None
+    last = None
+    if lm:
+        last = {"text": lm.get("content") or "", "at": lm.get("created_at") or "",
+                "mine": bool(cu.get("id")) and lm.get("user_id") != cu.get("id"),
+                "files": len(lm.get("attachments") or [])}
+    resolved = _is_resolved(ch, last, chat_states([ch.get("id")]).get(ch.get("id")))
+    return {"id": ch.get("id"), "user": _user(cu), "name": ch.get("custom_name") or "", "last": last,
+            "at": ch.get("last_message_at") or (last or {}).get("at") or "",
+            "needs_reply": not resolved and bool(last) and not last["mine"], "resolved": resolved}
+
+
+def find_chat(email):
+    """The support chat for the member with this email. Looks through recent chats first; if they've never
+    written in, opens one in Whop (Whop hands back the existing chat if there is one)."""
+    uids = user_ids_for(email)
+    if not uids:
+        return None, "No Whop account found for %s" % email
+    cursor = None
+    for _ in range(6):
+        q = "/support_channels?account_id=%s&first=50&include_last_message=true&order=last_post_sent_at&direction=desc" % WHOP_COMPANY
+        if cursor:
+            q += "&after=" + quote(cursor)
+        d = whop("GET", q)
+        for ch in d.get("data") or []:
+            cu = ch.get("customer_user") if isinstance(ch, dict) and isinstance(ch.get("customer_user"), dict) else {}
+            if cu.get("id") in uids:
+                row = _chat_row(ch)
+                fill_avatars([row["user"]])
+                return row, ""
+        pi = d.get("page_info") or {}
+        cursor = pi.get("end_cursor") if pi.get("has_next_page") else None
+        if not cursor:
+            break
+    try:
+        ch = whop("POST", "/support_channels", {"account_id": WHOP_COMPANY, "user_id": uids[0]})
+    except WhopError as e:
+        log("TV_SUPPORT_FIND_CREATE:", e.status, e)
+        if e.status in (401, 403):
+            return None, "They haven't messaged support yet, and the Whop key can't start a chat (it needs the support_chat:create permission)."
+        return None, str(e)
+    if not isinstance(ch.get("customer_user"), dict):
+        try:
+            ch["customer_user"] = whop("GET", "/users/" + quote(uids[0]))
+        except Exception:
+            ch["customer_user"] = {"id": uids[0]}
+    row = _chat_row(ch)
+    fill_avatars([row["user"]])
+    return row, ""
+
+
 class handler(BaseHTTPRequestHandler):
 
     def log_message(self, *args):
@@ -673,6 +763,12 @@ class handler(BaseHTTPRequestHandler):
         try:
             if qs.get("snippets") == "1":
                 return self._json(200, {"ok": True, "snippets": snippets(), "me": self.who})
+            if qs.get("find"):
+                email = qs["find"].strip()
+                if not EMAIL_RE.fullmatch(email) or len(email) > 200:
+                    return self._json(400, {"ok": False, "error": "Invalid email"})
+                chat, err = find_chat(email)
+                return self._json(200, {"ok": True, "chat": chat} if chat else {"ok": False, "error": err})
             cid = qs.get("c", "")
             if cid:
                 if not ID_RE.match(cid):

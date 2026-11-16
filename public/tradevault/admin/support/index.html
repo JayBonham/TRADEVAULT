@@ -900,6 +900,18 @@ button,input,textarea{font:inherit;color:inherit}
 
   loadSnips();
   loadList(true);
+  // opened from the members board's Chat button: ?email=… opens that member's chat
+  (function () {
+    var em = ''; try { em = new URLSearchParams(location.search).get('email') || ''; } catch (e) {}
+    if (!em) return;
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    toast('Opening the chat with ' + em + '…');
+    call('GET', 'find=' + encodeURIComponent(em)).then(function (d) {
+      var c = d.chat, have = chats.filter(function (x) { return x.id === c.id; })[0];
+      if (have) c = have; else { chats.unshift(c); renderList(); }
+      openChat(c);
+    }).catch(function (x) { toast('Couldn’t open a chat with ' + em + ': ' + (x.msg || 'network error')); });
+  })();
 })();
 </script>
 </body>
