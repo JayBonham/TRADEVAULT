@@ -4,6 +4,12 @@
 (function () {
   'use strict';
   var SRC = '/spot/setups.json';
+  // Polish page (<html lang="pl">) gets Polish readouts
+  var PL = /^pl/i.test(document.documentElement.lang || '');
+  var D = { 'Buy': 'Kupno', 'Sell': 'Sprzedaż', ' star printed at ': ' – gwiazda na ', 'Target hit': 'Cel osiągnięty', 'Stopped': 'Stop', 'Setup': 'Setup',
+    'Watching for a stretched extreme': 'Czeka na rozciągnięte ekstremum', 'Scanning': 'Skanuje', 'Bullish': 'Wzrostowy', 'Bearish': 'Spadkowy',
+    'Point of Control ': 'Point of Control ', 'Above': 'Powyżej', 'Below': 'Poniżej', 'Up': 'Góra', 'Down': 'Dół', 'TARGET ': 'CEL ', 'ENTRY ': 'WEJŚCIE ', 'STOP ': 'STOP ' };
+  function T(k) { return PL && D[k] != null ? D[k] : k; }
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var C = { up: '#EAF0FA', dn: '#2F6BFF', wick: 'rgba(234,240,250,.55)', wickDn: 'rgba(47,107,255,.8)', fast: '#FF4D63', slow: '#3D7BFF', e200: '#FF9800',
     bull: 'rgba(30,80,210,.17)', bear: 'rgba(120,24,46,.24)', yel: '#FFE14D', blue: '#3D7BFF', buy: '#22D39A', sell: '#FF4D63', grid: 'rgba(255,255,255,.05)', axis: '#76849B' };
@@ -124,7 +130,7 @@
     if (t && this.tags) {
       var tg = function (tx, xx, yy, col) { x.font = '700 11px "JetBrains Mono", monospace'; var tw = x.measureText(tx).width + 14; xx = Math.min(xx, W - axis - tw - 4);
         x.fillStyle = 'rgba(5,10,20,.88)'; x.fillRect(xx, yy - 10, tw, 20); x.strokeStyle = col; x.lineWidth = 1; x.strokeRect(xx + .5, yy - 9.5, tw - 1, 19); x.fillStyle = col; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(tx, xx + 7, yy + .5); };
-      var tx0 = X(t.exit != null ? t.exit : t.at) + cw, L3 = [['TARGET ' + fmt(t.target), Y(t.target), C.buy], ['ENTRY ' + fmt(t.entry), Y(t.entry), '#EAF0FA'], ['STOP ' + fmt(t.stop), Y(t.stop), C.sell]];
+      var tx0 = X(t.exit != null ? t.exit : t.at) + cw, L3 = [[T('TARGET ') + fmt(t.target), Y(t.target), C.buy], [T('ENTRY ') + fmt(t.entry), Y(t.entry), '#EAF0FA'], [T('STOP ') + fmt(t.stop), Y(t.stop), C.sell]];
       L3.sort(function (a, b) { return a[1] - b[1]; });
       for (var q = 1; q < 3; q++) if (L3[q][1] - L3[q - 1][1] < 23) L3[q][1] = L3[q - 1][1] + 23;
       L3.forEach(function (l) { tg(l[0], tx0, l[1], l[2]); });
@@ -136,11 +142,11 @@
     x.fillStyle = s.c[nn][3] >= s.c[nn][0] ? C.up : C.dn; x.fillRect(W - axis, ly - 9, axis - 2, 18);
     x.fillStyle = s.c[nn][3] >= s.c[nn][0] ? '#03060D' : '#fff'; x.font = '700 10px "JetBrains Mono", monospace'; x.fillText(fmt(lp), W - axis + 4, ly);
     // readouts
-    var fl = s.f[nn], tr = function (b) { return (fl >> b & 1) ? '<b class="ks-up">Up</b>' : '<b class="ks-dn">Down</b>'; };
-    if (t) this.row('signal', (t.d === 1 ? 'Buy' : 'Sell') + ' star printed at ' + fmt(t.entry), t.res === 'win' ? 'Target hit' : t.res === 'loss' ? 'Stopped' : 'Setup', t.res === 'loss' ? 'stop' : 'go');
-    else this.row('signal', 'Watching for a stretched extreme', 'Scanning', 'wait');
-    this.row('trend', 'M3 ' + tr(0) + ' · M15 ' + tr(1) + ' · H1 ' + tr(3) + ' · H4 ' + tr(4), (fl & 1) ? 'Bullish' : 'Bearish', (fl & 1) ? 'go' : 'stop');
-    this.row('poc', 'Point of Control ' + fmt(s.p[nn]), lp > s.p[nn] ? 'Above' : 'Below', '');
+    var fl = s.f[nn], tr = function (b) { return (fl >> b & 1) ? '<b class="ks-up">' + T('Up') + '</b>' : '<b class="ks-dn">' + T('Down') + '</b>'; };
+    if (t) this.row('signal', T(t.d === 1 ? 'Buy' : 'Sell') + T(' star printed at ') + fmt(t.entry), T(t.res === 'win' ? 'Target hit' : t.res === 'loss' ? 'Stopped' : 'Setup'), t.res === 'loss' ? 'stop' : 'go');
+    else this.row('signal', T('Watching for a stretched extreme'), T('Scanning'), 'wait');
+    this.row('trend', 'M3 ' + tr(0) + ' · M15 ' + tr(1) + ' · H1 ' + tr(3) + ' · H4 ' + tr(4), T((fl & 1) ? 'Bullish' : 'Bearish'), (fl & 1) ? 'go' : 'stop');
+    this.row('poc', T('Point of Control ') + fmt(s.p[nn]), T(lp > s.p[nn] ? 'Above' : 'Below'), '');
   };
 
   // one still frame of a setup, Killshot off (naked) or on, framed so the whole trade is visible
