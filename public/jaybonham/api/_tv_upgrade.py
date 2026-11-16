@@ -66,8 +66,18 @@ def verify(token):
         return None
 
 
-def link(email):
-    return SITE + "/upgrade?t=" + sign(email)
+SRC_RE = __import__("re").compile(r"^[a-z0-9-]{1,24}$")
+
+
+def clean_src(src):
+    """Where the member started the upgrade (e.g. "portal" for the portal's Upgrade badge)."""
+    src = str(src or "").strip().lower()
+    return src if SRC_RE.match(src) else ""
+
+
+def link(email, src=""):
+    src = clean_src(src)
+    return SITE + "/upgrade?t=" + sign(email) + ("&src=" + src if src else "")
 
 
 # ---------- prices ----------
@@ -247,7 +257,7 @@ def apply_code(cur, q, code):
     return q
 
 
-def checkout(cur, email, tier, code=""):
+def checkout(cur, email, tier, code="", src=""):
     """A Whop checkout for the upgrade -> purchase URL."""
     q = apply_code(cur, quote(cur, email), code)
     opt = next((o for o in q["options"] if o["tier"] == tier), None)
@@ -256,6 +266,9 @@ def checkout(cur, email, tier, code=""):
     m = q["membership"]
     meta = {k: str(v) for k, v in (m.get("metadata") or {}).items()} if isinstance(m.get("metadata"), dict) else {}
     meta.update({"tv_tier": tier, "tv_upgrade_from": m["id"], "tv_upgrade_old_tier": q["tier"]})
+    meta.pop("tv_upgrade_src", None)  # carried over from an earlier upgrade
+    if clean_src(src):
+        meta["tv_upgrade_src"] = clean_src(src)
     if opt.get("code"):
         meta["tv_upgrade_code"] = str(opt["code"])
     if tier == "elite":

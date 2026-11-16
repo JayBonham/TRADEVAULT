@@ -344,7 +344,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 
     // Upgrades: a new membership whose user cancelled another TradeVault membership within a week of it
     // (or whose checkout came through /upgrade). Higher tier = upgrade, lower = downgrade.
-    var upgPaid = {}; d.payments.forEach(function (p) { if (p.upg && p.mid) upgPaid[p.mid] = 1; });
+    var upgPaid = {}, upgSrc = {}; d.payments.forEach(function (p) { if (p.upg && p.mid) { upgPaid[p.mid] = 1; if (p.usrc) upgSrc[p.mid] = p.usrc; } });
     var firstPay = {};
     d.payments.slice().sort(function (a, b) { return (a.t || 0) - (b.t || 0); }).forEach(function (p) { if (p.mid && paid(p) && !firstPay[p.mid]) firstPay[p.mid] = p; });
     d.moves = [];
@@ -357,7 +357,8 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       if (old && !dir && !upgPaid[m.id]) return; // same tier: a plan change, not a move
       var fp = firstPay[m.id];
       d.moves.push({ m: m, from: old ? old.tier : null, to: m.tier, t: m.c, up: dir >= 0, name: m.name || (old && old.name) || m.email,
-        mrr: monthly(m) - (old ? monthly(old) : 0), paid: fp ? fp.net : 0, pc: (fp && fp.pc) || m.pc });
+        mrr: monthly(m) - (old ? monthly(old) : 0), paid: fp ? fp.net : 0, pc: (fp && fp.pc) || m.pc,
+        via: upgSrc[m.id] === 'portal' ? 'portal' : upgPaid[m.id] ? 'page' : 'other' });
     });
 
     // Where each customer came from: an affiliate if any of their payments earned an affiliate commission (the
@@ -790,15 +791,20 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     $('upg').innerHTML = '<div class="risk"><div class="rk"><div class="v num">' + (base ? pct(ups.length / base) : '—') + '</div><div class="s">of lower-tier members upgraded</div></div>' +
       '<div class="rk"><div class="v num" style="color:var(--ok)">+' + usd(mrrAdd) + '<span style="font-size:13px;color:var(--tx-mute);font-weight:500">/mo</span></div><div class="s">MRR added</div></div>' +
       '<div class="rk"><div class="v num">' + usd(upPaid) + '</div><div class="s">paid to upgrade</div></div></div>' +
-      '<div class="two"><div><div class="mono" style="margin-bottom:4px">Paths</div><div id="upgP"></div></div><div><div class="mono" style="margin-bottom:4px">Latest</div><div id="upgL"></div></div></div>';
+      '<div class="two"><div><div class="mono" style="margin-bottom:4px">Paths</div><div id="upgP"></div><div class="mono" style="margin:16px 0 4px">Where they upgraded</div><div id="upgV"></div></div><div><div class="mono" style="margin-bottom:4px">Latest</div><div id="upgL"></div></div></div>';
     hbars($('upgP'), Object.keys(paths).map(function (k) {
       var l = paths[k], f = k.split('>')[0], t = k.split('>')[1], lab = (TNAME[f] || 'Earlier plan') + ' → ' + TNAME[t];
       return { label: lab, v: l.length, c: TCOL[t],
         tip: '<b>' + esc(lab) + '</b>' + tipRow('', 'Upgrades', int(l.length)) + tipRow('', 'MRR added', '+' + usd(l.reduce(function (s, x) { return s + x.mrr; }, 0))) };
     }).sort(function (a, b) { return b.v - a.v; }), function (v) { return int(v); });
+    var VIA = { portal: ['Portal Upgrade badge', '#F5B85C'], page: ['Upgrade page (email link)', '#4B9EFF'], other: ['Outside the upgrade flow', '#7F8DA3'] };
+    hbars($('upgV'), ['portal', 'page', 'other'].map(function (k) {
+      var l = ups.filter(function (x) { return x.via === k; });
+      return { label: VIA[k][0], v: l.length, c: VIA[k][1], tip: '<b>' + esc(VIA[k][0]) + '</b>' + tipRow('', 'Upgrades', int(l.length)) + tipRow('', 'MRR added', '+' + usd(l.reduce(function (s, x) { return s + x.mrr; }, 0))) };
+    }).filter(function (r) { return r.v; }), function (v) { return int(v); });
     listing($('upgL'), mv, function (x) {
       var code = x.pc && D.promos && D.promos[x.pc] ? D.promos[x.pc].code : '';
-      return { when: dShort(new Date(x.t)), name: x.name || 'Member', sub: (TNAME[x.from] || 'Earlier plan') + ' → ' + TNAME[x.to] + (code ? ' · ' + code : ''), tier: x.to,
+      return { when: dShort(new Date(x.t)), name: x.name || 'Member', sub: (TNAME[x.from] || 'Earlier plan') + ' → ' + TNAME[x.to] + (code ? ' · ' + code : '') + (x.via === 'portal' ? ' · via portal badge' : ''), tier: x.to,
         amt: (x.mrr >= 0 ? '+' : '−') + usd(Math.abs(x.mrr)), small: '/mo', neg: !x.up };
     }, 4, 'No upgrades in this range.');
 

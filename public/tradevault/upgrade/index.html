@@ -87,7 +87,10 @@ form{display:grid;gap:14px;margin-top:22px}
 (function () {
   var API = 'https://jaybonham.com/api/tv-upgrade';
   var $ = function (id) { return document.getElementById(id); };
-  var tok = new URLSearchParams(location.search).get('t');
+  var qp = new URLSearchParams(location.search), tok = qp.get('t');
+  // where the upgrade started (?src=portal from the portal's Upgrade badge), kept through the emailed link
+  var src = (qp.get('src') || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24);
+  try { if (src) localStorage.setItem('tv_up_src', src); else src = localStorage.getItem('tv_up_src') || ''; } catch (e) {}
   function post(action, body) {
     return fetch(API + '?action=' + action, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); })
@@ -102,7 +105,7 @@ form{display:grid;gap:14px;margin-top:22px}
     var email = $('email').value.trim(), err = $('serr'), go = $('sgo');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Enter the email you joined with.'; return; }
     err.textContent = ''; go.disabled = true; go.innerHTML = '<span class="spin"></span>Sending';
-    post('start', { email: email }).then(function () {
+    post('start', { email: email, src: src }).then(function () {
       $('who').textContent = email; $('sf').hidden = true; $('sent').hidden = false;
     }).catch(function (x) { err.textContent = (x && x.msg) || 'Something went wrong. Please try again.'; })
       .then(function () { go.disabled = false; go.textContent = 'Email me my upgrade link'; });
@@ -158,7 +161,7 @@ form{display:grid;gap:14px;margin-top:22px}
     var label = b.innerHTML;
     b.disabled = true; b.innerHTML = '<span class="spin"></span>Opening checkout';
     $('qerr').textContent = '';
-    post('go', { t: tok, tier: b.getAttribute('data-tier'), code: code }).then(function (d) { location.href = d.url; })
+    post('go', { t: tok, tier: b.getAttribute('data-tier'), code: code, src: src }).then(function (d) { location.href = d.url; })
       .catch(function (x) {
         $('qerr').textContent = (x && x.msg) || 'Something went wrong. Please try again.';
         if (x && x.expired) $('qback').hidden = false;

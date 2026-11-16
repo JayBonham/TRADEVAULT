@@ -224,7 +224,7 @@ def load():
             "disp": p.get("dispute_created_at"), "name": name, "email": email,
             "pc": p.get("promo_code_id") or ((p.get("promo_code") or {}).get("id") if isinstance(p.get("promo_code"), dict) else None),
             "aff": str(meta.get("tv_ref") or "").lower() or None, "affn": side["commissions"].get(str(p.get("id"))),
-            "upg": bool(meta.get("tv_upgrade_from"))})
+            "upg": bool(meta.get("tv_upgrade_from")), "usrc": str(meta.get("tv_upgrade_src") or "") or None})
 
     perr = promos.pop("_err", None)
     code_of = {mid: pid for pid, v in promos.items() for mid in v.pop("mids", [])}

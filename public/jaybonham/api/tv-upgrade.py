@@ -40,7 +40,9 @@ class handler(BaseHTTPRequestHandler):
         self._json(404, {"error": "unknown action"})
 
     def _start(self):
-        email = (self._body().get("email") or "").strip().lower()
+        b = self._body()
+        email = (b.get("email") or "").strip().lower()
+        src = U.clean_src(b.get("src"))
         if not EMAIL_RE.match(email):
             return self._json(400, {"error": "Enter the email you joined with."})
         try:
@@ -59,7 +61,7 @@ class handler(BaseHTTPRequestHandler):
             return self._json(500, {"error": "Upgrades are unavailable right now. Email support@thetradevault.co."})
         # Same answer whether or not the email is a member.
         if row:
-            A.ghl_tag(email, row[0] or "", ["tv-upgrade-link"], again=True, fields={"tv_upgrade_link": U.link(email)})
+            A.ghl_tag(email, row[0] or "", ["tv-upgrade-link"], again=True, fields={"tv_upgrade_link": U.link(email, src)})
             A.log("TV_UPGRADE_LINK_SENT", email)
         self._json(200, {"ok": True})
 
@@ -76,7 +78,7 @@ class handler(BaseHTTPRequestHandler):
         email = U.verify(b.get("t"))
         if not email:
             return self._json(400, {"error": "This upgrade link has expired. Ask for a new one below.", "expired": True})
-        return self._run(lambda cur: {"ok": True, "url": U.checkout(cur, email, str(b.get("tier") or ""), str(b.get("code") or ""))})
+        return self._run(lambda cur: {"ok": True, "url": U.checkout(cur, email, str(b.get("tier") or ""), str(b.get("code") or ""), str(b.get("src") or ""))})
 
     def _link(self):
         if not self._admin():
