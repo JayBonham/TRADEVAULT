@@ -797,7 +797,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       return { label: lab, v: l.length, c: TCOL[t],
         tip: '<b>' + esc(lab) + '</b>' + tipRow('', 'Upgrades', int(l.length)) + tipRow('', 'MRR added', '+' + usd(l.reduce(function (s, x) { return s + x.mrr; }, 0))) };
     }).sort(function (a, b) { return b.v - a.v; }), function (v) { return int(v); });
-    var VIA = { portal: ['Portal Upgrade badge', '#F5B85C'], page: ['Upgrade page (email link)', '#4B9EFF'], other: ['Outside the upgrade flow', '#7F8DA3'] };
+    var VIA = { portal: ['Portal Upgrade badge', '#F5B85C'], page: ['thetradevault.co/upgrade (paid the difference)', '#4B9EFF'], other: ['Bought the new plan separately on Whop', '#7F8DA3'] };
     hbars($('upgV'), ['portal', 'page', 'other'].map(function (k) {
       var l = ups.filter(function (x) { return x.via === k; });
       return { label: VIA[k][0], v: l.length, c: VIA[k][1], tip: '<b>' + esc(VIA[k][0]) + '</b>' + tipRow('', 'Upgrades', int(l.length)) + tipRow('', 'MRR added', '+' + usd(l.reduce(function (s, x) { return s + x.mrr; }, 0))) };
