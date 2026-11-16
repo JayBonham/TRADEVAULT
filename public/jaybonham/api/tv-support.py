@@ -699,27 +699,20 @@ def _chat_row(ch):
 
 
 def find_chat(email):
-    """The support chat for the member with this email. Looks through recent chats first; if they've never
+    """The support chat for the member with this email (Whop filters chats by customer); if they've never
     written in, opens one in Whop (Whop hands back the existing chat if there is one)."""
     uids = user_ids_for(email)
     if not uids:
         return None, "No Whop account found for %s" % email
-    cursor = None
-    for _ in range(6):
-        q = "/support_channels?account_id=%s&first=50&include_last_message=true&order=last_post_sent_at&direction=desc" % WHOP_COMPANY
-        if cursor:
-            q += "&after=" + quote(cursor)
-        d = whop("GET", q)
+    for uid in uids[:3]:
+        d = whop("GET", "/support_channels?account_id=%s&customer_user_id=%s&first=5&include_last_message=true"
+                 "&order=last_post_sent_at&direction=desc" % (WHOP_COMPANY, quote(uid)))
         for ch in d.get("data") or []:
             cu = ch.get("customer_user") if isinstance(ch, dict) and isinstance(ch.get("customer_user"), dict) else {}
-            if cu.get("id") in uids:
+            if cu.get("id") == uid:  # guard against an ignored filter handing back someone else's chat
                 row = _chat_row(ch)
                 fill_avatars([row["user"]])
                 return row, ""
-        pi = d.get("page_info") or {}
-        cursor = pi.get("end_cursor") if pi.get("has_next_page") else None
-        if not cursor:
-            break
     try:
         ch = whop("POST", "/support_channels", {"account_id": WHOP_COMPANY, "user_id": uids[0]})
     except WhopError as e:
