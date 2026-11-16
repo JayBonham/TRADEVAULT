@@ -60,7 +60,7 @@ button,input,textarea{font:inherit;color:inherit}
 .ib-t h1{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.03em}
 .live{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--tx-mute)}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:blink 2.4s infinite}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--hair)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:3px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--hair)}
 .seg button{border:0;background:none;border-radius:9px;padding:7px 6px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--tx-mute);display:flex;align-items:center;justify-content:center;gap:7px;transition:background .2s,color .2s}
 .seg button[aria-pressed="true"]{background:rgba(255,255,255,.09);color:var(--tx)}
 .seg em{font-style:normal;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:#FF4D5E;color:#fff;box-shadow:0 0 12px rgba(255,77,94,.55)}
@@ -279,6 +279,7 @@ button,input,textarea{font:inherit;color:inherit}
       <div class="ib-t"><h1>Support</h1><div class="r"><span class="live" id="live"><i></i><span id="upd">Live</span></span><button class="bell" id="bell" type="button" aria-pressed="false" title="Desktop alerts and sound for new messages"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button></div></div>
       <div class="seg" role="group" aria-label="Show">
         <button type="button" data-v="open" aria-pressed="true">Open <em id="cOpen" hidden>0</em></button>
+        <button type="button" data-v="replied" aria-pressed="false" title="You replied last, not resolved yet">Replied</button>
         <button type="button" data-v="all" aria-pressed="false">All</button>
         <button type="button" data-v="resolved" aria-pressed="false">Resolved</button>
       </div>
@@ -430,7 +431,7 @@ button,input,textarea{font:inherit;color:inherit}
     if (!shown.length) {
       var s = el('div', 'state');
       s.appendChild(el('h3', null, q ? 'No matches' : view === 'open' ? 'Inbox zero' : 'No chats'));
-      s.appendChild(document.createTextNode(q ? 'Try a different name.' : view === 'open' ? 'Nobody is waiting on a reply. New Whop support messages land here.' : 'Nothing here yet.'));
+      s.appendChild(document.createTextNode(q ? 'Try a different name.' : view === 'open' ? 'Nobody is waiting on a reply. New Whop support messages land here.' : view === 'replied' ? 'Chats you’ve replied to but not resolved show here.' : 'Nothing here yet.'));
       box.appendChild(s); return;
     }
     shown.forEach(function (c, i) {

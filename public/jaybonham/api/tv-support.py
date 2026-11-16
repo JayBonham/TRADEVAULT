@@ -2,7 +2,7 @@
 Admin token required. Needs the Whop API key permissions support_chat:read and
 support_chat:message:create (and member/membership read, already used elsewhere).
 
-GET  ?list=open|all|resolved[&after=cursor]
+GET  ?list=open|replied|all|resolved[&after=cursor]
        -> {ok, chats:[{id, user:{id,name,username}, last:{text,at,mine,files}, at, needs_reply,
                        resolved}], next}
 GET  ?c=<channel id>[&before=<message id>][&since=<message id>][&u=<user id>]
@@ -73,7 +73,8 @@ DEFAULT_SNIPPETS = [
 ]
 WHOP_COMPANY = "biz_R8QEgfRFt2KfLV"
 ID_RE = re.compile(r"^[A-Za-z0-9_-]{4,80}$")
-VIEWS = ("open", "resolved", "all")
+VIEWS = ("open", "replied", "resolved", "all")
+# Open = the customer wrote last and nobody has replied. Replied = we wrote last, not resolved yet.
 # Whop marks a chat resolved by itself once the team replies, so Open/Resolved here follow the Resolve
 # button instead (tv_support_state). Chats Whop resolved before this went live keep Whop's state.
 WHOP_RESOLVED_BEFORE = 1794700800  # 2026-11-15 00:00 UTC
@@ -232,11 +233,13 @@ def list_chats(view, after):
         states = chat_states([ch.get("id") for ch, _, _ in page if ch.get("id")])
         for ch, cu, last in page:
             resolved = _is_resolved(ch, last, states.get(ch.get("id")))
-            if (view == "open" and resolved) or (view == "resolved" and not resolved):
+            waiting = not resolved and bool(last) and not last["mine"]
+            if ((view == "open" and not waiting) or (view == "replied" and (resolved or waiting))
+                    or (view == "resolved" and not resolved)):
                 continue
             chats.append({"id": ch.get("id"), "user": _user(cu), "name": ch.get("custom_name") or "",
                           "last": last, "at": ch.get("last_message_at") or (last or {}).get("at") or "",
-                          "needs_reply": bool(ch.get("needs_reply")) and not resolved, "resolved": resolved})
+                          "needs_reply": waiting, "resolved": resolved})
         pages += 1
         pi = d.get("page_info") or {}
         cursor = pi.get("end_cursor") if pi.get("has_next_page") else None
