@@ -133,10 +133,12 @@ def _member(c, ids, db):
                 next((n for k, n in EDUCATORS.items() if "tv-educator-" + k in tags), ""))
     scanner = (row.get("scanner") or vals.get("tv_scanner") or
                ", ".join(n for k, n in SCANNERS.items() if "tv-scanner-" + k in tags))
+    # Elite and Tools include every scanner (Elite every educator too), so an upgrade from Community
+    # shows that straight away instead of the one they picked before.
     if setup and tier == "elite":
-        educator, scanner = educator or "All educators", scanner or "All scanners"
+        educator, scanner = "All educators", "All scanners"
     elif setup and tier == "tools":
-        scanner = scanner or "All scanners"
+        scanner = "All scanners"
     name = (c.get("contactName") or " ".join(filter(None, [c.get("firstName"), c.get("lastName")])) or "").strip()
     return {
         "id": c.get("id"), "name": name.title() if name.islower() else name, "email": c.get("email") or "",
