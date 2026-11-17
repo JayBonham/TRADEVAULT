@@ -15,7 +15,9 @@
 .tabs{display:inline-flex;gap:4px;padding:4px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.03);flex-wrap:wrap}
 .tabs a,.tabs button{padding:8px 14px;border-radius:10px;border:0;background:none;cursor:pointer;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--tx-mute);display:inline-flex;align-items:center;gap:8px}
 .tabs .on{background:rgba(255,255,255,.09);color:var(--tx)}
-.tabs .n{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--warn);color:#2a1a02;font-family:var(--mono);font-size:11px;display:inline-grid;place-items:center}
+.nav .tabs a{position:relative}
+.nb:not([hidden]){position:absolute;top:-8px;right:-8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:#FF4D5E;color:#fff;font-family:var(--body);font-weight:700;font-size:12px;line-height:1;box-shadow:0 0 0 2px #07101F}
+.tabs .n{min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#FF4D5E;color:#fff;font-weight:700;font-family:var(--mono);font-size:11px;display:inline-grid;place-items:center}
 .tabs .n:empty{display:none}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px}
 .top h1{font-size:clamp(32px,4vw,46px)}
@@ -98,7 +100,7 @@
 <header class="nav W">
   <div class="nav-in">
     <a href="/admin" class="brand"><img src="../../assets/tv-icon.png" alt="" width="26" height="26"><img src="../../assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"><span class="sep"></span><span class="mono">Admin</span></a>
-    <div class="nav-r"><nav class="tabs"><a href="https://portal.thetradevault.co" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px">Portal <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a><a href="/admin/analytics">Analytics</a><a href="/admin">Members</a><a href="/admin/affiliates" class="on">Affiliates</a><a href="/admin/support">Support</a></nav><button class="btn-g" id="out" type="button">Sign out</button></div>
+    <div class="nav-r"><nav class="tabs"><a href="https://portal.thetradevault.co" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px">Portal <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a><a href="/admin/analytics">Analytics</a><a href="/admin">Members</a><a href="/admin/affiliates" class="on">Affiliates<span class="nb" id="affN" hidden></span></a><a href="/admin/support">Support<span class="nb" id="supN" hidden></span></a></nav><button class="btn-g" id="out" type="button">Sign out</button></div>
   </div>
 </header>
 
@@ -316,6 +318,7 @@
   function renderClaims() {
     var open = C.filter(function (q) { return q.status === 'pending'; }), box = $('claimReqs');
     $('nClaims').textContent = open.length || '';
+    affCount();
     box.innerHTML = '';
     if (!open.length) box.appendChild(el('div', 'card empty', 'No claim requests waiting. Affiliates send them from "Missing a member?" in their portal.'));
     open.forEach(function (q) {
@@ -355,6 +358,28 @@
     });
   }
 
+
+  // Affiliates badge: applications, payout requests and claims waiting on the team
+  function affCount() {
+    fetch('https://jaybonham.com/api/tv-aff?action=counts', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) return; var b = document.getElementById('affN'); if (!b) return;
+        b.textContent = d.total > 99 ? '99+' : d.total; b.hidden = !d.total;
+        var pl = function (n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); };
+        b.parentNode.title = d.total ? pl(d.apps, 'application') + ' · ' + pl(d.pays, 'payout request') + ' · ' + pl(d.claims, 'claim') + ' waiting' : '';
+      }).catch(function () {});
+  }
+  affCount(); setInterval(function () { if (!document.hidden) affCount(); }, 60000);
+
+  function supCount() {
+    fetch('https://jaybonham.com/api/tv-support?list=open', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (!d.ok) return; var n = (d.chats || []).filter(function (c) { return c.needs_reply; }).length; $('supN').textContent = n > 99 ? '99+' : n; $('supN').hidden = !n; })
+      .catch(function () {});
+  }
+  supCount(); setInterval(function () { if (!document.hidden) supCount(); }, 60000);
+
   function load() {
     return api('GET', 'admin').then(function (d) { D = d; render(); })
       .catch(function (x) { $('loading').hidden = true; $('failed').hidden = false; $('failMsg').textContent = (x && x.msg) || 'Network error'; });
@@ -376,6 +401,7 @@
     $('tPayable').textContent = money(sum('ready', A.filter(function (a) { return a.qualified; }))) + ' ready to pay';
     $('nApps').textContent = pending.length || '';
     $('nPays').textContent = open.length || '';
+    affCount();
 
     renderApps(pending, A);
     renderPays(open, P);

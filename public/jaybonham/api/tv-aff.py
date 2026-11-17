@@ -77,6 +77,8 @@ class handler(BaseHTTPRequestHandler):
             return self._code_check()
         if a == "claims":
             return self._admin_claims()
+        if a == "counts":
+            return self._admin_counts()
         self._json(404, {"error": "unknown action"})
 
     def do_POST(self):
@@ -677,6 +679,23 @@ class handler(BaseHTTPRequestHandler):
         n = cur.fetchone()[0]
         c.close()
         return 200, {"ok": True, "payments": n, "email": email}
+
+    def _admin_counts(self):
+        """What's waiting on the team, for the red badge on the Affiliates link in every admin page."""
+        if not self._admin():
+            return
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute("""SELECT (SELECT COUNT(*) FROM tv_affiliates WHERE status = 'pending'),
+                                  (SELECT COUNT(*) FROM tv_aff_payouts WHERE status = 'requested'),
+                                  (SELECT COUNT(*) FROM tv_aff_requests WHERE status = 'pending')""")
+            apps, pays, claims = cur.fetchone()
+            c.close()
+            self._json(200, {"ok": True, "apps": apps, "pays": pays, "claims": claims, "total": apps + pays + claims})
+        except Exception as e:
+            A.log("TV_AFF_COUNTS_ERR:", e)
+            self._json(500, {"error": str(e)})
 
     def _admin_claims(self):
         """Claim requests (pending first), each with what we hold on the buyer so the call is quick."""

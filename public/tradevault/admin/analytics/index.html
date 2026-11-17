@@ -219,7 +219,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       <a class="ghost" href="https://portal.thetradevault.co" target="_blank" rel="noopener">Portal <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
       <a class="ghost on" href="/admin/analytics" aria-current="page">Analytics</a>
       <a class="ghost" href="/admin">Members</a>
-      <a class="ghost hide-s" href="/admin/affiliates">Affiliates</a>
+      <a class="ghost hide-s" href="/admin/affiliates">Affiliates<span class="badge" id="affN" hidden></span></a>
       <a class="ghost" href="/admin/support">Support<span class="badge" id="supN" hidden></span></a>
       <button class="ghost hide-s" id="out" type="button">Sign out</button>
     </div>
@@ -1002,6 +1002,19 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       .catch(function () {});
   }
   supCount(); setInterval(supCount, 60000);
+
+  // Affiliates badge: applications, payout requests and claims waiting on the team
+  function affCount() {
+    fetch('https://jaybonham.com/api/tv-aff?action=counts', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) return; var b = document.getElementById('affN'); if (!b) return;
+        b.textContent = d.total > 99 ? '99+' : d.total; b.hidden = !d.total;
+        var pl = function (n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); };
+        b.parentNode.title = d.total ? pl(d.apps, 'application') + ' · ' + pl(d.pays, 'payout request') + ' · ' + pl(d.claims, 'claim') + ' waiting' : '';
+      }).catch(function () {});
+  }
+  affCount(); setInterval(function () { if (!document.hidden) affCount(); }, 60000);
 })();
 </script>
 </body>
