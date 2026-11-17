@@ -1,6 +1,6 @@
-/* Content pages (scanners, educators, learn): affiliate links work here too (?ref=CODE, last click wins, 60 days).
-   A visitor with no affiliate yet is credited to the house code, so sign-ups from search show in Affiliate HQ.
-   It never replaces a real affiliate's code. */
+/* Content pages (scanners, educators, learn) are ours: anyone who lands on one from outside the site (Google, social,
+   a shared link, ?ref or not) is credited to the house code, 60 days, last click wins.
+   Only someone already on the site who clicks through from another page keeps the affiliate they arrived with. */
 (function () {
   var HOUSE = 'jaybreacts';
   function stored() {
@@ -16,8 +16,8 @@
     fetch('https://jaybonham.com/api/tv-aff?action=click', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ code: r }), keepalive: true }).catch(function () {});
   }
   try {
-    var q = new URLSearchParams(location.search).get('ref');
-    if (q && /^[a-z0-9_]{3,20}$/i.test(q)) set(q.toLowerCase());
-    else if (!stored()) set(HOUSE);
+    var internal = false;
+    try { internal = !!document.referrer && new URL(document.referrer).hostname.replace(/^www\./, '') === location.hostname.replace(/^www\./, ''); } catch (e) {}
+    if (!internal || !stored()) set(HOUSE);
   } catch (e) {}
 })();
