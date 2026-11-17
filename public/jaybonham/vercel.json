@@ -72,6 +72,9 @@
     },
     "api/jb-academy.py": {
       "maxDuration": 30
+    },
+    "api/tv-copy.py": {
+      "maxDuration": 20
     }
   },
   "redirects": [
