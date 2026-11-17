@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /affiliate-portal
+Disallow: /affiliate-login
+Disallow: /setup
+Disallow: /upgrade
+Disallow: /copy
+Disallow: /signals
+
+Sitemap: https://thetradevault.co/sitemap.xml
