@@ -6,7 +6,7 @@
 var WEBINAR = {
   firstDate: '2026-11-20',          // first session (YYYY-MM-DD)
   weekday: 5,                       // 0=Sun … 5=Fri
-  hour: 21, minute: 0,              // 9:00 PM …
+  hour: 19, minute: 0,              // 7:00 PM …
   tz: 'America/New_York', tzLabel: 'ET',
   zoom: 'https://us06web.zoom.us/j/82468528057?pwd=PnVamNOtXbXuQUGooIsnWyKr8pexAD.1',
   zoomId: '824 6852 8057', zoomPass: '316277',
