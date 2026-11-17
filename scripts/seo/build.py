@@ -140,6 +140,20 @@ def sitemap(built):
     open(os.path.join(ROOT, "sitemap.xml"), "w").write("\n".join(x) + "\n")
 
 
+def indexnow(paths):
+    """Tell Bing/Copilot/ChatGPT search, Yandex and others about changed pages (IndexNow). Run after deploy:
+       python3 scripts/seo/build.py --ping"""
+    import urllib.request
+    key = open(os.path.join(HERE, "indexnow.key")).read().strip()
+    body = json.dumps({"host": "thetradevault.co", "key": key, "keyLocation": SITE + "/" + key + ".txt",
+                       "urlList": [SITE + p for p in paths]}).encode()
+    req = urllib.request.Request("https://api.indexnow.org/indexnow", data=body, headers={"Content-Type": "application/json; charset=utf-8"})
+    try:
+        print("IndexNow:", urllib.request.urlopen(req, timeout=15).status)
+    except Exception as e:
+        print("IndexNow:", e)
+
+
 if __name__ == "__main__":
     import content_scanners, content_educators, content_learn
     built = []
@@ -147,3 +161,5 @@ if __name__ == "__main__":
         built += mod.build(sys.modules[__name__])
     sitemap(built)
     print(len(built), "pages built:", " ".join(p for p, _, _ in built))
+    if "--ping" in sys.argv:
+        indexnow([u for u, *_ in STATIC] + [p for p, _, _ in built] + ["/llms.txt"])

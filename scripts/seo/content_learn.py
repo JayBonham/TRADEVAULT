@@ -295,6 +295,10 @@ document.querySelectorAll('.calc input').forEach(function(i){i.addEventListener(
 </script>"""
 
 
+import content_learn2 as _L2
+ARTICLES += _L2.ARTICLES2
+
+
 def _card(a, B):
     return ('<a class="card" href="/learn/%s"><div class="thumb"><img src="%s" alt="" loading="lazy"></div><span class="n">%s · %d MIN READ</span>'
             '<h3>%s</h3><p>%s</p><span class="go">Read the guide →</span></a>') % (a["slug"], a["image"], a["topic"].upper(), a["mins"], a["short"], B.esc(a["desc"].split(". ")[0]) + ".")
@@ -342,6 +346,6 @@ def build(B):
 <div class="ctas" style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn-g" href="/#curriculum">See the curriculum →</a></div></section>
 {B.band()}'''
     out.append((B.page("/learn", "Free Trading Guides: Risk, Strategy & Psychology | The Trade Vault",
-                       "Free trading guides from The Trade Vault: the Point of Control, trading the New York open, risk-to-reward, position sizing, trading journals and revenge trading.",
+                       "Free trading guides from The Trade Vault: pips, candlesticks, trading sessions, the Point of Control, supply and demand, Wyckoff, EMAs, risk-to-reward, position sizing and trading psychology.",
                        body, "learn", (cld, {"@type": "CollectionPage", "name": "Trade Vault trading guides", "url": B.SITE + "/learn"})), "0.8", "weekly"))
     return out

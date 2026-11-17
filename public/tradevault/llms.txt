@@ -1,0 +1,45 @@
+# The Trade Vault
+
+> Rules-based trading education with four live educators, three proprietary scanners (Killshot, Smartshot, Spectrum), a 110+ lesson Academy and a trading journal. Markets: US30, NAS100/NQ, gold (XAU/USD), ES and Bitcoin. Plans from $49.99/month on Whop. Education only, not financial advice.
+
+## Plans
+- Tools ($49.99/month): all three scanners and the scanner bootcamps.
+- Community ($99.99/month + $25 startup): one educator, their scanner, the Basic Academy and live sessions.
+- Elite ($124.99/month + $50 startup): all four educators, all three scanners, every Academy, 5 live sessions a week, signal chat, Copy Trader.
+
+## Key pages
+- [Home and pricing](https://thetradevault.co/)
+- [Free training replay](https://thetradevault.co/webinar/replay)
+- [Spot the Setup chart game](https://thetradevault.co/spot)
+- [Polish version](https://thetradevault.co/pl)
+
+## Scanners
+- [All scanners compared](https://thetradevault.co/scanners)
+- [Killshot](https://thetradevault.co/scanners/killshot): Killshot is The Trade Vault's original rules-based scanner for US30, gold and Bitcoin. EMA trend structure, Point of Control levels and signal stars flag setups with defined risk.
+- [Smartshot](https://thetradevault.co/scanners/smartshot): Smartshot is a Smart Money Concepts scanner for gold and NQ, built by Tyler Collins. It maps liquidity and structure on higher timeframes, then signals A+ and B+ entries on lower timeframes.
+- [Spectrum](https://thetradevault.co/scanners/spectrum): Spectrum is an index scanner for US30, ES and NQ built by Andrew Bridges. It uses initial market auction theory, session volume analysis and liquidity inducement to find entries.
+
+## Educators
+- [All educators](https://thetradevault.co/educators)
+- [Jay Bonham](https://thetradevault.co/educators/jay-bonham): Jay Bonham is the founder of The Trade Vault and creator of the Killshot method: a UKNF-regulated trader and Liquidity Provider who trades the US30 New York open live with members.
+- [Tyler Collins](https://thetradevault.co/educators/tyler-collins): Tyler “Tyco” Collins trades gold and NQ with Smart Money Concepts: founder of Smart Shot Daily, author, and creator of the Smartshot scanner. Live gold sessions in The Trade Vault.
+- [Andrew Bridges](https://thetradevault.co/educators/andrew-bridges): Andrew Bridges brings 15 years of institutional market experience to The Trade Vault. Creator of the Spectrum scanner for US30, ES and NQ, with live Spectrum sessions four days a week.
+- [Adam Haase](https://thetradevault.co/educators/adam-haase): Adam Haase trades US30, NAS100 and gold with Killshot and price action, and leads The Trade Vault's Polish-speaking community with live Killshot sessions in Polish.
+
+## Trading guides
+- [All guides](https://thetradevault.co/learn)
+- [Point of Control (POC)](https://thetradevault.co/learn/point-of-control): The Point of Control is the price where the most volume traded. Learn what the POC is, why price reacts to it, and how to use it for entries and targets on US30, gold and NQ.
+- [Trading the New York open](https://thetradevault.co/learn/new-york-open-strategy): The New York open at 9:30 AM ET is the most volatile part of the day for US30. Learn how to prepare, which times matter, and a rules-based way to trade it without chasing.
+- [Risk-to-reward ratio](https://thetradevault.co/learn/risk-reward-ratio): What the risk-to-reward ratio is, how to calculate it, the win rate you need at 1:1, 1:2 and 1:3, and how to work out your expectancy. Free calculator included.
+- [Position size calculator](https://thetradevault.co/learn/position-size): Work out your lot size from your account, the % you'll risk and your stop distance. Free position size calculator plus worked examples for US30, gold and forex.
+- [How to keep a trading journal](https://thetradevault.co/learn/trading-journal): A trading journal is how you find out what's actually working. What to record on every trade, the numbers that matter (win rate, profit factor, expectancy) and how to run a weekly review.
+- [Revenge trading](https://thetradevault.co/learn/revenge-trading): Revenge trading is taking impulsive trades to win back a loss. Learn the warning signs, why it happens, and the simple rules that stop one bad trade becoming a blown week.
+- [What is a pip?](https://thetradevault.co/learn/what-is-a-pip): A pip is the standard unit a price moves in forex. Learn what a pip is, how pips differ from points on gold and indices, and how to work out what a pip is worth.
+- [How to read candlesticks](https://thetradevault.co/learn/how-to-read-candlesticks): Learn how to read candlestick charts: the open, high, low and close, what wicks tell you, engulfing and rejection candles, and why you should wait for the candle to close.
+- [Supply and demand zones](https://thetradevault.co/learn/supply-and-demand-zones): Supply and demand zones are areas where price left quickly because orders were waiting. Learn how to draw them, which zones are strongest, and how stop hunts and liquidity sweeps fit in.
+- [The Wyckoff method](https://thetradevault.co/learn/wyckoff-method): A clear guide to the Wyckoff method: the four market phases, how accumulation and distribution ranges form, and what the spring and upthrust tell you.
+- [Trading sessions & times](https://thetradevault.co/learn/trading-sessions): The Asian, London and New York trading sessions explained, with times in ET and UK time, the London–New York overlap, and which session suits US30, gold and forex.
+- [The 20 and 50 EMA](https://thetradevault.co/learn/ema-trading-strategy): How to use the 20 and 50 exponential moving averages to read the trend, find pullbacks and avoid trading against the market, plus the mistakes that make EMAs unreliable.
+
+## Contact
+- support@thetradevault.co
