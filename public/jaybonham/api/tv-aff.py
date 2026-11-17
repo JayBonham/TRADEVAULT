@@ -974,6 +974,10 @@ class handler(BaseHTTPRequestHandler):
                              "in_tv_payments": have[0] if have else None, "commission": comm[0] if comm else None,
                              "event": ev[0] if ev else None,
                              "event_data_keys": sorted((json.loads(ev[1]).get("data") or {}).keys()) if ev else None}
+        if b.get("set_clicks"):  # {code, clicks}: correct an affiliate's click count (e.g. bot visits)
+            sc = b["set_clicks"]; cc = A.conn(); cur = cc.cursor()
+            cur.execute("UPDATE tv_affiliates SET clicks = %s WHERE code = %s RETURNING clicks", (max(0, int(sc.get("clicks") or 0)), str(sc.get("code") or "").lower()))
+            out["set_clicks"] = (cur.fetchone() or [None])[0]; cc.commit(); cc.close()
         if b.get("transfer"):  # {membership, email}: treat an earlier Whop transfer as the member's original card
             import _tv_transfer
             cc = A.conn(); cur = cc.cursor()
