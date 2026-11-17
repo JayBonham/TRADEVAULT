@@ -732,10 +732,11 @@ def ghl_tag(email, name, tags, again=False, fields=None):
 
 
 def confirmed_members(cur, aff_id):
-    """Distinct members whose commission cleared the hold in the last FREE_WINDOW days and wasn't refunded:
-    the "5 confirmed this month" that make the affiliate's own membership free."""
+    """Distinct members on Community or Elite (never Tools) whose commission cleared the hold in the last
+    FREE_WINDOW days and wasn't refunded: the "5 confirmed this month" that make the affiliate's own membership free."""
     cur.execute(f"""SELECT COUNT(DISTINCT email) FROM tv_aff_commissions
                      WHERE affiliate_id = %s AND kind = 'commission' AND status <> 'void'
+                       AND (lower(product) LIKE '%%community%%' OR lower(product) LIKE '%%elite%%')
                        AND paid_at <= NOW() - INTERVAL '{HOLD_DAYS} days'
                        AND paid_at >  NOW() - INTERVAL '{HOLD_DAYS + FREE_WINDOW} days'""", (aff_id,))
     return int(cur.fetchone()[0])

@@ -442,9 +442,9 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       $('freeT').textContent = recent ? 'Your membership is free this month' : got ? 'Your next month is free' : 'Free membership';
       $('freeN').textContent = fn + ' / ' + F.needed + ' confirmed';
       $('freeF').style.width = (100 * fn / F.needed) + '%';
-      $('freeP').textContent = recent ? 'You had ' + F.needed + '+ confirmed members, so we added ' + (F.last.days || 30) + ' free days to your Trade Vault membership' + (F.last.until ? '. Next renewal: ' + date(F.last.until) + '.' : '.') + ' Keep ' + F.needed + ' confirmed every month and it stays free.'
-        : got ? 'You have ' + F.count + ' confirmed members this month. Your next renewal is on us: we add the free days just before it.'
-        : (F.needed - F.count) + ' more confirmed member' + (F.needed - F.count === 1 ? '' : 's') + ' this month and your own membership is free. A member counts once their payment clears the ' + d.hold_days + '-day hold.';
+      $('freeP').textContent = recent ? 'You had ' + F.needed + '+ confirmed Community or Elite members, so we added ' + (F.last.days || 30) + ' free days to your Trade Vault membership' + (F.last.until ? '. Next renewal: ' + date(F.last.until) + '.' : '.') + ' Keep ' + F.needed + ' confirmed every month and it stays free.'
+        : got ? 'You have ' + F.count + ' confirmed Community or Elite members this month. Your next renewal is on us: we add the free days just before it.'
+        : (F.needed - F.count) + ' more confirmed Community or Elite member' + (F.needed - F.count === 1 ? '' : 's') + ' this month and your own membership is free. A member counts once their payment clears the ' + d.hold_days + '-day hold. Tools members don\u2019t count.';
     }
     var top = P.personals >= P.tier_count;
     $('barTier').classList.toggle('done', top);

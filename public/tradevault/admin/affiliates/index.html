@@ -517,7 +517,7 @@
       if (a.free_count != null) {
         var fr = a.free_last && (Date.now() - new Date(a.free_last.at)) < 35 * 864e5;
         var fp = pill(fr ? 'Free month ✓' : a.free_count + '/5 confirmed', fr ? 'ok' : a.free_count >= 5 ? 'acc' : 'off');
-        fp.title = fr ? 'Free days added ' + date(a.free_last.at) + (a.free_last.until ? ', renews ' + date(a.free_last.until) : '') : 'Confirmed members this month (cleared the hold). 5 makes their own membership free.';
+        fp.title = fr ? 'Free days added ' + date(a.free_last.at) + (a.free_last.until ? ', renews ' + date(a.free_last.until) : '') : 'Confirmed Community or Elite members this month (cleared the hold, Tools not counted). 5 makes their own membership free.';
         fp.style.marginLeft = '6px'; lv.appendChild(fp);
       }
       tr.appendChild(lv);
