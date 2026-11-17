@@ -32,7 +32,7 @@ RISK = ("Trading futures, contracts for difference and other leveraged products 
 
 def nav(active=""):
     links = [("/scanners", "Scanners", "scanners"), ("/educators", "Educators", "educators"), ("/learn", "Learn", "learn"),
-             ("/webinar", "Free training", "webinar"), ("/#pricing", "Pricing", "pricing")]
+             ("/webinar/replay", "Free training", "webinar"), ("/#pricing", "Pricing", "pricing")]
     return ('<header class="nav"><div class="nav-in">'
             '<a href="/" class="brand"><img src="/assets/tv-icon.png" alt="" width="26" height="26"><img src="/assets/tv-logo.png" alt="The Trade Vault" width="166" height="13"></a>'
             '<nav class="nav-links" aria-label="Site">' + "".join(
@@ -50,16 +50,16 @@ def footer():
             '<p style="color:var(--tx-mute);font-size:14px;margin-top:14px;max-width:30ch">Rules-based trading education, live educators and proprietary scanners.</p></div>'
             + col("Scanners", [("/scanners/" + s["slug"], s["name"]) for s in S.SCANNERS] + [("/scanners", "All scanners")])
             + col("Educators", [("/educators/" + e["slug"], e["name"]) for e in E.EDUCATORS])
-            + col("Learn", [("/learn/" + a["slug"], a["short"]) for a in L.ARTICLES[:6]] + [("/learn", "All guides"), ("/spot", "Chart game"), ("/webinar", "Free live training")])
+            + col("Learn", [("/learn/" + a["slug"], a["short"]) for a in L.ARTICLES[:6]] + [("/learn", "All guides"), ("/spot", "Chart game"), ("/webinar/replay", "Free training replay")])
             + '</div><div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px" class="mono"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/pl">Polski</a><a href="/affiliate-signup">Affiliates</a></div>'
             '<p class="risk">' + RISK + '</p><p class="mono" style="margin-top:14px">© 2026 The Trade Vault</p></div></footer>')
 
 
 def band(title=None, text=None):
-    return ('<section class="band"><div><span class="mono" style="color:var(--acc)">Free live training · Thursdays 8PM ET</span>'
-            '<h2>' + (title or 'Stop guessing. <span class="hl">Trade with rules.</span>') + '</h2>'
-            '<p>' + (text or "Jay Bonham breaks down the 3 rules behind every trade he takes, live on real charts, with Q&amp;A at the end. Free on Zoom.") + '</p></div>'
-            '<div class="ctas"><a class="btn" href="/webinar">Save my free seat <span class="arr">→</span></a>'
+    return ('<section class="band"><div><span class="mono" style="color:var(--acc)">Free training · Watch the replay</span>'
+            '<h2>' + (title or 'See inside <span class="hl">the Vault.</span>') + '</h2>'
+            '<p>' + (text or "Watch Jay Bonham’s full walkthrough of The Trade Vault: the educators, the scanners, the journal and the plans. Free, watch it now.") + '</p></div>'
+            '<div class="ctas"><a class="btn" href="/webinar/replay">Watch the free replay <span class="arr">→</span></a>'
             '<a class="btn-g" href="/#pricing">See the plans</a></div></section>')
 
 
@@ -117,6 +117,7 @@ def page(path, title, desc, body, active="", ld=(), image="/assets/og-image.jpg"
 {body}
 </main>
 {footer()}
+<script src="/assets/tv-ref-content.js"></script>
 {scripts}</body>
 </html>
 '''

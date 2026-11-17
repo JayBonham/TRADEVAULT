@@ -116,7 +116,7 @@ def build(B):
     body = cv + f'''
 <section class="hero"><span class="mono eyebrow">The educators</span><h1>Four traders. <span class="hl">All trading live.</span></h1>
 <p class="lede">Every educator in the Vault trades live, in the same markets they teach. You learn from people executing the same setups, every session.</p>
-<div class="ctas"><a class="btn" href="/#pricing">Pick your educator <span class="arr">→</span></a><a class="btn-g" href="/webinar">Free live training</a></div></section>
+<div class="ctas"><a class="btn" href="/#pricing">Pick your educator <span class="arr">→</span></a><a class="btn-g" href="/webinar/replay">Watch the free replay</a></div></section>
 <section class="sec" style="border-top:0;padding-top:10px"><div class="grid2">{"".join(card(e, B) for e in EDUCATORS)}</div>
 <p class="sub">On Community you pick one educator and their scanner. Elite gets you all four, every live session and every recording.</p></section>
 {B.band()}'''

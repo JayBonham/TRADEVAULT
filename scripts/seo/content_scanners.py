@@ -98,7 +98,7 @@ def build(B):
   <span class="mono eyebrow">Scanner · {" · ".join(s["markets"])}</span>
   <h1>{s["h1"]}</h1>
   <p class="lede">{s["lede"]}</p>
-  <div class="ctas"><a class="btn" href="/#pricing">Get {s["name"]} <span class="arr">→</span></a><a class="btn-g" href="/webinar">Free live training</a></div>
+  <div class="ctas"><a class="btn" href="/#pricing">Get {s["name"]} <span class="arr">→</span></a><a class="btn-g" href="/webinar/replay">Watch the free replay</a></div>
   <div class="chips">{"".join('<span class="chip acc">%s</span>' % m for m in s["markets"])}<span class="chip">Included from $49.99/mo</span></div>
 </div><div>{media}</div></section>
 

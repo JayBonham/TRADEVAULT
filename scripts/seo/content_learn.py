@@ -309,7 +309,7 @@ def build(B):
         cv, cld = B.crumbs([("/learn", "Learn"), (path, a["short"])])
         fv, fld = B.faq_html(a["faq"])
         secs = "".join('<h2 id="%s">%s</h2>%s' % (i, esc(h), body.replace("__RR_CALC__", RR_CALC).replace("__PS_CALC__", PS_CALC)) for i, h, body in a["sections"])
-        toc = '<aside class="toc"><b>In this guide</b>' + "".join('<a href="#%s">%s</a>' % (i, esc(h)) for i, h, _ in a["sections"]) + '<a href="#faq">FAQ</a><a class="btn" href="/webinar" style="color:#07101F">Free live training</a></aside>'
+        toc = '<aside class="toc"><b>In this guide</b>' + "".join('<a href="#%s">%s</a>' % (i, esc(h)) for i, h, _ in a["sections"]) + '<a href="#faq">FAQ</a><a class="btn" href="/webinar/replay" style="color:#07101F">Watch the free replay</a></aside>'
         body = cv + f'''
 <section class="hero"><span class="mono eyebrow">{esc(a["topic"])} · {a["mins"]} min read</span><h1>{a["h1"]}</h1><p class="lede">{a["lede"]}</p>
 <div class="meta"><span>By <b>The Trade Vault</b></span><span>Updated <b>17 Nov 2026</b></span></div></section>
@@ -335,7 +335,7 @@ def build(B):
     body = cv + f'''
 <section class="hero"><span class="mono eyebrow">Learn</span><h1>Trading guides from <span class="hl">the Vault.</span></h1>
 <p class="lede">Clear, rules-based guides on risk, strategy and psychology, written by the team that trades US30, gold and NQ live every week. Free to read.</p>
-<div class="ctas"><a class="btn" href="/webinar">Free live training <span class="arr">→</span></a><a class="btn-g" href="/spot">Try the chart game</a></div></section>
+<div class="ctas"><a class="btn" href="/webinar/replay">Watch the free replay <span class="arr">→</span></a><a class="btn-g" href="/spot">Try the chart game</a></div></section>
 <section class="sec" style="border-top:0;padding-top:10px"><div class="grid3">{"".join(_card(a, B) for a in ARTICLES)}</div></section>
 <section class="sec"><span class="mono eyebrow">Inside the Vault</span><h2>110+ lessons, <span class="hl">18 modules.</span></h2>
 <p class="sub">These guides are a taste. Members get the full Academy, from your first pip to Wyckoff and the scanner bootcamps, every lesson with video and slides.</p>
