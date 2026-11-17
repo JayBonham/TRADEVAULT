@@ -620,7 +620,14 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     if (pend) { $('mc').hidden = true; return; }
     api('GET', 'membership').then(function (q) {
       mc = q;
-      if (!q.plan) { $('mc').hidden = true; return; }
+      if (!q.plan) {
+        $('mc').hidden = false;
+        $('mcPlan').textContent = 'your Trade Vault plan'; $('mcDays').textContent = '30';
+        $('mcPrice').textContent = '—'; $('mcSub').textContent = 'no membership found';
+        $('mcBtn').disabled = true; $('mcBtn').textContent = 'Use my commission';
+        $('mcState').textContent = 'We can\u2019t find an active Trade Vault membership on ' + q.email + '. If you joined with another email, message us in Whop support and we\u2019ll link it.';
+        return;
+      }
       var P = d.program, pl = q.plan;
       $('mc').hidden = false;
       $('mcPlan').textContent = pl.name;
