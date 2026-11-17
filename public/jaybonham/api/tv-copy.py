@@ -119,7 +119,8 @@ class handler(BaseHTTPRequestHandler):
         if not ok:
             return self._json(403, {"error": "The Tradevault Copy Software is part of Elite, and we can't find an active Elite membership on " + email + ".", "not_elite": True})
         g = G.GUIDES[region]
-        steps = [dict(s, img=("data:image/webp;base64," + G.US_IMG[s["img"]]) if region == "us" and s.get("img") else None) for s in g["steps"]]
+        imgs = G.US_IMG if region == "us" else G.GL_IMG
+        steps = [dict(s, img=("data:image/webp;base64," + imgs[s["img"]]) if s.get("img") in imgs else None) for s in g["steps"]]
         A.log("TV_COPY_GUIDE", email, region)
         self._json(200, {"ok": True, "email": email, "region": region, "guide": dict(g, steps=steps, url=URLS.get(region) or None)})
 

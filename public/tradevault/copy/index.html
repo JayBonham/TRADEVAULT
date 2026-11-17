@@ -12,7 +12,8 @@
 <link rel="stylesheet" href="../aff.css">
 <style>
 main{display:grid;place-items:start center;padding-block:40px 60px}
-.box{width:100%;max-width:520px}
+.box{width:100%;max-width:520px;min-width:0}
+.card,.sum,.mult,.steps li,#region{min-width:0}
 .box.wide{max-width:780px}
 .brandc{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:26px}
 .brandc img:first-child{width:30px;height:30px}.brandc img+img{height:15px;width:auto}
@@ -43,7 +44,16 @@ form{display:grid;gap:14px;margin-top:22px}
 .steps h3{font-family:var(--display);font-size:21px;margin:4px 0 6px}
 .steps p{font-size:15px;color:var(--tx-dim);line-height:1.6}
 .steps p b{color:var(--tx)}
-.steps img{display:block;width:100%;height:auto;margin-top:14px;border-radius:12px;border:1px solid var(--hair-2);background:#fff;cursor:zoom-in}
+.steps img{display:block;width:auto;max-width:100%;max-height:620px;margin-inline:auto;height:auto;margin-top:14px;border-radius:12px;border:1px solid var(--hair-2);background:#fff;cursor:zoom-in}
+.mult{margin-top:16px;padding:20px;border-radius:18px;border:1px solid var(--hair-2);background:rgba(255,255,255,.02)}
+.mult h3{font-family:var(--display);font-size:21px;margin-bottom:6px}
+.mult p{font-size:15px;color:var(--tx-dim);line-height:1.6}
+.mt{overflow-x:auto;margin-top:14px}
+.mult table{width:100%;border-collapse:collapse;font-size:14px;min-width:460px}
+.mult th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute);padding:8px 10px;border-bottom:1px solid var(--hair-2)}
+.mult td{padding:10px;border-bottom:1px solid var(--hair);color:var(--tx-dim)}
+.mult td.x{font-family:var(--display);font-weight:700;color:var(--tx);font-size:16px}
+.mult td.n{font-size:13px;color:var(--tx-mute)}
 .soon{margin-top:22px;font-size:14.5px;color:var(--tx-dim);padding:14px 16px;border-radius:12px;border:1px dashed var(--hair-2)}
 .risk{margin-top:26px;font-size:12.5px;color:var(--tx-mute);line-height:1.6}
 .zoom{position:fixed;inset:0;z-index:50;background:rgba(3,7,14,.92);display:grid;place-items:center;padding:16px;cursor:zoom-out}
@@ -129,6 +139,12 @@ form{display:grid;gap:14px;margin-top:22px}
       }).join('') + '</ol>';
     } else {
       h += '<p class="soon">Step-by-step guide coming soon. The button above takes you to the sign-up.</p>';
+    }
+    if (g.multiplier) {
+      var M = g.multiplier;
+      h += '<div class="mult"><h3>Choosing your multiplier</h3><p>' + esc(M.intro) + '</p><div class="mt"><table><thead><tr><th>Profile</th><th>Account size</th><th>Multiplier</th><th></th></tr></thead><tbody>' +
+        M.rows.map(function (r) { return '<tr><td><b>' + esc(r[0]) + '</b></td><td>' + esc(r[1]) + '</td><td class="x">' + esc(r[2]) + '</td><td class="n">' + esc(r[3]) + '</td></tr>'; }).join('') +
+        '</tbody></table></div><p class="muted" style="font-size:13px;margin-top:10px">' + esc(M.note) + '</p></div>';
     }
     h += '<p class="risk">The Copy Software places real trades on your own account, and you can lose money, sometimes quickly in fast markets. Past performance doesn’t guarantee future results. Fees are charged by the platform, not The Trade Vault. Only use money you can afford to lose. This is not financial advice.</p>';
     $('region').innerHTML = h;
