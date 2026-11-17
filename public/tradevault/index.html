@@ -701,6 +701,11 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   .cx-hero{grid-template-columns:1fr}
   .cx-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 }
+
+/* closed overlays stay out of the compositor (Safari/Chrome left frosted ghost shapes after Back) */
+#mob,.lb{visibility:hidden;-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .3s var(--ease),visibility 0s linear .3s}
+#mob.open,.lb.open{visibility:visible;transition:opacity .3s var(--ease),visibility 0s}
+.hero .pill{-webkit-backdrop-filter:none;backdrop-filter:none}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -1466,6 +1471,16 @@ document.addEventListener('keydown',e=>{if(!lbEl.classList.contains('open'))retu
   };
   fetch('/assets/curriculum/curriculum.json').then(function (r) { return r.json(); }).then(function (d) { data = d; render(); }).catch(function () {});
 })();
+</script>
+<script>
+/* Back/forward cache: close overlays and repaint the frosted nav so no stale glass layer is left behind */
+window.addEventListener('pageshow', function (e) {
+  if (!e.persisted) return;
+  document.querySelectorAll('#mob.open,.lb.open').forEach(function (x) { x.classList.remove('open'); });
+  var n = document.querySelector('.nav-in'); if (!n) return;
+  n.style.webkitBackdropFilter = n.style.backdropFilter = 'none';
+  requestAnimationFrame(function () { requestAnimationFrame(function () { n.style.webkitBackdropFilter = n.style.backdropFilter = ''; }); });
+});
 </script>
 </body>
 </html>
