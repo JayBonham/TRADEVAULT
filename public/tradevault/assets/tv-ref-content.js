@@ -11,6 +11,7 @@
   function set(r) {
     try { localStorage.setItem('tv_ref', JSON.stringify({ c: r, t: Date.now() })); } catch (e) {}
     document.cookie = 'tv_ref=' + r + '; path=/; max-age=5184000; SameSite=Lax';
+    if (navigator.webdriver || /bot|crawl|spider|headless|lighthouse|preview/i.test(navigator.userAgent)) return;
     var k = 'tv_ref_seen_' + r;
     try { if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (e) {}
     fetch('https://jaybonham.com/api/tv-aff?action=click', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ code: r }), keepalive: true }).catch(function () {});

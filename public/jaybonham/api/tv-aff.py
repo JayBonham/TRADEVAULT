@@ -48,6 +48,7 @@ from _auth import verify_token
 OPS_KEY_HASH = "e2a3f8199a7b57cba4f29961ee6142e29d3ab89ea085299c742c418d44f887a2"
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 READY = A.ready_sql()
+BOT_RE = re.compile(r"bot|crawl|spider|slurp|preview|headless|lighthouse|pagespeed|chrome-lighthouse|google-inspectiontool|bingpreview|facebookexternalhit|embedly|python|curl|wget", re.I)
 
 
 def _iso(v):
@@ -367,6 +368,10 @@ class handler(BaseHTTPRequestHandler):
 
     def _click(self):
         code = (self._body().get("code") or "").strip().lower()
+        ua = self.headers.get("User-Agent") or ""
+        # Search engine renderers (Google, Bing) and headless browsers run the page script too: don't count them.
+        if BOT_RE.search(ua) or not ua:
+            return self._json(200, {"ok": True, "bot": True})
         if A.CODE_RE.match(code):
             try:
                 c = A.conn()
