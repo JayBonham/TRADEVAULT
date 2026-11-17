@@ -83,14 +83,14 @@ input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.18
     err.textContent = '';
     go.disabled = true; go.innerHTML = '<span class="spin"></span>Signing in';
     fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ok) throw 0;
-        try { localStorage.setItem('tv_token', d.token); localStorage.setItem('tv_user', d.user); } catch (x) {}
+      .then(function (r) { return r.json().then(function (d) { return { st: r.status, d: d }; }); })
+      .then(function (x) {
+        if (!x.d.ok) throw x.st === 401 ? 'bad' : 'down';
+        try { localStorage.setItem('tv_token', x.d.token); localStorage.setItem('tv_user', x.d.user); } catch (y) {}
         location.replace('/admin');
       })
-      .catch(function () {
-        err.textContent = 'Wrong username or password.';
+      .catch(function (why) {
+        err.textContent = why === 'bad' ? 'Wrong username or password.' : 'Couldn’t reach the login server. Check your connection and try again.';
         go.disabled = false; go.textContent = 'Sign in';
       });
   });
