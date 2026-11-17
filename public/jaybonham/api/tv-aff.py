@@ -9,9 +9,6 @@
   code_check GET    ?code=                    -> {available} is this link name free (the signup form asks as they fill it in)
   click      POST   code                      count a visit from an affiliate link
   payout     POST   (Bearer affiliate token)  request payout of everything ready
-  membership GET    (Bearer affiliate token)  their own TradeVault plan: price, renewal, whether commission can cover a month
-             POST   (Bearer affiliate token)  reserve one month's price of ready commission as a "membership credit" request;
-                                              admin approval adds the billing period's days to their Whop membership
   profile    POST   (Bearer affiliate token)  {payout_method, payout} save where to be paid
   admin      GET    (Bearer admin token)      affiliates, payouts, settings
              PATCH  (Bearer admin token)      {id, status?, custom_pct?}   status: active|paused|rejected
@@ -41,8 +38,6 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, os.path.dirname(__file__))
 import _tv_aff as A
-import _tv_upgrade as U
-import _tv_whop as W
 from _auth import verify_token
 
 # Lets the developer run one-off support tasks without an admin login (only the key's hash is here).
@@ -72,8 +67,6 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         a = self._action()
-        if a == "membership":
-            return self._membership_quote()
         if a == "me":
             return self._me()
         if a == "admin":
@@ -100,8 +93,6 @@ class handler(BaseHTTPRequestHandler):
             return self._reset()
         if a == "click":
             return self._click()
-        if a == "membership":
-            return self._membership_request()
         if a == "payout":
             return self._payout()
         if a == "profile":
@@ -423,110 +414,6 @@ class handler(BaseHTTPRequestHandler):
             A.log("TV_AFF_PAYOUT_ERR:", e)
             self._json(500, {"error": "Could not request your payout. Please try again."})
 
-    # ---------- pay your own membership with commission ----------
-    def _own_plan(self, cur, email):
-        """The affiliate's own active TradeVault membership on Whop: {membership, tier, name, price, days, renews}."""
-        plans = U.tier_plans(cur)
-        best = U.current(cur, email, plans)
-        if not best:
-            return None
-        m, tier = best
-        price = U._num(m.get("renewal_price"))
-        if price is None:
-            price = (plans.get(tier) or {}).get("price")
-        days = int(m.get("billing_period_days") or (plans.get(tier) or {}).get("period") or 30)
-        return {"membership": m.get("id"), "tier": tier, "name": U.NAMES.get(tier, tier.title()),
-                "price": round(float(price or 0), 2), "days": days if 1 <= days <= 366 else 30,
-                "renews": m.get("current_period_end") or m.get("renewal_period_end")}
-
-    def _membership_quote(self):
-        aff = self._aff(view_ok=True)
-        if not aff:
-            return
-        try:
-            c = A.conn()
-            cur = c.cursor()
-            cur.execute("SELECT email FROM tv_affiliates WHERE id = %s", (aff,))
-            email = (cur.fetchone()[0] or "").strip().lower()
-            plan = self._own_plan(cur, email)
-            cur.execute(f"""SELECT COALESCE(SUM(commission_usd), 0) FROM tv_aff_commissions
-                             WHERE affiliate_id = %s AND status = 'pending' AND payout_id IS NULL AND {READY}""", (aff,))
-            ready = float(cur.fetchone()[0])
-            c.close()
-        except Exception as e:
-            A.log("TV_AFF_MEMBERSHIP_QUOTE_ERR:", e)
-            return self._json(500, {"error": "Couldn't check your membership right now."})
-        if not plan or not plan["price"]:
-            return self._json(200, {"ok": True, "plan": None, "email": email, "ready": ready})
-        self._json(200, {"ok": True, "plan": dict(plan, membership=None), "email": email, "ready": ready,
-                         "short": round(max(0.0, plan["price"] - ready), 2)})
-
-    def _membership_request(self):
-        aff = self._aff()
-        if not aff:
-            return
-        try:
-            c = A.conn()
-            cur = c.cursor()
-            cur.execute("SELECT status, email FROM tv_affiliates WHERE id = %s", (aff,))
-            st, email = cur.fetchone()
-            email = (email or "").strip().lower()
-            cfg = A.settings(cur)
-            err = None
-            if st != "active":
-                err = (403, "This opens once your application is approved.")
-            elif A.personals(cur, aff) < cfg["unlock_count"]:
-                err = (400, f"This unlocks with payouts, once you've referred {cfg['unlock_count']} paying members.")
-            else:
-                opens = A.payout_from(cur, aff, cfg)
-                if not opens or opens.timestamp() > time.time():
-                    err = (400, "This opens with your first payout, on " + (opens.strftime("%-d %B") if opens else "a later date") + ".")
-            if not err:
-                cur.execute("SELECT 1 FROM tv_aff_payouts WHERE affiliate_id = %s AND status = 'requested'", (aff,))
-                if cur.fetchone():
-                    err = (409, "You already have a request on its way. Once it's done you can make another.")
-            if err:
-                c.close()
-                return self._json(err[0], {"error": err[1]})
-            plan = self._own_plan(cur, email)
-            if not plan or not plan["price"]:
-                c.close()
-                return self._json(400, {"error": "We can't find an active Trade Vault membership on " + email + ". Message us in Whop support."})
-            price = plan["price"]
-            cur.execute(f"""SELECT id, whop_id, commission_usd FROM tv_aff_commissions
-                             WHERE affiliate_id = %s AND status = 'pending' AND payout_id IS NULL AND {READY}
-                             ORDER BY paid_at, id FOR UPDATE""", (aff,))
-            rows = [(r[0], r[1], float(r[2])) for r in cur.fetchall()]
-            if sum(r[2] for r in rows) + 0.005 < price:
-                c.close()
-                return self._json(400, {"error": "You need $%.2f ready to cover a month of %s." % (price, plan["name"])})
-            details = json.dumps({k: plan[k] for k in ("membership", "tier", "name", "price", "days")})
-            cur.execute("INSERT INTO tv_aff_payouts (affiliate_id, amount_usd, method, details) VALUES (%s, %s, 'membership', %s) RETURNING id",
-                        (aff, price, details))
-            pid = cur.fetchone()[0]
-            left = price
-            for cid, wid, amt in rows:
-                if left <= 0.005:
-                    break
-                if amt <= left + 0.005:
-                    cur.execute("UPDATE tv_aff_commissions SET payout_id = %s WHERE id = %s", (pid, cid))
-                    left = round(left - amt, 2)
-                else:
-                    # Split the row: this request takes what it needs, the rest stays in their balance.
-                    rest = round(amt - left, 2)
-                    cur.execute("UPDATE tv_aff_commissions SET commission_usd = %s, payout_id = %s WHERE id = %s", (left, pid, cid))
-                    cur.execute("""INSERT INTO tv_aff_commissions (affiliate_id, whop_id, email, product, amount_usd, commission_usd, status, paid_at, kind, pct)
-                                   SELECT affiliate_id, %s, email, product, 0, %s, 'pending', paid_at, kind, pct FROM tv_aff_commissions WHERE id = %s""",
-                                (f"{wid}:rest{pid}", rest, cid))
-                    left = 0
-            c.commit()
-            c.close()
-            A.log("TV_AFF_MEMBERSHIP_REQ", aff, email, plan["tier"], price)
-            self._json(200, {"ok": True, "amount": price})
-        except Exception as e:
-            A.log("TV_AFF_MEMBERSHIP_REQ_ERR:", e)
-            self._json(500, {"error": "Couldn't send your request. Please try again."})
-
     def _profile(self):
         aff = self._aff()
         if not aff:
@@ -712,30 +599,10 @@ class handler(BaseHTTPRequestHandler):
         if not row:
             c.close()
             return self._json(409, {"error": "That payout was already handled."})
-        method = None
         if act == "paid":
             # Pays what's still reserved: anything refunded since the request dropped out.
             cur.execute("SELECT COALESCE(SUM(commission_usd), 0) FROM tv_aff_commissions WHERE payout_id = %s AND status = 'pending'", (pid,))
             amount = float(cur.fetchone()[0])
-            cur.execute("SELECT method, details FROM tv_aff_payouts WHERE id = %s", (pid,))
-            method, det = cur.fetchone()
-            if method == "membership":
-                d = _details(det)
-                if amount + 0.005 < float(d.get("price") or 0):
-                    c.close()
-                    return self._json(409, {"error": "Some of this commission was refunded since they asked, so it no longer covers a month. Reject it and they can ask again."})
-                try:
-                    out = W.whop("POST", "/api/v1/memberships/%s/add_free_days" % d["membership"], {"free_days": int(d.get("days") or 30)})
-                except Exception as e:
-                    c.close()
-                    A.log("TV_AFF_MEMBERSHIP_WHOP_ERR:", e)
-                    msg = str(e)
-                    if " 401" in msg or " 403" in msg:
-                        msg = "Whop refused: the API key needs the member:manage permission (Whop > Developer > API keys)."
-                    return self._json(502, {"error": "Nothing was changed. " + msg[:300]})
-                end = (out or {}).get("renewal_period_end") or (out or {}).get("current_period_end") or ""
-                ref = ("Whop +%s days" % d.get("days", 30)) + (", renews " + str(end)[:10] if end else "") + (" · " + ref if ref else "")
-                A.log("TV_AFF_MEMBERSHIP_PAID", pid, d.get("membership"), d.get("days"))
             cur.execute("UPDATE tv_aff_commissions SET status = 'paid' WHERE payout_id = %s AND status = 'pending'", (pid,))
             cur.execute("UPDATE tv_aff_payouts SET status = 'paid', amount_usd = %s, reference = %s, decided_at = NOW() WHERE id = %s",
                         (amount, ref or None, pid))
@@ -745,8 +612,7 @@ class handler(BaseHTTPRequestHandler):
         c.commit()
         c.close()
         if act == "paid":
-            # a membership credit isn't money sent, so it doesn't trigger the "you've been paid" email
-            A.ghl_tag(row[1], row[2], ["tv-affiliate-membership-credit" if method == "membership" else "tv-affiliate-paid"], again=True)
+            A.ghl_tag(row[1], row[2], ["tv-affiliate-paid"], again=True)
         self._json(200, {"ok": True})
 
     def _admin_bonus(self):
