@@ -452,6 +452,16 @@
       var it = el('div', 'item warn'), left = el('div');
       left.appendChild(el('span', 'mono', p.name + ' · ' + p.email + ' · requested ' + date(p.requested_at)));
       left.appendChild(el('div', 'amt', money(p.amount)));
+      if (p.method === 'membership') {
+        var dm = p.details || {}, days = dm.days || 30;
+        var dd = el('div', 'dest'); dd.appendChild(pill('Membership credit', 'acc')); dd.appendChild(el('code', null, (dm.name || 'Plan') + ' · +' + days + ' days on Whop')); left.appendChild(dd);
+        left.appendChild(el('p', 'meta', 'They want this month of their own membership paid from commission. Approving adds ' + days + ' days to their Whop membership (their next charge moves back), and the ' + money(p.amount) + ' is marked paid. No money is sent.'));
+        var ma = el('div', 'acts');
+        ma.appendChild(btn('btn-g btn-sm no-btn', 'Reject', function (b) { b.disabled = true; api('PATCH', 'payouts', { id: p.id, action: 'reject' }).then(function () { toast('Rejected; the commission goes back to their balance'); load(); }).catch(fail(b)); }));
+        ma.appendChild(btn('btn btn-sm ok-btn', 'Approve: add ' + days + ' days', function (b) { b.disabled = true; b.textContent = 'Adding days on Whop…'; api('PATCH', 'payouts', { id: p.id, action: 'paid' }).then(function () { toast(days + ' days added to ' + p.name + '\u2019s membership'); load(); }).catch(function (x) { b.disabled = false; b.textContent = 'Approve: add ' + days + ' days'; toast((x && x.msg) || 'Could not approve', true); }); }));
+        it.appendChild(left); it.appendChild(ma); box.appendChild(it);
+        return;
+      }
       var d = p.details || {}, addr = p.method === 'paypal' ? d.email : d.address;
       var dest = el('div', 'dest'); dest.appendChild(pill(p.method === 'paypal' ? 'PayPal' : (d.coin || '') + ' · ' + (d.network === 'BINANCE' ? 'Binance Pay' : d.network), 'acc'));
       dest.appendChild(el('code', null, addr || p.to || 'no details')); if (addr) dest.appendChild(copyBtn(addr));

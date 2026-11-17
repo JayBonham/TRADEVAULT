@@ -679,6 +679,8 @@ def payout_label(method, details):
         return "PayPal · " + d.get("email", "")
     if method == "crypto":
         return f"{d.get('coin', '')} · {NETWORKS.get(d.get('network'), d.get('network', ''))} · {d.get('address', '')}"
+    if method == "membership":
+        return f"Membership credit · {d.get('name', '')} (+{d.get('days', 30)} days)"
     return details or ""
 
 

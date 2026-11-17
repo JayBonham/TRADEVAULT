@@ -99,6 +99,17 @@
 .payout .pp{max-width:560px}
 .payout h3{font-size:17px;margin-bottom:12px}
 .state{font-size:14px;color:var(--tx-dim);text-align:center}
+.mc{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px 28px;align-items:center;border-color:rgba(var(--acc-rgb),.35);background:linear-gradient(160deg,rgba(var(--acc-rgb),.09),rgba(255,255,255,.015) 65%)}
+.mc h3{font-size:19px;margin:6px 0 8px}
+.mc p{font-size:14.5px;color:var(--tx-dim);line-height:1.55}
+.mc p b{color:var(--tx)}
+.mcr{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:16px;border:1px solid var(--hair);background:rgba(5,10,20,.45)}
+.mcp{display:flex;align-items:baseline;gap:8px;justify-content:center}
+.mcp b{font-family:var(--display);font-size:32px;letter-spacing:-.02em}
+.mcp span{color:var(--tx-mute);font-size:14px}
+.mcr .btn{width:100%}
+.mcr .btn:disabled{cursor:not-allowed}
+@media(max-width:760px){.mc{grid-template-columns:minmax(0,1fr)}}
 .how{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .how div{padding:18px;border-radius:18px;border:1px solid var(--hair);background:rgba(255,255,255,.02)}
 .how b{display:block;font-family:var(--display);font-size:16px;margin:6px 0 4px}
@@ -269,6 +280,18 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
           <div class="u"><b id="cdM">00</b><span>mins</span></div><div class="u"><b id="cdS">00</b><span>secs</span></div></div>
         <button class="btn" id="payBtn" type="button">Request payout</button>
         <p class="state" id="payState"></p>
+        </div>
+      </div>
+      <div class="card mc" id="mc" hidden>
+        <div class="mcl">
+          <span class="mono" style="color:var(--acc)">New · Membership credit</span>
+          <h3>Pay your membership with commission</h3>
+          <p>Use your ready commission to cover a month of <b id="mcPlan"></b>. Once we approve it, <span id="mcDays">30</span> days are added to your membership, so your next card charge moves back by a month.</p>
+        </div>
+        <div class="mcr">
+          <div class="mcp"><b id="mcPrice"></b><span id="mcSub">one month</span></div>
+          <button class="btn" id="mcBtn" type="button" disabled>Use my commission</button>
+          <p class="state" id="mcState"></p>
         </div>
       </div>
       <div class="tw" id="payHist" style="margin-top:12px" hidden><table><thead><tr><th>Requested</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th></tr></thead><tbody id="pays"></tbody></table></div>
@@ -455,13 +478,14 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     var open = d.payouts.filter(function (p) { return p.status === 'requested'; })[0];
     $('payBtn').disabled = viewAs || pend || !!open || !P.can_payout || s.ready <= 0;
     $('payState').textContent = pend ? 'Payouts open once you\u2019re approved.'
-      : open ? 'Payout of ' + money(open.amount) + ' requested. We\u2019ll send it to ' + open.to + ' and mark it paid here.'
+      : open ? (open.method === 'membership' ? 'Membership credit of ' + money(open.amount) + ' requested. Payouts open again once it\u2019s approved.' : 'Payout of ' + money(open.amount) + ' requested. We\u2019ll send it to ' + open.to + ' and mark it paid here.')
       : !P.qualified ? 'Payouts unlock at ' + P.unlock_count + ' paying members.'
       : !P.can_payout ? 'Your first payout opens on ' + opens + '.'
       : s.ready > 0 ? money(s.ready) + ' is ready. Check your details, then request it.'
       : 'Commission becomes ready to pay out ' + d.hold_days + ' days after each payment.';
 
     countdown(P.qualified && !P.can_payout && !pend ? P.payout_from : null);
+    membershipCard(d, open, pend);
 
     var pays = $('pays'); pays.innerHTML = '';
     $('payHist').hidden = !d.payouts.length;
@@ -470,7 +494,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(td(date(p.requested_at)));
       var am = td(money(p.amount), 'r num'); am.style.fontWeight = '600'; tr.appendChild(am);
       tr.appendChild(td(p.to));
-      tr.appendChild(pillTd({ requested: 'On its way', paid: 'Paid', rejected: 'Not sent' }[p.status] || p.status, { requested: 'warn', paid: 'ok', rejected: 'off' }[p.status] || ''));
+      tr.appendChild(pillTd((p.method === 'membership' ? { requested: 'Awaiting approval', paid: 'Applied', rejected: 'Not applied' } : { requested: 'On its way', paid: 'Paid', rejected: 'Not sent' })[p.status] || p.status, { requested: 'warn', paid: 'ok', rejected: 'off' }[p.status] || ''));
       tr.appendChild(td(p.reference || '—'));
       pays.appendChild(tr);
     });
@@ -588,6 +612,45 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     save().then(function () { return api('POST', 'payout', {}); })
       .then(function () { b.textContent = 'Request payout'; load(); })
       .catch(function (x) { $('payState').textContent = (x && x.msg) || 'Could not request your payout.'; b.textContent = 'Request payout'; b.disabled = false; });
+  });
+
+  /* Pay your own membership with commission: one month at a time, approved by the team (adds the days on Whop). */
+  var mc = null, mcConfirm = false;
+  function membershipCard(d, open, pend) {
+    if (pend) { $('mc').hidden = true; return; }
+    api('GET', 'membership').then(function (q) {
+      mc = q;
+      if (!q.plan) { $('mc').hidden = true; return; }
+      var P = d.program, pl = q.plan;
+      $('mc').hidden = false;
+      $('mcPlan').textContent = pl.name;
+      $('mcDays').textContent = pl.days;
+      $('mcPrice').textContent = money(pl.price);
+      $('mcSub').textContent = 'one month of ' + pl.name;
+      var why = viewAs ? 'Read-only while viewing as this affiliate.'
+        : open ? (open.method === 'membership' ? 'Your membership credit is waiting for approval.' : 'You have a payout on its way. Once it\u2019s sent you can use this.')
+        : !P.qualified ? 'Opens with payouts, at ' + P.unlock_count + ' paying members.'
+        : !P.can_payout ? 'Opens with your first payout, on ' + date(P.payout_from) + '.'
+        : q.short > 0 ? 'You need ' + money(q.short) + ' more ready commission (' + money(q.ready) + ' ready now).'
+        : '';
+      mcConfirm = false;
+      $('mcBtn').disabled = !!why;
+      $('mcBtn').textContent = 'Use ' + money(pl.price) + ' of my commission';
+      $('mcState').textContent = why || money(q.ready) + ' ready. ' + money(q.ready - pl.price) + ' stays in your balance.';
+    }).catch(function () { $('mc').hidden = true; });
+  }
+  $('mcBtn').addEventListener('click', function () {
+    var b = this;
+    if (!mc || !mc.plan) return;
+    if (!mcConfirm) {
+      mcConfirm = true;
+      b.textContent = 'Confirm: cover a month of ' + mc.plan.name;
+      $('mcState').textContent = 'Tap again to send it. We\u2019ll approve it and add ' + mc.plan.days + ' days to your membership.';
+      return;
+    }
+    b.disabled = true; b.innerHTML = '<span class="spin"></span>Sending';
+    api('POST', 'membership', {}).then(function () { load(); })
+      .catch(function (x) { $('mcState').textContent = (x && x.msg) || 'Couldn\u2019t send your request.'; b.disabled = false; mcConfirm = false; b.textContent = 'Use ' + money(mc.plan.price) + ' of my commission'; });
   });
 
   load();
