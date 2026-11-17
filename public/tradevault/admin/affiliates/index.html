@@ -513,7 +513,14 @@
       tr.appendChild(el('td', null, date(a.created_at)));
       tr.appendChild(el('td', 'r num', a.clicks.toLocaleString()));
       tr.appendChild(el('td', 'r num', a.personals));
-      var lv = el('td'); lv.appendChild(level(a, S)); tr.appendChild(lv);
+      var lv = el('td'); lv.appendChild(level(a, S));
+      if (a.free_count != null) {
+        var fr = a.free_last && (Date.now() - new Date(a.free_last.at)) < 35 * 864e5;
+        var fp = pill(fr ? 'Free month ✓' : a.free_count + '/5 confirmed', fr ? 'ok' : a.free_count >= 5 ? 'acc' : 'off');
+        fp.title = fr ? 'Free days added ' + date(a.free_last.at) + (a.free_last.until ? ', renews ' + date(a.free_last.until) : '') : 'Confirmed members this month (cleared the hold). 5 makes their own membership free.';
+        fp.style.marginLeft = '6px'; lv.appendChild(fp);
+      }
+      tr.appendChild(lv);
       tr.appendChild(el('td', 'r num', money(a.sales)));
       tr.appendChild(el('td', 'r num', money(a.pending - a.ready)));
       var ready = el('td', 'r num', money(a.ready)); if (a.ready > 0) ready.style.color = a.qualified ? 'var(--ok)' : 'var(--tx-mute)'; if (!a.qualified && a.ready > 0) ready.title = 'Locked until ' + S.unlock_count + ' paying members'; tr.appendChild(ready);

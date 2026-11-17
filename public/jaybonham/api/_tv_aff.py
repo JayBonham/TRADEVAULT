@@ -45,6 +45,12 @@ SETTINGS = {"base_pct": 20, "tier_pct": 30, "tier_count": 25, "unlock_count": 5,
 WEBINAR_DAYS = 60  # a webinar signup through an affiliate link credits a purchase within this many days
 CLAIM_WINDOW_DAYS = 14
 HOLD_DAYS = 30
+FREE_COUNT = 5     # confirmed members in a month that make the affiliate's own membership free that month
+FREE_WINDOW = 35   # "this month": commissions that cleared the hold in the last 35 days
+FREE_TABLE = """CREATE TABLE IF NOT EXISTS tv_aff_free_months (
+    id BIGSERIAL PRIMARY KEY, affiliate_id BIGINT NOT NULL, membership_id TEXT, tier TEXT, days INTEGER,
+    renews_before TIMESTAMPTZ, renews_after TIMESTAMPTZ, confirmed INTEGER, status TEXT NOT NULL,
+    error TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"""
 TOKEN_TTL = 60 * 60 * 24 * 30
 CODE_RE = re.compile(r"^[a-z0-9_]{3,20}$")
 
@@ -723,3 +729,21 @@ def ghl_tag(email, name, tags, again=False, fields=None):
         c.close()
     except Exception as e:
         log("TV_AFF_GHL_ERR:", e)
+
+
+def confirmed_members(cur, aff_id):
+    """Distinct members whose commission cleared the hold in the last FREE_WINDOW days and wasn't refunded:
+    the "5 confirmed this month" that make the affiliate's own membership free."""
+    cur.execute(f"""SELECT COUNT(DISTINCT email) FROM tv_aff_commissions
+                     WHERE affiliate_id = %s AND kind = 'commission' AND status <> 'void'
+                       AND paid_at <= NOW() - INTERVAL '{HOLD_DAYS} days'
+                       AND paid_at >  NOW() - INTERVAL '{HOLD_DAYS + FREE_WINDOW} days'""", (aff_id,))
+    return int(cur.fetchone()[0])
+
+
+def last_free_month(cur, aff_id):
+    cur.execute(FREE_TABLE)
+    cur.execute("""SELECT created_at, renews_after, days FROM tv_aff_free_months
+                    WHERE affiliate_id = %s AND status = 'ok' ORDER BY created_at DESC LIMIT 1""", (aff_id,))
+    r = cur.fetchone()
+    return {"at": r[0].isoformat(), "until": r[1].isoformat() if r[1] else None, "days": r[2]} if r else None

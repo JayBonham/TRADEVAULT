@@ -119,6 +119,8 @@
 .bar.done .fill{background:var(--ok)}
 .bar p{font-size:13px;color:var(--tx-mute)}
 .bar.done b{color:var(--ok)}
+.bar.free{grid-column:1/-1;border-color:rgba(var(--acc-rgb),.3);background:linear-gradient(160deg,rgba(var(--acc-rgb),.08),rgba(255,255,255,.02) 60%)}
+.bar.free.done{border-color:rgba(123,224,176,.4);background:linear-gradient(160deg,rgba(123,224,176,.1),rgba(255,255,255,.02) 60%)}
 .loader{width:32px;height:32px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
 @media(max-width:860px){.linkcard,.linkcard.hasshot,.payout,.prog{grid-template-columns:minmax(0,1fr)}.linkcard .shot{grid-row:auto;max-height:180px}.linkcard.hasshot .more{grid-column:1/-1}.review{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.how{grid-template-columns:minmax(0,1fr)}}
@@ -239,6 +241,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div class="sech"><h2>Your level</h2><span class="mono" id="lvl"></span></div>
       <div class="prog">
         <div class="bar" id="barUnlock"><div class="hd"><b id="unlockT"></b><span class="mono" id="unlockN"></span></div><div class="track"><div class="fill" id="unlockF"></div></div><p id="unlockP"></p></div>
+        <div class="bar free" id="barFree" hidden><div class="hd"><b id="freeT"></b><span class="mono" id="freeN"></span></div><div class="track"><div class="fill" id="freeF"></div></div><p id="freeP"></p></div>
         <div class="bar" id="barTier"><div class="hd"><b id="tierT"></b><span class="mono" id="tierN"></span></div><div class="track"><div class="fill" id="tierF"></div></div><p id="tierP"></p></div>
       </div>
     </section>
@@ -430,6 +433,19 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('unlockP').textContent = P.qualified ? (P.can_payout ? 'You can withdraw commission once it clears the ' + d.hold_days + '-day hold.'
         : 'Unlocked! Your first payout opens on ' + opens + ', ' + P.unlock_wait_days + ' days after you unlocked. Keep stacking until then.')
       : (P.unlock_count - P.personals) + ' more paying member' + (P.unlock_count - P.personals === 1 ? '' : 's') + ' to unlock payouts. Everything you earn until then is kept.';
+    var F = d.free;
+    $('barFree').hidden = !F || pend;
+    if (F) {
+      var fn = Math.min(F.count, F.needed), recent = F.last && (Date.now() - new Date(F.last.at)) < F.window_days * 864e5;
+      var got = F.count >= F.needed;
+      $('barFree').classList.toggle('done', !!recent || got);
+      $('freeT').textContent = recent ? 'Your membership is free this month' : got ? 'Your next month is free' : 'Free membership';
+      $('freeN').textContent = fn + ' / ' + F.needed + ' confirmed';
+      $('freeF').style.width = (100 * fn / F.needed) + '%';
+      $('freeP').textContent = recent ? 'You had ' + F.needed + '+ confirmed members, so we added ' + (F.last.days || 30) + ' free days to your Trade Vault membership' + (F.last.until ? '. Next renewal: ' + date(F.last.until) + '.' : '.') + ' Keep ' + F.needed + ' confirmed every month and it stays free.'
+        : got ? 'You have ' + F.count + ' confirmed members this month. Your next renewal is on us: we add the free days just before it.'
+        : (F.needed - F.count) + ' more confirmed member' + (F.needed - F.count === 1 ? '' : 's') + ' this month and your own membership is free. A member counts once their payment clears the ' + d.hold_days + '-day hold.';
+    }
     var top = P.personals >= P.tier_count;
     $('barTier').classList.toggle('done', top);
     $('tierT').textContent = top ? P.tier_pct + '% unlocked' : 'Reach ' + P.tier_pct + '%';

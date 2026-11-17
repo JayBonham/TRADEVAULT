@@ -9,6 +9,8 @@
   code_check GET    ?code=                    -> {available} is this link name free (the signup form asks as they fill it in)
   click      POST   code                      count a visit from an affiliate link
   payout     POST   (Bearer affiliate token)  request payout of everything ready
+  free_months GET   (Vercel cron, daily)      free month: an affiliate with 5+ confirmed members this month gets their
+                                              billing period added as free days on Whop just before their own renewal
   profile    POST   (Bearer affiliate token)  {payout_method, payout} save where to be paid
   admin      GET    (Bearer admin token)      affiliates, payouts, settings
              PATCH  (Bearer admin token)      {id, status?, custom_pct?}   status: active|paused|rejected
@@ -38,6 +40,8 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, os.path.dirname(__file__))
 import _tv_aff as A
+import _tv_upgrade as U
+import _tv_whop as W
 from _auth import verify_token
 
 # Lets the developer run one-off support tasks without an admin login (only the key's hash is here).
@@ -77,6 +81,8 @@ class handler(BaseHTTPRequestHandler):
             return self._code_check()
         if a == "claims":
             return self._admin_claims()
+        if a == "free_months":
+            return self._free_months()
         if a == "counts":
             return self._admin_counts()
         self._json(404, {"error": "unknown action"})
@@ -321,9 +327,12 @@ class handler(BaseHTTPRequestHandler):
                              WHERE affiliate_id = %s ORDER BY created_at DESC LIMIT 50""", (aff,))
             claims = [{"email": r[0], "name": r[1] or "", "status": r[2], "reason": r[3] or "", "at": _iso(r[4]),
                        "decided_at": _iso(r[5])} for r in cur.fetchall()]
+            free = {"count": A.confirmed_members(cur, aff), "needed": A.FREE_COUNT, "window_days": A.FREE_WINDOW,
+                    "last": A.last_free_month(cur, aff)}
+            c.commit()
             c.close()
             self._json(200, {
-                "ok": True, "name": p[1], "email": p[2], "code": p[3], "status": p[4], "pct": pct,
+                "ok": True, "name": p[1], "email": p[2], "code": p[3], "status": p[4], "pct": pct, "free": free,
                 "payout_method": p[5] or "", "payout": _details(p[6]), "hold_days": A.HOLD_DAYS,
                 "view_only": bool(self.view_only),
                 "program": {"personals": count, "unlock_count": cfg["unlock_count"], "qualified": qualified,
@@ -413,6 +422,67 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             A.log("TV_AFF_PAYOUT_ERR:", e)
             self._json(500, {"error": "Could not request your payout. Please try again."})
+
+    # ---------- free membership: 5 confirmed members in a month ----------
+    def _free_months(self):
+        """Daily (Vercel cron). For each active affiliate with FREE_COUNT+ confirmed members this month whose own
+        TradeVault membership renews within 3 days, add that billing period as free days on Whop, so the renewal
+        isn't charged. Once per renewal (tv_aff_free_months)."""
+        secret = os.environ.get("CRON_SECRET", "")
+        ok = (secret and self._bearer() == secret) or verify_token(self._bearer()) \
+            or (not secret and "vercel-cron" in (self.headers.get("User-Agent") or ""))
+        if not ok:
+            return self._json(401, {"error": "unauthorized"})
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc)
+        report = []
+        try:
+            c = A.conn()
+            cur = c.cursor()
+            cur.execute(A.FREE_TABLE)
+            cur.execute("SELECT id, name, email FROM tv_affiliates WHERE status = 'active'")
+            affs = cur.fetchall()
+            plans = None
+            for aid, name, email in affs:
+                n = A.confirmed_members(cur, aid)
+                if n < A.FREE_COUNT:
+                    continue
+                email = (email or "").strip().lower()
+                plans = plans or U.tier_plans(cur)
+                best = U.current(cur, email, plans)
+                if not best:
+                    report.append({"id": aid, "skip": "no membership on " + email}); continue
+                m, tier = best
+                if m.get("cancel_at_period_end"):
+                    report.append({"id": aid, "skip": "cancelling"}); continue
+                end = U._ts(m.get("renewal_period_end") or m.get("current_period_end"))
+                if not end or not (now < end <= now + datetime.timedelta(days=3)):
+                    report.append({"id": aid, "skip": "renews " + (end.isoformat()[:10] if end else "?")}); continue
+                cur.execute("SELECT 1 FROM tv_aff_free_months WHERE membership_id = %s AND renews_before = %s AND status = 'ok'", (m["id"], end))
+                if cur.fetchone():
+                    continue
+                days = int(m.get("billing_period_days") or (plans.get(tier) or {}).get("period") or 30)
+                days = days if 1 <= days <= 366 else 30
+                try:
+                    out = W.whop("POST", "/api/v1/memberships/%s/add_free_days" % m["id"], {"free_days": days})
+                    after = U._ts((out or {}).get("renewal_period_end") or (out or {}).get("current_period_end")) or end + datetime.timedelta(days=days)
+                    cur.execute("""INSERT INTO tv_aff_free_months (affiliate_id, membership_id, tier, days, renews_before, renews_after, confirmed, status)
+                                   VALUES (%s, %s, %s, %s, %s, %s, %s, 'ok')""", (aid, m["id"], tier, days, end, after, n))
+                    c.commit()
+                    A.ghl_tag(email, name, ["tv-affiliate-free-month"], again=True)
+                    A.log("TV_AFF_FREE_MONTH", aid, m["id"], days, n)
+                    report.append({"id": aid, "free_days": days, "confirmed": n})
+                except Exception as e:
+                    cur.execute("""INSERT INTO tv_aff_free_months (affiliate_id, membership_id, tier, days, renews_before, confirmed, status, error)
+                                   VALUES (%s, %s, %s, %s, %s, %s, 'error', %s)""", (aid, m["id"], tier, days, end, n, str(e)[:400]))
+                    c.commit()
+                    A.log("TV_AFF_FREE_MONTH_ERR", aid, e)
+                    report.append({"id": aid, "error": str(e)[:200]})
+            c.close()
+            self._json(200, {"ok": True, "checked": len(affs), "report": report})
+        except Exception as e:
+            A.log("TV_AFF_FREE_MONTHS_ERR:", e)
+            self._json(500, {"error": str(e)[:300]})
 
     def _profile(self):
         aff = self._aff()
@@ -505,6 +575,10 @@ class handler(BaseHTTPRequestHandler):
                              "referrals": r[13], "personals": count, "qualified": count >= cfg["unlock_count"],
                              "sales": float(r[15]), "pending": float(r[16]), "ready": float(r[17]), "paid": float(r[18]),
                              "payout_from": _iso(A.payout_from(cur, r[0], cfg)) if count >= cfg["unlock_count"] else ""})
+            for a_ in affs:
+                a_["free_count"] = A.confirmed_members(cur, a_["id"])
+                a_["free_last"] = A.last_free_month(cur, a_["id"])
+            c.commit()
             cur.execute("""SELECT p.id, p.affiliate_id, a.name, a.email, p.amount_usd, p.method, p.details, p.status, p.reference,
                                   p.requested_at, p.decided_at
                              FROM tv_aff_payouts p JOIN tv_affiliates a ON a.id = p.affiliate_id

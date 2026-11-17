@@ -44,7 +44,7 @@
       "maxDuration": 10
     },
     "api/tv-aff.py": {
-      "maxDuration": 20
+      "maxDuration": 60
     },
     "api/tv-support.py": {
       "maxDuration": 20
@@ -110,6 +110,12 @@
         }
       ],
       "destination": "/admin/:path+"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/tv-aff?action=free_months",
+      "schedule": "0 12 * * *"
     }
   ]
 }
