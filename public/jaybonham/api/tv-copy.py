@@ -107,6 +107,7 @@ class handler(BaseHTTPRequestHandler):
         v = verify(self._body().get("t"))
         if not v:
             return self._json(400, {"error": "This link has expired. Ask for a new one below.", "expired": True})
+        email, region = v
         try:
             c = A.conn()
             cur = c.cursor()
@@ -115,7 +116,6 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             A.log("TV_COPY_GUIDE_ERR:", e)
             return self._json(500, {"error": "This is unavailable right now. Please try again in a minute."})
-        email, region = v
         if not ok:
             return self._json(403, {"error": "The Tradevault Copy Software is part of Elite, and we can't find an active Elite membership on " + email + ".", "not_elite": True})
         g = G.GUIDES[region]
