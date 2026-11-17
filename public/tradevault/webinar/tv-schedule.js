@@ -4,8 +4,8 @@
    counts as "current" until liveWindowMin after it starts.
    ================================================================= */
 var WEBINAR = {
-  firstDate: '2026-11-10',          // first session (YYYY-MM-DD)
-  weekday: 2,                       // 0=Sun … 2=Tue
+  firstDate: '2026-11-20',          // first session (YYYY-MM-DD)
+  weekday: 5,                       // 0=Sun … 5=Fri
   hour: 21, minute: 0,              // 9:00 PM …
   tz: 'America/New_York', tzLabel: 'ET',
   zoom: 'https://us06web.zoom.us/j/82468528057?pwd=PnVamNOtXbXuQUGooIsnWyKr8pexAD.1',
@@ -107,6 +107,7 @@ window.JBW = (function () {
   function fill() {
     set('[data-when-short],[data-when-short2],[data-when-short3]', J.day + ', ' + J.date + ' · ' + J.time);
     set('[data-when-date]', J.day + ' ' + J.date);
+    set('[data-when-day]', J.day);
     set('[data-when-time]', J.time);
     set('[data-when-local]', J.local || 'Live with Jay');
     set('[data-when-ribbon]', 'Live · ' + J.day + ' ' + J.date + ' · ' + J.time);
