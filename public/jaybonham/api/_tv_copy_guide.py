@@ -6,7 +6,7 @@ GUIDES = {
     "global": {
         "label": "Global",
         "listed": "",
-        "facts": [["Minimum balance", "$500"], ["Platform", "MT5"]],
+        "facts": [["Minimum balance", "$500"], ["Performance fee", "25%, weekly"], ["Platform", "MT5"]],
         "steps": [
             {"t": "Register with your MT5 account",
              "b": "Open the sign-up with the button above. Choose the <b>TradeQuo MT5</b> server, enter your MT5 <b>trading account ID</b> and <b>password</b>, accept the Terms of Service and select <b>Register</b>.", "img": 2},
@@ -35,7 +35,7 @@ GUIDES = {
     "us": {
         "label": "United States",
         "listed": "Listed on the platform as Killbot, run by Jay Bonham.",
-        "facts": [["Minimum deposit", "$500"], ["Trade, subscription and joining fees", "$0"]],
+        "facts": [["Minimum deposit", "$500"], ["Performance fee", "25%, weekly"], ["Trade, subscription and joining fees", "$0"]],
         "steps": [
             {"t": "Open the Trade Copier dashboard",
              "b": "Log in to your client area. In the left-hand menu, open <b>Trade Copier</b>, then select <b>Open Dashboard</b>.", "img": 1},
