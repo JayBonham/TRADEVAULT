@@ -926,7 +926,7 @@ class handler(BaseHTTPRequestHandler):
     def _ops_ghl_check(self):
         """Support: the tv_sale_* custom fields GHL has, and what's on one contact (by email)."""
         key = self.headers.get("X-Export-Key", "")
-        if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)):
+        if not (key and hmac.compare_digest(hashlib.sha256(key.encode()).hexdigest(), OPS_KEY_HASH)) and not verify_token(self._bearer()):
             return self._json(401, {"error": "Unauthorized"})
         import http.client
         b = self._body()
