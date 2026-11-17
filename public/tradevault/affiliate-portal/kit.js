@@ -18,6 +18,9 @@
     me: 'People keep asking what I use, so here it is.\n\nI trade inside The Trade Vault: live educators, real scanners and a journal that keeps me honest.\n\nIf you want to trade with us, here’s my link 👇\n{link}' + DISCLOSE,
     bell: '09:29. One minute to the open.\n\nDo you have a plan, or are you about to guess?\n\nScanners that flag the setup. Educators trading it live. Rules you actually follow. That’s The Trade Vault.\n\n{link}' + DISCLOSE,
     web1: 'FREE LIVE WEBINAR 🔴\n\nJay Bonham is opening up The Trade Vault, live on Zoom: the educators, the 3 scanners, the journal, signals and Copy Trader. Live Q&A at the end.\n\nIt’s free. Save your seat 👇\n{webinar}\n\n(Educational only, not financial advice.)',
+    web3: 'FREE LIVE TRAINING 🔴 Thursdays, 8PM ET\n\nFour traders, one free session: Jay Bonham, Tyler Collins, Adam Haase and Andrew Bridges.\n\nYou’ll learn the 3 rules behind every trade (trend, location, trigger), live on real charts, with Q&A at the end.\n\nSave your free seat 👇\n{webinar}\n\n(Educational only, not financial advice.)',
+    web4: 'See the software, live 👀\n\nOn Thursday’s free training (8PM ET) you’ll see Killshot, Smartshot and Spectrum working on real charts, plus the journal that grades whether you followed your rules.\n\nFree seat here:\n{webinar}\n\n(Educational only, not financial advice.)',
+    web5: 'Most traders don’t have a strategy problem. They have a no-rules problem.\n\nThursday at 8PM ET, Jay Bonham breaks down the 3 rules behind every trade he takes on US30, gold and Bitcoin. Live, free, on Zoom.\n\nSave your seat 👇\n{webinar}\n\n(Educational only, not financial advice.)',
     web2: 'What you’ll see on the free webinar:\n\n01 — 4 educators and how they run their live sessions\n02 — Killshot, Smartshot and Spectrum\n03 — The journal that tracks your rules\n04 — Signals & Copy Trader, plus live Q&A\n\nFree seat here:\n{webinar}'
   };
 
@@ -34,6 +37,12 @@
     { f: '10-no-more-guessing', t: 'Plan before the bell', k: 'post', cap: 'bell' },
     { f: '11-webinar-opening-the-vault', t: 'Webinar: opening the Vault', k: 'webinar', cap: 'web1' },
     { f: '12-webinar-what-youll-see', t: 'Webinar: what you’ll see', k: 'webinar', cap: 'web2' },
+    { f: '17-webinar-four-traders', t: 'Webinar: four traders', k: 'webinar', cap: 'web3' },
+    { f: '18-webinar-the-software', t: 'Webinar: the software', k: 'webinar', cap: 'web4' },
+    { f: '19-webinar-three-rules', t: 'Webinar: 3 rules', k: 'webinar', cap: 'web5' },
+    { f: '20-story-webinar-four-traders', t: 'Story: webinar, four traders', k: 'story', web: true },
+    { f: '21-story-webinar-the-software', t: 'Story: webinar, the software', k: 'story', web: true },
+    { f: '22-story-webinar-three-rules', t: 'Story: webinar, 3 rules', k: 'story', web: true },
     { f: '13-story-trade-with-rules', t: 'Story: trade with rules', k: 'story' },
     { f: '14-story-educators', t: 'Story: four traders', k: 'story' },
     { f: '15-story-webinar', t: 'Story: webinar', k: 'story', web: true },
@@ -45,7 +54,7 @@
     { t: 'They’re interested but unsure', s: 'No pressure at all. Tools starts at $49.99/month if you just want the scanners, and you can upgrade any time. Happy to answer anything about how I use it.' },
     { t: 'Follow-up a few days later', s: 'Hey, did you get a chance to look at The Trade Vault? If you’ve got questions about the scanners or the live sessions, ask away. Link again: {link}' },
     { t: 'Missed the webinar? Send the replay', s: 'Jay did a full live walkthrough of The Trade Vault: the educators, the scanners, the journal and every plan. You can watch the whole replay here: {replay}' },
-    { t: 'Webinar invite', s: 'Jay’s doing a free live walkthrough of The Trade Vault on Zoom: the scanners, the journal and live Q&A. Grab a free seat here: {webinar}', web: true },
+    { t: 'Webinar invite', s: 'Jay’s running a free live training on Zoom, Thursdays at 8PM ET: the 3 rules behind every trade he takes, the scanners on real charts and live Q&A. Grab a free seat here: {webinar}', web: true },
     { t: 'Webinar day reminder', s: 'Reminder: the free Trade Vault webinar is today. If you haven’t saved a seat yet, it takes 10 seconds: {webinar}', web: true }
   ];
 
