@@ -667,6 +667,21 @@ class handler(BaseHTTPRequestHandler):
             import _tv_aff
             mem = data.get("membership")
             mem_id = data.get("membership_id") or (mem.get("id") if isinstance(mem, dict) else mem)
+            # A Whop transfer arrives as a $0 "purchase" on the new account: keep it on the member's original card.
+            meta0 = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+            tid = str(mem_id or (data.get("id") if event_type.startswith("membership.") else "") or "")
+            if tid and not (meta0.get("tv_tier") or meta0.get("tv_upgrade_from")) and \
+                    (event_type != "payment.succeeded" or not money(data.get("total"))):
+                try:
+                    import _tv_transfer
+                    tc = _tv_aff.conn()
+                    card = _tv_transfer.handle(tc.cursor(), tid, email)
+                    tc.commit()
+                    tc.close()
+                    if card:
+                        email = card
+                except Exception as e:
+                    print("TV_TRANSFER_ERR:", e, file=sys.stderr)
             email = _tv_aff.current_email(email, str(mem_id) if mem_id and event_type == "payment.succeeded" else None)
 
         ghl_result = self._ghl_upsert(email, first, last, phone, tags)

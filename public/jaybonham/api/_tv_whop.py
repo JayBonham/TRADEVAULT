@@ -121,7 +121,13 @@ def membership_ids(cur, email):
             log("TV_WHOP_PAYMENT_ERR:", e)
     cur.execute("""SELECT membership_id FROM tv_payments WHERE email = %s AND membership_id IS NOT NULL
                    GROUP BY membership_id ORDER BY MAX(paid_at) DESC""", (email,))
-    return [r[0] for r in cur.fetchall()]
+    out = [r[0] for r in cur.fetchall()]
+    try:  # a membership Whop transferred onto another account still counts as this card's
+        import _tv_transfer
+        out = _tv_transfer.linked(cur, email) + [m for m in out if m not in _tv_transfer.linked(cur, email)]
+    except Exception as e:
+        log("TV_TRANSFER_LINKED_ERR:", e)
+    return out
 
 
 def sync(cur, row):

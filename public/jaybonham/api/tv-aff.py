@@ -969,6 +969,15 @@ class handler(BaseHTTPRequestHandler):
                              "in_tv_payments": have[0] if have else None, "commission": comm[0] if comm else None,
                              "event": ev[0] if ev else None,
                              "event_data_keys": sorted((json.loads(ev[1]).get("data") or {}).keys()) if ev else None}
+        if b.get("transfer"):  # {membership, email}: treat an earlier Whop transfer as the member's original card
+            import _tv_transfer
+            cc = A.conn(); cur = cc.cursor()
+            try:
+                out["transfer"] = _tv_transfer.handle(cur, str(b["transfer"].get("membership")), str(b["transfer"].get("email") or ""))
+                cc.commit()
+            except Exception as e:
+                out["transfer"] = "error: " + str(e)[:300]
+            cc.close()
         if b.get("events"):  # stored Whop webhook events whose body mentions this text (debugging transfers etc.)
             cc = A.conn(); cur = cc.cursor()
             cur.execute("SELECT id, event, body FROM whop_events WHERE body LIKE %s ORDER BY id DESC LIMIT 12", ("%" + str(b["events"])[:80] + "%",))
