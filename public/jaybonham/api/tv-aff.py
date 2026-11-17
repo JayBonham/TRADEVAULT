@@ -969,6 +969,11 @@ class handler(BaseHTTPRequestHandler):
                              "in_tv_payments": have[0] if have else None, "commission": comm[0] if comm else None,
                              "event": ev[0] if ev else None,
                              "event_data_keys": sorted((json.loads(ev[1]).get("data") or {}).keys()) if ev else None}
+        if b.get("events"):  # stored Whop webhook events whose body mentions this text (debugging transfers etc.)
+            cc = A.conn(); cur = cc.cursor()
+            cur.execute("SELECT id, event, body FROM whop_events WHERE body LIKE %s ORDER BY id DESC LIMIT 12", ("%" + str(b["events"])[:80] + "%",))
+            out["events"] = [{"id": r[0], "event": r[1], "data": (json.loads(r[2]).get("data") if r[2].startswith("{") else r[2][:2000])} for r in cur.fetchall()]
+            cc.close()
         if b.get("whop_probe"):  # a membership that can't exist: 404 means the key may transfer, 403 means it can't
             import _tv_whop
             try:
