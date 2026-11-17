@@ -12,7 +12,7 @@ var WEBINAR = {
   zoomId: '824 6852 8057', zoomPass: '316277',
   durationMin: 60,
   liveWindowMin: 75,
-  title: 'The Trade Vault: Live Walkthrough with Jay Bonham'
+  title: 'The 3-Rule Gold Setup: Free Live Training with Jay Bonham'
 };
 
 window.JBW = (function () {
@@ -55,7 +55,7 @@ window.JBW = (function () {
   }
 
   var z = function (dt) { return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
-  var details = 'Free live webinar: Jay Bonham takes you inside The Trade Vault.\n\nJoin on Zoom: ' + WEBINAR.zoom + '\nMeeting ID: ' + WEBINAR.zoomId + '\nPasscode: ' + WEBINAR.zoomPass + '\n\nJoin a few minutes early. You may be held in the waiting room for a moment.';
+  var details = 'Free live training: Jay Bonham breaks down the 3-rule gold setup on real charts.\n\nJoin on Zoom: ' + WEBINAR.zoom + '\nMeeting ID: ' + WEBINAR.zoomId + '\nPasscode: ' + WEBINAR.zoomPass + '\n\nJoin a few minutes early. You may be held in the waiting room for a moment.';
   var gcal = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(WEBINAR.title) +
              '&dates=' + z(start) + '/' + z(end) + '&details=' + encodeURIComponent(details) + '&location=' + encodeURIComponent(WEBINAR.zoom);
 
