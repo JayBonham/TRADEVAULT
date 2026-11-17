@@ -1,26 +1,24 @@
-"""Copy Trader setup guides for /copy (Elite members only, served by tv-copy.py after the emailed link).
+"""Tradevault Copy Software setup guides for /copy (Elite members only, served by tv-copy.py after the emailed link).
 Join links are not here: they come from the TV_COPY_GLOBAL_URL / TV_COPY_US_URL env vars in Vercel.
 Screenshots are inline webp (base64) so they're only ever sent to a verified member."""
 
 GUIDES = {
     "global": {
-        "label": "Outside the US",
-        "strategy": "Tradevault",
-        "by": "Jay Bonham",
-        "facts": [["Minimum balance", "$500"], ["Performance fee", "25%, weekly"], ["Platform", "MT5 copy trading"]],
+        "label": "Global",
+        "listed": "",
+        "facts": [["Minimum balance", "$500"], ["Performance fee", "25%, weekly"], ["Platform", "MT5"]],
         "steps": [],  # Jay is sending the global guide; until then the page shows the join button only
     },
     "us": {
         "label": "United States",
-        "strategy": "Killbot",
-        "by": "Jay Bonham",
+        "listed": "Listed on the platform as Killbot, run by Jay Bonham.",
         "facts": [["Minimum deposit", "$500"], ["Performance fee", "20%, weekly"], ["Trade, subscription and joining fees", "$0"]],
         "steps": [
             {"t": "Open the Trade Copier dashboard",
              "b": "Log in to your client area. In the left-hand menu, open <b>Trade Copier</b>, then select <b>Open Dashboard</b>.", "img": 1},
             {"t": "Accept the terms",
              "b": "Read the <b>PAMM and Copy Trading Terms and Conditions</b>, tick the agreement box, and select <b>Submit</b>.", "img": 2},
-            {"t": "Find the Killbot strategy",
+            {"t": "Find Killbot",
              "b": "In B2COPY, open <b>Copy Trading → Leaderboard</b>. Find <b>Killbot</b>, the strategy run by Jay. Check the risk level, minimum deposit, fees and performance, then select <b>Follow</b>.", "img": 3},
             {"t": "Create your investor subscription",
              "b": "When asked how to create the investor account, select <b>Add Existing Account</b> if you already have an eligible MT5 account. Only select <b>Create New</b> if the platform tells you to open a new investment account.", "img": 4},

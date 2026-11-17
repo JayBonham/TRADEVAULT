@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Copy Trader setup — The Trade Vault</title>
+<title>Tradevault Copy Software — The Trade Vault</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +22,8 @@ form{display:grid;gap:14px;margin-top:22px}
 .load{display:flex;justify-content:center;padding:30px 0}.load .spin{border-color:rgba(255,255,255,.2);border-top-color:#fff;width:22px;height:22px}
 .below{text-align:center;margin-top:18px;font-size:14px;color:var(--tx-mute)}
 .err{margin-top:12px}
+.chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--tx);cursor:pointer;user-select:none}
+.chk input{width:18px;height:18px;accent-color:var(--acc);flex:none}
 .regions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
 .reg{display:flex;flex-direction:column;gap:6px;text-align:left;padding:18px;border-radius:16px;border:1px solid var(--hair-2);background:rgba(255,255,255,.02);color:var(--tx);cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
 .reg:hover{border-color:rgba(var(--acc-rgb),.5)}
@@ -56,10 +58,11 @@ form{display:grid;gap:14px;margin-top:22px}
 
     <div class="card" id="vStart">
       <span class="eyebrow">Elite members</span>
-      <h1 style="font-size:34px">Copy Trader setup</h1>
-      <p class="muted" style="font-size:14.5px;margin-top:8px">Copy Jay's trades straight into your own MT5 account. Enter the email on your Elite membership and we'll send you a private link with the join steps.</p>
+      <h1 style="font-size:34px">Tradevault Copy Software</h1>
+      <p class="muted" style="font-size:14.5px;margin-top:8px">Connect your own MT5 account to the Tradevault Copy Software. Enter the email on your Elite membership and we'll send you a private setup link.</p>
       <form id="sf" novalidate>
         <div class="field"><label for="email">The email you joined with</label><div class="inp"><input id="email" type="email" autocomplete="email" required></div></div>
+        <label class="chk"><input type="checkbox" id="us"><span>I live in the United States</span></label>
         <p class="err" id="serr" role="alert"></p>
         <button class="btn" id="sgo" type="submit">Email me my setup link</button>
       </form>
@@ -70,16 +73,12 @@ form{display:grid;gap:14px;margin-top:22px}
     </div>
 
     <div class="card" id="vGuide" hidden>
-      <span class="eyebrow">Elite · Copy Trader</span>
-      <h1 style="font-size:34px">Set up your copier</h1>
+      <span class="eyebrow">Elite · Tradevault Copy Software</span>
+      <h1 style="font-size:34px">Set up the Copy Software</h1>
       <div class="load" id="gload"><span class="spin"></span></div>
       <div id="gbody" hidden>
-        <p class="muted" style="font-size:14.5px;margin-top:8px">Where do you live? The copier you join depends on your country.</p>
-        <div class="regions" id="regions">
-          <button type="button" class="reg" data-r="global"><b>Outside the US</b><span>Everywhere except the United States</span></button>
-          <button type="button" class="reg" data-r="us"><b>United States</b><span>US residents only</span></button>
-        </div>
         <div id="region"></div>
+        <p class="muted" style="font-size:13.5px;margin-top:18px">Wrong country? <a href="/copy" id="redo" style="color:var(--acc)">Request a new link</a> and tick or untick “I live in the United States”.</p>
       </div>
       <p class="err" id="gerr" role="alert"></p>
       <p id="gback" hidden style="margin-top:16px;font-size:14px"><a href="/copy" id="newLink" style="color:var(--acc)">Send me a new link</a></p>
@@ -93,7 +92,7 @@ form{display:grid;gap:14px;margin-top:22px}
 (function () {
   var API = 'https://jaybonham.com/api/tv-copy';
   var $ = function (id) { return document.getElementById(id); };
-  var KEY = 'tv_copy_t', RKEY = 'tv_copy_r';
+  var KEY = 'tv_copy_t';
   var qp = new URLSearchParams(location.search), tok = qp.get('t');
   try { if (tok) localStorage.setItem(KEY, tok); else tok = localStorage.getItem(KEY); } catch (e) {}
   if (qp.get('t')) history.replaceState(null, '', '/copy');
@@ -109,36 +108,31 @@ form{display:grid;gap:14px;margin-top:22px}
     var email = $('email').value.trim(), err = $('serr'), go = $('sgo');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Enter the email you joined with.'; return; }
     err.textContent = ''; go.disabled = true; go.innerHTML = '<span class="spin"></span>Sending';
-    post('start', { email: email }).then(function () {
+    post('start', { email: email, us: $('us').checked }).then(function () {
       $('who').textContent = email; $('sf').hidden = true; $('sent').hidden = false;
     }).catch(function (x) { err.textContent = (x && x.msg) || 'Something went wrong. Please try again.'; })
       .then(function () { go.disabled = false; go.textContent = 'Email me my setup link'; });
   });
-  $('newLink').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} });
+  ['newLink', 'redo'].forEach(function (id) { $(id).addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} }); });
 
   if (!tok) return;
   $('vStart').hidden = true; $('vGuide').hidden = false;
-  var R = null;
-
-  function show(k) {
-    var g = R[k]; if (!g) return;
-    try { localStorage.setItem(RKEY, k); } catch (e) {}
-    document.querySelectorAll('.reg').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-r') === k); });
-    var h = '<div class="sum"><span class="mono">Strategy · ' + esc(g.label) + '</span><h2>' + esc(g.strategy) + ' <span class="muted" style="font-size:18px;font-weight:500">by ' + esc(g.by) + '</span></h2>' +
+  function show(g) {
+    var h = '<div class="sum"><span class="mono">Tradevault Copy Software · ' + esc(g.label) + '</span><h2>Connect your MT5 account</h2>' +
+      (g.listed ? '<p class="muted" style="font-size:14px;margin-top:6px">' + esc(g.listed) + '</p>' : '') +
       '<div class="facts">' + g.facts.map(function (f) { return '<div><small>' + esc(f[0]) + '</small><b>' + esc(f[1]) + '</b></div>'; }).join('') + '</div>' +
-      (g.url ? '<a class="btn" href="' + esc(g.url) + '" target="_blank" rel="noopener noreferrer">Join the copier <span class="arr">→</span></a>'
-             : '<p class="soon">The join link is being set up. Check back shortly, or message us in Whop support.</p>') + '</div>';
+      (g.url ? '<a class="btn" href="' + esc(g.url) + '" target="_blank" rel="noopener noreferrer">Connect my account <span class="arr">→</span></a>'
+             : '<p class="soon">The sign-up link is being set up. Check back shortly, or message us in Whop support.</p>') + '</div>';
     if (g.steps.length) {
       h += '<ol class="steps">' + g.steps.map(function (s, i) {
         return '<li><span class="n">STEP ' + (i + 1) + '</span><h3>' + esc(s.t) + '</h3><p>' + s.b + '</p>' + (s.img ? '<img src="' + s.img + '" alt="Screenshot: ' + esc(s.t) + '" loading="lazy">' : '') + '</li>';
       }).join('') + '</ol>';
     } else {
-      h += '<p class="soon">Step-by-step guide coming soon. The join button above takes you to the sign-up.</p>';
+      h += '<p class="soon">Step-by-step guide coming soon. The button above takes you to the sign-up.</p>';
     }
-    h += '<p class="risk">Copy trading places real trades on your own account and can lose money, including more than you expect in fast markets. Past performance doesn’t guarantee future results. Fees are charged by the copy-trading platform, not The Trade Vault. Only use money you can afford to lose. This is not financial advice.</p>';
+    h += '<p class="risk">The Copy Software places real trades on your own account, and you can lose money, sometimes quickly in fast markets. Past performance doesn’t guarantee future results. Fees are charged by the platform, not The Trade Vault. Only use money you can afford to lose. This is not financial advice.</p>';
     $('region').innerHTML = h;
   }
-  $('regions').addEventListener('click', function (e) { var b = e.target.closest('.reg'); if (b) show(b.getAttribute('data-r')); });
   $('region').addEventListener('click', function (e) {
     if (e.target.tagName !== 'IMG') return;
     var z = document.createElement('div'); z.className = 'zoom'; z.innerHTML = '<img src="' + e.target.src + '" alt="">';
@@ -146,10 +140,9 @@ form{display:grid;gap:14px;margin-top:22px}
   });
 
   post('guide', { t: tok }).then(function (d) {
-    R = d.regions; $('box').classList.add('wide');
+    $('box').classList.add('wide');
     $('gload').hidden = true; $('gbody').hidden = false;
-    var r = null; try { r = localStorage.getItem(RKEY); } catch (e) {}
-    if (r && R[r]) show(r);
+    show(d.guide);
   }).catch(function (x) {
     $('gload').hidden = true;
     $('gerr').textContent = (x && x.msg) || 'Something went wrong. Please try again.';
