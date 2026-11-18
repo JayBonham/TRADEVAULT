@@ -353,6 +353,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     var upgPaid = {}, upgSrc = {}; d.payments.forEach(function (p) { if (p.upg && p.mid) { upgPaid[p.mid] = 1; if (p.usrc) upgSrc[p.mid] = p.usrc; } });
     var firstPay = {};
     d.payments.slice().sort(function (a, b) { return (a.t || 0) - (b.t || 0); }).forEach(function (p) { if (p.mid && paid(p) && !firstPay[p.mid]) firstPay[p.mid] = p; });
+    d.payments.forEach(function (p) { p.first = !p.mid || firstPay[p.mid] === p; });
     d.moves = [];
     d.memberships.forEach(function (m) {
       if (m.isNew && !upgPaid[m.id]) return;
@@ -422,7 +423,13 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     var switches = D.memberships.filter(function (m) { return within(m.x, w) && m.switched; });
     var news = D.memberships.filter(function (m) { return m.isNew && within(m.c, w); });
     var atStart = D.memberships.filter(function (m) { return activeAt(m, w.a); }).length;
-    return { pays: ps, n: ps.length, gross: gross, refunds: refunds, net: gross - refunds, byT: byT, refundN: refundN,
+    var newMRR = news.reduce(function (s, m) { return s + monthly(m); }, 0);
+    var upgMRR = (D.moves || []).filter(function (x) { return within(x.t, w); }).reduce(function (s, x) { return s + x.mrr; }, 0);
+    var lostMRR = cancels.reduce(function (s, m) { return s + monthly(m); }, 0);
+    var newByT = {}; TIERS.forEach(function (t) { newByT[t] = 0; }); news.forEach(function (m) { newByT[m.tier]++; });
+    var renew = ps.filter(function (p) { return !p.first; }), sales = ps.filter(function (p) { return p.first; });
+    var sumNet = function (a) { return a.reduce(function (s, p) { return s + p.net; }, 0); };
+    return { newMRR: newMRR + upgMRR, lostMRR: lostMRR, newByT: newByT, renewN: renew.length, renewNet: sumNet(renew), salesN: sales.length, salesNet: sumNet(sales), pays: ps, n: ps.length, gross: gross, refunds: refunds, net: gross - refunds, byT: byT, refundN: refundN,
       disputes: disputes, cancels: cancels, switches: switches, news: news, atStart: atStart,
       churn: (atStart + news.length) ? cancels.length / (atStart + news.length) : NaN,
       cb: ps.length ? disputes.length / ps.length : NaN };
@@ -654,10 +661,10 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 
     var cbClass = !isFinite(S.cb) ? '' : S.cb >= CB_LIMIT ? 'bad' : S.cb >= CB_LIMIT * 0.6 ? 'warn' : 'ok';
     var tiles = [
-      { hero: 1, l: 'Active members' + (isNow ? '' : ' · ' + w.label), v: int(activeN), s: deltaHTML(activeN, activeStartN) + '<span>' + (activeStartN != null ? 'from ' + int(activeStartN) + ' · ' : '') + int(mem.length) + ' memberships</span>', bar: cnt },
-      { l: 'MRR' + (isNow ? '' : ' · ' + w.label), v: usd(MRR), s: deltaHTML(MRR + END, mrrStart) + (END ? '<span class="pill warn">' + usd(END) + ' ending</span>' : '<span>' + (mrrStart != null ? 'from ' + usd(mrrStart) : 'Monthly recurring') + '</span>'), bar: mrr, tipm: 1 },
+      { hero: 1, l: 'New members · ' + RLABEL[range], v: int(S.news.length), s: deltaHTML(S.news.length, P && P.news.length) + '<span>' + int(activeN) + ' active ' + (isNow ? 'now' : 'at end') + '</span>', bar: S.newByT },
+      { l: 'New MRR · ' + RLABEL[range], v: usd(S.newMRR), s: deltaHTML(S.newMRR, P && P.newMRR) + '<span>' + (S.lostMRR ? '−' + usd(S.lostMRR) + ' cancelled · ' : '') + 'net ' + (S.newMRR - S.lostMRR >= 0 ? '+' : '−') + usd(Math.abs(S.newMRR - S.lostMRR)) + '</span>' },
       { l: 'Revenue · ' + RLABEL[range], v: usd(S.net), s: deltaHTML(S.net, P && P.net) + '<span>' + int(S.n) + ' payment' + (S.n === 1 ? '' : 's') + (w.vs ? ' · vs ' + w.vs : '') + '</span>', bar: S.byT },
-      { l: 'Next 30 days', v: usd(upSum), s: '<span>' + int(upcoming.length) + ' renewals · ' + usd(up7Sum) + ' this week</span>' },
+      { l: 'Renewals · ' + RLABEL[range], v: usd(S.renewNet), s: deltaHTML(S.renewNet, P && P.renewNet) + '<span>' + int(S.renewN) + ' renewal' + (S.renewN === 1 ? '' : 's') + ' · ' + usd(S.salesNet) + ' new sales</span>' },
       { l: 'Cancellation rate', v: pct(S.churn), s: deltaHTML(S.churn, P && P.churn, true, true) + '<span>' + int(S.cancels.length) + ' cancelled' + (S.switches.length ? ' · ' + S.switches.length + ' upgraded' : '') + '</span>' },
       { l: 'Chargeback rate', v: pct(S.cb, 2), s: (cbClass ? '<span class="pill ' + cbClass + '">' + (cbClass === 'bad' ? 'Over' : cbClass === 'warn' ? 'Near' : 'Under') + ' 0.9% limit</span>' : '') + '<span>' + int(S.disputes.length) + ' dispute' + (S.disputes.length === 1 ? '' : 's') + '</span>' }
     ];
