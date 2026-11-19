@@ -106,16 +106,11 @@
     hl.appendChild(el('h2', null, 'Everything you need to start sharing.'));
     hl.appendChild(el('p', 'help', 'Graphics, captions and DMs, all with your link already in them. Download, copy, post.'));
     hero.appendChild(hl);
-    var links = el('div', 'kitlinks');
-    [['Direct offer link', L.main, true], ['Webinar link', L.webinar, web], ['Last webinar replay', L.replay, true]].forEach(function (x) {
-      if (!x[2]) return;
-      var r = el('div', 'kitlink'); r.appendChild(el('span', 'mono', x[0])); var c = el('code', null, x[1]); r.appendChild(c); r.appendChild(copyBtn(x[1], 'Copy')); links.appendChild(r);
-    });
-    hero.appendChild(links);
+    var go = el('a', 'btn-g btn-sm', 'Your links →'); go.href = '#links'; hl.appendChild(go);
     root.appendChild(hero);
 
     // playbook
-    var pb = sec('Start here', 'The basics');
+    var pb = sec('Best practices', 'What works');
     var grid = el('div', 'kitsteps');
     STEPS.filter(function (s) { return !s.web || web; }).forEach(function (s, i) {
       var c = el('div', 'card kitstep'); c.appendChild(el('span', 'n', (i < 9 ? '0' : '') + (i + 1))); c.appendChild(el('h3', null, s.h)); c.appendChild(el('p', null, s.p)); grid.appendChild(c);
@@ -124,7 +119,6 @@
     var rules = el('div', 'card kitrules'); rules.appendChild(el('b', null, 'Keep it clean'));
     var ul = el('ul'); RULES.forEach(function (r) { ul.appendChild(el('li', null, r)); }); rules.appendChild(ul);
     pb.appendChild(rules);
-    root.appendChild(pb);
 
     // graphics slider
     var gs = sec('Graphics', 'Tap to download');
@@ -162,6 +156,7 @@
     gs.appendChild(el('p', 'help kittip', 'On your phone: tap Download, then press and hold the image and choose Save to Photos. Stories have a dashed box: put your Link sticker there.'));
     draw();
     root.appendChild(gs);
+    root.appendChild(pb);
 
     // DMs
     var ds = sec('DM templates', 'Copy and send');

@@ -54,10 +54,12 @@
   .si svg{width:16px;height:16px}
   .side-foot{display:none}
 }
-.kithero{margin-top:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;border-color:rgba(88,233,255,.4);
+.kithero{margin-top:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:center;border-color:rgba(88,233,255,.4);
   background:radial-gradient(500px 260px at 0% 0%,rgba(75,158,255,.22),transparent 70%),linear-gradient(160deg,rgba(26,46,82,.7),rgba(10,20,40,.7))}
 .kithero h2{font-size:clamp(26px,3vw,34px);margin:8px 0 6px}
 .kithero .mono{color:#58E9FF}
+.kithero .help{max-width:58ch}
+.kithero .btn-g{justify-self:start;margin-top:16px;display:inline-flex}
 .kitlinks{display:grid;gap:10px;min-width:0}
 .kitlink{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(5,10,20,.6);border:1px solid var(--hair-2)}
 .kitlink .mono{grid-column:1/-1;font-size:10.5px;color:var(--tx-mute)}
@@ -160,6 +162,14 @@ td.who b{display:block;font-weight:500}
 .links .webcard,.links .replaycard{margin-top:12px}
 .links .btn.copy{min-height:44px;padding:10px 22px;font-size:15px}
 @media(max-width:560px){.links .linkcard .shot{max-height:140px}.links .btn.copy{width:100%}}
+tr[hidden]{display:none}
+.pager{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}
+.pager button{font:inherit;font-size:13.5px;font-weight:600;min-width:38px;height:38px;padding:0 10px;border-radius:11px;border:1px solid var(--hair-2);background:rgba(255,255,255,.04);color:var(--tx-dim);cursor:pointer;font-variant-numeric:tabular-nums}
+.pager button:hover:not(:disabled){color:var(--tx);border-color:rgba(var(--acc-rgb),.5)}
+.pager button.on{background:var(--acc);border-color:var(--acc);color:#050A14}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager span{color:var(--tx-mute);padding:0 2px}
+.pager em{font-style:normal;margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--tx-mute)}
 td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
 .claim{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px 28px;align-items:start}
 .claim h3{font-size:17px}
@@ -410,6 +420,33 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   function td(text, cls) { var c = document.createElement('td'); if (cls) c.className = cls; c.textContent = text; return c; }
   function pillTd(text, kind) { var c = document.createElement('td'), s = document.createElement('span'); s.className = 'pill ' + kind; s.textContent = text; c.appendChild(s); return c; }
 
+  /* 10 rows per page with numbered pages under the table (keeps the page it was on across re-renders). */
+  var PER = 10;
+  function paginate(tb) {
+    var wrap = tb.closest('.tw'), pg = wrap.nextElementSibling;
+    if (!pg || !pg.classList.contains('pager')) { pg = document.createElement('nav'); pg.className = 'pager'; pg.setAttribute('aria-label', 'Pages'); wrap.parentNode.insertBefore(pg, wrap.nextSibling); }
+    var rows = Array.prototype.slice.call(tb.children), n = Math.ceil(rows.length / PER);
+    if (n <= 1) { pg.hidden = true; rows.forEach(function (r) { r.hidden = false; }); return; }
+    var cur = Math.min(+(tb.getAttribute('data-page') || 1), n);
+    function go(k) {
+      cur = Math.max(1, Math.min(n, k)); tb.setAttribute('data-page', cur);
+      rows.forEach(function (r, i) { r.hidden = i < (cur - 1) * PER || i >= cur * PER; });
+      var nums = [], add = function (k) { if (nums.indexOf(k) < 0 && k >= 1 && k <= n) nums.push(k); };
+      add(1); for (var k2 = cur - 1; k2 <= cur + 1; k2++) add(k2); add(n); nums.sort(function (a, b) { return a - b; });
+      var h = '<button type="button" data-p="' + (cur - 1) + '"' + (cur === 1 ? ' disabled' : '') + ' aria-label="Previous page">‹</button>';
+      nums.forEach(function (k, i) { if (i && k - nums[i - 1] > 1) h += '<span>…</span>'; h += '<button type="button" data-p="' + k + '"' + (k === cur ? ' class="on" aria-current="page"' : '') + '>' + k + '</button>'; });
+      h += '<button type="button" data-p="' + (cur + 1) + '"' + (cur === n ? ' disabled' : '') + ' aria-label="Next page">›</button>';
+      h += '<em>' + ((cur - 1) * PER + 1) + '–' + Math.min(cur * PER, rows.length) + ' of ' + rows.length + '</em>';
+      pg.innerHTML = h; pg.hidden = false;
+    }
+    pg.onclick = function (e) {
+      var b = e.target.closest('button'); if (!b || b.disabled) return;
+      go(+b.getAttribute('data-p'));
+      var t = wrap.getBoundingClientRect().top; if (t < 90) window.scrollTo({ top: window.scrollY + t - 150, behavior: 'smooth' });
+    };
+    go(cur);
+  }
+
   /* Live countdown to payout_from; reloads the dashboard when it reaches zero so the button unlocks. */
   var cdTimer = null;
   function countdown(iso) {
@@ -512,6 +549,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(td(p.reference || '—'));
       pays.appendChild(tr);
     });
+    paginate(pays);
 
     var coms = $('coms'); coms.innerHTML = '';
     $('comCount').textContent = d.commissions.length + ' payments';
@@ -528,6 +566,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         { held: 'warn', locked: 'off', payable: 'ok', requested: 'acc', paid: 'acc', void: 'off' }[c.status] || ''));
       coms.appendChild(tr);
     });
+    paginate(coms);
 
     var refs = $('refs'); refs.innerHTML = '';
     $('refCount').textContent = d.referrals.length + ' members';
@@ -540,6 +579,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
       refs.appendChild(tr);
     });
+    paginate(refs);
     if (window.TVKit) TVKit.render($('kit'), { main: L.main, webinar: L.webinar, replay: L.replay, webOn: !!W.on });
     $('optSec').hidden = !W.on;
     var opts = $('opts'); opts.innerHTML = ''; $('optCount').textContent = O.length + ' opt-ins';
@@ -551,6 +591,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(pillTd(o.member ? 'Became a member ✓' : 'Opted in', o.member ? 'ok' : 'off'));
       opts.appendChild(tr);
     });
+    paginate(opts);
     renderClaims();
     $('payDot').hidden = !(P.can_payout && s.ready > 0) || !!open;
   }
@@ -569,6 +610,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(td(q.reason || '\u2014'));
       tb.appendChild(tr);
     });
+    paginate(tb);
     $('clGo').disabled = viewAs;
   }
 
