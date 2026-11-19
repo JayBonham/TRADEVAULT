@@ -100,14 +100,6 @@
     root.innerHTML = '';
     var web = !!L.webOn;
 
-    // hero
-    var hero = el('section', 'card kithero');
-    var hl = el('div'); hl.appendChild(el('span', 'mono', 'Your promo kit'));
-    hl.appendChild(el('h2', null, 'Everything you need to start sharing.'));
-    hl.appendChild(el('p', 'help', 'Graphics, captions and DMs, all with your link already in them. Download, copy, post.'));
-    hero.appendChild(hl);
-    var go = el('a', 'btn-g btn-sm', 'Your links →'); go.href = '#links'; hl.appendChild(go);
-    root.appendChild(hero);
 
     // playbook
     var pb = sec('Best practices', 'What works');
