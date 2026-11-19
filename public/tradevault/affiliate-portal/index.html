@@ -20,14 +20,40 @@
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:22px}
 .top h1{font-size:clamp(32px,4vw,46px)}
 /* Dashboard / Promo kit tabs */
-.tabs{display:flex;gap:6px;margin-top:22px;padding:5px;border-radius:999px;border:1px solid var(--hair-2);background:rgba(10,20,40,.6);width:max-content;max-width:100%}
-.tab{font:inherit;font-weight:600;font-size:14.5px;color:var(--tx-dim);background:none;border:0;padding:10px 20px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.tab.on{background:var(--acc);color:#050A14}
-.tab .new{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:999px;background:rgba(88,233,255,.18);color:#58E9FF}
-.tab.on .new{background:rgba(5,10,20,.2);color:#050A14}
-#kit{display:none}
-#app.kitmode #kit{display:block}
-#app.kitmode > :not(.top):not(.tabs):not(#kit){display:none!important}
+/* sidebar sections */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px;align-items:start;margin-top:26px}
+.side{position:sticky;top:96px;display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:20px;border:1px solid var(--hair-2);background:rgba(10,20,40,.6)}
+.si{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:13px;color:var(--tx-dim);font-weight:600;font-size:14.5px;text-decoration:none;transition:background .2s,color .2s}
+.si svg{flex:none;opacity:.8}
+.si .lb{flex:1;white-space:nowrap}
+.si:hover{background:rgba(255,255,255,.05);color:var(--tx)}
+.si.on{background:rgba(var(--acc-rgb),.16);color:var(--tx);box-shadow:inset 0 0 0 1px rgba(var(--acc-rgb),.35)}
+.si.on svg{color:var(--acc);opacity:1}
+.si .new{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:999px;background:rgba(88,233,255,.18);color:#58E9FF}
+.si .cnt{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--warn);color:#1A1205;font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.si .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(123,224,176,.18)}
+.side-foot{margin-top:8px;padding:14px 14px 6px;border-top:1px solid var(--hair);display:grid;gap:4px}
+.side-foot .mono{font-size:10px;color:var(--tx-mute)}
+.side-foot b{font-family:var(--mono);font-size:14px;overflow-wrap:anywhere}
+.side-foot a{margin-top:8px;color:var(--acc);text-decoration:none}
+.pane{display:none;min-width:0}
+.pane.on{display:block;animation:pin .25s var(--ease,ease)}
+@keyframes pin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ph{margin-bottom:6px}
+.ph h2{font-size:clamp(24px,2.6vw,30px)}
+.ph p{color:var(--tx-dim);font-size:14.5px;margin-top:6px;max-width:62ch}
+.pane>.sec:first-of-type,.pane>.links>.linkcard:first-child{margin-top:20px}
+.pane .kithero{margin-top:0}
+#app.pend .shell{grid-template-columns:minmax(0,1fr)}
+#app.pend .side{display:none}
+@media(max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:18px;margin-top:18px}
+  .side{position:sticky;top:84px;z-index:39;flex-direction:row;overflow-x:auto;scrollbar-width:none;padding:6px;border-radius:16px;backdrop-filter:blur(10px);background:rgba(10,20,40,.97)}
+  .side::-webkit-scrollbar{display:none}
+  .si{flex:none;padding:9px 13px;gap:8px;font-size:13.5px}
+  .si svg{width:16px;height:16px}
+  .side-foot{display:none}
+}
 .kithero{margin-top:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;border-color:rgba(88,233,255,.4);
   background:radial-gradient(500px 260px at 0% 0%,rgba(75,158,255,.22),transparent 70%),linear-gradient(160deg,rgba(26,46,82,.7),rgba(10,20,40,.7))}
 .kithero h2{font-size:clamp(26px,3vw,34px);margin:8px 0 6px}
@@ -66,7 +92,7 @@
 .kitcopy p{font-size:14.5px;color:var(--tx-dim);line-height:1.55;white-space:pre-line}
 .kitcopy p.bio{color:var(--tx)}
 @media(max-width:860px){.kithero{grid-template-columns:minmax(0,1fr)}.kitsteps{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.kitsteps,.kitcopies{grid-template-columns:minmax(0,1fr)}.kitslide{flex-basis:240px}.kitslide.story{flex-basis:190px}.tabs{width:100%}.tab{flex:1;justify-content:center}}
+@media(max-width:560px){.kitsteps,.kitcopies{grid-template-columns:minmax(0,1fr)}.kitslide{flex-basis:240px}.kitslide.story{flex-basis:190px}}
 .welcome{margin-top:20px;padding:16px 20px;border-radius:16px;border:1px solid rgba(123,224,176,.35);background:rgba(123,224,176,.08);color:var(--tx-dim);font-size:14.5px}
 .welcome b{color:var(--tx)}
 .linkcard{margin-top:22px;padding:24px 26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center;
@@ -119,36 +145,21 @@
 .bar.done .fill{background:var(--ok)}
 .bar p{font-size:13px;color:var(--tx-mute)}
 .bar.done b{color:var(--ok)}
-.bar.free{grid-column:1/-1;border-color:rgba(var(--acc-rgb),.3);background:linear-gradient(160deg,rgba(var(--acc-rgb),.08),rgba(255,255,255,.02) 60%)}
+.bar.free{grid-column:1/-1;order:3;border-color:rgba(var(--acc-rgb),.3);background:linear-gradient(160deg,rgba(var(--acc-rgb),.08),rgba(255,255,255,.02) 60%)}
 .bar.free.done{border-color:rgba(123,224,176,.4);background:linear-gradient(160deg,rgba(123,224,176,.1),rgba(255,255,255,.02) 60%)}
 .loader{width:32px;height:32px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--hair-2);border-top-color:var(--acc);animation:spin .9s linear infinite}
 @media(max-width:860px){.linkcard,.linkcard.hasshot,.payout,.prog{grid-template-columns:minmax(0,1fr)}.linkcard .shot{grid-row:auto;max-height:180px}.linkcard.hasshot .more{grid-column:1/-1}.review{grid-template-columns:minmax(0,1fr)}.money{grid-template-columns:minmax(0,1fr)}.how{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.how{grid-template-columns:minmax(0,1fr)}}
 td.who b{display:block;font-weight:500}
-/* links: slimmer on desktop; on phones they go below the stats as compact rows */
-.linksh{display:none}
+/* links */
 .links .linkcard{padding:18px 22px;gap:12px 20px}
 @media(min-width:861px){.links .linkcard.hasshot{grid-template-columns:150px minmax(0,1fr) auto}}
 .links .linkcard .shot img{min-height:100px}
 .links .biglink{padding:10px 14px;margin-top:6px}
 .links .biglink code{font-size:14px}
-.links .webcard,.links .replaycard{margin-top:10px}
+.links .webcard,.links .replaycard{margin-top:12px}
 .links .btn.copy{min-height:44px;padding:10px 22px;font-size:15px}
-@media(max-width:760px){
-  #live{display:flex;flex-direction:column}
-  #live>.lvlsec{order:1}
-  #live>.links{order:2;margin-top:34px}
-  #live>.sec:not(.lvlsec){margin-top:22px}
-  .linksh{display:flex}
-  .links .linkcard,.links .linkcard.hasshot{margin-top:10px;padding:14px 14px 12px;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px}
-  .links .linksh+.linkcard{margin-top:0}
-  .links .shot,.links .goes,.links .replaycard .more,.links .more>span:last-child:not(:first-child){display:none}
-  .links .biglink{margin-top:6px;padding:8px 10px}
-  .links .biglink code{font-size:12.5px;overflow-wrap:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .links .btn.copy{min-height:40px;padding:8px 16px;font-size:14px;align-self:end}
-  .links .more{font-size:12.5px;gap:6px}
-  .links .more .btn-sm{min-height:32px;padding:5px 12px;font-size:12.5px}
-}
+@media(max-width:560px){.links .linkcard .shot{max-height:140px}.links .btn.copy{width:100%}}
 td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
 .claim{margin-top:12px;padding:22px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px 28px;align-items:start}
 .claim h3{font-size:17px}
@@ -180,10 +191,6 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div><span class="eyebrow">Affiliate dashboard</span><h1>Hey <span id="fname"></span>, <span class="hl" id="hl">here's how you're doing.</span></h1></div>
       <span class="pill acc" id="ratePill"></span>
     </div>
-    <nav class="tabs" role="tablist" aria-label="Portal sections">
-      <button type="button" class="tab on" data-tab="dash" role="tab" aria-selected="true">Dashboard</button>
-      <button type="button" class="tab" data-tab="kit" role="tab" aria-selected="false">Promo kit <span class="new">New</span></button>
-    </nav>
     <section class="card review" id="review" hidden>
       <div class="ico">⏳</div>
       <div>
@@ -193,10 +200,19 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         <p>While you wait, check your payout details below are right.</p>
       </div>
     </section>
-    <div id="live">
-
+    <div class="shell">
+    <nav class="side" id="side" aria-label="Portal sections">
+      <a href="#links" class="si" data-tab="links"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg><span class="lb">Your links</span></a>
+      <a href="#stats" class="si" data-tab="stats"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="lb">Stats & members</span></a>
+      <a href="#kit" class="si" data-tab="kit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg><span class="lb">Promo kit</span><span class="new">New</span></a>
+      <a href="#requests" class="si" data-tab="requests"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg><span class="lb">Missing members</span><span class="cnt" id="reqN" hidden></span></a>
+      <a href="#payouts" class="si" data-tab="payouts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="13" rx="2.5"/><path d="M2 10h20M6 15h4"/></svg><span class="lb">Payouts & details</span><span class="dot" id="payDot" hidden></span></a>
+      <div class="side-foot"><span class="mono">Your code</span><b id="sideCode"></b><a class="mono" href="/affiliate-signup#terms">Affiliate terms →</a></div>
+    </nav>
+    <div class="panes">
+    <section class="pane" id="p-links" data-pane="links">
+      <div class="ph"><h2>Your links</h2><p>Share these. Anyone who clicks and joins within 60 days is your member.</p></div>
     <div class="links" id="links">
-    <div class="sech linksh"><h2>Your links</h2><span class="mono">Tap to copy</span></div>
     <section class="card linkcard hasshot" aria-label="Your direct offer link">
       <a class="shot" id="shotMain" href="/" target="_blank" rel="noopener"><img src="/assets/promo/preview-home.jpg" alt="The Trade Vault homepage" loading="lazy"><span>Homepage</span></a>
       <div style="min-width:0">
@@ -236,7 +252,19 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div class="more"><span>Tracks on the device they watch on. If they buy on another device, send a <a href="#claimSec" style="color:var(--acc)">Missing a member?</a> request.</span></div>
     </section>
     </div>
+    <section class="sec">
+      <div class="sech"><h2>How it works</h2><a class="mono" href="/affiliate-signup#terms" style="color:var(--acc)">Affiliate terms →</a></div>
+      <div class="how">
+        <div><span class="mono">01</span><b>Share your link</b><p>Post it anywhere: socials, YouTube, Discord, your group chats.</p></div>
+        <div><span class="mono">02</span><b>They join the Vault</b><p>Anyone who clicks and joins within 60 days counts as yours.</p></div>
+        <div><span class="mono">03</span><b>You earn every month</b><p>20% of their first payment and every renewal, 30% from your 25th member.</p></div>
+        <div><span class="mono">04</span><b>Get paid</b><p>From 5 members, request a payout by PayPal or crypto once commission clears the 30-day hold.</p></div>
+      </div>
+    </section>
+    </section>
 
+    <section class="pane" id="p-stats" data-pane="stats">
+      <div class="ph"><h2>Stats & members</h2><p>How your links are doing, what you’ve earned and who joined through you.</p></div>
     <section class="sec lvlsec">
       <div class="sech"><h2>Your level</h2><span class="mono" id="lvl"></span></div>
       <div class="prog">
@@ -245,7 +273,6 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         <div class="bar" id="barTier"><div class="hd"><b id="tierT"></b><span class="mono" id="tierN"></span></div><div class="track"><div class="fill" id="tierF"></div></div><p id="tierP"></p></div>
       </div>
     </section>
-
     <section class="sec">
       <div class="sech"><h2>Performance</h2><span class="mono">All time</span></div>
       <div class="stats">
@@ -260,43 +287,29 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         <div class="stat"><span class="mono">Paid to you</span><b id="sPaid">$0</b><span>Total paid out</span></div>
       </div>
     </section>
-    </div>
-
-    <section class="sec">
-      <div class="sech"><h2>Payouts</h2><span class="mono">PayPal or crypto</span></div>
-      <div class="card payout">
-        <div class="pl"><h3>Where we pay you</h3><div id="picker"></div><button class="btn-g" id="saveInfo" type="button">Save details</button></div>
-        <div class="pr">
-        <div class="cd" id="cd" hidden><span class="lbl">Your first payout opens in</span>
-          <div class="u"><b id="cdD">0</b><span>days</span></div><div class="u"><b id="cdH">00</b><span>hours</span></div>
-          <div class="u"><b id="cdM">00</b><span>mins</span></div><div class="u"><b id="cdS">00</b><span>secs</span></div></div>
-        <button class="btn" id="payBtn" type="button">Request payout</button>
-        <p class="state" id="payState"></p>
-        </div>
-      </div>
-      <div class="tw" id="payHist" style="margin-top:12px" hidden><table><thead><tr><th>Requested</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th></tr></thead><tbody id="pays"></tbody></table></div>
-    </section>
-
-    <div id="live2">
     <section class="sec">
       <div class="sech"><h2>Commission</h2><span class="mono" id="comCount"></span></div>
       <div class="tw"><table><thead><tr><th>Date</th><th>Member</th><th>Plan</th><th class="r">Payment</th><th class="r">Rate</th><th class="r">You earn</th><th>Status</th></tr></thead><tbody id="coms"></tbody></table></div>
     </section>
-
     <section class="sec">
       <div class="sech"><h2>Your members</h2><span class="mono" id="refCount"></span></div>
       <div class="tw"><table><thead><tr><th>Joined</th><th>Member</th><th>Plan</th><th>Status</th></tr></thead><tbody id="refs"></tbody></table></div>
     </section>
-
     <section class="sec" id="optSec" hidden>
       <div class="sech"><h2>Webinar opt-ins</h2><span class="mono" id="optCount"></span></div>
-      <p class="help" style="margin:-6px 0 12px">People who signed up for the webinar through your webinar link. They're leads, not members yet. When one buys with the same email, they move into Your members above and you earn on it.</p>
+      <p class="help" style="margin:-6px 0 12px">People who signed up for the webinar through your webinar link. They're leads, not members yet. When one buys with the same email, they move into Your members and you earn on it.</p>
       <div class="tw"><table><thead><tr><th>Signed up</th><th>Lead</th><th>Status</th></tr></thead><tbody id="opts"></tbody></table></div>
     </section>
+    </section>
 
+    <section class="pane" id="p-kit" data-pane="kit">
+    <div id="kit"></div>
+    </section>
+
+    <section class="pane" id="p-requests" data-pane="requests">
+      <div class="ph"><h2>Missing members</h2><p>Someone joined through you but isn’t showing? Send a request and we’ll check it.</p></div>
     <section class="sec" id="claimSec">
-      <div class="sech"><h2>Missing a member?</h2><span class="mono">Request commission</span></div>
-      <div class="card claim">
+            <div class="card claim">
         <div>
           <h3>Someone joined through you but isn't showing?</h3>
           <p class="help">It happens when they switch browser or device before paying, or block cookies. Send us the email they used at checkout. We check it against the payment and, if it lines up, they're added to your members with commission on every payment they've made.</p>
@@ -311,18 +324,26 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       </div>
       <div class="tw" id="claimHist" style="margin-top:12px" hidden><table><thead><tr><th>Sent</th><th>Member</th><th>Status</th><th>Note from us</th></tr></thead><tbody id="claims"></tbody></table></div>
     </section>
+    </section>
 
+    <section class="pane" id="p-payouts" data-pane="payouts">
+      <div class="ph"><h2>Payouts & details</h2><p>Where we send your commission (PayPal or crypto), and your payout history.</p></div>
     <section class="sec">
-      <div class="sech"><h2>How it works</h2><a class="mono" href="/affiliate-signup#terms" style="color:var(--acc)">Affiliate terms →</a></div>
-      <div class="how">
-        <div><span class="mono">01</span><b>Share your link</b><p>Post it anywhere: socials, YouTube, Discord, your group chats.</p></div>
-        <div><span class="mono">02</span><b>They join the Vault</b><p>Anyone who clicks and joins within 60 days counts as yours.</p></div>
-        <div><span class="mono">03</span><b>You earn every month</b><p>20% of their first payment and every renewal, 30% from your 25th member.</p></div>
-        <div><span class="mono">04</span><b>Get paid</b><p>From 5 members, request a payout by PayPal or crypto once commission clears the 30-day hold.</p></div>
+            <div class="card payout">
+        <div class="pl"><h3>Where we pay you</h3><div id="picker"></div><button class="btn-g" id="saveInfo" type="button">Save details</button></div>
+        <div class="pr">
+        <div class="cd" id="cd" hidden><span class="lbl">Your first payout opens in</span>
+          <div class="u"><b id="cdD">0</b><span>days</span></div><div class="u"><b id="cdH">00</b><span>hours</span></div>
+          <div class="u"><b id="cdM">00</b><span>mins</span></div><div class="u"><b id="cdS">00</b><span>secs</span></div></div>
+        <button class="btn" id="payBtn" type="button">Request payout</button>
+        <p class="state" id="payState"></p>
+        </div>
       </div>
+      <div class="tw" id="payHist" style="margin-top:12px" hidden><table><thead><tr><th>Requested</th><th class="r">Amount</th><th>Sent to</th><th>Status</th><th>Reference</th></tr></thead><tbody id="pays"></tbody></table></div>
+    </section>
     </section>
     </div>
-    <div id="kit"></div>
+    </div>
   </div>
 </main>
 
@@ -417,7 +438,8 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('ratePill').className = 'pill ' + (pend ? 'warn' : 'acc');
     $('hl').textContent = pend ? 'thanks for applying.' : 'here\u2019s how you\u2019re doing.';
     $('payBtn').hidden = pend;
-    $('review').hidden = !pend; $('live').hidden = pend; $('live2').hidden = pend;
+    $('review').hidden = !pend; $('app').classList.toggle('pend', pend); $('sideCode').textContent = d.code;
+    if (pend) showTab('payouts', true);
     $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
     $('link').textContent = L.main; $('replayLink').textContent = L.replay;
     var W = d.webinar || {};
@@ -530,10 +552,13 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       opts.appendChild(tr);
     });
     renderClaims();
+    $('payDot').hidden = !(P.can_payout && s.ready > 0) || !!open;
   }
 
   function renderClaims() {
     var list = data.claims || [], tb = $('claims');
+    var pn = list.filter(function (q) { return q.status === 'pending'; }).length;
+    $('reqN').hidden = !pn; $('reqN').textContent = pn;
     tb.innerHTML = ''; $('claimHist').hidden = !list.length;
     list.forEach(function (q) {
       var tr = document.createElement('tr');
@@ -564,13 +589,23 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       .then(function () { b.textContent = 'Send request'; b.disabled = viewAs; });
   });
 
-  function showTab(t) {
-    $('app').classList.toggle('kitmode', t === 'kit');
-    document.querySelectorAll('.tab').forEach(function (b) { var on = b.getAttribute('data-tab') === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
-    try { history.replaceState(null, '', t === 'kit' ? '#kit' : location.pathname + location.search); } catch (e) {}
+  // Sidebar sections. #links #stats #kit #requests #payouts; old in-page anchors map to their section.
+  var TABS = ['links', 'stats', 'kit', 'requests', 'payouts'], ALIAS = { claimSec: 'requests', optSec: 'stats' };
+  function showTab(t, quiet) {
+    if (TABS.indexOf(t) < 0) t = 'links';
+    if (data && data.status === 'pending' && !quiet) t = 'payouts';
+    document.querySelectorAll('.pane').forEach(function (p) { p.classList.toggle('on', p.getAttribute('data-pane') === t); });
+    document.querySelectorAll('.si').forEach(function (b) { var on = b.getAttribute('data-tab') === t; b.classList.toggle('on', on); if (on) { b.setAttribute('aria-current', 'page'); if (b.scrollIntoView && innerWidth <= 860) b.scrollIntoView({ block: 'nearest', inline: 'center' }); } else b.removeAttribute('aria-current'); });
+    try { history.replaceState(null, '', '#' + t); } catch (e) {}
   }
-  document.querySelectorAll('.tab').forEach(function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-tab')); window.scrollTo({ top: 0, behavior: 'smooth' }); }); });
-  if (location.hash === '#kit') showTab('kit');
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+    var k = a.getAttribute('href').slice(1); k = ALIAS[k] || k;
+    if (TABS.indexOf(k) < 0) return;
+    e.preventDefault(); showTab(k);
+    var top = document.querySelector('.shell'); if (top && top.getBoundingClientRect().top < 90) window.scrollTo({ top: window.scrollY + top.getBoundingClientRect().top - 96, behavior: 'smooth' });
+  });
+  var h0 = location.hash.slice(1); showTab(ALIAS[h0] || h0 || 'links', true);
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
   $('copyReplay').addEventListener('click', function () { copy(links(data.code).replay, this, 'Copy link'); });
   $('copyWeb').addEventListener('click', function () { copy(links(data.code).webinar, this, 'Copy link'); });
