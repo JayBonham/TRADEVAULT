@@ -407,7 +407,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     <a class="btn" data-signals-link style="margin-top:16px" href="/signals">Set up my signals <span class="arr">→</span></a>
   </div>
   <div class="next">
-    <div class="card"><div class="n">Next 01</div><h3>Scanner access</h3><p>We'll add your scanner<span data-plural>s</span> to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts.</p></div>
+    <div class="card"><div class="n">Next 01</div><h3>Scanner access</h3><p id="nextScan">We'll add your scanner<span data-plural>s</span> to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts.</p></div>
     <div class="card"><div class="n">Next 02</div><h3>Check your inbox</h3><p id="nextInbox">Whop emails you your Academy login, and we'll email your Telegram link<span data-gplural>s</span> too. Not there? Check spam or promotions.</p></div>
     <div class="card"><div class="n">Next 03</div><h3>Start the training</h3><p id="nextTrain">Begin with the Academy, then join the live sessions to see the scanners traded in real time.</p></div>
   </div>
@@ -477,7 +477,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     show('v-load');
     fetch(API + '?' + qs).then(function (r) { return r.json(); }).then(function (d) {
       if (!d.ok) return show('v-none');
-      state.c = d.contact; state.tier = d.tier; state.partner = d.partner || null;
+      state.c = d.contact; state.tier = d.tier; state.partner = d.partner || null; state.trial = d.trial || null;
       setName(d.first);
       if (d.done) { groups($('tgBox2'), d.groups); signals(); return show('v-already'); }
       setup(d.tier);
@@ -582,6 +582,7 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     });
     document.querySelectorAll('[data-plural]').forEach(function (el) { el.hidden = p ? p.scanners.length < 2 : state.tier === 'community'; });
     $('tgBox').querySelector('[data-tgname]').textContent = '@' + $('tg').value.trim();
+    if (d.trial) state.trial = d.trial;
     groups($('tgBox'), d.groups);
     signals();
     // Tools plans (partner Jay Live is community) have no Telegram groups.
@@ -593,7 +594,13 @@ footer a{text-decoration:underline;text-underline-offset:3px}
 
   // Elite's next step. Carries the contact so /signals doesn't ask for their email again.
   function signals() {
-    document.querySelectorAll('[data-signals]').forEach(function (el) { el.hidden = state.tier !== 'elite'; });
+    // Free trial: live sessions and Academies now; scanners and signals unlock with the first payment.
+    document.querySelectorAll('[data-signals]').forEach(function (el) { el.hidden = state.tier !== 'elite' || !!state.trial; });
+    if (state.trial && $('nextScan')) {
+      var te = state.trial.ends, td = te ? new Date(typeof te === 'number' ? (te < 1e12 ? te * 1000 : te) : te) : null;
+      var day = td && !isNaN(td) ? ' on ' + td.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : '';
+      $('nextScan').textContent = 'Your free trial includes the live sessions and every Academy. Scanners and signals unlock when your membership starts' + day + ', and we add your scanners to TradingView then.';
+    }
     document.querySelectorAll('[data-signals-link]').forEach(function (el) { el.href = '/signals?c=' + encodeURIComponent(state.c); });
   }
 

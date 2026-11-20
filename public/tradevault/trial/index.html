@@ -362,6 +362,7 @@ h2{font-size:clamp(34px,4.8vw,60px)}
 /* faq */
 .faq details{border:1px solid var(--hair);border-radius:16px;background:rgba(255,255,255,.025);margin-bottom:10px;transition:border-color .3s}
 .faq details[open]{border-color:var(--hair-2)}
+.pfh{margin:18px 0 -4px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
 .faq summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 22px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary::after{content:"+";flex:none;font-family:var(--mono);font-weight:500;font-size:18px;color:var(--acc);transition:transform .3s var(--ease)}
@@ -754,7 +755,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
 <body>
 <div class="passbar" role="region" aria-label="Your Killshot pass">
   <span class="tk">🎟 Killshot pass</span>
-  <span><b id="pbName">Your pass is unlocked:</b> 7 days of Elite free<span class="pb-l">, nothing to pay today</span>.</span>
+  <span><b id="pbName">Your pass is unlocked:</b> 7 days free<span class="pb-l">: live sessions and every Academy, nothing to pay today</span>.</span>
   <a href="#pricing">Start<span class="pb-l"> my 7 days</span> ↓</a>
 </div>
 
@@ -799,7 +800,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <a href="#pricing" class="btn">Start 7 days free <span class="arr">→</span></a>
         <a href="#curriculum" class="btn-g">View curriculum</a>
       </div>
-      <span class="note">7 days of Elite free · Cancel any time in the 7 days</span>
+      <span class="note">Live sessions + Academies free for 7 days · Cancel any time in the 7 days</span>
     </div>
 
     <div class="pv reveal" id="pv" aria-label="Preview of the members portal">
@@ -917,7 +918,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
       <input type="range" min="0" max="100" value="38" id="cmpR" aria-label="Drag to compare Killshot off and on">
     </div>
     <p class="cmp-hint">Drag to compare</p>
-    <div style="display:flex;justify-content:center;margin-top:22px"><a href="#pricing" class="btn">Start my 7 days of Elite free <span class="arr">→</span></a></div>
+    <div style="display:flex;justify-content:center;margin-top:22px"><a href="#pricing" class="btn">Start my 7 days free <span class="arr">→</span></a></div>
   </div>
 </section>
 
@@ -1246,24 +1247,29 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
   <div class="W">
     <div class="head reveal">
       <span class="kick"><b>08</b>Pricing</span>
-      <h2>The full Vault. <span class="hl">First 7 days free.</span></h2>
-      <p class="lede">Your Killshot pass unlocks 7 days of Elite: every educator, every scanner, every Academy and the signals. Nothing to pay today, and if it's not for you, cancel in the first 7 days and you won't be charged.</p>
+      <h2>Start free. <span class="hl">Unlock the full Vault.</span></h2>
+      <p class="lede">Your Killshot pass gives you 7 days free: every educator's live sessions and every Academy. The scanners, signals and Copy Trader unlock when your Elite membership starts on day 8. Nothing to pay today, and if it's not for you, cancel in the first 7 days and you won't be charged.</p>
     </div>
     <div class="price">
       <article class="card pcard hot reveal d2">
         <div class="plan">Tradevault Elite <span class="tag">Full Vault</span></div>
         <h3>Elite</h3>
-        <p class="ptag">Everything. All four educators, all three scanners, all the training.</p>
+        <p class="ptag">Live sessions and every Academy free for 7 days. Then the full Vault.</p>
         <div class="amt"><b class="free">Free</b><span>for 7 days</span></div>
         <div class="start">Then <strong>$124.99</strong> / month · <strong>$0</strong> due today</div>
         <a href="#pricing" class="btn off" data-trial="elite" target="_blank" rel="noopener">Start 7 days free <span class="arr">→</span></a>
+        <p class="pfh">Free for 7 days</p>
         <ul class="pf">
           <li>All four educators: Jay, Adam, Tyler and Andrew</li>
-          <li>Killshot, Smartshot and Spectrum: all three scanners</li>
-          <li>Every Academy: Basic, Intermediate, Advanced, Trading Psychology and the Killshot bootcamp</li>
           <li>5 live sessions per week with your educators trading live</li>
-          <li>Private Educator Telegram Access</li>
+          <li>Every Academy: Basic, Intermediate, Advanced, Trading Psychology and the Killshot bootcamp</li>
+          <li>The Trade Vault community Telegram</li>
+        </ul>
+        <p class="pfh">Unlocks on day 8 with your membership</p>
+        <ul class="pf">
+          <li>Killshot, Smartshot and Spectrum: all three scanners</li>
           <li>Signal chat: entries, stop losses and profit targets</li>
+          <li>Private Educator Telegram Access</li>
           <li>Copy Trader and the Ambush Trade Manager</li>
         </ul>
       </article>
@@ -1279,6 +1285,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
       <h2>Questions, <span class="hl">answered.</span></h2>
     </div>
     <div class="faq reveal">
+      <details data-tag="Trial" data-short="Sessions + Academies."><summary>What's included in the 7 free days?</summary><div class="a">Every educator's live sessions and recordings, every Academy and the community Telegram. The scanners, signal chat, private educator groups and Copy Trader unlock when your Elite membership starts on day 8 ($124.99/month). Cancel in the first 7 days and you won't be charged.</div></details>
       <details data-tag="Format" data-short="Education first."><summary>Is this a signals service?</summary><div class="a">No. The Trade Vault is an education platform and active trading community. Members get access to signals and copy trading systems, but the goal is for you to understand every trade, not just follow one.</div></details>
       <details data-tag="Markets" data-short="US30, Nasdaq and Gold."><summary>What markets does it cover?</summary><div class="a">The main focus is US30 (Dow Jones), Nasdaq (NQ/NAS100) and Gold (XAU/USD). Andrew's Spectrum scanner also covers the Emini ES (S&amp;P 500 futures).</div></details>
       <details data-tag="Setup" data-short="MT5 and TradingView."><summary>What platform do I need?</summary><div class="a">MetaTrader 5 (MT5) and TradingView. Both are covered in the curriculum. You'll also need a broker, and Module 2 covers how to choose one.</div></details>
@@ -1300,7 +1307,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
         <a href="#pricing" class="btn">Start my 7 days free <span class="arr">→</span></a>
         <a href="#curriculum" class="btn-g">View the curriculum</a>
       </div>
-      <span class="note">7 days of Elite free · Cancel any time in the 7 days</span>
+      <span class="note">Live sessions + Academies free for 7 days · Cancel any time in the 7 days</span>
     </div>
   </div>
 </section>

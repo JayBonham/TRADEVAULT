@@ -12,9 +12,12 @@ GROUPS = {
 }
 
 
-def groups_for(tier, educator):
-    """Community: the community group + their educator's; Elite: every group; Tools: none."""
-    if tier == "elite":
+def groups_for(tier, educator, trial=False):
+    """Community: the community group + their educator's; Elite: every group; Tools: none.
+    A free trial (Elite) gets the community group only until the first payment."""
+    if trial:
+        keys = ["community"]
+    elif tier == "elite":
         keys = ["community", "jay", "tyler", "andrew", "adam"]
     elif tier == "community":
         keys = ["community"] + ([educator] if educator in EDUCATORS else [])

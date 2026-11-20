@@ -36,6 +36,16 @@ def _educator_key(tags):
     return next((k for k in EDUCATORS if "tv-educator-" + k in tags), "")
 
 
+def _trial(email):
+    """Their free trial ({"ends", "cancelling"}) if they're still in it; never fails the request."""
+    try:
+        import _tv_trial
+        return _tv_trial.trial_for(email)
+    except Exception as e:
+        log("TV_SETUP_TRIAL_ERR:", e)
+        return None
+
+
 def _partner(tags):
     """A partner package's fixed scanners and educator (tagged at purchase from the Whop title), else None."""
     if PARTNER_TAG not in tags:
@@ -110,9 +120,10 @@ class handler(BaseHTTPRequestHandler):
             # Back from Whop in the same browser that followed an affiliate link: credit the affiliate.
             import _tv_aff
             _tv_aff.claim(contact.get("email") or "", ref, tier)
+        trial = _trial(contact.get("email"))
         self._json(200, {"ok": True, "contact": contact["id"], "first": contact.get("firstName") or "",
-                         "tier": tier, "done": done, "partner": _partner(tags),
-                         "groups": groups_for(tier, _educator_key(tags)) if done else []})
+                         "tier": tier, "done": done, "partner": _partner(tags), "trial": trial,
+                         "groups": groups_for(tier, _educator_key(tags), trial=bool(trial)) if done else []})
 
     def do_POST(self):
         try:
@@ -176,8 +187,9 @@ class handler(BaseHTTPRequestHandler):
         self._to_whop({"email": (contact.get("email") or "").lower(), "tier": tier, "educator": edu_name,
                        "scanner": scan_name, "tradingview": tv, "telegram": tg})
         log("TV_SETUP", cid, tier, educator or "-", scanner or "-")
-        self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name,
-                         "groups": groups_for(tier, educator)})
+        trial = _trial(contact.get("email"))
+        self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name, "trial": trial,
+                         "groups": groups_for(tier, educator, trial=bool(trial))})
 
     def _signals_links(self, b):
         """/signals: Elite member asked for their broker link. A GHL automation on the tag sends the email."""
@@ -189,6 +201,9 @@ class handler(BaseHTTPRequestHandler):
             return
         if _tier(contact.get("tags")) != "elite":
             return self._json(404, {"ok": False, "error": "not_member"})
+        trial = _trial(contact.get("email"))
+        if trial:  # signals unlock with the first payment
+            return self._json(403, {"ok": False, "error": "trial", "ends": trial.get("ends")})
         tags = {"tags": ["signals-links-" + region]}
         try:
             # removed first so the "tag added" trigger fires again if they ask twice

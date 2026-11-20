@@ -267,6 +267,10 @@ footer a{text-decoration:underline;text-underline-offset:3px}
     fetch(API + '?' + who)
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
       .then(function (x) {
+        if (x.d.ok && x.d.tier === 'elite' && x.d.trial) {
+          var te = x.d.trial.ends, td = te ? new Date(typeof te === 'number' ? (te < 1e12 ? te * 1000 : te) : te) : null;
+          return fail('Signals unlock when your free trial becomes a membership' + (td && !isNaN(td) ? ' on ' + td.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : '') + '. Until then, your live sessions and Academies are open. Come back here after your first payment.');
+        }
         if (x.d.ok && x.d.tier === 'elite') return done(x.d.contact);
         if (x.status === 404 || x.d.ok) return fail("That email isn't on TradeVault Elite. Use the email you joined with, or contact support@thetradevault.co if you think this is wrong.");
         fail("We couldn't check that right now. Please try again.");
@@ -334,8 +338,9 @@ footer a{text-decoration:underline;text-underline-offset:3px}
   var known = q.get('c') || stored('tv_signals_c');
   if (known) {
     show('sLoad');
-    checkElite('c=' + encodeURIComponent(known), function (c) { state.email = saved; enter(c); }, function () {
+    checkElite('c=' + encodeURIComponent(known), function (c) { state.email = saved; enter(c); }, function (msg) {
       store('tv_signals_c', '');
+      if (/free trial/.test(msg || '')) $('emailErr').textContent = msg;
       show('sEmail');
     });
   } else show('sEmail');

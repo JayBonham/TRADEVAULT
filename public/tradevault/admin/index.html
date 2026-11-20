@@ -364,19 +364,27 @@ footer{padding-block:32px 40px}
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function dash() { return el('span', 'dash', '—'); }
 
+  // Free trial end date, e.g. "Nov 27" ('' if unknown)
+  function trialDay(m) {
+    var te = m.trial && m.trial.ends, td = te ? new Date(typeof te === 'number' ? (te < 1e12 ? te * 1000 : te) : te) : null;
+    return td && !isNaN(td) ? td.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+  }
+  // still in the free trial and not given access: scanners wait for the first payment
+  function onTrial(m) { return !!m.trial && !m.assigned; }
+
   function stats() {
     var ready = 0, wait = 0, done = 0, rm = 0, live = 0, t = { tools: 0, community: 0, elite: 0 };
     members.forEach(function (m) {
       if (m.ended) { if (m.assigned) rm++; return; }
       live++;
-      if (m.assigned) done++; else if (m.setup) ready++; else wait++;
+      if (m.assigned) done++; else if (m.setup && !m.trial) ready++; else if (!m.setup) wait++;
       if (t[m.tier] != null) t[m.tier]++;
     });
     $('sReady').textContent = ready; $('sWait').textContent = wait; $('sDone').textContent = done; $('sAll').textContent = live;
     $('sTiers').innerHTML = '';
     ['tools', 'community', 'elite'].forEach(function (k) { var s = el('span', null, TIER[k] + ' '); s.appendChild(el('i', null, t[k])); $('sTiers').appendChild(s); });
     $('sDoneSub').textContent = live ? Math.round(done / live * 100) + '% of members live' : ' ';
-    $('cNew').textContent = ready + wait; $('cAss').textContent = done;
+    $('cNew').textContent = members.filter(function (m) { return !m.ended && !m.assigned; }).length; $('cAss').textContent = done;
     $('cRm').textContent = rm; $('cRm').classList.toggle('hot', rm > 0);
   }
 
@@ -389,7 +397,8 @@ footer{padding-block:32px 40px}
       if (needle && [m.name, m.email, m.tradingview, m.telegram, m.educator, m.scanner].join(' ').toLowerCase().indexOf(needle) < 0) return false;
       return true;
     }).sort(function (a, b) {
-      if (tab === 'new' && a.setup !== b.setup) return a.setup ? -1 : 1; // ready first
+      var ra = a.setup && !onTrial(a), rb = b.setup && !onTrial(b);
+      if (tab === 'new' && ra !== rb) return ra ? -1 : 1; // ready first (trials wait for payment)
       return (b.joined || '').localeCompare(a.joined || '');
     });
   }
@@ -417,8 +426,7 @@ footer{padding-block:32px 40px}
       if (m.email) c2.appendChild(editEmailBtn(m));
       var c3 = el('td'); c3.appendChild(m.tier ? el('span', 'tier ' + m.tier, TIER[m.tier] + (m.partner ? ' Partner' : '')) : dash());
       if (m.trial) {
-        var te = m.trial.ends, td = te ? new Date(typeof te === 'number' ? (te < 1e12 ? te * 1000 : te) : te) : null;
-        var tl = td && !isNaN(td) ? td.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        var tl = trialDay(m);
         var trb = el('span', 'tier trial' + (m.trial.cancelling ? ' off' : ''), '7-day trial' + (tl ? (m.trial.cancelling ? ' · cancels ' : ' · ends ') + tl : ''));
         trb.title = m.trial.cancelling ? 'Free trial, cancelled: access ends ' + tl + ' and they won’t be charged' : 'Free trial: first $124.99 payment on ' + tl + ' unless they cancel';
         trb.style.marginLeft = '6px'; c3.appendChild(trb);
@@ -426,7 +434,9 @@ footer{padding-block:32px 40px}
       if (m.upgraded) { var up = el('span', 'tier', '↑ Upgraded'); up.title = m.assigned ? 'Upgraded their plan: new tier\'s access given' : 'Upgraded their plan: give them the new tier\'s access'; up.style.marginLeft = '6px'; c3.appendChild(up); }
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());
-      var c6 = el('td'); c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
+      var c6 = el('td');
+      if (onTrial(m)) { var ts = el('span', 'sub', 'After payment' + (trialDay(m) ? ' · ' + trialDay(m) : '')); ts.title = 'Free trial: scanners and signals unlock after the first payment' + (m.scanner ? ' (' + m.scanner + ')' : ''); c6.appendChild(ts); }
+      else c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
       var c7 = el('td'); c7.appendChild(m.tradingview ? copyBtn(m.tradingview) : dash());
       var c8 = el('td'); c8.appendChild(m.telegram ? el('span', 'em', '@' + m.telegram) : dash());
       var g = m.groups || [];
@@ -553,6 +563,9 @@ footer{padding-block:32px 40px}
         if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = 'Move back?'; setTimeout(function () { b.classList.remove('sure'); b.textContent = 'Undo'; }, 3000); return; }
         set(m, false, b);
       });
+    } else if (onTrial(m)) {
+      b.className = 'act wait'; b.textContent = 'Trial · ' + (trialDay(m) ? 'assign ' + trialDay(m) : 'after payment'); b.disabled = true; b.style.cursor = 'not-allowed'; b.style.opacity = 1;
+      b.title = m.trial.cancelling ? 'Cancelled their free trial: no scanner access to give.' : 'Free trial: live sessions and Academies only. They move to Ready to assign once their first payment goes through.' + (m.setup ? '' : ' They haven\'t done setup yet.');
     } else if (!m.setup) {
       b.className = 'act wait'; b.textContent = 'Waiting on setup'; b.disabled = true; b.style.cursor = 'not-allowed'; b.style.opacity = 1;
       b.title = 'No TradingView username yet. They get reminder emails automatically.';
