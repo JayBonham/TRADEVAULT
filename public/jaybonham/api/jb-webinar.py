@@ -84,6 +84,14 @@ class handler(BaseHTTPRequestHandler):
         if tv:
             utm["program"] = "tradevault"  # marks the backup row
         saved = self._save(name, email, phone, session, utm, ref, aff)
+        if tv:  # calendar invite for their session (once per email + session; GHL can also trigger it)
+            try:
+                sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+                import _tv_invite as inv
+                day = local_day.strftime("%Y-%m-%d")
+                inv.send(email, name, inv.MOVED.get(day, day))
+            except Exception as e:
+                log("WEBINAR_INVITE_ERR:", e)
         # the inbound webhook feeds the Sniper workshop flow, so TradeVault signups skip it
         hook = False if tv else self._webhook({
             "first_name": first, "last_name": last, "full_name": name,

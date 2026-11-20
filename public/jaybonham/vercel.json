@@ -73,6 +73,9 @@
     "api/jb-academy.py": {
       "maxDuration": 30
     },
+    "api/tv-cal-invite.py": {
+      "maxDuration": 20
+    },
     "api/tv-copy.py": {
       "maxDuration": 20
     }
