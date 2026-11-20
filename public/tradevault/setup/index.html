@@ -594,12 +594,12 @@ footer a{text-decoration:underline;text-underline-offset:3px}
 
   // Elite's next step. Carries the contact so /signals doesn't ask for their email again.
   function signals() {
-    // Free trial: live sessions and Academies now; scanners and signals unlock with the first payment.
+    // Free trial: scanners, live sessions and Academies now; signals unlock with the first payment.
     document.querySelectorAll('[data-signals]').forEach(function (el) { el.hidden = state.tier !== 'elite' || !!state.trial; });
     if (state.trial && $('nextScan')) {
       var te = state.trial.ends, td = te ? new Date(typeof te === 'number' ? (te < 1e12 ? te * 1000 : te) : te) : null;
       var day = td && !isNaN(td) ? ' on ' + td.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : '';
-      $('nextScan').textContent = 'Your free trial includes the live sessions and every Academy. Scanners and signals unlock when your membership starts' + day + ', and we add your scanners to TradingView then.';
+      $('nextScan').textContent = 'We\'ll add your scanners to your TradingView account, usually within 24 hours. Open TradingView, go to Indicators, then Invite-only scripts. Signals and Copy Trader unlock when your membership starts' + day + '.';
     }
     document.querySelectorAll('[data-signals-link]').forEach(function (el) { el.href = '/signals?c=' + encodeURIComponent(state.c); });
   }
