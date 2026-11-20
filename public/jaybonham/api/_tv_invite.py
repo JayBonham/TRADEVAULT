@@ -32,6 +32,12 @@ ZOOM = "https://us06web.zoom.us/j/82468528057?pwd=PnVamNOtXbXuQUGooIsnWyKr8pexAD
 ZOOM_ID, ZOOM_PASS = "824 6852 8057", "316277"
 # a session that was moved: people tagged for the old date get the invite for the new one
 MOVED = {"2026-11-19": "2026-11-20"}
+# a one-off Zoom meeting for a single night: day -> (link, meeting id, passcode)
+ZOOM_FOR = {"2026-11-20": ("https://us06web.zoom.us/j/82993169055?pwd=hibFHQi5vAjCaDFQDG7IwnsgkaPfmQ.1", "829 9316 9055", "317777")}
+
+
+def zoom(day=None):
+    return ZOOM_FOR.get(day) or (ZOOM, ZOOM_ID, ZOOM_PASS)
 
 TAG_RE = re.compile(r"^tv-webinar-(\d{4}-\d{2}-\d{2})$")
 
@@ -86,9 +92,10 @@ def _fold(line):
     return "\r\n".join(out)
 
 
-def description():
+def description(day=None):
+    link, mid, pw = zoom(day)
     return ("Jay Bonham breaks down his 3-rule setup (trend, Point of Control, the signal) on real charts, live.\n\n"
-            "Join on Zoom: " + ZOOM + "\nMeeting ID: " + ZOOM_ID + "\nPasscode: " + ZOOM_PASS +
+            "Join on Zoom: " + link + "\nMeeting ID: " + mid + "\nPasscode: " + pw +
             "\n\nJoin a few minutes early. You may be held in the waiting room for a moment.")
 
 
@@ -104,9 +111,9 @@ def ics(day, name, email):
         "DTSTART:" + f(start), "DTEND:" + f(end),
         "SEQUENCE:0", "STATUS:CONFIRMED", "TRANSP:OPAQUE",
         "SUMMARY:" + _esc(TITLE),
-        "LOCATION:" + _esc(ZOOM),
-        "URL:" + ZOOM,
-        "DESCRIPTION:" + _esc(description()),
+        "LOCATION:" + _esc(zoom(day)[0]),
+        "URL:" + zoom(day)[0],
+        "DESCRIPTION:" + _esc(description(day)),
         "ORGANIZER;CN=" + _esc(FROM_NAME) + ":mailto:" + FROM_EMAIL,
         "ATTENDEE;CN=" + _esc(name or email) + ";ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:" + email,
         "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + _esc(TITLE), "TRIGGER:-PT60M", "END:VALARM",
@@ -122,7 +129,7 @@ def gcal_link(day):
     f = lambda dt: dt.strftime("%Y%m%dT%H%M%SZ")
     return "https://calendar.google.com/calendar/render?" + urllib.parse.urlencode({
         "action": "TEMPLATE", "text": TITLE, "dates": f(start) + "/" + f(start + timedelta(minutes=DURATION_MIN)),
-        "details": description(), "location": ZOOM})
+        "details": description(day), "location": zoom(day)[0]})
 
 
 def when_text(day):
@@ -132,6 +139,7 @@ def when_text(day):
 
 def email_html(day, first):
     w = when_text(day)
+    ZOOM, ZOOM_ID, ZOOM_PASS = zoom(day)
     hi = ("Hey " + first + ",") if first else "Hey,"
     font = "font-family:Inter,Helvetica,Arial,sans-serif;"
     btn = lambda href, label, bg, fg: (

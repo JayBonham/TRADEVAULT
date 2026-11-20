@@ -78,7 +78,7 @@ def add_guest(inv, day, email, name=""):
         st, ev = _api(tok, "GET", "/" + eid)
         if st == 404:
             event = {
-                "id": eid, "summary": inv.TITLE, "description": inv.description(), "location": inv.ZOOM,
+                "id": eid, "summary": inv.TITLE, "description": inv.description(day), "location": inv.zoom(day)[0],
                 "start": {"dateTime": start.isoformat().replace("+00:00", "Z"), "timeZone": "America/New_York"},
                 "end": {"dateTime": end.isoformat().replace("+00:00", "Z"), "timeZone": "America/New_York"},
                 "attendees": [guest], "guestsCanSeeOtherGuests": False, "guestsCanInviteOthers": False,
