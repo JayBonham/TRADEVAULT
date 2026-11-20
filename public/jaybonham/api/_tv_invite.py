@@ -1,7 +1,8 @@
 """Trade Vault webinar calendar invite.
 
-Emails a registrant a real calendar invite (iCalendar METHOD:REQUEST, sent through Brevo) for their webinar
-session. Gmail shows it as an invite and adds it to Google Calendar; Apple Mail / iCloud and Outlook show
+Adds a registrant as a guest on that night's Google Calendar event (_tv_gcal.py, when GOOGLE_SA_JSON and
+GOOGLE_CAL_USER are set), so Google sends the real invite. Otherwise emails a calendar invite (iCalendar
+METHOD:REQUEST, sent through Brevo) for their webinar session. Gmail shows it as an invite and adds it to Google Calendar; Apple Mail / iCloud and Outlook show
 Accept / Decline. Every session has a stable UID, so sending again for the same night updates the same event.
 
 Used by:
@@ -199,11 +200,22 @@ def send(email, name="", day=None, force=False):
     email = (email or "").strip().lower()
     if not email or "@" not in email:
         return False, "no email"
-    if not BREVO_API_KEY:
-        return False, "BREVO_API_KEY not set"
     day = day or next_session()
     if not force and already_sent(email, day):
         return True, "already sent for " + day
+    # Google Calendar first (the real invite, auto-added in Gmail); the emailed .ics is the fallback
+    try:
+        import _tv_gcal as gcal
+        if gcal.enabled():
+            ok, info = gcal.add_guest(sys.modules[__name__], day, email, name)
+            log("TV_INVITE_GCAL", day, info)
+            if ok:
+                mark_sent(email, day)
+                return True, info + " for " + day
+    except Exception as e:
+        log("TV_INVITE_GCAL_ERR:", e)
+    if not BREVO_API_KEY:
+        return False, "BREVO_API_KEY not set"
     first = (name or "").strip().split(" ")[0][:40]
     payload = {
         "sender": {"name": FROM_NAME, "email": FROM_EMAIL},
