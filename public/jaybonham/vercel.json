@@ -2,82 +2,112 @@
   "cleanUrls": true,
   "functions": {
     "api/jb-subscribe.py": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/jb-slots.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/jb-book.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/aff.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/whop-hook.py": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-academy.py": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/jb-apply.py": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/admin-auth.py": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/admin-leads.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/admin-lead.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/admin-send.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/admin-emails.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/admin-inbox.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/vt.py": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-aff.py": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-support.py": {
-      "maxDuration": 20
+      "maxDuration": 20,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-stats.py": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-members.py": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-setup.py": {
-      "maxDuration": 20
+      "maxDuration": 20,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-checkout.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-reviews.py": {
-      "maxDuration": 20
+      "maxDuration": 20,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-pass.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/jb-webinar.py": {
-      "maxDuration": 15
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/jb-academy.py": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-cal-invite.py": {
-      "maxDuration": 20
+      "maxDuration": 20,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
     "api/tv-copy.py": {
-      "maxDuration": 20
+      "maxDuration": 20,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
+    },
+    "api/tv-upgrade.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     }
   },
   "redirects": [
