@@ -1,0 +1,35 @@
+BEGIN:VCALENDAR
+PRODID:-//The Trade Vault//Webinar//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:tv-webinar-2026-11-20@thetradevault.co
+DTSTAMP:20261120T153336Z
+DTSTART:20261121T010000Z
+DTEND:20261121T020000Z
+SEQUENCE:0
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+SUMMARY:Trade with 3 Rules: Free Live Training with Jay Bonham
+LOCATION:https://us06web.zoom.us/j/82993169055?pwd=hibFHQi5vAjCaDFQDG7Iwns
+ gkaPfmQ.1
+URL:https://us06web.zoom.us/j/82993169055?pwd=hibFHQi5vAjCaDFQDG7IwnsgkaPf
+ mQ.1
+DESCRIPTION:Jay Bonham breaks down his 3-rule setup (trend\, Point of Cont
+ rol\, the signal) on real charts\, live.\n\nJoin on Zoom: https://us06web
+ .zoom.us/j/82993169055?pwd=hibFHQi5vAjCaDFQDG7IwnsgkaPfmQ.1\nMeeting ID: 
+ 829 9316 9055\nPasscode: 317777\n\nJoin a few minutes early. You may be h
+ eld in the waiting room for a moment.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Trade with 3 Rules: Free Live Training with Jay Bonham
+TRIGGER:-PT60M
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Trade with 3 Rules: Free Live Training with Jay Bonham
+TRIGGER:-PT10M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
