@@ -12,7 +12,13 @@ var WEBINAR = {
   zoomId: '824 6852 8057', zoomPass: '316277',
   durationMin: 60,
   liveWindowMin: 75,
-  title: 'Trade with 3 Rules: Free Live Training with Jay Bonham'
+  title: 'Trade with 3 Rules: Free Live Training with Jay Bonham',
+  // one-off changes: skip a weekly date, add an extra date (same time), or swap the Zoom for a date
+  skip: ['2026-11-19'],
+  extra: ['2026-11-20'],
+  zoomFor: {
+    '2026-11-20': { zoom: 'https://us06web.zoom.us/j/82993169055?pwd=hibFHQi5vAjCaDFQDG7IwnsgkaPfmQ.1', zoomId: '829 9316 9055', zoomPass: '317777' }
+  }
 };
 
 window.JBW = (function () {
@@ -27,15 +33,25 @@ window.JBW = (function () {
     var t = guess - tzOffset(new Date(guess), tz);
     return new Date(guess - tzOffset(new Date(t), tz));
   }
+  function ymd(d) { return d.getUTCFullYear() + '-' + ('0' + (d.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + d.getUTCDate()).slice(-2); }
+  function at(day) { var p = day.split('-').map(Number); return zoned(p[0], p[1] - 1, p[2], WEBINAR.hour, WEBINAR.minute, WEBINAR.tz); }
   function nextSession(now) {
+    var live = function (s) { return s.getTime() + WEBINAR.liveWindowMin * 60000 > now; };
     var f = WEBINAR.firstDate.split('-').map(Number);
     var base = new Date(Date.UTC(f[0], f[1] - 1, f[2]));
     while (base.getUTCDay() !== WEBINAR.weekday) base.setUTCDate(base.getUTCDate() + 1);
+    var weekly = null;
     for (var i = 0; i < 520; i++) {
-      var s = zoned(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), WEBINAR.hour, WEBINAR.minute, WEBINAR.tz);
-      if (s.getTime() + WEBINAR.liveWindowMin * 60000 > now) return s;
+      var day = ymd(base);
+      if ((WEBINAR.skip || []).indexOf(day) < 0) {
+        var s = at(day);
+        if (live(s)) { weekly = s; break; }
+      }
       base.setUTCDate(base.getUTCDate() + 7);
     }
+    var best = weekly;
+    (WEBINAR.extra || []).forEach(function (day) { var s = at(day); if (live(s) && (!best || s < best)) best = s; });
+    return best;
   }
 
   // a registered session can be pinned with ?s=<ISO> (used by the confirmation page)
@@ -45,6 +61,11 @@ window.JBW = (function () {
     if (q && !isNaN(Date.parse(q))) start = new Date(q);
   } catch (e) {}
   if (!start) start = nextSession(Date.now());
+
+  // per-date Zoom override (ET date of the session)
+  var etDay = new Intl.DateTimeFormat('en-CA', { timeZone: WEBINAR.tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(start);
+  var zo = (WEBINAR.zoomFor || {})[etDay];
+  if (zo) { WEBINAR.zoom = zo.zoom; WEBINAR.zoomId = zo.zoomId; WEBINAR.zoomPass = zo.zoomPass; }
 
   var end = new Date(start.getTime() + WEBINAR.durationMin * 60000);
   var fmt = function (o, tz) { return new Intl.DateTimeFormat('en-US', Object.assign({ timeZone: tz }, o)).format(start); };
@@ -113,6 +134,8 @@ window.JBW = (function () {
     set('[data-when-ribbon]', 'Live · ' + J.day + ' ' + J.date + ' · ' + J.time);
     set('[data-when-full],[data-when-full2]', J.dateL + ' at ' + J.time);
     set('[data-yr]', new Date().getFullYear());
+    document.querySelectorAll('[data-zoom]').forEach(function (a) { a.href = WEBINAR.zoom; });
+    set('[data-zoom-info]', 'MEETING ID ' + WEBINAR.zoomId + ' · PASSCODE ' + WEBINAR.zoomPass);
     document.querySelectorAll('[data-gcal]').forEach(function (a) { a.href = gcal; });
     document.querySelectorAll('[data-ics]').forEach(function (b) { b.addEventListener('click', ics); });
     if (document.querySelector('[data-cd]')) countdown();
