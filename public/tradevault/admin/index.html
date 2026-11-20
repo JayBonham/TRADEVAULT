@@ -133,6 +133,8 @@ td .sub.wrap{white-space:normal;max-width:170px;line-height:1.35}
 .tier.community{color:var(--acc);border-color:rgba(var(--acc-rgb),.4);background:rgba(var(--acc-rgb),.08)}
 .tier.elite{color:var(--warn);border-color:rgba(var(--warn-rgb),.4);background:rgba(var(--warn-rgb),.08)}
 .tier.tools{color:var(--tx-dim)}
+.tier.trial{color:#7BE0B0;border-color:rgba(123,224,176,.4);background:rgba(123,224,176,.08)}
+.tier.trial.off{color:var(--tx-mute);border-color:var(--hair-2);background:none}
 .ob{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500}
 .ob.yes{color:var(--ok)}
 .ob.no{color:var(--warn)}
@@ -234,6 +236,7 @@ footer{padding-block:32px 40px}
         <button class="chip" aria-pressed="false" data-tier="tools">Tools</button>
         <button class="chip" aria-pressed="false" data-tier="community">Community</button>
         <button class="chip" aria-pressed="false" data-tier="elite">Elite</button>
+        <button class="chip" aria-pressed="false" data-tier="trial">Trial</button>
       </div>
     </div>
   </div>
@@ -382,7 +385,7 @@ footer{padding-block:32px 40px}
     return members.filter(function (m) {
       // ended members only matter while they still have access; then they're out of every tab
       if ((m.ended ? (m.assigned ? 'remove' : '') : m.assigned ? 'assigned' : 'new') !== tab) return false;
-      if (tier && m.tier !== tier) return false;
+      if (tier === 'trial' ? !m.trial : (tier && m.tier !== tier)) return false;
       if (needle && [m.name, m.email, m.tradingview, m.telegram, m.educator, m.scanner].join(' ').toLowerCase().indexOf(needle) < 0) return false;
       return true;
     }).sort(function (a, b) {
@@ -413,6 +416,13 @@ footer{padding-block:32px 40px}
       var c2 = el('td'); c2.appendChild(m.email ? el('span', 'em', m.email) : dash());
       if (m.email) c2.appendChild(editEmailBtn(m));
       var c3 = el('td'); c3.appendChild(m.tier ? el('span', 'tier ' + m.tier, TIER[m.tier] + (m.partner ? ' Partner' : '')) : dash());
+      if (m.trial) {
+        var te = m.trial.ends, td = te ? new Date(typeof te === 'number' ? (te < 1e12 ? te * 1000 : te) : te) : null;
+        var tl = td && !isNaN(td) ? td.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        var trb = el('span', 'tier trial' + (m.trial.cancelling ? ' off' : ''), '7-day trial' + (tl ? (m.trial.cancelling ? ' · cancels ' : ' · ends ') + tl : ''));
+        trb.title = m.trial.cancelling ? 'Free trial, cancelled: access ends ' + tl + ' and they won’t be charged' : 'Free trial: first $124.99 payment on ' + tl + ' unless they cancel';
+        trb.style.marginLeft = '6px'; c3.appendChild(trb);
+      }
       if (m.upgraded) { var up = el('span', 'tier', '↑ Upgraded'); up.title = m.assigned ? 'Upgraded their plan: new tier\'s access given' : 'Upgraded their plan: give them the new tier\'s access'; up.style.marginLeft = '6px'; c3.appendChild(up); }
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());

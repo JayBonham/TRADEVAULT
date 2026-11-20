@@ -152,6 +152,41 @@ def _member(c, ids, db):
     }
 
 
+_trials = {"at": 0, "data": {}}
+
+
+def _trials_by_email():
+    """{email: {"ends": iso, "cancelling": bool}} for every Whop membership still in its free trial.
+    One list call (cached for 2 minutes); emails come from the membership, else its member record."""
+    import time
+    if time.time() - _trials["at"] < 120:
+        return _trials["data"]
+    out = {}
+    try:
+        import _tv_whop as W
+        import _jb_admin
+        after = ""
+        for _ in range(5):
+            page = W.whop("GET", "/api/v1/memberships?account_id=%s&statuses=trialing&first=100%s"
+                          % (W.WHOP_COMPANY, "&after=" + after if after else ""))
+            for m in page.get("data") or []:
+                if str(m.get("status") or "") != "trialing":
+                    continue
+                email = _jb_admin._who(m)[0]
+                if email:
+                    out[email] = {"ends": m.get("renewal_period_end") or m.get("current_period_end") or "",
+                                  "cancelling": bool(m.get("cancel_at_period_end"))}
+            info = page.get("page_info") or {}
+            after = info.get("end_cursor") or ""
+            if not (info.get("has_next_page") and after):
+                break
+        _trials.update(at=time.time(), data=out)
+    except Exception as e:
+        log("TV_MEMBERS_TRIALS_ERR:", e)
+        return _trials["data"]
+    return out
+
+
 class handler(BaseHTTPRequestHandler):
 
     def log_message(self, *args):
@@ -188,6 +223,11 @@ class handler(BaseHTTPRequestHandler):
                     contacts.append(c)
             contacts = [c for c in contacts if HIDDEN_TAG not in [t.lower() for t in c.get("tags") or []]]
             members = [_member(c, ids, db) for c in contacts]
+            trials = _trials_by_email()
+            for m in members:
+                t = trials.get((m["email"] or "").lower()) or trials.get((db.get(m["id"]) or {}).get("email", ""))
+                if t:
+                    m["trial"] = t
             # set up before the DB copy existed: read their note once, then keep it in the DB
             for m in [m for m in members if m["setup"] and not m["tradingview"]][:25]:
                 got = _from_note(m["id"])
