@@ -1,6 +1,6 @@
 /* Affiliate promo kit: graphics slider, ready-made captions and DMs, and the playbook.
    Every caption has the affiliate's own link dropped in. Webinar pieces only show while
-   admin has webinar links switched on. TVKit.render(el, {main, webinar, webOn}) */
+   admin has webinar links switched on. TVKit.render(el, {main, webinar, replay, trial, webOn}) */
 (function () {
   var IMG = '/assets/promo/';
   var DISCLOSE = '\n\n(Affiliate link: I earn a commission if you join. Trading involves risk.)';
@@ -21,6 +21,8 @@
     web3: 'FREE LIVE TRAINING 🔴 Thursdays, 8PM ET\n\nFour traders, one free session: Jay Bonham, Tyler Collins, Adam Haase and Andrew Bridges.\n\nYou’ll learn the 3 rules behind every trade (trend, location, trigger), live on real charts, with Q&A at the end.\n\nSave your free seat 👇\n{webinar}\n\n(Educational only, not financial advice.)',
     web4: 'See the software, live 👀\n\nOn Thursday’s free training (8PM ET) you’ll see Killshot, Smartshot and Spectrum working on real charts, plus the journal that grades whether you followed your rules.\n\nFree seat here:\n{webinar}\n\n(Educational only, not financial advice.)',
     web5: 'Most traders don’t have a strategy problem. They have a no-rules problem.\n\nThursday at 8PM ET, Jay Bonham breaks down the 3 rules behind every trade he takes on US30, gold and Bitcoin. Live, free, on Zoom.\n\nSave your seat 👇\n{webinar}\n\n(Educational only, not financial advice.)',
+    trial1: 'The Trade Vault is free for 7 days 🔓\n\nThe second you join you get:\n✅ All 3 scanners (Killshot, Smartshot, Spectrum)\n✅ Live trading sessions with 4 educators, 5 a week\n✅ Every Academy, basic to advanced\n\nNothing to pay today. Signals and Copy Trader unlock on day 8 if you stay ($124.99/mo). Cancel in the first 7 days and you’re not charged.\n\nStart here 👇\n{trial}' + DISCLOSE,
+    trial2: 'Want to trade live with Jay Bonham, Tyler Collins, Adam Haase and Andrew Bridges?\n\nThe Trade Vault just opened a 7-day free trial: every educator’s live sessions, all three scanners and every Academy, free for a week.\n\nTry it free 👇\n{trial}\n\nThen $124.99/mo. Cancel in the first 7 days and you won’t be charged.' + DISCLOSE,
     web2: 'What you’ll see on the free webinar:\n\n01 — 4 educators and how they run their live sessions\n02 — Killshot, Smartshot and Spectrum\n03 — The journal that tracks your rules\n04 — Signals & Copy Trader, plus live Q&A\n\nFree seat here:\n{webinar}'
   };
 
@@ -43,6 +45,10 @@
     { f: '20-story-webinar-four-traders', t: 'Story: webinar, four traders', k: 'story', web: true },
     { f: '21-story-webinar-the-software', t: 'Story: webinar, the software', k: 'story', web: true },
     { f: '22-story-webinar-three-rules', t: 'Story: webinar, 3 rules', k: 'story', web: true },
+    { f: '23-trial-7-days-free', t: 'Free trial: 7 days free', k: 'post', cap: 'trial1', trial: true },
+    { f: '25-trial-four-pros', t: 'Free trial: 4 pros', k: 'post', cap: 'trial2', trial: true },
+    { f: '24-story-trial-7-days-free', t: 'Story: free trial', k: 'story', trial: true },
+    { f: '26-story-trial-four-pros', t: 'Story: free trial, 4 pros', k: 'story', trial: true },
     { f: '13-story-trade-with-rules', t: 'Story: trade with rules', k: 'story' },
     { f: '14-story-educators', t: 'Story: four traders', k: 'story' },
     { f: '15-story-webinar', t: 'Story: webinar', k: 'story', web: true },
@@ -50,6 +56,9 @@
   ];
 
   var DMS = [
+    { t: 'Free trial: when someone asks', s: 'The Trade Vault has a 7-day free trial right now. You get all 3 scanners, the live sessions with all 4 educators and every Academy straight away, nothing to pay today. Signals and Copy Trader unlock on day 8 if you stay. Here’s my link: {trial}', trial: true },
+    { t: 'Free trial: group / chat post', s: '🔓 The Trade Vault is free for 7 days. Scanners, live sessions with 4 educators and every Academy, open the second you join. Cancel in the first 7 days and you’re not charged. Start here: {trial}', trial: true },
+    { t: 'Free trial: nudge on day 5–6', s: 'Hey, how are you finding the Vault so far? If you’ve not been on a live session yet, jump on one before your trial ends. Your membership starts on day 8 and that’s when signals and Copy Trader unlock.', trial: true },
     { t: 'When someone asks what you use', s: 'I use The Trade Vault. Live educators, 3 scanners and a journal that tracks whether I followed my rules. Here’s my link if you want a look: {link}' },
     { t: 'They’re interested but unsure', s: 'No pressure at all. Tools starts at $49.99/month if you just want the scanners, and you can upgrade any time. Happy to answer anything about how I use it.' },
     { t: 'Follow-up a few days later', s: 'Hey, did you get a chance to look at The Trade Vault? If you’ve got questions about the scanners or the live sessions, ask away. Link again: {link}' },
@@ -62,7 +71,8 @@
     '📈 Trading with rules, not instinct\n🔐 Inside The Trade Vault ↓',
     'Learning to trade live with 4 educators ↓',
     'Scanners + live sessions + a journal that keeps me honest 👇',
-    '🔴 Free live webinar: see inside The Trade Vault ↓'
+    '🔴 Free live webinar: see inside The Trade Vault ↓',
+    '🔓 Try The Trade Vault free for 7 days ↓'
   ];
 
   var STEPS = [
@@ -82,7 +92,7 @@
   ];
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-  function fill(s, L) { return s.replace(/\{link\}/g, L.main).replace(/\{webinar\}/g, L.webinar).replace(/\{replay\}/g, L.replay); }
+  function fill(s, L) { return s.replace(/\{trial\}/g, L.trial || L.main).replace(/\{link\}/g, L.main).replace(/\{webinar\}/g, L.webinar).replace(/\{replay\}/g, L.replay); }
   function copyBtn(text, label, cls) {
     var b = el('button', cls || 'btn-g btn-sm', label); b.type = 'button';
     b.addEventListener('click', function () {
@@ -100,6 +110,17 @@
     root.innerHTML = '';
     var web = !!L.webOn;
 
+    // free trial link (new)
+    if (L.trial) {
+      var ts = sec('Free trial link', 'New · 7 days free');
+      var tc = el('div', 'card kitcopy kittrial');
+      tc.appendChild(el('b', null, 'Your 7-day free trial link'));
+      tc.appendChild(el('p', null, 'Scanners, live sessions and every Academy free for 7 days, then Elite at $124.99/month. Anyone who starts a trial through this link is credited to you, and you earn when their membership starts on day 8.'));
+      var lk = el('p', 'mono kitlink', L.trial); tc.appendChild(lk);
+      tc.appendChild(copyBtn(L.trial, 'Copy link', 'btn btn-sm'));
+      ts.appendChild(tc); root.appendChild(ts);
+    }
+
 
     // playbook
     var pb = sec('Best practices', 'What works');
@@ -114,13 +135,13 @@
 
     // graphics slider
     var gs = sec('Graphics', 'Tap to download');
-    var chips = el('div', 'kitchips'), filters = [['all', 'All'], ['post', 'Posts'], ['story', 'Stories']];
+    var chips = el('div', 'kitchips'), filters = [['all', 'All'], ['trial', 'Free trial'], ['post', 'Posts'], ['story', 'Stories']];
     if (web) filters.push(['webinar', 'Webinar']);
     var track = el('div', 'kittrack'), cur = 'all';
     var list = GRAPHICS.filter(function (g) { return (g.k !== 'webinar' && !g.web) || web; });
     function draw() {
       track.innerHTML = '';
-      list.filter(function (g) { return cur === 'all' || g.k === cur || (cur === 'webinar' && g.web); }).forEach(function (g) {
+      list.filter(function (g) { return cur === 'all' || (cur === 'trial' ? g.trial : g.k === cur) || (cur === 'webinar' && g.web); }).forEach(function (g) {
         var card = el('figure', 'kitslide' + (g.k === 'story' ? ' story' : ''));
         var a = el('a'); a.href = IMG + g.f + '.jpg'; a.target = '_blank'; a.rel = 'noopener';
         var img = el('img'); img.src = IMG + 'thumb/' + g.f + '.jpg'; img.alt = g.t; img.loading = 'lazy'; a.appendChild(img); card.appendChild(a);
@@ -162,7 +183,7 @@
     // bios
     var bs = sec('Bio lines', 'Pair with your link');
     var bg = el('div', 'kitcopies');
-    BIOS.filter(function (b, i) { return i < 3 || web; }).forEach(function (b) {
+    BIOS.filter(function (b, i) { return i !== 3 || web; }).forEach(function (b) {
       var c = el('div', 'card kitcopy'); c.appendChild(el('p', 'bio', b)); c.appendChild(copyBtn(b, 'Copy bio')); bg.appendChild(c);
     });
     bs.appendChild(bg); root.appendChild(bs);
