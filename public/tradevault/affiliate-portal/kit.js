@@ -110,18 +110,6 @@
     root.innerHTML = '';
     var web = !!L.webOn;
 
-    // free trial link (new)
-    if (L.trial) {
-      var ts = sec('Free trial link', 'New · 7 days free');
-      var tc = el('div', 'card kitcopy kittrial');
-      tc.appendChild(el('b', null, 'Your 7-day free trial link'));
-      tc.appendChild(el('p', null, 'Scanners, live sessions and every Academy free for 7 days, then Elite at $124.99/month. Anyone who starts a trial through this link is credited to you, and you earn when their membership starts on day 8.'));
-      var lk = el('p', 'mono kitlink', L.trial); tc.appendChild(lk);
-      tc.appendChild(copyBtn(L.trial, 'Copy link', 'btn btn-sm'));
-      ts.appendChild(tc); root.appendChild(ts);
-    }
-
-
     // playbook
     var pb = sec('Best practices', 'What works');
     var grid = el('div', 'kitsteps');

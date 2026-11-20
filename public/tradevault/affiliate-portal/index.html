@@ -84,7 +84,7 @@
 .kitslide.story{flex-basis:220px}
 .kitslide img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#0A1426}
 .kitslide.story img{aspect-ratio:9/16}
-.kittrial{border-color:rgba(34,211,154,.45)}.kitlink{word-break:break-all;color:var(--cy);text-transform:none;letter-spacing:.02em}
+
 .kitslide figcaption{padding:12px 14px 14px;display:grid;gap:4px}
 .kitslide figcaption b{font-size:14.5px}
 .kitslide figcaption .mono{font-size:10px;color:var(--tx-mute)}
@@ -161,7 +161,9 @@ td.who b{display:block;font-weight:500}
 .links .linkcard .shot img{min-height:100px}
 .links .biglink{padding:10px 14px;margin-top:6px}
 .links .biglink code{font-size:14px}
-.links .webcard,.links .replaycard{margin-top:12px}
+.links .webcard,.links .replaycard,.links .trialcard{margin-top:12px}
+.trialcard{border-color:rgba(34,211,154,.5);background:linear-gradient(160deg,rgba(20,90,70,.35),rgba(10,26,54,.7))}
+.trialcard .mono{color:#7BE0B0}
 .links .btn.copy{min-height:44px;padding:10px 22px;font-size:15px}
 @media(max-width:560px){.links .linkcard .shot{max-height:140px}.links .btn.copy{width:100%}}
 tr[hidden]{display:none}
@@ -238,6 +240,17 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
         <button class="btn-g btn-sm copy" data-copy="pl" type="button">Polish page</button>
         <span>All links last 60 days per visitor.</span>
       </div>
+    </section>
+
+    <section class="card linkcard hasshot trialcard" aria-label="Your free trial link">
+      <a class="shot" href="/trial" target="_blank" rel="noopener"><img src="/assets/promo/preview-trial.jpg" alt="The Trade Vault 7-day free trial page" loading="lazy"><span>7-day free trial</span></a>
+      <div style="min-width:0">
+        <span class="mono">🔓 Your free trial link · New</span>
+        <span class="goes">To the 7-day free trial: scanners, live sessions and every Academy free for 7 days, then Elite at $124.99/month.</span>
+        <div class="biglink"><code id="trialLink"></code></div>
+      </div>
+      <button class="btn copy" id="copyTrial" type="button">Copy link</button>
+      <div class="more"><span>Every trial started through this link is credited to you. You earn when their membership starts on day 8. Graphics and captions for it are in the <a href="#kit" data-go="kit" style="color:var(--acc)">Promo kit</a>.</span></div>
     </section>
 
     <section class="card linkcard webcard hasshot" id="webCard" aria-label="Your webinar link" hidden>
@@ -480,7 +493,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('review').hidden = !pend; $('app').classList.toggle('pend', pend); $('sideCode').textContent = d.code;
     if (pend) showTab('payouts', true);
     $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
-    $('link').textContent = L.main; $('replayLink').textContent = L.replay;
+    $('link').textContent = L.main; $('replayLink').textContent = L.replay; $('trialLink').textContent = L.trial;
     var W = d.webinar || {};
     var O = W.optins || [];
     $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = O.length;
@@ -651,6 +664,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   });
   var h0 = location.hash.slice(1); showTab(ALIAS[h0] || h0 || 'links', true);
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
+  $('copyTrial').addEventListener('click', function () { copy(links(data.code).trial, this, 'Copy link'); });
   $('copyReplay').addEventListener('click', function () { copy(links(data.code).replay, this, 'Copy link'); });
   $('copyWeb').addEventListener('click', function () { copy(links(data.code).webinar, this, 'Copy link'); });
   document.querySelectorAll('[data-copy]').forEach(function (b) {
