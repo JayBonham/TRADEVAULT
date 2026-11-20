@@ -1,7 +1,7 @@
 """Whop memberships still in their 7-day free trial.
 
-During the trial a member gets live sessions, Academies and the community Telegram group; scanners,
-signals and the educator/scanner groups unlock after the first payment (Whop status trialing -> active).
+During the trial a member gets scanners, live sessions, Academies and the community Telegram group;
+signals, Copy Trader and the private educator groups unlock after the first payment (Whop status trialing -> active).
 Used by tv-members (board) and tv-setup (setup page).
 """
 import sys
@@ -11,7 +11,7 @@ def log(*a):
     print(*a, file=sys.stderr)
 
 
-_trials = {"at": 0, "data": {}}
+_trials = {"at": 0, "data": {}, "ok": False}
 
 
 def trials_by_email():
@@ -39,9 +39,10 @@ def trials_by_email():
             after = info.get("end_cursor") or ""
             if not (info.get("has_next_page") and after):
                 break
-        _trials.update(at=time.time(), data=out)
+        _trials.update(at=time.time(), data=out, ok=True)
     except Exception as e:
         log("TV_MEMBERS_TRIALS_ERR:", e)
+        _trials["ok"] = False
         return _trials["data"]
     return out
 
@@ -50,3 +51,11 @@ def trials_by_email():
 def trial_for(email):
     """{"ends", "cancelling"} if this email has a membership in its free trial, else None."""
     return trials_by_email().get((email or "").strip().lower())
+
+
+def trial_strict(email):
+    """Like trial_for, but raises if Whop couldn't be checked, so paid-only features fail closed."""
+    data = trials_by_email()
+    if not _trials["ok"]:
+        raise RuntimeError("whop trial check failed")
+    return data.get((email or "").strip().lower())

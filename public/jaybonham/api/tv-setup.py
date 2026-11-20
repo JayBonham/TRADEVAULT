@@ -201,8 +201,13 @@ class handler(BaseHTTPRequestHandler):
             return
         if _tier(contact.get("tags")) != "elite":
             return self._json(404, {"ok": False, "error": "not_member"})
-        trial = _trial(contact.get("email"))
-        if trial:  # signals unlock with the first payment
+        try:  # payment lock: signals unlock with the first payment; if Whop can't be checked, stay locked
+            import _tv_trial
+            trial = _tv_trial.trial_strict(contact.get("email"))
+        except Exception as e:
+            log("TV_SIGNALS_TRIAL_ERR:", e)
+            return self._json(503, {"ok": False, "error": "We couldn't check your membership just now. Please try again in a minute."})
+        if trial:
             return self._json(403, {"ok": False, "error": "trial", "ends": trial.get("ends")})
         tags = {"tags": ["signals-links-" + region]}
         try:
