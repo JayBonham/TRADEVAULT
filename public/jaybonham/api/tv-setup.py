@@ -169,11 +169,13 @@ class handler(BaseHTTPRequestHandler):
         cid = contact["id"]
         edu_name = EDUCATORS.get(educator, "All educators" if tier == "elite" else "")
         scan_name = ", ".join(partner["scanners"]) if partner else SCANNERS.get(scanner, "All scanners")
+        trial = _trial(contact.get("email"))
+        package = tier.title() + (" Partner" if partner else "") + (" (7-day free trial)" if trial else "")
         self._fields(cid, {"tv_educator": edu_name, "tv_scanner": scan_name,
                            "tradingview_username": tv, "telegram_username": tg,
-                           "tv_package": tier.title() + (" Partner" if partner else "")})
+                           "tv_package": package})
         _ghl("POST", "/contacts/" + cid + "/notes", {"body": "\n".join(filter(None, [
-            "TradeVault setup (" + tier.title() + (" Partner" if partner else "") + ")",
+            "TradeVault setup (" + package + ")",
             "Educator: " + edu_name if edu_name else "",
             "Scanner: " + scan_name,
             "TradingView: " + tv,
@@ -186,8 +188,7 @@ class handler(BaseHTTPRequestHandler):
             return self._json(502, {"ok": False, "error": "We couldn't save that. Please try again."})
         self._to_whop({"email": (contact.get("email") or "").lower(), "tier": tier, "educator": edu_name,
                        "scanner": scan_name, "tradingview": tv, "telegram": tg})
-        log("TV_SETUP", cid, tier, educator or "-", scanner or "-")
-        trial = _trial(contact.get("email"))
+        log("TV_SETUP", cid, package, educator or "-", scanner or "-")
         self._json(200, {"ok": True, "tier": tier, "educator": edu_name, "scanner": scan_name, "trial": trial,
                          "groups": groups_for(tier, educator, trial=bool(trial))})
 
@@ -274,6 +275,14 @@ class handler(BaseHTTPRequestHandler):
                 key = (f.get("fieldKey") or "").split(".")[-1].lower()
                 if key in values:
                     ids[key] = f.get("id")
+            # GHL drops values for fields it doesn't have: make the TV Package field if it's missing
+            if status < 300 and "tv_package" in values and not ids.get("tv_package"):
+                st, made = _ghl("POST", "/locations/" + GHL_LOCATION + "/customFields",
+                                {"name": "TV Package", "dataType": "TEXT", "model": "contact"})
+                fid = ((made or {}).get("customField") or {}).get("id")
+                log("TV_SETUP_FIELD_CREATE:", st, ((made or {}).get("customField") or {}).get("fieldKey"), str(made)[:200] if st >= 300 else "")
+                if fid:
+                    ids["tv_package"] = fid
             fields = [{"id": ids[k], "field_value": v} if ids.get(k) else {"key": k, "field_value": v}
                       for k, v in values.items() if v]
             if fields:
