@@ -27,6 +27,10 @@
   };
 
   var GRAPHICS = [
+    { f: '23-trial-7-days-free', t: 'Free trial: 7 days free', k: 'post', cap: 'trial1', trial: true },
+    { f: '25-trial-four-pros', t: 'Free trial: 4 pros', k: 'post', cap: 'trial2', trial: true },
+    { f: '24-story-trial-7-days-free', t: 'Story: free trial', k: 'story', trial: true },
+    { f: '26-story-trial-four-pros', t: 'Story: free trial, 4 pros', k: 'story', trial: true },
     { f: '01-trade-with-rules', t: 'Trade with rules', k: 'post', cap: 'rules' },
     { f: '02-four-educators', t: 'Four educators', k: 'post', cap: 'educators' },
     { f: '03-stop-trading-alone', t: 'Stop trading alone', k: 'post', cap: 'alone' },
@@ -45,10 +49,6 @@
     { f: '20-story-webinar-four-traders', t: 'Story: webinar, four traders', k: 'story', web: true },
     { f: '21-story-webinar-the-software', t: 'Story: webinar, the software', k: 'story', web: true },
     { f: '22-story-webinar-three-rules', t: 'Story: webinar, 3 rules', k: 'story', web: true },
-    { f: '23-trial-7-days-free', t: 'Free trial: 7 days free', k: 'post', cap: 'trial1', trial: true },
-    { f: '25-trial-four-pros', t: 'Free trial: 4 pros', k: 'post', cap: 'trial2', trial: true },
-    { f: '24-story-trial-7-days-free', t: 'Story: free trial', k: 'story', trial: true },
-    { f: '26-story-trial-four-pros', t: 'Story: free trial, 4 pros', k: 'story', trial: true },
     { f: '13-story-trade-with-rules', t: 'Story: trade with rules', k: 'story' },
     { f: '14-story-educators', t: 'Story: four traders', k: 'story' },
     { f: '15-story-webinar', t: 'Story: webinar', k: 'story', web: true },
