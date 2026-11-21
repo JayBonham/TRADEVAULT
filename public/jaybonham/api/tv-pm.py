@@ -30,9 +30,13 @@ PASS_HASH = "a784bb07a38b075cb9d8d316dcf961c49448e6d3c3bc4686703477a07d31f129"
 DEFAULTS = {"amount": 2500, "every_days": 14, "next_due": "2026-11-29", "caught_up_on": "2026-11-16"}
 # Binance USDT deposits from Jay, received net of a few dollars of fees. credited = what it counts as.
 SEED = [("2026-03-31", 5000, 5000), ("2026-05-28", 2500, 2500), ("2026-06-22", 2498.5, 2500),
-        ("2026-08-05", 2498.01, 2500), ("2026-08-10", 2498.01, 2500), ("2026-09-08", 4421.43, 4421.43),
-        ("2026-09-12", 2498.01, 2500), ("2026-09-24", 2498.01, 2500), ("2026-09-30", 1253.15, 1253.15),
+        ("2026-08-05", 2498.01, 2500), ("2026-08-10", 2498.01, 2500),
+        ("2026-09-12", 2498.01, 2500), ("2026-09-24", 2498.01, 2500),
         ("2026-10-19", 2498.01, 2500), ("2026-10-31", 2498.01, 2500), ("2026-11-16", 4998.01, 5000)]
+# Months with no Binance record of Alex's pay: $5k/month, so they're filled in (dates approximate).
+BACKFILL = [("2026-04-15", 2500), ("2026-04-29", 2500), ("2026-05-14", 2500), ("2026-06-08", 2500),
+            ("2026-07-06", 2500), ("2026-07-20", 2500)]
+NOT_PAY = [("2026-09-08", 4421.43), ("2026-09-30", 1253.15)]  # other money, not Alex's pay
 
 _ready = False
 
@@ -90,6 +94,16 @@ def conn():
             if not cur.fetchone()[0]:
                 for d, a, cr in SEED:
                     cur.execute("INSERT INTO tv_pay_payments (paid_on, amount, credited, note) VALUES (%s, %s, %s, 'Binance USDT')", (d, a, cr))
+        # one-off: take out deposits that weren't pay and fill the gaps so every month is $5k
+        cur.execute("SELECT 1 FROM tv_pay_settings WHERE k = 'ledger_v2'")
+        if not cur.fetchone():
+            for d, amt in NOT_PAY:
+                cur.execute("DELETE FROM tv_pay_payments WHERE paid_on = %s AND amount = %s", (d, amt))
+            for d, amt in BACKFILL:
+                cur.execute("SELECT 1 FROM tv_pay_payments WHERE paid_on = %s", (d,))
+                if not cur.fetchone():
+                    cur.execute("INSERT INTO tv_pay_payments (paid_on, amount, credited, note) VALUES (%s, %s, %s, 'Backfilled · date approx.')", (d, amt, amt))
+            cur.execute("INSERT INTO tv_pay_settings (k, v) VALUES ('ledger_v2', 'true') ON CONFLICT DO NOTHING")
         c.commit()
         _ready = True
     return c

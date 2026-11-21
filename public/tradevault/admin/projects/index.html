@@ -75,6 +75,8 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
 /* avatars + importance */
 .av{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;font:700 12px var(--display);color:#fff;flex:none;border:2px solid var(--g1)}
 .av.jay{background:var(--jay)}.av.alex{background:var(--alex)}
+.av{position:relative;overflow:hidden}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
 .avs{display:inline-flex;align-items:center}.avs .av+.av{margin-left:-9px}
 .imp{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;font:600 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid;cursor:pointer;background:none;white-space:nowrap}
 .imp i{width:7px;height:7px;border-radius:2px;background:currentColor}
@@ -240,7 +242,7 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
       <div class="row2">
         <div class="seg" id="nKind"><button type="button" data-k="todo" class="on">To-do</button><button type="button" data-k="idea">Future idea</button></div>
         <div class="seg" id="nImp"><button type="button" data-i="4">Urgent</button><button type="button" data-i="3">High</button><button type="button" data-i="2" class="on">Normal</button><button type="button" data-i="1">Low</button></div>
-        <div class="seg" id="nWho"><button type="button" data-w="jay"><span class="av jay" style="width:20px;height:20px;font-size:10px;border:0">J</span>Jay</button><button type="button" data-w="alex" class="on"><span class="av alex" style="width:20px;height:20px;font-size:10px;border:0">A</span>Alex</button><button type="button" data-w="both">Both</button></div>
+        <div class="seg" id="nWho"><button type="button" data-w="jay"><span class="av jay" style="width:20px;height:20px;font-size:10px;border:0">J<img src="/assets/team/jay.jpg" alt="" onerror="this.remove()"></span>Jay</button><button type="button" data-w="alex" class="on"><span class="av alex" style="width:20px;height:20px;font-size:10px;border:0">A<img src="/assets/team/alex.jpg" alt="" onerror="this.remove()"></span>Alex</button><button type="button" data-w="both">Both</button></div>
         <label class="due">Due <input class="f" type="date" id="nDue"></label>
       </div>
     </form>
@@ -290,7 +292,7 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
   <form id="lockF" autocomplete="off">
     <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
     <h2>Projects is locked</h2>
-    <p>Use the analytics password.</p>
+    <p>Same password as Analytics. It stays unlocked for 24 hours.</p>
     <input class="f" type="password" id="lockP" placeholder="Password" aria-label="Password">
     <div class="err" id="lockE" role="alert"></div>
     <button class="btn" type="submit" id="lockB">Unlock</button>
@@ -298,14 +300,15 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
   </form>
 </div>
 
+<script src="/admin/unlock.js?v=1"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-pm';
   var token = ''; try { token = localStorage.getItem('tv_token') || ''; } catch (e) {}
   if (!token) { location.replace('/admin-login'); return; }
-  var pass = ''; try { pass = sessionStorage.getItem('tv_pm_pass') || ''; } catch (e) {}
+  var pass = window.TVUnlock ? TVUnlock.get() : '';
   var $ = function (id) { return document.getElementById(id); };
-  $('out').addEventListener('click', function () { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} location.replace('/admin-login'); });
+  $('out').addEventListener('click', function () { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} if (window.TVUnlock) TVUnlock.clear(); location.replace('/admin-login'); });
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function load(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -334,13 +337,13 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
   function showLock(fail) {
     $('lock').hidden = false; $('lockP').value = ''; setTimeout(function () { $('lockP').focus(); }, 30);
     if (fail && pass) { $('lockE').textContent = 'That password didn’t work.'; var f = $('lockF'); f.classList.remove('no'); void f.offsetWidth; f.classList.add('no'); }
-    pass = ''; try { sessionStorage.removeItem('tv_pm_pass'); } catch (e) {}
+    pass = ''; if (window.TVUnlock) TVUnlock.clear();
   }
   $('lockF').addEventListener('submit', function (e) {
     e.preventDefault(); pass = $('lockP').value.trim(); if (!pass) return;
     $('lockB').textContent = 'Checking…';
     api('all').then(function (j) {
-      try { sessionStorage.setItem('tv_pm_pass', pass); } catch (x) {}
+      if (window.TVUnlock) TVUnlock.set(pass);
       $('lock').hidden = true; $('lockE').textContent = ''; D = j; boot();
     }).catch(function () {}).then(function () { $('lockB').textContent = 'Unlock'; });
   });
@@ -391,7 +394,8 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
 
   function task(id) { return D.tasks.filter(function (t) { return t.id === id; })[0]; }
   function upd(t, ch, msg) { var b = Object.assign({}, t, ch); b.done = ch.done != null ? ch.done : !!t.done_at; return save('task', b, msg).catch(function () {}); }
-  function avs(w) { return '<span class="avs" title="' + WHO[w] + '">' + (w === 'both' ? '<span class="av jay">J</span><span class="av alex">A</span>' : '<span class="av ' + w + '">' + (w === 'jay' ? 'J' : 'A') + '</span>') + '</span>'; }
+  function av1(w) { return '<span class="av ' + w + '">' + (w === 'jay' ? 'J' : 'A') + '<img src="/assets/team/' + w + '.jpg" alt="" onerror="this.remove()"></span>'; }
+  function avs(w) { return '<span class="avs" title="' + WHO[w] + '">' + (w === 'both' ? av1('jay') + av1('alex') : av1(w)) + '</span>'; }
   var ICO = {
     todo: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>',
     idea: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>',
@@ -546,13 +550,13 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     // kpis
     var yr = String(new Date().getFullYear()), mo = iso(new Date()).slice(0, 7);
     var tY = 0, tM = 0, tAll = 0, last = D.payments[0];
-    D.payments.forEach(function (p) { tAll += p.amount; if (p.paid_on.slice(0, 4) === yr) tY += p.amount; if (p.paid_on.slice(0, 7) === mo) tM += p.amount; });
+    D.payments.forEach(function (p) { tAll += p.credited; if (p.paid_on.slice(0, 4) === yr) tY += p.credited; if (p.paid_on.slice(0, 7) === mo) tM += p.credited; });
     var paidDues = sc.dues.filter(function (x) { return x.status === 'paid' && x.paidOn; });
     var onTime = paidDues.filter(function (x) { return x.paidOn <= x.date; }).length;
     $('kp').innerHTML = [
       ['Received in ' + yr, money(tY, 0)],
       ['This month', money(tM, 0)],
-      ['Last payment', last ? fmtD(last.paid_on, { day: 'numeric', month: 'short' }) : '–', last ? money(last.amount) : ''],
+      ['Last payment', last ? fmtD(last.paid_on, { day: 'numeric', month: 'short' }) : '–', last ? money(last.credited) : ''],
       ['Paid on time', paidDues.length ? onTime + ' / ' + paidDues.length : '–', paidDues.length ? 'since ' + fmtD(S.next_due, { day: 'numeric', month: 'short' }) : 'counting from ' + fmtD(S.next_due, { day: 'numeric', month: 'short' })]
     ].map(function (k) { return '<div class="card"><span>' + k[0] + '</span><b>' + k[1] + '</b>' + (k[2] ? '<span>' + k[2] + '</span>' : '') + '</div>'; }).join('');
 
@@ -569,7 +573,7 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     // bars: received per month, last 9 months
     var months = [], base = new Date(); base.setDate(1);
     for (var i = 8; i >= 0; i--) { var m = new Date(base.getFullYear(), base.getMonth() - i, 1); months.push({ k: iso(m).slice(0, 7), l: m.toLocaleDateString('en-GB', { month: 'short' }), v: 0 }); }
-    D.payments.forEach(function (p) { months.forEach(function (m) { if (p.paid_on.slice(0, 7) === m.k) m.v += p.amount; }); });
+    D.payments.forEach(function (p) { months.forEach(function (m) { if (p.paid_on.slice(0, 7) === m.k) m.v += p.credited; }); });
     var mx = Math.max(10000, Math.max.apply(null, months.map(function (m) { return m.v; }))), W = 100 / months.length;
     var target5 = 130 - 5000 / mx * 110;
     $('bars').innerHTML = '<svg viewBox="0 0 600 150" preserveAspectRatio="none" role="img" aria-label="Received per month">' +
@@ -584,10 +588,10 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     var byM = {};
     D.payments.forEach(function (p) { var k = p.paid_on.slice(0, 7); (byM[k] = byM[k] || []).push(p); });
     $('hist').innerHTML = Object.keys(byM).sort().reverse().map(function (k) {
-      var tot = byM[k].reduce(function (s, p) { return s + p.amount; }, 0);
+      var tot = byM[k].reduce(function (s, p) { return s + p.credited; }, 0);
       return '<div class="mo"><span>' + dLocal(k + '-01').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) + '</span><b>' + money(tot, 0) + '</b></div>' +
         byM[k].map(function (p) {
-          return '<div class="py" data-p="' + p.id + '"><span class="pi">' + CHECKW + '</span><div><b>' + money(p.amount) + '</b><p>' + fmtD(p.paid_on) + (Math.abs(p.credited - p.amount) > .009 ? ' · counts as ' + money(p.credited) : '') + (p.note ? ' · ' + esc(p.note) : '') + '</p></div>' +
+          return '<div class="py" data-p="' + p.id + '"><span class="pi">' + CHECKW + '</span><div><b>' + money(p.credited) + '</b><p>' + fmtD(p.paid_on) + (Math.abs(p.credited - p.amount) > .009 ? ' · received ' + money(p.amount) + ' after fees' : '') + (p.note ? ' · ' + esc(p.note) : '') + '</p></div>' +
             '<span></span><div class="acts"><button class="ib" type="button" data-pa="edit" title="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg></button><button class="ib del" type="button" data-pa="del" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div></div>';
         }).join('');
     }).join('') || '<p class="empty">No payments logged yet.</p>';
@@ -625,7 +629,7 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     if (a.getAttribute('data-pa') === 'edit') return openPay(p);
     D.payments = D.payments.filter(function (x) { return x.id !== id; }); renderPay();
     var timer = setTimeout(function () { api('pay_delete', { id: id }).then(function (j) { D = j; render(); }).catch(function () {}); }, 5000);
-    toast('Payment of ' + money(p.amount) + ' deleted', 'Undo', function () { clearTimeout(timer); D.payments.push(p); D.payments.sort(function (a, b) { return b.paid_on.localeCompare(a.paid_on) || b.id - a.id; }); renderPay(); }, 5000);
+    toast('Payment of ' + money(p.credited) + ' deleted', 'Undo', function () { clearTimeout(timer); D.payments.push(p); D.payments.sort(function (a, b) { return b.paid_on.localeCompare(a.paid_on) || b.id - a.id; }); renderPay(); }, 5000);
   });
   $('schB').addEventListener('click', function () {
     var S = D.settings; $('schF').hidden = !$('schF').hidden;

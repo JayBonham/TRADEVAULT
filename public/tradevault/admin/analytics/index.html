@@ -283,6 +283,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 
 <div class="tip" id="tip" role="tooltip"></div>
 
+<script src="/admin/unlock.js?v=1"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-stats';
@@ -291,7 +292,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
   if (!token) { location.replace('/admin-login'); return; }
 
   var $ = function (id) { return document.getElementById(id); };
-  function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} location.replace('/admin-login'); }
+  function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} if (window.TVUnlock) TVUnlock.clear(); location.replace('/admin-login'); }
   $('out').addEventListener('click', signOut);
 
   var TIERS = ['tools', 'community', 'elite', 'partner'];
@@ -1005,7 +1006,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     $('lockB').disabled = false; $('lockB').textContent = 'Unlock'; $('lockE').textContent = msg;
   }
   function lockFail() {
-    pass = ''; $('lock').hidden = false; $('lockB').disabled = false; $('lockB').textContent = 'Unlock';
+    pass = ''; if (window.TVUnlock) TVUnlock.clear(); $('lock').hidden = false; $('lockB').disabled = false; $('lockB').textContent = 'Unlock';
     $('lockE').textContent = 'Wrong password, try again.'; $('lockP').value = ''; $('lockP').focus();
     var f = $('lockF'); f.classList.remove('no'); void f.offsetWidth; f.classList.add('no');
   }
@@ -1019,11 +1020,14 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
         if (r.status === 403) { lockFail(); return; }
         if (!r.ok) throw new Error('Server error (' + r.status + ')');
         $('lock').hidden = true; // right password: show the loader while Whop is pulled
+        if (window.TVUnlock) TVUnlock.set(pass);
         load(false);
       })
       .catch(function (e) { lockErr((e && e.message) || 'Could not reach the server'); });
   });
-  $('lockP').focus();
+  // unlocked in the last 24 hours on this browser (here or on Projects): skip the lock
+  var saved = window.TVUnlock ? TVUnlock.get() : '';
+  if (saved) { pass = saved; $('lock').hidden = true; load(false); } else $('lockP').focus();
 
   // Support badge, same as the other admin pages.
   function supCount() {
