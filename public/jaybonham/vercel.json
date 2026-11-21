@@ -108,6 +108,10 @@
     "api/tv-upgrade.py": {
       "maxDuration": 60,
       "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
+    },
+    "api/tv-pm.py": {
+      "maxDuration": 15,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     }
   },
   "redirects": [
