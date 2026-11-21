@@ -10,6 +10,7 @@ so a sale is never blocked by tracking.
 """
 import http.client
 import json
+import time
 import os
 import re
 import sys
@@ -26,6 +27,7 @@ CODE_RE = re.compile(r"^[a-z0-9_]{3,20}$")
 # The 7-day Elite trial is its own Whop product (thetradevault.co/trial). Its plan id comes from env
 # TV_PLAN_ELITE_TRIAL, else it's looked up once by the product's store route and remembered.
 TRIAL_ROUTE = "tradevault-elite-copy-e7"
+TRIAL_ENDS = 1796014800  # 2026-11-30 00:00 ET
 TRIAL_PAGE = STORE + TRIAL_ROUTE + "/"
 
 
@@ -77,6 +79,9 @@ class handler(BaseHTTPRequestHandler):
         q = parse_qs(urlparse(self.path).query)
         tier = (q.get("plan") or [""])[0].strip().lower()
         code = (q.get("ref") or [""])[0].strip().lower()
+        # The Black Friday trial ends with Sun 29 Nov 2026 (ET); after that a trial link checks out as Elite.
+        if tier == "elite_trial" and time.time() >= TRIAL_ENDS:
+            tier = "elite"
         if tier not in PRODUCTS and tier != "elite_trial":
             return self._go(STORE)
         fallback = TRIAL_PAGE if tier == "elite_trial" else PRODUCTS[tier][1]

@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* Black Friday free trial: live until the end of Sun 29 Nov 2026 (ET). After that this page sends people to the plans, keeping ?ref. */
+window.TV_TRIAL_ENDS=Date.UTC(2026,10,30,5);if(Date.now()>=window.TV_TRIAL_ENDS&&!/[?&]preview=1/.test(location.search))location.replace('/'+location.search+'#pricing');</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>7 Days Free — The Trade Vault</title>
 <meta name="robots" content="noindex">
@@ -736,6 +738,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 #mob,.lb{visibility:hidden;-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .3s var(--ease),visibility 0s linear .3s}
 #mob.open,.lb.open{visibility:visible;transition:opacity .3s var(--ease),visibility 0s}
 .hero .pill{-webkit-backdrop-filter:none;backdrop-filter:none}
+.passbar .bfend{margin-left:6px;color:#58E9FF;white-space:nowrap}.passbar .pb-s{display:none}@media (max-width:700px){.passbar .pb-s{display:inline}}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -755,7 +758,7 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
 <body>
 <div class="passbar" role="region" aria-label="Your Killshot pass">
   <span class="tk">🎟 Killshot pass</span>
-  <span><b id="pbName">Your pass is unlocked:</b> 7 days free<span class="pb-l">: scanners, live sessions and every Academy, nothing to pay today</span>.</span>
+  <span><b id="pbName">Your pass is unlocked:</b> 7 days free<span class="pb-l">: scanners, live sessions and every Academy, nothing to pay today</span>. <b class="bfend"><span class="pb-l">Black Friday · e</span><span class="pb-s">E</span>nds <span class="pb-l">Sun </span>29 Nov</b></span>
   <a href="#pricing">Start<span class="pb-l"> my 7 days</span> ↓</a>
 </div>
 
