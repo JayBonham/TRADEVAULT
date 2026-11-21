@@ -154,11 +154,11 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
 .hero .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-top:6px;border-top:1px solid var(--hair)}
 .hero .acts p{font-size:13px;color:var(--tx-mute);margin-right:auto}
 @media(max-width:760px){.hero{grid-template-columns:1fr;padding:22px}.ring{width:200px}}
-.kp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.kp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
 .kp .card{padding:16px 18px}
 .kp b{display:block;font:700 26px var(--display);letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
 .kp span{font-size:12.5px;color:var(--tx-mute)}
-@media(max-width:760px){.kp{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.kp{grid-template-columns:1fr 1fr}.kp .card:last-child{grid-column:1/-1}}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:14px;margin-top:14px;align-items:start}
 @media(max-width:900px){.two{grid-template-columns:1fr}}
 .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px 12px}
@@ -554,7 +554,6 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     var paidDues = sc.dues.filter(function (x) { return x.status === 'paid' && x.paidOn; });
     var onTime = paidDues.filter(function (x) { return x.paidOn <= x.date; }).length;
     $('kp').innerHTML = [
-      ['Received in ' + yr, money(tY, 0)],
       ['This month', money(tM, 0)],
       ['Last payment', last ? fmtD(last.paid_on, { day: 'numeric', month: 'short' }) : '–', last ? money(last.credited) : ''],
       ['Paid on time', paidDues.length ? onTime + ' / ' + paidDues.length : '–', paidDues.length ? 'since ' + fmtD(S.next_due, { day: 'numeric', month: 'short' }) : 'counting from ' + fmtD(S.next_due, { day: 'numeric', month: 'short' })]
