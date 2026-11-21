@@ -474,14 +474,13 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && editing) { editing = null; renderBoard(); } });
 
   // delete with undo
-  var pend = null;
+  // deletes save straight away; Undo puts it back as a new row
   function delTask(t) {
-    if (pend) pend.go();
-    D.tasks = D.tasks.filter(function (x) { return x.id !== t.id; }); renderBoard();
-    var timer = setTimeout(go, 5000), done = false;
-    function go() { if (done) return; done = true; clearTimeout(timer); pend = null; api('task_delete', { id: t.id }).then(function (j) { D = j; render(); }).catch(function () {}); }
-    pend = { go: go };
-    toast('Deleted “' + (t.title.length > 40 ? t.title.slice(0, 40) + '…' : t.title) + '”', 'Undo', function () { done = true; clearTimeout(timer); pend = null; D.tasks.push(t); renderBoard(); }, 5000);
+    D.tasks = D.tasks.filter(function (x) { return x.id !== t.id; }); if (editing === t.id) editing = null; renderBoard();
+    api('task_delete', { id: t.id }).then(function (j) { D = j; render(); }).catch(function (e) { if (e.message !== 'locked') toast(e.message); });
+    toast('Deleted “' + (t.title.length > 40 ? t.title.slice(0, 40) + '…' : t.title) + '”', 'Undo', function () {
+      save('task', { title: t.title, notes: t.notes, kind: t.kind, importance: t.importance, who: t.who, due: t.due, done: !!t.done_at }, 'Restored').catch(function () {});
+    }, 6000);
   }
 
   // ---------- pay ----------
@@ -627,8 +626,10 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     var id = +a.closest('[data-p]').getAttribute('data-p'), p = D.payments.filter(function (x) { return x.id === id; })[0]; if (!p) return;
     if (a.getAttribute('data-pa') === 'edit') return openPay(p);
     D.payments = D.payments.filter(function (x) { return x.id !== id; }); renderPay();
-    var timer = setTimeout(function () { api('pay_delete', { id: id }).then(function (j) { D = j; render(); }).catch(function () {}); }, 5000);
-    toast('Payment of ' + money(p.credited) + ' deleted', 'Undo', function () { clearTimeout(timer); D.payments.push(p); D.payments.sort(function (a, b) { return b.paid_on.localeCompare(a.paid_on) || b.id - a.id; }); renderPay(); }, 5000);
+    api('pay_delete', { id: id }).then(function (j) { D = j; render(); }).catch(function (e) { if (e.message !== 'locked') toast(e.message); });
+    toast('Payment of ' + money(p.credited) + ' deleted', 'Undo', function () {
+      save('pay', { paid_on: p.paid_on, amount: p.amount, credited: p.credited, note: p.note }, 'Restored').catch(function () {});
+    }, 6000);
   });
   $('schB').addEventListener('click', function () {
     var S = D.settings; $('schF').hidden = !$('schF').hidden;
