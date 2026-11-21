@@ -375,7 +375,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
 <footer><div class="W"><span class="mono">© 2026 The Trade Vault</span><span class="mono">Questions: support@thetradevault.co</span></div></footer>
 
 <script src="../aff-payout.js"></script>
-<script src="kit.js"></script>
+<script src="kit.js?v=20261121"></script>
 <script>
 (function () {
   var API = 'https://jaybonham.com/api/tv-aff';
@@ -497,6 +497,14 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     var W = d.webinar || {};
     var O = W.optins || [];
     $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = O.length;
+    // Promo kit first and on its own, so nothing later on the dashboard can leave it blank.
+    (function kit(n) {
+      try {
+        if (window.TVKit) return TVKit.render($('kit'), { main: L.main, webinar: L.webinar, replay: L.replay, trial: L.trial, webOn: !!W.on });
+        if (n < 20) return setTimeout(function () { kit(n + 1); }, 250);
+        $('kit').innerHTML = '<p class="help" style="padding:20px 0">The promo kit didn\u2019t load. Refresh the page to try again.</p>';
+      } catch (e) { try { console.error('kit', e); } catch (x) {} }
+    })(0);
 
     var u = Math.min(P.personals, P.unlock_count), t = Math.min(P.personals, P.tier_count);
     $('barUnlock').classList.toggle('done', P.qualified);
@@ -595,7 +603,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       refs.appendChild(tr);
     });
     paginate(refs);
-    if (window.TVKit) TVKit.render($('kit'), { main: L.main, webinar: L.webinar, replay: L.replay, trial: L.trial, webOn: !!W.on });
+
     $('optSec').hidden = !W.on;
     var opts = $('opts'); opts.innerHTML = ''; $('optCount').textContent = O.length + ' opt-ins';
     if (!O.length) opts.innerHTML = '<tr><td colspan="3" class="empty">No opt-ins yet. Share your webinar link to fill your first seat.</td></tr>';
