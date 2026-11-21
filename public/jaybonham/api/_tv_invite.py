@@ -27,7 +27,7 @@ ET = ZoneInfo("America/New_York")
 
 # keep in step with public/tradevault/webinar/tv-schedule.js
 TITLE = "Trade with 3 Rules: Free Live Training with Jay Bonham"
-HOUR, MINUTE, DURATION_MIN, LIVE_WINDOW_MIN, WEEKDAY = 20, 0, 60, 75, 3  # Thursday (Mon=0)
+HOUR, MINUTE, DURATION_MIN, LIVE_WINDOW_MIN, WEEKDAY = 19, 0, 60, 75, 3  # Thursday (Mon=0)
 ZOOM = "https://us06web.zoom.us/j/82468528057?pwd=PnVamNOtXbXuQUGooIsnWyKr8pexAD.1"
 ZOOM_ID, ZOOM_PASS = "824 6852 8057", "316277"
 # a session that was moved: people tagged for the old date get the invite for the new one
