@@ -73,12 +73,25 @@ section{padding:70px 0 0}
 .cta{margin:70px 0 0;padding:44px 26px;border-radius:26px;text-align:center;border:2px solid var(--acc);background:radial-gradient(600px 300px at 50% 0%,rgba(75,158,255,.25),transparent 70%),#0E2546}
 .cta h2{font-size:clamp(32px,4.4vw,48px)}
 .cta p{color:var(--tx-dim);max-width:560px;margin:12px auto 24px}
+.lede{color:var(--tx-dim);margin-top:12px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;margin:0 auto}
+.step{padding:24px;border-radius:20px;border:1px solid var(--hair-2);background:linear-gradient(160deg,rgba(26,46,82,.7),rgba(10,20,40,.7))}
+.step.hot{border-color:var(--cy);box-shadow:0 0 60px rgba(88,233,255,.18);background:linear-gradient(165deg,rgba(38,76,140,.85),rgba(10,26,54,.9))}
+.step .k{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cy)}
+.step b{display:block;font-family:var(--display);font-size:36px;letter-spacing:-.03em;margin:6px 0 4px}
+.step p{color:var(--tx-dim);font-size:15px;line-height:1.5}
+.inc{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;max-width:900px;margin:26px auto 0;color:var(--tx-dim);font-size:16px}
+.inc li{display:flex;gap:10px;align-items:baseline}
+.inc i{font-style:normal;color:var(--ok);font-weight:700}
+.go{text-align:center;margin-top:30px}
+.go p,.cta .alt{color:var(--tx-mute);font-size:14px;margin-top:12px}
+.cta .alt a{color:var(--acc)}
 .disc{font-size:12px;color:var(--tx-mute);line-height:1.6;padding:40px 0 50px;margin-top:60px;border-top:1px solid var(--hair);text-align:center}
 .sticky{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px max(16px,env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom));background:rgba(5,10,20,.92);backdrop-filter:blur(12px);border-top:1px solid var(--hair-2);display:none}
 .sticky .b{width:100%}
 @media (max-width:860px){.grid4{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){
-  .grid4,.offer{grid-template-columns:1fr}
+  .grid4,.offer,.steps,.inc{grid-template-columns:1fr}
   .top .b{display:none}
   .player{border-radius:14px}
   .sticky{display:block}
@@ -90,23 +103,23 @@ section{padding:70px 0 0}
 <div class="wrap">
   <header class="top">
     <a href="/"><img src="/assets/tv-logo.png" alt="The Trade Vault"></a>
-    <a class="b p" href="/" data-cta>Join The Trade Vault →</a>
+    <a class="b p" href="/trial" data-cta>Start 7 days free →</a>
   </header>
 
   <div class="hero">
     <span class="pill mono"><i></i>Webinar replay</span>
     <h1>Inside The Trade Vault. <span class="hl">The full replay.</span></h1>
-    <p>Missed it live? Jay walks through the educators, the scanners, the journal, signals and every package. Grab a coffee and watch the whole thing.</p>
+    <p>Missed it live? Jay breaks down the 3 rules behind every trade and walks through the educators, the scanners and the journal. Watch it, then try the Vault free for 7 days.</p>
   </div>
 
   <div class="player">
     <video id="vid" controls playsinline preload="metadata" poster="/assets/jay-stage.jpg">
-      <source src="https://files.leadconnectorhq.com/file/6af3ebd8512d2edab69024f4/gmt20261111-020203-recording-1920x1080.mp4" type="video/mp4">
+      <source src="https://files.leadconnectorhq.com/file/6b018a612c68ebcf46529b5b/gmt20261121-010734-recording-1920x1080.mp4" type="video/mp4">
     </video>
   </div>
   <div class="under">
-    <span>Recorded live · Tuesday, November 10, 2026</span>
-    <a class="b p" href="/" data-cta>Join The Trade Vault →</a>
+    <span>Recorded live · Friday, November 20, 2026</span>
+    <a class="b p" href="/trial" data-cta>Start 7 days free →</a>
   </div>
 
   <section>
@@ -119,46 +132,34 @@ section{padding:70px 0 0}
     </div>
   </section>
 
-  <section>
-    <div class="sec-h"><p class="mono hl">Founders offer</p><h2>Start at just the monthly.</h2></div>
-    <div class="offer">
-      <div class="plan">
-        <h3>Community</h3>
-        <div class="price">$99.99<small>/month</small></div>
-        <div class="fee"><s>+ $25 startup fee</s> <b>Waived</b></div>
-        <div class="code"><div><span>CODE</span><br><b>FOUNDER</b></div><button type="button" data-copy="FOUNDER">Copy</button></div>
-      </div>
-      <div class="plan hot">
-        <span class="tag">FULL VAULT</span>
-        <h3>Elite</h3>
-        <div class="price">$124.99<small>/month</small></div>
-        <div class="fee"><s>+ $50 startup fee</s> <b>Waived</b></div>
-        <div class="code"><div><span>CODE</span><br><b>ELITEFOUNDER</b></div><button type="button" data-copy="ELITEFOUNDER">Copy</button></div>
-      </div>
+  <section id="trial">
+    <div class="sec-h"><p class="mono hl">7-day free trial</p><h2>Try the Vault <span class="hl">free for 7 days.</span></h2><p class="lede">Nothing to pay today. Everything below opens the second you join.</p></div>
+    <div class="steps">
+      <div class="step"><span class="k">Today</span><b>$0</b><p>Nothing to pay to start.</p></div>
+      <div class="step hot"><span class="k">Day 1</span><b>Straight in</b><p>All 3 scanners, every educator’s live sessions and every Academy.</p></div>
+      <div class="step"><span class="k">Day 8</span><b>Full Elite</b><p>Your membership starts ($124.99/month) and signals + Copy Trader unlock.</p></div>
     </div>
-    <p class="ends">Use your code at checkout. Codes expire <b>Sunday, November 15</b>.</p>
+    <ul class="inc">
+      <li><i>✓</i>Killshot, Smartshot and Spectrum scanners</li>
+      <li><i>✓</i>Live sessions with Jay, Tyler, Andrew and Adam, 5 a week</li>
+      <li><i>✓</i>Every Academy, basic to advanced</li>
+      <li><i>✓</i>The Trade Vault community</li>
+    </ul>
+    <div class="go"><a class="b p big" href="/trial" data-cta>Start my 7 days free →</a><p>Cancel in the first 7 days and you won’t be charged.</p></div>
   </section>
-
   <div class="cta">
-    <h2>Ready to get inside?</h2>
-    <p>See the packages, pick your plan and use your founders code at checkout.</p>
-    <a class="b p big" href="/" data-cta>Join The Trade Vault →</a>
+    <h2>Watched it? <span class="hl">Now trade it.</span></h2>
+    <p>Join today, sit in on this week’s live sessions and put the 3 rules to work with the scanners. Free for 7 days.</p>
+    <a class="b p big" href="/trial" data-cta>Start 7 days free →</a>
+    <p class="alt">Rather pick a plan now? <a href="/#pricing">See all plans →</a></p>
   </div>
-
   <p class="disc">Trading involves substantial risk of loss and isn’t suitable for everyone. This webinar is educational and isn’t financial advice. No results are promised.</p>
 </div>
 
-<div class="sticky"><a class="b p" href="/" data-cta>Join The Trade Vault →</a></div>
+<div class="sticky"><a class="b p" href="/trial" data-cta>Start 7 days free →</a></div>
 
 <script src="/webinar/tv-ref.js"></script>
 <script>
-document.querySelectorAll('[data-copy]').forEach(function (b) {
-  b.addEventListener('click', function () {
-    var t = b.getAttribute('data-copy');
-    var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1600); };
-    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () {});
-  });
-});
 document.querySelectorAll('[data-cta]').forEach(function (a) {
   a.addEventListener('click', function () { try { fbq('trackCustom', 'ReplayCTA'); } catch (e) {} });
 });
