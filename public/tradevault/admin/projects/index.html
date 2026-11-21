@@ -107,6 +107,7 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
 .empty{padding:20px 14px;color:var(--tx-mute);font-size:14px;text-align:center}
 .t{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:12px 12px;border-radius:14px;transition:background .15s}
 .t:hover{background:rgba(255,255,255,.035)}
+.t.auto{background:linear-gradient(90deg,rgba(255,90,106,.12),rgba(255,90,106,.02) 60%);box-shadow:inset 3px 0 0 #FF5A6A}
 .t+.t{border-top:1px solid var(--hair)}
 .t:hover+.t,.t:hover{border-top-color:transparent}
 .ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--hair-2);background:none;cursor:pointer;display:grid;place-items:center;transition:all .2s;flex:none}
@@ -411,6 +412,10 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     return '<span class="chip ' + c + '">' + w + '</span>';
   }
   function row(t) {
+    if (t.auto) return '<div class="t auto" data-id="pay">' +
+      '<button class="ck" type="button" data-a="paid" aria-label="Log Jay’s payment">' + CHECK + '</button>' +
+      '<div class="tb" data-a="paid"><div class="tt">💸 ' + esc(t.title) + '</div><div class="tn">' + esc(t.notes) + '</div></div>' +
+      '<div class="tm">' + dueChip(t) + '<span class="imp i4" style="cursor:default"><i></i>Urgent</span>' + avs('jay') + '<span class="chip">Auto</span></div></div>';
     var done = !!t.done_at;
     var h = '<div class="t' + (done ? ' isdone' : '') + '" data-id="' + t.id + '">' +
       '<button class="ck" type="button" data-a="done" aria-label="' + (done ? 'Mark not done' : 'Mark done') + '">' + CHECK + '</button>' +
@@ -429,10 +434,21 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     }
     return h + '</div>';
   }
+  // Pay day: an automatic urgent to-do for Jay, from the due day until it's logged as paid
+  function payTask() {
+    if (!D.settings || !D.settings.next_due) return null;
+    var sc = schedule(), open = sc.dues.filter(function (x) { return x.status === 'late' || x.status === 'due'; });
+    if (!open.length) return null;
+    var f = open[0], owed = open.reduce(function (s, x) { return s + x.need; }, 0), late = f.status === 'late';
+    return { id: 'pay', auto: true, owed: owed, title: 'Pay Alex ' + money(owed) + (late ? ' · overdue' : ' · due today'),
+      notes: (late ? 'Was due ' + fmtD(f.date) + '. ' : '') + 'Added automatically from Alex pay. Tick it once it’s sent.',
+      kind: 'todo', importance: 4, who: 'jay', due: f.date, done_at: null, at: '0' };
+  }
   function renderBoard() {
-    var mine = D.tasks.filter(function (t) { return fWho === 'all' || t.who === fWho || t.who === 'both'; });
+    var pt = payTask(), all = pt ? [pt].concat(D.tasks) : D.tasks;
+    var mine = all.filter(function (t) { return fWho === 'all' || t.who === fWho || t.who === 'both'; });
     var open = mine.filter(function (t) { return !t.done_at; });
-    var byImp = function (a, b) { return b.importance - a.importance || (a.due || '9999').localeCompare(b.due || '9999') || a.at.localeCompare(b.at); };
+    var byImp = function (a, b) { return (b.auto ? 1 : 0) - (a.auto ? 1 : 0) || b.importance - a.importance || (a.due || '9999').localeCompare(b.due || '9999') || a.at.localeCompare(b.at); };
     var G = [
       { k: 'todo', n: 'To-do', l: open.filter(function (t) { return t.kind === 'todo'; }).sort(byImp), e: 'Nothing to do. Add one above.' },
       { k: 'idea', n: 'Future ideas', l: open.filter(function (t) { return t.kind === 'idea'; }).sort(byImp), e: 'No ideas parked yet.' },
@@ -454,6 +470,7 @@ label.l{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--tx
     var sg = e.target.closest('.ed .seg button');
     if (sg) { [].forEach.call(sg.parentNode.children, function (x) { x.classList.toggle('on', x === sg); }); return; }
     var a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.getAttribute('data-a') === 'paid') { var pt = payTask(); if (pt) openPay({ amount: pt.owed }); return; }
     var el = a.closest('.t'), t = el && task(+el.getAttribute('data-id')); if (!t) return;
     var act = a.getAttribute('data-a');
     if (act === 'done') { el.classList.toggle('isdone'); upd(t, { done: !t.done_at }, t.done_at ? 'Moved back to open' : 'Nice. Marked done ✓'); }
