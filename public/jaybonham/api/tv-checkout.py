@@ -1,4 +1,5 @@
 """TradeVault checkout with the affiliate attached. Route: /api/tv-checkout?plan=tools|community|elite|elite_trial&ref=CODE
+       or ...&src=meta&campaign=..&content=<ad>&fbclid=..&fbc=..&fbp=.. (from an ad, with or without ref)
 
 The pricing buttons on thetradevault.co send visitors who came through an affiliate link here.
 We create a Whop checkout session for that plan with metadata {"tv_ref": CODE} and redirect to it;
@@ -85,31 +86,61 @@ class handler(BaseHTTPRequestHandler):
         if tier not in PRODUCTS and tier != "elite_trial":
             return self._go(STORE)
         fallback = TRIAL_PAGE if tier == "elite_trial" else PRODUCTS[tier][1]
-        if not (WHOP_API_KEY and CODE_RE.match(code)):
+        # From an ad (the /trial page passes its utm_* / fbclid): the checkout carries the source too.
+        arg = lambda k, n=120: (q.get(k) or [""])[0].strip()[:n]
+        ad = {"src": arg("src", 40), "medium": arg("medium", 40), "campaign": arg("campaign", 80),
+              "content": arg("content", 80), "fbclid": arg("fbclid", 400), "fbc": arg("fbc", 500), "fbp": arg("fbp", 200)}
+        has_ref, has_ad = bool(CODE_RE.match(code)), bool(ad["src"] or ad["fbclid"])
+        if not (WHOP_API_KEY and (has_ref or has_ad)):
             return self._go(fallback)
         try:
             c = _tv_aff.conn()
             cur = c.cursor()
-            cur.execute("SELECT 1 FROM tv_affiliates WHERE code = %s AND status = 'active'", (code,))
-            if not cur.fetchone():
-                c.close()
-                return self._go(fallback, "affiliate not active")
+            if has_ref:
+                cur.execute("SELECT 1 FROM tv_affiliates WHERE code = %s AND status = 'active'", (code,))
+                if not cur.fetchone():
+                    if not has_ad:
+                        c.close()
+                        return self._go(fallback, "affiliate not active")
+                    code = ""
+            else:
+                code = ""
             pid = trial_plan(cur) if tier == "elite_trial" else plan_id(cur, tier)
             c.commit()
-            c.close()
             if not pid:
+                c.close()
                 log("TV_CHECKOUT: no plan id for", tier)
                 return self._go(fallback, "no plan id for " + tier)
+            meta = {"tv_tier": "elite" if tier == "elite_trial" else tier}
+            if tier == "elite_trial":
+                meta["tv_trial"] = "1"
+            if code:
+                meta["tv_ref"] = code
+            if has_ad:
+                import _tv_meta
+                src = "meta" if _tv_meta.is_meta(ad["src"], ad["fbclid"]) else _tv_meta.slug(ad["src"]) or "other"
+                meta.update(tv_src=src, tv_ad=_tv_meta.slug(ad["content"]), tv_campaign=_tv_meta.slug(ad["campaign"]))
+                if ad["fbclid"] and not ad["fbc"]:
+                    ad["fbc"] = "fb.1.%d.%s" % (int(time.time() * 1000), ad["fbclid"])
+                try:
+                    ad.update(src=src, ref=code,
+                              ip=(self.headers.get("x-forwarded-for") or self.headers.get("x-real-ip") or "").split(",")[0].strip(),
+                              ua=self.headers.get("user-agent") or "")
+                    meta["tv_click"] = _tv_meta.save_click(cur, ad)
+                    c.commit()
+                except Exception as e:
+                    log("TV_CHECKOUT_CLICK_ERR:", e)
+            c.close()
             cfg = _whop("POST", "/api/v1/checkout_configurations", {
                 "mode": "payment", "variant_id": pid, "plan_id": pid, "redirect_url": REDIRECT,
-                "metadata": {"tv_ref": code, "tv_tier": "elite" if tier == "elite_trial" else tier}})
+                "metadata": meta})
             url = cfg.get("purchase_url") or ""
             if url.startswith("/"):
                 url = "https://whop.com" + url
             if not url.startswith("https://"):
                 log("TV_CHECKOUT: no purchase_url", json.dumps(cfg)[:300])
                 return self._go(fallback, "no purchase_url: " + json.dumps(cfg)[:300])
-            log("TV_CHECKOUT", tier, code, cfg.get("id"))
+            log("TV_CHECKOUT", tier, code, meta.get("tv_src", ""), meta.get("tv_ad", ""), cfg.get("id"))
             return self._go(url)
         except Exception as e:
             log("TV_CHECKOUT_ERR:", e)

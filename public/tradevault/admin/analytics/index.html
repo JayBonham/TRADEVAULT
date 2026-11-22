@@ -682,6 +682,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       card('c8', 'rev', 'Revenue by ' + gran, 'Net of refunds · ' + w.label, '<div class="big">' + usd(S.net) + '<small>' + (S.refunds ? usd(S.refunds) + ' refunded' : 'no refunds') + '</small></div>', true) +
       card('c4', 'mix', 'Members by tier', int(mem.length) + ' live memberships · as of ' + asOf, '') +
       card('c12', 'src', 'Where sales come from', 'Each customer counted by how they arrived · ' + w.label, '<div class="big" id="srcBig"></div>') +
+      card('c12', 'trial', 'Free trial signups · where they came from', 'Black Friday 7-day trial · Meta ads are tagged tv-src-meta-ads in GHL', '<div class="big" id="trialBig"></div>') +
       card('c12', 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of ' + asOf, '') +
       card('c7', 'act', 'Active members', 'Live memberships over the ' + w.label, '', true) +
       card('c5', 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>') +
@@ -693,6 +694,8 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       card('c7', 'feed', 'Recent payments', 'Latest TradeVault payments from Whop', '') +
       '</div>' +
       '<p class="foot">MRR counts every live membership\'s renewal price per month; members set to cancel at the end of their period are shown as "ending" instead. Cancellation rate is cancellations ÷ (members at the start of the range + new members), and leaves out upgrades (the old membership is cancelled when a member moves tier). Chargeback rate is disputes ÷ paid payments; card networks start monitoring around 0.9%.</p>';
+
+    renderTrial();
 
     // revenue
     var rv = bs.map(function () { var o = {}; TIERS.forEach(function (t) { o[t] = 0; }); o._ref = 0; o._n = 0; return o; });
@@ -908,6 +911,46 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     draw();
   }
 
+  /* ---------- free trial: source of each signup (api/tv-ads) ---------- */
+  var ADS = null, adsTries = 0, ADS_FROM = 1795357943000; // tracking went live (signups before this have no source)
+  function srcLabel(r) {
+    if (r.src === 'meta') return 'Meta ad' + (r.ad ? ' · ' + r.ad : '');
+    if (r.src === 'affiliate') return 'Affiliate';
+    if (r.src === 'ghl') return 'Email';
+    if (r.src) return r.src;
+    return r.started * 1000 < ADS_FROM ? 'Before tracking' : 'Direct / organic';
+  }
+  function renderTrial() {
+    var el = $('trial'); if (!el) return;
+    if (!ADS) { el.innerHTML = '<div class="sub">Loading trial signups…</div>'; return; }
+    if (ADS.error) { el.innerHTML = '<div class="sub">Could not load trial signups: ' + esc(ADS.error) + '</div>'; return; }
+    var rows = ADS.rows || [], live = rows.filter(function (r) { return r.status === 'in trial'; });
+    var n = function (f) { return rows.filter(f).length; };
+    var meta = n(function (r) { return r.src === 'meta'; });
+    $('trialBig').innerHTML = int(meta) + '<small>from Meta ads · ' + int(live.length) + ' in trial now</small>';
+    var groups = {}; rows.forEach(function (r) { var k = r.src === 'meta' ? 'Meta ads' : srcLabel(r); groups[k] = (groups[k] || 0) + 1; });
+    var ads = Object.keys(ADS.by_ad || {}).sort();
+    el.innerHTML =
+      '<div class="sub" style="margin-bottom:10px">' + Object.keys(groups).map(function (k) { return esc(k) + ': <b>' + int(groups[k]) + '</b>'; }).join(' · ') +
+      (ADS.capi ? ' · Meta Conversions API: <b>on</b>' : ' · Meta Conversions API: <b>off</b> (add META_CAPI_TOKEN in Vercel)') +
+      (ADS.remaining ? ' · catching up older signups…' : '') + '</div>' +
+      (ads.length ? '<div class="tw"><table class="sm"><thead><tr><th>Meta ad</th><th>Clicked "Start 7 days free"</th><th>Trials started</th></tr></thead><tbody>' +
+        ads.map(function (k) { var a = ADS.by_ad[k]; return '<tr><td>' + esc(k) + '</td><td>' + int(a.clicks) + '</td><td>' + int(a.trials) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '') +
+      '<div class="tw"><table class="sm"><thead><tr><th>Started</th><th>Name</th><th>Email</th><th>Came from</th><th>Status</th></tr></thead><tbody>' +
+      (rows.length ? rows.slice(0, 200).map(function (r) {
+        return '<tr><td>' + (r.started ? esc(new Date(r.started * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) : '') + '</td><td>' + esc(r.name) + '</td><td>' + esc(r.email) + '</td><td>' + esc(srcLabel(r)) + '</td><td>' + esc(r.status) + '</td></tr>';
+      }).join('') : '<tr><td colspan="5">No trial signups yet</td></tr>') + '</tbody></table></div>';
+  }
+  function loadAds() {
+    fetch('https://jaybonham.com/api/tv-ads', { headers: { 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass } })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Bad response (' + r.status + ')' }; }); })
+      .then(function (d) {
+        ADS = d.ok ? d : { error: d.error || 'unknown error' }; renderTrial();
+        if (d.ok && d.remaining && ++adsTries < 12) setTimeout(loadAds, 500);
+      })
+      .catch(function (e) { ADS = { error: e.message || 'network error' }; renderTrial(); });
+  }
+
   /* ---------- load ---------- */
   function skeleton() {
     $('kpis').classList.add('loading');
@@ -929,6 +972,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
         $('kpis').classList.remove('loading');
         $('banner').innerHTML = d.partial ? '<div class="banner">Whop took too long to send everything, so the oldest records may be missing. Hit Refresh in a minute.</div>' : '';
         render(); stamp();
+        if (!ADS || fresh) { adsTries = 0; loadAds(); }
       })
       .catch(function (e) {
         if (e.locked) { lockFail(); return; }

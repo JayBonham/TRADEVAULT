@@ -740,6 +740,12 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 .hero .pill{-webkit-backdrop-filter:none;backdrop-filter:none}
 .passbar .bfend{margin-left:6px;color:#58E9FF;white-space:nowrap}.passbar .pb-s{display:none}@media (max-width:700px){.passbar .pb-s{display:inline}}
 </style>
+<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','3566618163494760');fbq('track','PageView');</script>
+<script>
+/* Ad clicks: remember utm_* / fbclid for 7 days (last click wins), so the trial checkout carries the source. */
+(function(){try{var q=new URLSearchParams(location.search),s=q.get('utm_source')||'',f=q.get('fbclid')||'';if(!s&&!f)return;
+localStorage.setItem('tv_ad',JSON.stringify({src:s,medium:q.get('utm_medium')||'',campaign:q.get('utm_campaign')||'',content:q.get('utm_content')||'',fbclid:f,t:Date.now()}));}catch(e){}})();
+</script>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
 (function(){try{var r=new URLSearchParams(location.search).get('ref');if(!r||!/^[a-z0-9_]{3,20}$/i.test(r))return;r=r.toLowerCase();
@@ -1442,6 +1448,18 @@ var TRIAL_LINKS = { elite: 'https://whop.com/sniper-academy-603f/tradevault-elit
     if (!r) { var m = document.cookie.match(/(?:^|; )tv_ref=([a-z0-9_]{3,20})/); if (m) r = m[1]; }
     if (u && r && a.getAttribute('data-trial') === 'elite') u = 'https://jaybonham.com/api/tv-checkout?plan=elite_trial&ref=' + encodeURIComponent(r);
     if (u) { a.href = u; a.classList.remove('off'); }
+    // from an ad: same checkout route, with the ad's source (and Meta's click ids, read at click time)
+    if (u && a.getAttribute('data-trial') === 'elite') a.addEventListener('click', function () {
+      try { if (window.fbq) fbq('track', 'InitiateCheckout', { value: 0, currency: 'USD', content_name: 'TradeVault Elite trial' }); } catch (e) {}
+      try {
+        var ad = JSON.parse(localStorage.getItem('tv_ad') || 'null');
+        if (!ad || Date.now() - ad.t > 7 * 864e5) return;
+        var ck = function (n) { var m = document.cookie.match(new RegExp('(?:^|; )' + n + '=([^;]*)')); return m ? decodeURIComponent(m[1]) : ''; };
+        var p = { plan: 'elite_trial', ref: r, src: ad.src, medium: ad.medium, campaign: ad.campaign, content: ad.content, fbclid: ad.fbclid, fbc: ck('_fbc'), fbp: ck('_fbp') };
+        a.href = 'https://jaybonham.com/api/tv-checkout?' + Object.keys(p).filter(function (k) { return p[k]; })
+          .map(function (k) { return k + '=' + encodeURIComponent(String(p[k]).slice(0, 400)); }).join('&');
+      } catch (e) {}
+    });
     else { a.textContent = 'Trial opens soon'; a.removeAttribute('target'); }
   });
   // their own chart from the game, Killshot off vs on

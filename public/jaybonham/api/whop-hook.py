@@ -684,6 +684,23 @@ class handler(BaseHTTPRequestHandler):
                     print("TV_TRANSFER_ERR:", e, file=sys.stderr)
             email = _tv_aff.current_email(email, str(mem_id) if mem_id and event_type == "payment.succeeded" else None)
 
+        # Free-trial signups get tv-trial; checkouts opened from an ad get tv-src-meta-ads + tv-ad-<ad>.
+        meta_src = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+        is_trial = False
+        if "tradevault-purchased" in tags:
+            try:
+                sys.path.insert(0, sys_path)
+                import _tv_meta
+                paid_now = event_type == "payment.succeeded" and bool(money(data.get("total")) or money(data.get("usd_total")))
+                is_trial = not paid_now and (
+                    str(data.get("status") or "").lower() == "trialing" or "trial" in title.lower()
+                    or bool(meta_src.get("tv_trial")) or bool(plan.get("trial_period_days"))
+                    or str(prod.get("route") or "") == "tradevault-elite-copy-e7"
+                    or _tv_meta.is_trial_plan(plan.get("id") or data.get("plan_id")))
+                tags = tags + (["tv-trial"] if is_trial else []) + _tv_meta.source_tags(meta_src)
+            except Exception as e:
+                print("TV_SRC_TAGS_ERR:", e, file=sys.stderr)
+
         ghl_result = self._ghl_upsert(email, first, last, phone, tags)
         try:
             sys.path.insert(0, sys_path)
@@ -732,9 +749,42 @@ class handler(BaseHTTPRequestHandler):
                         c.close()
                     except Exception as e:
                         print("TV_UPGRADE_FINISH_ERR:", e, file=sys.stderr)
+            self._meta_event(event_type, data, email, phone, name, is_trial, meta_src)
         else:
             self._record_affiliate_purchase(email, slug, None)
         return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}
+
+    def _meta_event(self, event_type, data, email, phone, name, is_trial, meta):
+        """Remember where the signup came from, and send StartTrial / Purchase to Meta (CAPI). Never raises."""
+        try:
+            sys.path.insert(0, sys_path)
+            import _tv_aff, _tv_meta
+            mem = data.get("membership")
+            mem_id = data.get("membership_id") or (mem.get("id") if isinstance(mem, dict) else mem) or \
+                (data.get("id") if event_type.startswith("membership.") else None)
+            amount = 0
+            if event_type == "payment.succeeded":
+                for k in ("usd_total", "total", "final_amount", "subtotal", "amount"):
+                    amount = money(data.get(k)) or 0
+                    if amount:
+                        break
+            c = _tv_aff.conn()
+            cur = c.cursor()
+            clk = _tv_meta.click(cur, meta.get("tv_click"))
+            _tv_meta.remember_signup(cur, email, str(mem_id or ""), "trial" if is_trial else "paid", meta, clk)
+            c.commit()
+            src, ad = meta.get("tv_src") or "", meta.get("tv_ad") or ""
+            if amount and data.get("id"):
+                r = _tv_meta.send(cur, "Purchase", "pay-" + str(data["id"]), email, phone, name, amount, clk=clk, src=src, ad=ad)
+            elif is_trial and mem_id:
+                r = _tv_meta.send(cur, "StartTrial", "trial-" + str(mem_id), email, phone, name, 0, clk=clk, src=src, ad=ad)
+            else:
+                r = "none"
+            c.commit()
+            c.close()
+            print("TV_META_EVENT:", event_type, email, src, ad, r, file=sys.stderr)
+        except Exception as e:
+            print("TV_META_EVENT_ERR:", e, file=sys.stderr)
 
     def _notify_slack(self, event_type, data):
         """Post a payment line to #payment-confirmations-us30. Never breaks the webhook."""
