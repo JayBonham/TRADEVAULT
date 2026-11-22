@@ -13,7 +13,7 @@
 
   var S = {
     tpl: 0, size: 'post', head: 'backtest', custom: '', scanner: 'Killshot', market: 'gold', marketOther: '', tf: '',
-    trades: '', wins: '', losses: '', total: '', unit: 'pips', pct: '', shot: null, zoom: 1, posX: 50, posY: 50, showCode: true
+    trades: '', wins: '', losses: '', total: '', unit: 'pips', pct: '', shot: null, zoom: 1, posX: 50, posY: 50, cta: 'auto'
   };
   var IMGS = {}, ctx0 = null, OPT = {}, PAINTING = null;
 
@@ -157,15 +157,20 @@
     var lines = wrap(c, fine(), W - pad * 2);
     for (var i = lines.length - 1; i >= 0; i--) { c.fillText(lines[i], pad, y); y -= fs * 1.4; }
     y -= 26;
-    var code = (OPT.code || '').toUpperCase(), h = 74;
-    // CTA pill
-    var label = S.showCode && code ? 'Code ' + code : 'Start free →';
+    var h = 74, cta = S.cta === 'auto' ? (S.size === 'story' ? 'link' : 'bio') : S.cta;
+    // CTA pill: affiliates share their own trial link (link in bio / story link sticker), so no code here
+    var label = 'Start 7 days free →';
     font(c, 700, 30, DISP); var tw = c.measureText(label).width, pw = tw + 64;
     c.save(); c.shadowColor = 'rgba(47,123,255,.6)'; c.shadowBlur = 36; rr(c, pad, y - h, pw, h, h / 2); c.fillStyle = C.blue; c.fill(); c.restore();
     c.fillStyle = '#fff'; c.textBaseline = 'middle'; c.fillText(label, pad + 32, y - h / 2 + 1); c.textBaseline = 'alphabetic';
-    font(c, 600, 24, DISP); c.fillStyle = C.ink; c.textBaseline = 'middle';
-    c.fillText('thetradevault.co', pad + pw + 28, y - h / 2 - 13);
-    font(c, 500, 15, MONO); c.fillStyle = C.dim; spaced(c, '7 DAYS FREE · ELITE TRIAL', pad + pw + 28, y - h / 2 + 18, 2);
+    var line = cta === 'bio' ? 'Link in bio' : cta === 'link' ? 'Tap the link' : '';
+    c.textBaseline = 'middle';
+    if (line) {
+      font(c, 600, 26, DISP); c.fillStyle = C.ink; c.fillText(line, pad + pw + 28, y - h / 2 - 13);
+      font(c, 500, 15, MONO); c.fillStyle = C.dim; spaced(c, 'THETRADEVAULT.CO', pad + pw + 28, y - h / 2 + 18, 2);
+    } else {
+      font(c, 500, 17, MONO); c.fillStyle = C.dim; spaced(c, 'THETRADEVAULT.CO', pad + pw + 28, y - h / 2 + 1, 2);
+    }
     c.textBaseline = 'alphabetic';
     return y - h; // top of the footer block
   }
@@ -432,7 +437,7 @@
     var link = OPT.trial || OPT.main || '';
     return headline() + (what ? ' · ' + what : '') + (bits.length ? '\n\n' + bits.join(' · ') : '') +
       '\n\nThis is what trading with rules looks like inside The Trade Vault: the scanners flag the setup, the educators trade it live, and you follow the plan.' +
-      '\n\nTry it free for 7 days 👇\n' + link +
+      '\n\nTry it free for 7 days 👇\n' + link + ((S.cta === 'auto' ? S.size !== 'story' : S.cta === 'bio') ? '\n(On Instagram: tap the link in my bio)' : '') +
       '\n\n' + (S.head === 'backtest' ? 'Backtest results, hypothetical. ' : '') + 'Results not typical. Trading involves risk. (Affiliate link: I earn a commission if you join.)';
   }
 
@@ -538,7 +543,8 @@
           '<div class="pb-g"><h3><i>05</i>Chart screenshot <span class="pb-note" style="font-weight:400">(optional)</span></h3>' +
             '<label class="pb-drop" id="pbDrop"><input type="file" accept="image/*" id="pbFile" hidden><b>Upload a screenshot</b> or drop it here<br><span class="pb-note">No screenshot? We draw a clean chart for you.</span></label>' +
             '<div class="pb-shot" id="pbShot" hidden><img alt=""><div class="pb-acts"><button type="button" class="btn-g" id="pbAdj">Adjust</button><button type="button" class="btn-g" id="pbRm">Remove</button></div></div></div>' +
-          '<div class="pb-g"><h3><i>06</i>Your code & caption</h3><label class="pb-chk"><input type="checkbox" id="pbCode" checked> Show my code <b style="font-family:var(--mono);color:var(--tx)">' + (OPT.code || '').toUpperCase() + '</b> on the image</label>' +
+          '<div class="pb-g"><h3><i>06</i>Call to action & caption</h3>' + seg('cta', [['auto', 'Auto'], ['bio', 'Link in bio'], ['link', 'Tap the link (story)'], ['none', 'No line']]) +
+            '<div class="pb-note">Auto uses “Link in bio” on posts and “Tap the link” on stories. Put your trial link in your bio or on a story link sticker: <b style="font-family:var(--mono);color:var(--tx);overflow-wrap:anywhere">' + (OPT.trial || '') + '</b></div>' +
             '<div class="pb-cap"></div><div class="pb-acts"><button type="button" class="btn-g" id="pbCopy">Copy caption</button></div></div>' +
         '</div>' +
       '</div>' +
@@ -570,7 +576,6 @@
       redraw();
     });
     el.querySelector('#pb-unit').addEventListener('change', function () { S.unit = this.value; redraw(); });
-    el.querySelector('#pbCode').addEventListener('change', function () { S.showCode = this.checked; redraw(); });
 
     var drop = el.querySelector('#pbDrop'), file = el.querySelector('#pbFile');
     function load(f) {
