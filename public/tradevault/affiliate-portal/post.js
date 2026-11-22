@@ -13,9 +13,9 @@
 
   var S = {
     tpl: 0, size: 'post', head: 'backtest', custom: '', scanner: 'Killshot', market: 'gold', marketOther: '', tf: '',
-    trades: '', wins: '', losses: '', total: '', unit: 'pips', pct: '', shot: null, zoom: 1, posY: 50, showCode: true
+    trades: '', wins: '', losses: '', total: '', unit: 'pips', pct: '', shot: null, zoom: 1, posX: 50, posY: 50, showCode: true
   };
-  var IMGS = {}, ctx0 = null, OPT = {};
+  var IMGS = {}, ctx0 = null, OPT = {}, PAINTING = null;
 
   function img(src) {
     if (IMGS[src]) return IMGS[src];
@@ -112,7 +112,8 @@
     if (S.shot && ok(S.shot)) {
       var im = S.shot, sc = Math.max(w / im.naturalWidth, ih / im.naturalHeight) * S.zoom;
       var dw = im.naturalWidth * sc, dh = im.naturalHeight * sc;
-      var dx = x + (w - dw) / 2, dy = iy + (ih - dh) * (S.posY / 100);
+      var dx = x + (w - dw) * (S.posX / 100), dy = iy + (ih - dh) * (S.posY / 100);
+      if (PAINTING && !opt.bg) PAINTING._geo = { w: w, ih: ih, dw: dw, dh: dh };
       c.drawImage(im, dx, dy, dw, dh);
     } else {
       fakeChart(c, x + 10, iy + 8, w - 20, ih - 16, eyebrow(st) + S.unit);
@@ -278,6 +279,7 @@
     // the screenshot, faint, behind everything
     if (S.shot && ok(S.shot)) {
       c.save(); c.globalAlpha = .16; chartWin(c, 0, 0, W, H, st, { noBar: true, r: 0, bare: true }); c.restore();
+      if (PAINTING) { var im0 = S.shot, sc0 = Math.max(W / im0.naturalWidth, H / im0.naturalHeight) * S.zoom; PAINTING._geo = { w: W, ih: H, dw: im0.naturalWidth * sc0, dh: im0.naturalHeight * sc0 }; }
       var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(3,6,12,.4)'); g.addColorStop(.5, 'rgba(3,6,12,.75)'); g.addColorStop(1, C.bg); c.fillStyle = g; c.fillRect(0, 0, W, H);
     }
     var y = header(c, W, pad, pad) + 70;
@@ -295,6 +297,10 @@
     var cy = y + 40 + (space - r * 2) / 2 + r;
     if (st.wr != null) ring(c, W / 2, cy, r, st.wr, 'WIN RATE');
     else if (T) { c.save(); c.textAlign = 'center'; heroTotal(c, W / 2, cy + 50, W - pad * 2, 200, st, 'center'); c.restore(); }
+    else {
+      c.save(); c.lineWidth = r * .14; c.strokeStyle = 'rgba(255,255,255,.08)'; c.beginPath(); c.arc(W / 2, cy, r, 0, Math.PI * 2); c.stroke();
+      c.textAlign = 'center'; font(c, 600, Math.round(r * .2), DISP); c.fillStyle = C.dim; c.fillText('Add your numbers', W / 2, cy + r * .07); c.restore();
+    }
     y = cy + r + 40;
     if (T && st.wr != null) {
       c.save(); c.textAlign = 'center'; heroTotal(c, W / 2, y + 90, W - pad * 2, 110, st, 'center'); c.restore(); y += 120;
@@ -352,7 +358,8 @@
   function paint(cv, key, size) {
     var sz = SIZES[size || S.size]; cv.width = sz[0]; cv.height = sz[1];
     var c = cv.getContext('2d'); c.textBaseline = 'alphabetic'; c.textAlign = 'left';
-    DRAW[key || TEMPLATES[S.tpl][0]](c, sz[0], sz[1], stats());
+    PAINTING = cv; cv._geo = null;
+    try { DRAW[key || TEMPLATES[S.tpl][0]](c, sz[0], sz[1], stats()); } finally { PAINTING = null; }
   }
 
   /* ---------- UI ---------- */
@@ -386,7 +393,28 @@
     '.pb-cap{white-space:pre-wrap;font-size:13.5px;color:var(--tx-dim);background:rgba(0,0,0,.25);border:1px solid var(--hair);border-radius:12px;padding:12px;max-height:180px;overflow:auto}' +
     '.pb-note{font-size:12.5px;color:var(--tx-mute)}' +
     '.pb-chk{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--tx-dim)}.pb-chk input{accent-color:var(--acc);width:18px;height:18px}' +
-    '@media (max-width:1060px){.pb{grid-template-columns:minmax(0,1fr)}.pb-prev{position:static}.pb-stage canvas{max-height:none}}' +
+    '.pb-shot .pb-acts{margin-left:auto;flex-wrap:nowrap}.pb-shot .btn-g{min-height:40px}' +
+    '.pb-m{position:fixed;inset:0;z-index:1000;background:rgba(2,5,10,.97);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}' +
+    '.pb-m-top{display:flex;align-items:center;gap:10px;padding:12px max(16px,env(safe-area-inset-left,0px)) 10px max(16px,env(safe-area-inset-right,0px))}' +
+    '.pb-m-top b{flex:1;font-family:var(--display);font-size:16px;text-align:center}' +
+    '.pb-x{width:40px;height:40px;border-radius:50%;border:1px solid var(--hair-2);background:transparent;color:var(--tx);font-size:18px;cursor:pointer}' +
+    '.pb-m-stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:0 16px}' +
+    '.pb-m-stage canvas{display:block;max-width:100%;max-height:calc(100dvh - 250px);width:auto;height:auto;border-radius:12px;touch-action:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}' +
+    '.pb-m-stage.drag canvas{cursor:grab}.pb-m-stage.drag canvas:active{cursor:grabbing}' +
+    '.pb-m .pb-nav{background:rgba(5,10,20,.85)}.pb-m .pb-nav.l{left:4px}.pb-m .pb-nav.r{right:4px}' +
+    '.pb-m-ctl{display:flex;flex-direction:column;gap:8px;padding:12px 16px 4px;align-items:center}' +
+    '.pb-m-hint{font-size:13px;color:var(--tx-dim);text-align:center}' +
+    '.pb-zoom{display:flex;align-items:center;gap:12px;width:100%;max-width:420px}.pb-zoom input{flex:1;accent-color:var(--acc)}' +
+    '.pb-zoom button{width:36px;height:36px;border-radius:50%;border:1px solid var(--hair-2);background:transparent;color:var(--tx);font-size:18px;cursor:pointer}' +
+    '.pb-dots{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--tx-mute)}.pb-dots i{width:6px;height:6px;border-radius:50%;background:var(--hair-2)}.pb-dots i.on{background:var(--acc)}' +
+    '.pb-m-acts{display:flex;gap:10px;padding:12px max(16px,env(safe-area-inset-left,0px)) 16px max(16px,env(safe-area-inset-right,0px));justify-content:center}.pb-m-acts .btn{flex:1;max-width:320px;min-height:50px}' +
+    '.pb-bar{display:none}' +
+    '@media (max-width:1060px){.pb{grid-template-columns:minmax(0,1fr);padding-bottom:110px}.pb-prev{position:static}.pb-stage canvas{max-height:none}' +
+      '.pb-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(5,10,20,.95);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--hair-2)}' +
+      '.pb-bar canvas{height:68px;width:auto;border-radius:6px;border:1px solid var(--hair-2);cursor:pointer;flex:none}' +
+      '.pb-bar .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.pb-bar .t b{font-size:14px;font-family:var(--display)}.pb-bar .t .sw{display:flex;gap:6px;align-items:center}' +
+      '.pb-bar .ar{width:34px;height:34px;border-radius:50%;border:1px solid var(--hair-2);background:transparent;color:var(--tx);font-size:16px;cursor:pointer}' +
+      '.pb-bar .btn{min-height:46px;padding:10px 20px;font-size:15px;flex:none}}' +
     '@media (max-width:520px){.pb-row{grid-template-columns:repeat(2,minmax(0,1fr))}.pb-thumbs{gap:6px}}';
 
   function seg(key, opts) {
@@ -408,15 +436,75 @@
       '\n\n' + (S.head === 'backtest' ? 'Backtest results, hypothetical. ' : '') + 'Results not typical. Trading involves risk. (Affiliate link: I earn a commission if you join.)';
   }
 
-  var root, stage, thumbs = [];
+  var root, stage, thumbs = [], MODAL = null, saveFn = null;
   function draw() {
     if (!stage) return;
     paint(stage);
     thumbs.forEach(function (t, i) { paint(t, TEMPLATES[i][0]); });
+    var mini = root.querySelector('#pbMini');
+    if (mini && getComputedStyle(root.querySelector('.pb-bar')).display !== 'none') {
+      mini.width = Math.round(stage.width / 8); mini.height = Math.round(stage.height / 8); mini.getContext('2d').drawImage(stage, 0, 0, mini.width, mini.height);
+    }
+    var bt = root.querySelector('#pbBarT'); if (bt) bt.textContent = TEMPLATES[S.tpl][1] + ' · ' + SIZES[S.size][2];
+    if (MODAL && !MODAL.hidden) { paint(MODAL.querySelector('canvas')); syncModal(); }
     var cap = root.querySelector('.pb-cap'); if (cap) cap.textContent = caption();
   }
   var pend = 0;
   function redraw() { if (pend) return; pend = requestAnimationFrame(function () { pend = 0; draw(); }); }
+
+  var PICK = function () {};
+  function syncModal() {
+    var M = MODAL; if (!M) return;
+    var has = !!S.shot;
+    M.querySelector('.pb-m-stage').classList.toggle('drag', has);
+    M.querySelector('.pb-zoom').hidden = !has;
+    M.querySelector('.pb-m-hint').textContent = has ? 'Drag the chart to move it · pinch or slide to zoom' : 'Swipe through the templates with the arrows';
+    M.querySelector('#pbMZ').value = S.zoom;
+    M.querySelector('.pb-dots').innerHTML = TEMPLATES.map(function (t, i) { return '<i' + (i === S.tpl ? ' class="on"' : '') + '></i>'; }).join('') + '<span style="margin-left:6px">' + TEMPLATES[S.tpl][1] + '</span>';
+  }
+  function openModal(adjust) {
+    if (!MODAL) {
+      var M = MODAL = document.createElement('div'); M.className = 'pb-m'; M.hidden = true;
+      M.setAttribute('role', 'dialog'); M.setAttribute('aria-modal', 'true'); M.setAttribute('aria-label', 'Post preview');
+      M.innerHTML = '<div class="pb-m-top"><button type="button" class="pb-x" data-close aria-label="Close">✕</button><b>Preview</b><span style="width:40px"></span></div>' +
+        '<div class="pb-m-stage"><canvas></canvas><button type="button" class="pb-nav l" data-mstep="-1" aria-label="Previous template">‹</button><button type="button" class="pb-nav r" data-mstep="1" aria-label="Next template">›</button></div>' +
+        '<div class="pb-m-ctl"><div class="pb-m-hint"></div><div class="pb-zoom"><button type="button" data-z="-1" aria-label="Zoom out">−</button><input type="range" id="pbMZ" min="1" max="3" step="0.02" aria-label="Zoom"><button type="button" data-z="1" aria-label="Zoom in">+</button></div><div class="pb-dots"></div></div>' +
+        '<div class="pb-m-acts"><button type="button" class="btn-g" data-close style="min-height:50px;padding:0 22px">Done</button><button type="button" class="btn" data-save>Save image</button></div>';
+      document.body.appendChild(M);
+      M.addEventListener('click', function (e) {
+        var b = e.target.closest('button'); if (!b) return;
+        if (b.hasAttribute('data-close')) return closeModal();
+        if (b.hasAttribute('data-save')) return saveFn && saveFn(b);
+        if (b.hasAttribute('data-mstep')) return PICK((S.tpl + +b.getAttribute('data-mstep') + TEMPLATES.length) % TEMPLATES.length);
+        if (b.hasAttribute('data-z')) { S.zoom = Math.max(1, Math.min(3, S.zoom + .15 * +b.getAttribute('data-z'))); redraw(); }
+      });
+      M.querySelector('#pbMZ').addEventListener('input', function () { S.zoom = +this.value; redraw(); });
+      document.addEventListener('keydown', function (e) { if (!M.hidden && e.key === 'Escape') closeModal(); });
+      // drag to move, pinch to zoom (pointer events cover mouse, touch and pen)
+      var cv = M.querySelector('canvas'), pts = {}, last = null, pinch = null;
+      function geo() { return cv._geo; }
+      cv.addEventListener('pointerdown', function (e) { if (!S.shot) return; cv.setPointerCapture(e.pointerId); pts[e.pointerId] = [e.clientX, e.clientY]; last = [e.clientX, e.clientY];
+        var k = Object.keys(pts); if (k.length === 2) { var a = pts[k[0]], b = pts[k[1]]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: S.zoom }; } });
+      cv.addEventListener('pointermove', function (e) {
+        if (!pts[e.pointerId] || !S.shot) return;
+        pts[e.pointerId] = [e.clientX, e.clientY];
+        var k = Object.keys(pts);
+        if (k.length >= 2 && pinch) { var a = pts[k[0]], b = pts[k[1]]; S.zoom = Math.max(1, Math.min(3, pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / (pinch.d || 1))); return redraw(); }
+        var g = geo(); if (!g || !last) return;
+        var sc = cv.width / cv.getBoundingClientRect().width, dx = (e.clientX - last[0]) * sc, dy = (e.clientY - last[1]) * sc; last = [e.clientX, e.clientY];
+        if (g.dw - g.w > 1) S.posX = Math.max(0, Math.min(100, S.posX - dx / (g.dw - g.w) * 100));
+        if (g.dh - g.ih > 1) S.posY = Math.max(0, Math.min(100, S.posY - dy / (g.dh - g.ih) * 100));
+        redraw();
+      });
+      function up(e) { delete pts[e.pointerId]; pinch = null; var k = Object.keys(pts); last = k.length ? pts[k[0]] : null; }
+      cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+      cv.addEventListener('wheel', function (e) { if (!S.shot) return; e.preventDefault(); S.zoom = Math.max(1, Math.min(3, S.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06))); redraw(); }, { passive: false });
+    }
+    MODAL.querySelector('.pb-m-top b').textContent = adjust && S.shot ? 'Position your chart' : 'Preview';
+    MODAL.hidden = false; document.documentElement.style.overflow = 'hidden';
+    paint(MODAL.querySelector('canvas')); syncModal();
+  }
+  function closeModal() { if (MODAL) MODAL.hidden = true; document.documentElement.style.overflow = ''; redraw(); }
 
   function render(el, opt) {
     OPT = opt || {}; root = el;
@@ -449,14 +537,12 @@
             '<div class="pb-note" id="pbWr"></div></div>' +
           '<div class="pb-g"><h3><i>05</i>Chart screenshot <span class="pb-note" style="font-weight:400">(optional)</span></h3>' +
             '<label class="pb-drop" id="pbDrop"><input type="file" accept="image/*" id="pbFile" hidden><b>Upload a screenshot</b> or drop it here<br><span class="pb-note">No screenshot? We draw a clean chart for you.</span></label>' +
-            '<div class="pb-shot" id="pbShot" hidden><img alt=""><div style="flex:1;display:flex;flex-direction:column;gap:8px;min-width:0">' +
-              '<div class="pb-f"><label for="pbZoom">Zoom</label><input type="range" id="pbZoom" min="1" max="2.5" step="0.05" value="1"></div>' +
-              '<div class="pb-f"><label for="pbPos">Position</label><input type="range" id="pbPos" min="0" max="100" step="1" value="50"></div></div>' +
-              '<button type="button" class="btn-g" id="pbRm">Remove</button></div></div>' +
+            '<div class="pb-shot" id="pbShot" hidden><img alt=""><div class="pb-acts"><button type="button" class="btn-g" id="pbAdj">Adjust</button><button type="button" class="btn-g" id="pbRm">Remove</button></div></div></div>' +
           '<div class="pb-g"><h3><i>06</i>Your code & caption</h3><label class="pb-chk"><input type="checkbox" id="pbCode" checked> Show my code <b style="font-family:var(--mono);color:var(--tx)">' + (OPT.code || '').toUpperCase() + '</b> on the image</label>' +
             '<div class="pb-cap"></div><div class="pb-acts"><button type="button" class="btn-g" id="pbCopy">Copy caption</button></div></div>' +
         '</div>' +
-      '</div>';
+      '</div>' +
+      '<div class="pb-bar"><canvas id="pbMini" aria-label="Open preview"></canvas><div class="t"><b id="pbBarT"></b><div class="sw"><button type="button" class="ar" data-step="-1" aria-label="Previous template">‹</button><button type="button" class="ar" data-step="1" aria-label="Next template">›</button><span class="pb-note">Tap preview to view</span></div></div><button type="button" class="btn" id="pbBarSave">Save</button></div>';
     stage = el.querySelector('#pbC');
     thumbs = Array.prototype.map.call(el.querySelectorAll('.pb-thumbs canvas'), function (x) { return x; });
 
@@ -475,6 +561,7 @@
       if (b.hasAttribute('data-step')) return pick((S.tpl + +b.getAttribute('data-step') + TEMPLATES.length) % TEMPLATES.length);
     });
     function pick(i) { S.tpl = i; el.querySelectorAll('.pb-thumbs button').forEach(function (x, j) { x.classList.toggle('on', j === i); }); redraw(); }
+    PICK = pick;
     el.addEventListener('input', function (e) {
       var k = e.target.getAttribute('data-k'); if (!k) return;
       S[k] = e.target.value;
@@ -484,15 +571,13 @@
     });
     el.querySelector('#pb-unit').addEventListener('change', function () { S.unit = this.value; redraw(); });
     el.querySelector('#pbCode').addEventListener('change', function () { S.showCode = this.checked; redraw(); });
-    el.querySelector('#pbZoom').addEventListener('input', function () { S.zoom = +this.value; redraw(); });
-    el.querySelector('#pbPos').addEventListener('input', function () { S.posY = +this.value; redraw(); });
 
     var drop = el.querySelector('#pbDrop'), file = el.querySelector('#pbFile');
     function load(f) {
       if (!f || !/^image\//.test(f.type)) return;
       var url = URL.createObjectURL(f), im = new Image();
-      im.onload = function () { S.shot = im; S.zoom = 1; S.posY = 50; el.querySelector('#pbZoom').value = 1; el.querySelector('#pbPos').value = 50;
-        el.querySelector('#pbShot').hidden = false; el.querySelector('#pbShot img').src = url; drop.hidden = true; redraw(); };
+      im.onload = function () { S.shot = im; S.zoom = 1; S.posX = 50; S.posY = 50;
+        el.querySelector('#pbShot').hidden = false; el.querySelector('#pbShot img').src = url; drop.hidden = true; draw(); openModal(true); };
       im.src = url;
     }
     file.addEventListener('change', function () { load(file.files[0]); file.value = ''; });
@@ -501,19 +586,31 @@
     drop.addEventListener('drop', function (e) { load(e.dataTransfer.files[0]); });
     el.addEventListener('paste', function (e) { var it = [].slice.call((e.clipboardData || {}).items || []).filter(function (x) { return /^image\//.test(x.type); })[0]; if (it) load(it.getAsFile()); });
     el.querySelector('#pbRm').addEventListener('click', function () { S.shot = null; el.querySelector('#pbShot').hidden = true; drop.hidden = false; redraw(); });
+    el.querySelector('#pbAdj').addEventListener('click', function () { openModal(true); });
+    el.querySelector('#pbMini').addEventListener('click', function () { openModal(false); });
 
     function blob(cb) { var cv = document.createElement('canvas'); paint(cv); cv.toBlob(cb, 'image/png'); }
     function fname() { return 'tradevault-' + TEMPLATES[S.tpl][0] + '-' + S.size + '.png'; }
-    el.querySelector('#pbDl').addEventListener('click', function () {
-      var b = this; b.disabled = true;
+    function download(b) {
+      if (b) b.disabled = true;
       blob(function (bl) {
-        b.disabled = false; if (!bl) return;
+        if (b) b.disabled = false; if (!bl) return;
         var a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = fname(); document.body.appendChild(a); a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
       });
-    });
+    }
+    var canShare = false;
+    try { canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'x.png', { type: 'image/png' })] })); } catch (e) {}
+    var touch = matchMedia('(pointer: coarse)').matches;
+    // phones: the share sheet ("Save image" puts it in Photos); computers: a normal download
+    saveFn = function (b) {
+      if (canShare && touch) return blob(function (bl) { if (!bl) return; navigator.share({ files: [new File([bl], fname(), { type: 'image/png' })] }).catch(function () {}); });
+      download(b);
+    };
+    el.querySelector('#pbDl').addEventListener('click', function () { download(this); });
+    el.querySelector('#pbBarSave').addEventListener('click', function () { saveFn(this); });
     var sh = el.querySelector('#pbShare');
-    try { sh.hidden = !(navigator.canShare && navigator.canShare({ files: [new File([''], 'x.png', { type: 'image/png' })] })); } catch (e) {}
+    sh.hidden = !canShare;
     sh.addEventListener('click', function () {
       blob(function (bl) { if (!bl) return; var f = new File([bl], fname(), { type: 'image/png' }); navigator.share({ files: [f], text: caption() }).catch(function () {}); });
     });
