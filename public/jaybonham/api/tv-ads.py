@@ -167,6 +167,8 @@ class handler(BaseHTTPRequestHandler):
                          "campaign": (s[4] if s else "") or ""})
         rows.sort(key=lambda r: -r["started"])
 
+        cur.execute("SELECT COALESCE(content, ''), EXTRACT(EPOCH FROM created_at) FROM tv_ad_clicks WHERE src = 'meta' ORDER BY created_at DESC LIMIT 20000")
+        clicks = [[k or "(no ad name)", float(t)] for k, t in cur.fetchall()]
         cur.execute("SELECT COALESCE(content, ''), COUNT(*) FROM tv_ad_clicks WHERE src = 'meta' GROUP BY 1")
         by_ad = {k or "(no ad name)": {"clicks": n, "trials": 0} for k, n in cur.fetchall()}
         for r in rows:
@@ -175,7 +177,7 @@ class handler(BaseHTTPRequestHandler):
         cur.execute("SELECT COUNT(*) FROM tv_meta_events WHERE event_name = 'StartTrial' AND status < 300")
         sent = cur.fetchone()[0]
         c.close()
-        return {"ok": True, "capi": bool(_tv_meta.TOKEN), "meta_sent": sent, "rows": rows, "by_ad": by_ad,
+        return {"ok": True, "capi": bool(_tv_meta.TOKEN), "meta_sent": sent, "rows": rows, "by_ad": by_ad, "clicks": clicks,
                 "caught_up": done, "remaining": left}
 
     def _json(self, status, body):
