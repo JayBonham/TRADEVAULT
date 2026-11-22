@@ -128,7 +128,7 @@ def _member(c, ids, db):
             vals[key] = v if isinstance(v, str) else ("" if v is None else str(v))
     row = db.get(c.get("id")) or {}
     tier = next((t for tag, t in TIERS if tag in tags), "")
-    setup = DONE_TAG in tags
+    setup = DONE_TAG in tags or "tv-setup-trial" in tags
     educator = (row.get("educator") or vals.get("tv_educator") or
                 next((n for k, n in EDUCATORS.items() if "tv-educator-" + k in tags), ""))
     scanner = (row.get("scanner") or vals.get("tv_scanner") or

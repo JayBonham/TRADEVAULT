@@ -686,7 +686,7 @@ class handler(BaseHTTPRequestHandler):
 
         # Free-trial signups get tv-trial; checkouts opened from an ad get tv-src-meta-ads + tv-ad-<ad>.
         meta_src = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
-        is_trial = False
+        is_trial = converted = False
         if "tradevault-purchased" in tags:
             try:
                 sys.path.insert(0, sys_path)
@@ -698,10 +698,17 @@ class handler(BaseHTTPRequestHandler):
                     or str(prod.get("route") or "") == "tradevault-elite-copy-e7"
                     or _tv_meta.is_trial_plan(plan.get("id") or data.get("plan_id")))
                 tags = tags + (["tv-trial"] if is_trial else []) + _tv_meta.source_tags(meta_src)
+                # Day 8: the first real charge on the trial plan. Unlocks the full Elite setup flow (see _trial_converted).
+                converted = paid_now and (bool(meta_src.get("tv_trial")) or "trial" in title.lower()
+                                          or _tv_meta.is_trial_plan(plan.get("id") or data.get("plan_id")))
+                if converted:
+                    tags = tags + ["tv-trial-converted"]
             except Exception as e:
                 print("TV_SRC_TAGS_ERR:", e, file=sys.stderr)
 
         ghl_result = self._ghl_upsert(email, first, last, phone, tags)
+        if converted and ghl_result.get("contact"):
+            self._trial_converted(ghl_result["contact"], email)
         try:
             sys.path.insert(0, sys_path)
             import _jb_academy
@@ -753,6 +760,26 @@ class handler(BaseHTTPRequestHandler):
         else:
             self._record_affiliate_purchase(email, slug, None)
         return 200, {"ok": True, "email": email, "tags": tags, "ghl": ghl_result}
+
+    def _trial_converted(self, cid, email):
+        """Trial member who'd done the trial setup (tv-setup-trial) just paid: TV Package -> Elite, then
+        tv-setup-complete, which fires the normal Elite "setup complete" automation (all groups, signals, Copy Trader).
+        Never raises; someone who hadn't done setup yet just does the normal Elite setup later."""
+        try:
+            c = http.client.HTTPSConnection("services.leadconnectorhq.com", timeout=8)
+            c.request("GET", "/contacts/" + cid, headers={"Authorization": "Bearer " + GHL_API_KEY, "Version": "2021-07-28", "Accept": "application/json"})
+            r = c.getresponse()
+            ct = (json.loads(r.read() or b"{}").get("contact") or {}) if r.status < 300 else {}
+            tags = {t.lower() for t in ct.get("tags") or []}
+            if "tv-setup-trial" in tags and "tv-setup-complete" not in tags:
+                sys.path.insert(0, sys_path)
+                import _tv_aff
+                _tv_aff.ghl_tag(email, "", ["tv-setup-complete"], fields={"tv_package": "Elite"})
+                print("TV_TRIAL_CONVERTED: setup unlocked", email, file=sys.stderr)
+            else:
+                print("TV_TRIAL_CONVERTED:", email, "setup_trial" if "tv-setup-trial" in tags else "no trial setup", file=sys.stderr)
+        except Exception as e:
+            print("TV_TRIAL_CONVERTED_ERR:", e, file=sys.stderr)
 
     def _meta_event(self, event_type, data, email, phone, name, is_trial, meta):
         """Remember where the signup came from, and send StartTrial / Purchase to Meta (CAPI). Never raises."""

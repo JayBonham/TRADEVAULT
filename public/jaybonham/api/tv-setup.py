@@ -31,6 +31,9 @@ EDUCATORS = {"jay": "Jay Bonham", "adam": "Adam Haase", "tyler": "Tyler Collins"
 SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spectrum"}
 TIERS = (("tradevault-elite", "elite"), ("tradevault-community", "community"), ("tradevault-tools", "tools"))
 DONE_TAG = "tv-setup-complete"
+# Free-trial members finish setup with this tag instead, so the Elite "setup complete" automation (all groups,
+# signals, Copy Trader) doesn't fire; whop-hook adds DONE_TAG when their first payment clears on day 8.
+TRIAL_DONE_TAG = "tv-setup-trial"
 PARTNER_TAG = "tradevault-partner"
 def _educator_key(tags):
     return next((k for k in EDUCATORS if "tv-educator-" + k in tags), "")
@@ -115,7 +118,7 @@ class handler(BaseHTTPRequestHandler):
                 _tv_aff.pending_claim(contact.get("email") or "", ref)
             return self._json(404, {"ok": False, "error": "not_member"})
         tags = [t.lower() for t in contact.get("tags") or []]
-        done = DONE_TAG in tags
+        done = DONE_TAG in tags or TRIAL_DONE_TAG in tags
         if ref:
             # Back from Whop in the same browser that followed an affiliate link: credit the affiliate.
             import _tv_aff
@@ -142,7 +145,7 @@ class handler(BaseHTTPRequestHandler):
         tier = _tier(tags)
         if not tier:
             return self._json(404, {"ok": False, "error": "not_member"})
-        if DONE_TAG in tags:
+        if DONE_TAG in tags or TRIAL_DONE_TAG in tags:
             return self._json(409, {"ok": False, "error": "already_done"})
 
         tv = _clip(b.get("tradingview"), 40).lstrip("@")
@@ -170,6 +173,8 @@ class handler(BaseHTTPRequestHandler):
         edu_name = EDUCATORS.get(educator, "All educators" if tier == "elite" else "")
         scan_name = ", ".join(partner["scanners"]) if partner else SCANNERS.get(scanner, "All scanners")
         trial = _trial(contact.get("email"))
+        if trial:
+            new_tags[0] = TRIAL_DONE_TAG
         package = tier.title() + (" Partner" if partner else "") + (" (7-day free trial)" if trial else "")
         self._fields(cid, {"tv_educator": edu_name, "tv_scanner": scan_name,
                            "tradingview_username": tv, "telegram_username": tg,

@@ -365,7 +365,7 @@ def _back_to_new(email, redo_setup, to_tier=""):
         cid = A._ghl_contact(email)
         if not cid:
             return
-        off = ["tv-access-granted"] + (["tv-setup-complete"] if redo_setup else [])
+        off = ["tv-access-granted"] + (["tv-setup-complete", "tv-setup-trial"] if redo_setup else [])
         A._ghl("DELETE", "/contacts/%s/tags" % cid, {"tags": off})
         A._ghl("POST", "/contacts/%s/tags" % cid, {"tags": ["tv-upgraded"]})
         if to_tier:  # the TV Package field the "member ready" email shows
