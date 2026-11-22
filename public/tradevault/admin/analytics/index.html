@@ -18,7 +18,7 @@
   --ok:#7BE0B0; --ok-rgb:123,224,176; --warn:#F5B85C; --warn-rgb:245,184,92; --bad:#FF8F8F; --bad-rgb:255,143,143;
   /* tiers: validated categorical order (dark), adjacent CVD ΔE ≥ 8.4 on --card */
   --t-tools:#3987e5; --t-community:#d95926; --t-elite:#199e70; --t-partner:#c98500;
-  --s-meta:#33c3d6; --s-pre:#2c374b; --s-aff:#9085e9; --s-web:#d55181; --s-direct:#56657C; /* sources: violet/magenta validated, Direct is neutral */
+  --s-meta:#33c3d6; --s-pre:#2c374b; --s-yt:#e0794a; --s-seo:#58b97e; --s-soc:#d9b44a; --s-aff:#9085e9; --s-web:#d55181; --s-direct:#56657C; /* sources: violet/magenta validated, Direct is neutral */
   --pos:#3987e5; --neg:#e66767;
   --ease:cubic-bezier(.22,1,.36,1);
   --display:'Instrument Sans',system-ui,sans-serif;
@@ -930,12 +930,13 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 
   /* ---------- free trial: source of each signup (api/tv-ads) ---------- */
   var ADS = null, adsTries = 0, ADS_FROM = 1795357943000; // tracking went live (signups before this have no source)
-  var TSRC = [['meta', 'Meta ads', 'var(--s-meta)'], ['affiliate', 'Affiliates', 'var(--s-aff)'], ['email', 'Email', 'var(--s-web)'],
-              ['direct', 'Direct / organic', 'var(--s-direct)'], ['pre', 'Before tracking', 'var(--s-pre)']];
+  var TSRC = [['meta', 'Meta ads', 'var(--s-meta)'], ['affiliate', 'Affiliates', 'var(--s-aff)'], ['youtube', 'YouTube', 'var(--s-yt)'],
+              ['seo', 'Google / blog (SEO)', 'var(--s-seo)'], ['social', 'Social (not an ad)', 'var(--s-soc)'], ['email', 'Email', 'var(--s-web)'],
+              ['direct', 'Direct / no source', 'var(--s-direct)'], ['pre', 'Unknown', 'var(--s-pre)']];
   function srcKey(r) {
-    if (r.src === 'meta') return 'meta';
-    if (r.src === 'affiliate') return 'affiliate';
+    if (r.src === 'affiliate' || r.aff) return 'affiliate';
     if (r.src === 'ghl') return 'email';
+    if (['meta', 'youtube', 'seo', 'social', 'email', 'direct'].indexOf(r.src) >= 0) return r.src;
     if (r.src) return 'direct';
     return r.started * 1000 < ADS_FROM ? 'pre' : 'direct';
   }
@@ -974,7 +975,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
         '<div><h3>Where current trials came from</h3><div class="mix"><div class="mix-bar">' +
           srcs.map(function (t) { return cnt[t[0]] ? '<i style="flex-grow:' + cnt[t[0]] + ';background:' + t[2] + '"></i>' : ''; }).join('') + '</div><div>' +
           srcs.map(function (t) { return '<div class="mix-row"><i style="background:' + t[2] + '"></i><b>' + t[1] + '</b><span class="n num">' + int(cnt[t[0]]) + '</span>' +
-            '<div class="d"><span>' + esc(t[0] === 'pre' ? 'signed up before tracking went live' : t[0] === 'meta' ? 'tagged tv-src-meta-ads in GHL' : t[0] === 'affiliate' ? affTxt : '') + '</span><span>' + (live.length ? Math.round(cnt[t[0]] / live.length * 100) : 0) + '%</span></div></div>'; }).join('') +
+            '<div class="d"><span>' + esc(t[0] === 'pre' ? (live.some(function (r) { return srcKey(r) === 'pre' && !r.traced; }) ? 'checking game, webinar and GHL records…' : 'no record anywhere of how they arrived') : t[0] === 'meta' ? 'tagged tv-src-meta-ads in GHL' : t[0] === 'affiliate' ? affTxt : '') + '</span><span>' + (live.length ? Math.round(cnt[t[0]] / live.length * 100) : 0) + '%</span></div></div>'; }).join('') +
         '</div></div></div>' +
         '<div><h3>Trials started per day</h3><div class="tr-days">' +
           days.map(function (d) {
@@ -988,6 +989,15 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
             '</tbody></table></div>' : '<div class="tr-note">No Meta ad clicks recorded yet. They show here per ad once someone from an ad taps "Start 7 days free".</div>') +
         '</div>' +
       '</div>' +
+      (function () {
+        var tr = rows.filter(function (r) { return r.traced; });
+        if (!tr.length) return '';
+        return '<h3 style="margin-top:18px;font-family:var(--display);font-weight:600;font-size:14px">How earlier signups were traced</h3><div class="tw"><table class="sm"><thead><tr><th style="text-align:left">Started</th><th style="text-align:left">Came from</th><th style="text-align:left">Found in</th></tr></thead><tbody>' +
+          tr.map(function (r) {
+            var k = srcKey(r), lab = (TSRC.filter(function (t) { return t[0] === k; })[0] || [0, k])[1];
+            return '<tr><td style="text-align:left">' + esc(new Date(r.started * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</td><td style="text-align:left">' + esc(lab) + '</td><td style="text-align:left;color:var(--tx-mute)">' + esc(r.how || '') + '</td></tr>';
+          }).join('') + '</tbody></table></div>';
+      })() +
       '<div class="tr-note">' + (ADS.capi ? 'Meta Conversions API is on: ' + int(ADS.meta_sent || 0) + ' trial' + (ADS.meta_sent === 1 ? '' : 's') + ' sent to Meta (including signups from before tracking), so Ads Manager can credit them to the right ad.' : 'Meta Conversions API is off: add META_CAPI_TOKEN in Vercel.') +
         (ADS.remaining ? ' Catching up older signups…' : '') + '</div>';
   }

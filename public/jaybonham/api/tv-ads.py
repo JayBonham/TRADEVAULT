@@ -125,7 +125,26 @@ class handler(BaseHTTPRequestHandler):
             c.commit()
             done += 1 if work else 0
 
-        cur.execute("SELECT email, kind, src, ad, campaign, created_at FROM tv_signup_src ORDER BY created_at DESC LIMIT 500")
+        # Signups with no source on the checkout: look them up in the game / webinar sign-ups and GHL, once each.
+        cur.execute("SELECT r.email FROM tv_aff_referrals r")
+        credited = {r[0] for r in cur.fetchall()}
+        cur.execute("SELECT email FROM tv_signup_src WHERE COALESCE(src, '') = '' AND traced_at IS NULL")
+        traced = 0
+        for (em,) in cur.fetchall():
+            if em in credited:
+                continue
+            if done + traced >= STEP * 2:
+                left += 1
+                continue
+            import _tv_trace
+            t = _tv_trace.trace(cur, em)
+            cur.execute("UPDATE tv_signup_src SET src = %s, ad = COALESCE(NULLIF(ad, ''), %s), campaign = COALESCE(NULLIF(campaign, ''), %s), "
+                        "how = %s, traced_at = NOW() WHERE email = %s AND COALESCE(src, '') = ''",
+                        ((t[0] if t else "") or "", (t[2] if t else "") or "", (t[3] if t else "") or "", (t[1] if t else "no record found"), em))
+            c.commit()
+            traced += 1
+
+        cur.execute("SELECT email, kind, src, ad, campaign, created_at, how, traced_at FROM tv_signup_src ORDER BY created_at DESC LIMIT 500")
         src_by = {r[0]: r for r in cur.fetchall()}
         # Credited to an affiliate (checkout code, /setup or webinar link): that's where they came from.
         cur.execute("SELECT r.email, a.code FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id")
@@ -144,6 +163,7 @@ class handler(BaseHTTPRequestHandler):
                          "status": "in trial" if t else "ended / converted",
                          "src": (s[2] if s else "") or ("affiliate" if email in aff_of else ""),
                          "aff": aff_of.get(email, ""), "ad": (s[3] if s else "") or "",
+                         "how": (s[6] if s else "") or "", "traced": bool(s and s[7]),
                          "campaign": (s[4] if s else "") or ""})
         rows.sort(key=lambda r: -r["started"])
 

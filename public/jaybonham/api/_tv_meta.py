@@ -92,6 +92,8 @@ def _ensure(cur):
         CREATE TABLE IF NOT EXISTS tv_signup_src (
             email TEXT PRIMARY KEY, membership_id TEXT, kind TEXT, src TEXT, medium TEXT, campaign TEXT,
             ad TEXT, click_id TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+        ALTER TABLE tv_signup_src ADD COLUMN IF NOT EXISTS how TEXT;
+        ALTER TABLE tv_signup_src ADD COLUMN IF NOT EXISTS traced_at TIMESTAMPTZ;
     """)
 
 
