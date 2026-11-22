@@ -954,6 +954,8 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     var tile = function (l, v, h) { return '<div><div class="l">' + l + '</div><div class="v num">' + v + '</div><div class="h">' + h + '</div></div>'; };
     var cnt = {}; TSRC.forEach(function (t) { cnt[t[0]] = 0; }); live.forEach(function (r) { cnt[srcKey(r)]++; });
     var srcs = TSRC.filter(function (t) { return cnt[t[0]] > 0 || t[0] === 'meta'; });
+    var affs = {}; live.forEach(function (r) { if (srcKey(r) === 'affiliate' && r.aff) affs[r.aff] = (affs[r.aff] || 0) + 1; });
+    var affTxt = Object.keys(affs).sort(function (a, b) { return affs[b] - affs[a]; }).map(function (k) { return k + ' ' + affs[k]; }).join(' · ');
     // last 7 days, stacked by source
     var days = [];
     for (var i = 6; i >= 0; i--) { var d0 = new Date(day0.getTime() - i * DAY); days.push({ a: d0.getTime(), b: d0.getTime() + DAY, c: {}, n: 0, label: d0.toLocaleDateString([], { weekday: 'short', day: 'numeric' }) }); }
@@ -972,7 +974,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
         '<div><h3>Where current trials came from</h3><div class="mix"><div class="mix-bar">' +
           srcs.map(function (t) { return cnt[t[0]] ? '<i style="flex-grow:' + cnt[t[0]] + ';background:' + t[2] + '"></i>' : ''; }).join('') + '</div><div>' +
           srcs.map(function (t) { return '<div class="mix-row"><i style="background:' + t[2] + '"></i><b>' + t[1] + '</b><span class="n num">' + int(cnt[t[0]]) + '</span>' +
-            '<div class="d"><span>' + (t[0] === 'pre' ? 'signed up before tracking went live' : t[0] === 'meta' ? 'tagged tv-src-meta-ads in GHL' : '') + '</span><span>' + (live.length ? Math.round(cnt[t[0]] / live.length * 100) : 0) + '%</span></div></div>'; }).join('') +
+            '<div class="d"><span>' + esc(t[0] === 'pre' ? 'signed up before tracking went live' : t[0] === 'meta' ? 'tagged tv-src-meta-ads in GHL' : t[0] === 'affiliate' ? affTxt : '') + '</span><span>' + (live.length ? Math.round(cnt[t[0]] / live.length * 100) : 0) + '%</span></div></div>'; }).join('') +
         '</div></div></div>' +
         '<div><h3>Trials started per day</h3><div class="tr-days">' +
           days.map(function (d) {

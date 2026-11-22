@@ -539,7 +539,8 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
 
     $('sClicks').textContent = s.clicks.toLocaleString();
     $('sRefs').textContent = s.referrals;
-    $('sActive').textContent = s.active + ' active this month';
+    var nTrial = (d.referrals || []).filter(function (r) { return r.trial && !r.active; }).length;
+    $('sActive').textContent = s.active + ' active this month' + (nTrial ? ' · ' + nTrial + ' in free trial' : '');
     $('sSales').textContent = money(s.sales);
     $('sEarned').textContent = money(s.pending + s.paid);
     $('sPayable').textContent = money(s.ready);
@@ -599,7 +600,10 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       tr.appendChild(td(date(r.joined)));
       tr.appendChild(who(r));
       tr.appendChild(td(cap(r.tier) || '—'));
-      tr.appendChild(pillTd(r.active ? 'Active' : 'Not active', r.active ? 'ok' : 'off'));
+      var tEnd = r.trial && r.trial !== '1' ? new Date(r.trial) : null;
+      if (r.active) tr.appendChild(pillTd('Active', 'ok'));
+      else if (r.trial) tr.appendChild(pillTd(r.trial_cancelling ? 'Trial · cancelling' : 'Trialing' + (tEnd && !isNaN(tEnd) ? ' · pays ' + tEnd.toLocaleDateString([], { day: 'numeric', month: 'short' }) : ''), r.trial_cancelling ? 'off' : 'warn'));
+      else tr.appendChild(pillTd('Not active', 'off'));
       refs.appendChild(tr);
     });
     paginate(refs);

@@ -308,7 +308,16 @@ class handler(BaseHTTPRequestHandler):
                             WHERE p.name IS NOT NULL ORDER BY p.email, p.paid_at DESC""", (aff,))
             names = dict(cur.fetchall())
             who = lambda e: names.get(e) or ""
-            refs = [{"member": who(r[0]), "email": A.mask(r[0]), "tier": r[1], "joined": r[2].isoformat(), "active": bool(r[3])} for r in refs]
+            # Members still in their free 7-day trial show as Trialing (their $0 trial isn't a payment).
+            try:
+                import _tv_trial
+                trials = _tv_trial.trials_by_email() if refs else {}
+            except Exception as e:
+                print("TV_AFF_TRIALS_ERR:", e, file=sys.stderr)
+                trials = {}
+            refs = [{"member": who(r[0]), "email": A.mask(r[0]), "tier": r[1], "joined": r[2].isoformat(), "active": bool(r[3]),
+                     "trial": (trials.get(r[0]) or {}).get("ends") or ("1" if r[0] in trials else ""),
+                     "trial_cancelling": bool((trials.get(r[0]) or {}).get("cancelling"))} for r in refs]
             cur.execute(f"""
                 SELECT email, product, amount_usd, commission_usd, status, paid_at, {READY}, kind, pct, payout_id
                   FROM tv_aff_commissions WHERE affiliate_id = %s ORDER BY paid_at DESC LIMIT 200
@@ -580,7 +589,20 @@ class handler(BaseHTTPRequestHandler):
                              "referrals": r[13], "personals": count, "qualified": count >= cfg["unlock_count"],
                              "sales": float(r[15]), "pending": float(r[16]), "ready": float(r[17]), "paid": float(r[18]),
                              "payout_from": _iso(A.payout_from(cur, r[0], cfg)) if count >= cfg["unlock_count"] else ""})
+            # Referred members still in their free 7-day trial (not billed yet, so not in Paying).
+            trials_by = {}
+            try:
+                import _tv_trial
+                tr = _tv_trial.trials_by_email()
+                if tr:
+                    cur.execute("SELECT affiliate_id, email FROM tv_aff_referrals")
+                    for aid, em in cur.fetchall():
+                        if em in tr:
+                            trials_by[aid] = trials_by.get(aid, 0) + 1
+            except Exception as e:
+                print("TV_AFF_ADMIN_TRIALS_ERR:", e, file=sys.stderr)
             for a_ in affs:
+                a_["trials"] = trials_by.get(a_["id"], 0)
                 a_["free_count"] = A.confirmed_members(cur, a_["id"])
                 a_["free_last"] = A.last_free_month(cur, a_["id"])
             c.commit()

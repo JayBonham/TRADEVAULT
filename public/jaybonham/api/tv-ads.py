@@ -127,6 +127,9 @@ class handler(BaseHTTPRequestHandler):
 
         cur.execute("SELECT email, kind, src, ad, campaign, created_at FROM tv_signup_src ORDER BY created_at DESC LIMIT 500")
         src_by = {r[0]: r for r in cur.fetchall()}
+        # Credited to an affiliate (checkout code, /setup or webinar link): that's where they came from.
+        cur.execute("SELECT r.email, a.code FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id")
+        aff_of = dict(cur.fetchall())
         live = {t["email"]: t for t in trials}
         rows = []
         for email in list(live) + [e for e in src_by if e not in live]:
@@ -139,7 +142,8 @@ class handler(BaseHTTPRequestHandler):
             rows.append({"started": t.get("started") or (s[5].timestamp() if s and s[5] else 0),
                          "ends": t.get("ends") or 0, "cancelling": bool(t.get("cancelling")),
                          "status": "in trial" if t else "ended / converted",
-                         "src": (s[2] if s else "") or "", "ad": (s[3] if s else "") or "",
+                         "src": (s[2] if s else "") or ("affiliate" if email in aff_of else ""),
+                         "aff": aff_of.get(email, ""), "ad": (s[3] if s else "") or "",
                          "campaign": (s[4] if s else "") or ""})
         rows.sort(key=lambda r: -r["started"])
 

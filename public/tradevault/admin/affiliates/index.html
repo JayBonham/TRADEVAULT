@@ -156,7 +156,7 @@
     <section class="sec" data-p="affs" hidden>
       <div class="sech"><h2>All affiliates</h2><span style="display:inline-flex;gap:12px;align-items:center"><span class="mono" id="count"></span><button class="btn-g btn-sm" id="auditBtn" type="button">Check against Whop</button></span></div>
       <div class="audit" id="audit" hidden></div>
-      <div class="tw wide"><table><thead><tr><th>Affiliate</th><th>Link</th><th>Joined</th><th class="r">Clicks</th><th class="r">Paying</th><th>Level</th><th class="r">Sales</th><th class="r">Held / requested</th><th class="r">Ready</th><th class="r">Paid</th><th class="r">Custom %</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      <div class="tw wide"><table><thead><tr><th>Affiliate</th><th>Link</th><th>Joined</th><th class="r">Clicks</th><th class="r">Paying</th><th class="r" title="Referred members in their free 7-day trial (not billed yet)">Trials</th><th>Level</th><th class="r">Sales</th><th class="r">Held / requested</th><th class="r">Ready</th><th class="r">Paid</th><th class="r">Custom %</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
       <p class="note">Rates: <span id="ruleLine"></span> Leave "Custom %" blank to follow the programme rates.</p>
     </section>
 
@@ -505,7 +505,7 @@
     var list = A.filter(function (a) { return a.status === 'active' || a.status === 'paused'; });
     $('count').textContent = list.length + ' affiliates';
     var rows = $('rows'); rows.innerHTML = '';
-    if (!list.length) rows.innerHTML = '<tr><td colspan="13" class="empty">No approved affiliates yet.</td></tr>';
+    if (!list.length) rows.innerHTML = '<tr><td colspan="14" class="empty">No approved affiliates yet.</td></tr>';
     list.forEach(function (a) {
       var tr = el('tr');
       var nm = el('td', 'nm'); nm.appendChild(el('b', null, a.name)); nm.appendChild(el('span', null, a.email)); tr.appendChild(nm);
@@ -513,6 +513,7 @@
       tr.appendChild(el('td', null, date(a.created_at)));
       tr.appendChild(el('td', 'r num', a.clicks.toLocaleString()));
       tr.appendChild(el('td', 'r num', a.personals));
+      var tc = el('td', 'r num', a.trials || 0); if (!a.trials) tc.style.color = 'var(--tx-mute)'; else tc.title = a.trials + ' in their free trial, billed on day 8'; tr.appendChild(tc);
       var lv = el('td'); lv.appendChild(level(a, S));
       if (a.free_count != null) {
         var fr = a.free_last && (Date.now() - new Date(a.free_last.at)) < 35 * 864e5;
