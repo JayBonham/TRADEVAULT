@@ -989,15 +989,6 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
             '</tbody></table></div>' : '<div class="tr-note">No Meta ad clicks recorded yet. They show here per ad once someone from an ad taps "Start 7 days free".</div>') +
         '</div>' +
       '</div>' +
-      (function () {
-        var tr = rows.filter(function (r) { return r.traced; });
-        if (!tr.length) return '';
-        return '<h3 style="margin-top:18px;font-family:var(--display);font-weight:600;font-size:14px">How earlier signups were traced</h3><div class="tw"><table class="sm"><thead><tr><th style="text-align:left">Started</th><th style="text-align:left">Came from</th><th style="text-align:left">Found in</th></tr></thead><tbody>' +
-          tr.map(function (r) {
-            var k = srcKey(r), lab = (TSRC.filter(function (t) { return t[0] === k; })[0] || [0, k])[1];
-            return '<tr><td style="text-align:left">' + esc(new Date(r.started * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</td><td style="text-align:left">' + esc(lab) + '</td><td style="text-align:left;color:var(--tx-mute)">' + esc(r.how || '') + '</td></tr>';
-          }).join('') + '</tbody></table></div>';
-      })() +
       '<div class="tr-note">' + (ADS.capi ? 'Meta Conversions API is on: ' + int(ADS.meta_sent || 0) + ' trial' + (ADS.meta_sent === 1 ? '' : 's') + ' sent to Meta (including signups from before tracking), so Ads Manager can credit them to the right ad.' : 'Meta Conversions API is off: add META_CAPI_TOKEN in Vercel.') +
         (ADS.remaining ? ' Catching up older signups…' : '') + '</div>';
   }
