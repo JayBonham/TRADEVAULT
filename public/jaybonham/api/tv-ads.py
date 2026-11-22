@@ -8,7 +8,7 @@ every Whop membership in its free trial gets the GHL tag tv-trial once, and a St
 to Meta (CAPI, when META_CAPI_TOKEN is set) if it started within Meta's 7-day window. That lets Meta
 match earlier signups to the people who clicked the ads.
 
--> {ok, capi: bool, rows: [{email, name, started, status, src, ad, campaign}], by_ad: {ad: {clicks, trials}},
+-> {ok, capi: bool, meta_sent: n, rows: [{started, ends, cancelling, status, src, ad, campaign}] (no names/emails), by_ad: {ad: {clicks, trials}},
     caught_up: n, remaining: n}
 """
 import datetime
@@ -67,6 +67,8 @@ def trial_members():
             if email:
                 out.append({"id": str(m.get("id") or ""), "email": email, "name": name,
                             "started": _ts(m.get("created_at")),
+                            "ends": _ts(m.get("renewal_period_end") or m.get("current_period_end")),
+                            "cancelling": bool(m.get("cancel_at_period_end")),
                             "meta": m.get("metadata") if isinstance(m.get("metadata"), dict) else {}})
         info = page.get("page_info") or {}
         after = info.get("end_cursor") or ""
@@ -134,8 +136,8 @@ class handler(BaseHTTPRequestHandler):
             if s and s[1] != "trial" and email not in live:
                 continue
             t = live.get(email, {})
-            rows.append({"email": email, "name": t.get("name", ""),
-                         "started": t.get("started") or (s[5].timestamp() if s and s[5] else 0),
+            rows.append({"started": t.get("started") or (s[5].timestamp() if s and s[5] else 0),
+                         "ends": t.get("ends") or 0, "cancelling": bool(t.get("cancelling")),
                          "status": "in trial" if t else "ended / converted",
                          "src": (s[2] if s else "") or "", "ad": (s[3] if s else "") or "",
                          "campaign": (s[4] if s else "") or ""})
@@ -146,8 +148,10 @@ class handler(BaseHTTPRequestHandler):
         for r in rows:
             if r["src"] == "meta":
                 by_ad.setdefault(r["ad"] or "(no ad name)", {"clicks": 0, "trials": 0})["trials"] += 1
+        cur.execute("SELECT COUNT(*) FROM tv_meta_events WHERE event_name = 'StartTrial' AND status < 300")
+        sent = cur.fetchone()[0]
         c.close()
-        return {"ok": True, "capi": bool(_tv_meta.TOKEN), "rows": rows, "by_ad": by_ad,
+        return {"ok": True, "capi": bool(_tv_meta.TOKEN), "meta_sent": sent, "rows": rows, "by_ad": by_ad,
                 "caught_up": done, "remaining": left}
 
     def _json(self, status, body):
