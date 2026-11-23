@@ -17,7 +17,7 @@
   --acc:#4B9EFF; --acc-rgb:75,158,255;
   --ok:#7BE0B0; --ok-rgb:123,224,176; --warn:#F5B85C; --warn-rgb:245,184,92; --bad:#FF8F8F; --bad-rgb:255,143,143;
   /* tiers: validated categorical order (dark), adjacent CVD ΔE ≥ 8.4 on --card */
-  --t-tools:#3987e5; --t-community:#d95926; --t-elite:#199e70; --t-partner:#c98500;
+  --t-tools:#3987e5; --t-community:#d95926; --t-elite:#199e70; --t-trial:#a66ad6; --t-partner:#c98500; /* trial: validated with the tiers, adjacent CVD ΔE ≥ 9.4 */
   --s-meta:#33c3d6; --s-pre:#2c374b; --s-yt:#e0794a; --s-seo:#58b97e; --s-soc:#d9b44a; --s-aff:#9085e9; --s-web:#d55181; --s-direct:#56657C; /* sources: violet/magenta validated, Direct is neutral */
   --pos:#3987e5; --neg:#e66767;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -314,17 +314,19 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
   function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} if (window.TVUnlock) TVUnlock.clear(); location.replace('/admin-login'); }
   $('out').addEventListener('click', signOut);
 
-  var TIERS = ['tools', 'community', 'elite', 'partner'];
-  var TNAME = { tools: 'Tools', community: 'Community', elite: 'Elite', partner: 'Partner' };
+  // 'trial' = Elite members still in their free trial (Whop status trialing): shown apart from paying Elite,
+  // and left out of MRR until their first payment clears.
+  var TIERS = ['tools', 'community', 'elite', 'trial', 'partner'];
+  var TNAME = { tools: 'Tools', community: 'Community', elite: 'Elite', trial: 'Elite trial', partner: 'Partner' };
   var TCOL = {}; TIERS.forEach(function (t) { TCOL[t] = 'var(--t-' + t + ')'; });
   var LIVE = { active: 1, trialing: 1, past_due: 1 };
   var DAY = 864e5;
   var REASONS = { too_expensive: 'Too expensive', switching: 'Switching to another service', missing_features: 'Missing features',
     technical_issues: 'Technical issues', bad_experience: 'Bad experience', unused: 'Not using it', other: 'Other', testing: 'Testing' };
-  var SRC = ['aff', 'web', 'direct'];
-  var SNAME = { aff: 'Affiliates', web: 'Webinar', direct: 'Direct' };
-  var SCOL = { aff: 'var(--s-aff)', web: 'var(--s-web)', direct: 'var(--s-direct)' };
-  var RANK = { tools: 0, partner: 0, community: 1, elite: 2 };
+  var SRC = ['meta', 'aff', 'web', 'direct'];
+  var SNAME = { meta: 'Meta ads', aff: 'Affiliates', web: 'Webinar', direct: 'Direct' };
+  var SCOL = { meta: 'var(--s-meta)', aff: 'var(--s-aff)', web: 'var(--s-web)', direct: 'var(--s-direct)' };
+  var RANK = { tools: 0, partner: 0, community: 1, elite: 2, trial: 2 };
   var TEST_CODES = /^(alexcommunity|alextester|tvtest)/i; // our own test codes, kept out of the codes table
   var RLABEL = { today: 'today', yesterday: 'yesterday', '7': '7D', '14': '14D', '30': '30D', '90': '90D', '180': '6M', all: 'all time', custom: 'range' };
   var CB_LIMIT = 0.009; // Visa's early-warning chargeback ratio
@@ -348,14 +350,15 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
   function titleCase(s) { s = String(s || ''); return s === s.toUpperCase() ? s.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }) : s; }
 
   /* ---------- model ---------- */
-  function monthly(m) { return m.price && m.days ? m.price * 30.4375 / m.days : 0; }
+  function potential(m) { return m.price && m.days ? m.price * 30.4375 / m.days : 0; }
+  function monthly(m) { return m.trial ? 0 : potential(m); }
   function isLive(m) { return !!LIVE[m.status]; }
   function endT(m) { return isLive(m) ? null : (T(m.end) || T(m.canceled_at) || T(m.created)); }
   function activeAt(m, t) { var c = T(m.created); if (c == null || c > t) return false; var e = endT(m); return e == null || e > t; }
   function paid(p) { return p.st === 'paid' && p.at; }
 
   function prep(d) {
-    d.memberships.forEach(function (m) { m.c = T(m.created); m.x = T(m.canceled_at); m.name = titleCase(m.name); });
+    d.memberships.forEach(function (m) { m.c = T(m.created); m.x = T(m.canceled_at); m.name = titleCase(m.name); if (m.status === 'trialing') { m.trial = true; m.tier = 'trial'; } });
     d.payments.forEach(function (p) { p.t = T(p.at); p.net = (p.amt || 0) - (p.ref || 0); p.name = titleCase(p.name); });
     d.disputes.forEach(function (x) { x.t = T(x.at); x.name = titleCase(x.name); });
     // A cancel is an upgrade/switch when the same Whop user starts another TradeVault membership within a week.
@@ -406,7 +409,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     });
     d.payments.forEach(function (p) {
       var c = cust[p.ck];
-      p.src = c.aff ? 'aff' : c.web ? 'web' : 'direct'; p.affName = c.aff; p.newCust = c.first === p.id;
+      p.src = c.aff ? 'aff' : (src.meta || {})[p.ck] ? 'meta' : c.web ? 'web' : 'direct'; p.affName = c.aff; p.newCust = c.first === p.id;
     });
     return d;
   }
@@ -661,10 +664,11 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     var isNow = w.b >= now - 60000, endAt = Math.min(w.b, now);
     var mem = isNow ? live : D.memberships.filter(function (m) { return activeAt(m, endAt); });
     var users = {}; mem.forEach(function (m) { users[m.uid || m.id] = 1; });
-    var cnt = {}, mrr = {}, ending = {}, canceling = {}, pastDue = [];
+    var cnt = {}, mrr = {}, ending = {}, canceling = {}, pastDue = [], trialPot = 0;
     TIERS.forEach(function (t) { cnt[t] = 0; mrr[t] = 0; ending[t] = 0; canceling[t] = 0; });
     mem.forEach(function (m) {
       cnt[m.tier]++;
+      if (m.trial && !m.cap) trialPot += potential(m);
       if (isNow && m.cap) { ending[m.tier] += monthly(m); canceling[m.tier]++; } else mrr[m.tier] += monthly(m);
     });
     live.forEach(function (m) { if (m.status === 'past_due') pastDue.push(m); });
@@ -729,7 +733,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     mixEl.innerHTML = '<div class="mix"><div class="mix-bar">' + TIERS.map(function (t) { return cnt[t] ? '<i style="flex-grow:' + cnt[t] + ';background:' + TCOL[t] + '"></i>' : ''; }).join('') + '</div><div>' +
       TIERS.map(function (t) {
         return '<div class="mix-row"><i style="background:' + TCOL[t] + '"></i><b>' + TNAME[t] + '</b><span class="n num">' + int(cnt[t]) + '</span>' +
-          '<div class="d"><span>' + pct(cnt[t] / liveN, 0) + ' of members</span><span class="num">' + usd(mrr[t]) + ' MRR</span></div></div>';
+          '<div class="d"><span>' + pct(cnt[t] / liveN, 0) + ' of members' + (t === 'trial' && canceling[t] ? ' · ' + int(canceling[t]) + ' opted out' : '') + '</span><span class="num">' + (t === 'trial' ? '+' + usd(trialPot) + ' MRR if they pay' : usd(mrr[t]) + ' MRR') + '</span></div></div>';
       }).join('') + '</div></div>';
 
     // tier table
@@ -899,9 +903,9 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       '<div class="two src2"><div class="chart" id="srcC"></div><div class="mix"><div class="mix-bar">' + SRC.map(function (k) { return sv[k] > 0 ? '<i style="flex-grow:' + sv[k] + ';background:' + SCOL[k] + '"></i>' : ''; }).join('') + '</div><div>' +
       SRC.map(function (k) {
         return '<div class="mix-row"><i style="background:' + SCOL[k] + '"></i><b>' + SNAME[k] + '</b><span class="n num">' + usd(sv[k]) + '</span>' +
-          '<div class="d"><span>' + (tot ? pct(sv[k] / tot, 0) : '—') + ' of revenue</span><span class="num">' + int(sn[k]) + ' new customer' + (sn[k] === 1 ? '' : 's') + '</span></div></div>';
+          '<div class="d"><span>' + (k === 'meta' && !sv[k] && sn[k] ? 'free trials · pay from day 8' : (tot ? pct(sv[k] / tot, 0) : '—') + ' of revenue') + '</span><span class="num">' + int(sn[k]) + ' new customer' + (sn[k] === 1 ? '' : 's') + '</span></div></div>';
       }).join('') + '</div></div></div>';
-    var sb = bs.map(function () { return { aff: 0, web: 0, direct: 0 }; });
+    var sb = bs.map(function () { return { meta: 0, aff: 0, web: 0, direct: 0 }; });
     S.pays.forEach(function (p) { for (var i = 0; i < bs.length; i++) if (p.t >= bs[i].a && p.t < bs[i].b) { sb[i][p.src] += p.net; break; } });
     var dg2 = D.diag || {};
     if (dg2.db || (!dg2.commissions && !Object.keys((D.sources || {}).webinar || {}).length)) {

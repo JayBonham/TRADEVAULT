@@ -108,7 +108,7 @@ def pay_title(p):
 def db_side():
     """From our own tables: names/emails for rows Whop leaves bare, plus where each buyer came from
     (affiliate referral, webinar registration). Each part is best-effort."""
-    out = {"names": {}, "emails": {}, "affiliates": {}, "aff_codes": {}, "webinar": {}, "commissions": {}, "err": None}
+    out = {"names": {}, "emails": {}, "affiliates": {}, "aff_codes": {}, "webinar": {}, "meta": {}, "commissions": {}, "err": None}
     if not DATABASE_URL:
         out["err"] = "DATABASE_URL is not set"
         return out
@@ -144,6 +144,9 @@ def db_side():
     for email, at in rows("SELECT lower(email), MIN(created_at) FROM jb_webinar_regs WHERE email IS NOT NULL GROUP BY lower(email)"):
         if at:
             out["webinar"][email] = at.isoformat()
+    # Trial / checkout signups that came from a Meta ad (checkout tags, or traced back afterwards; see _tv_meta)
+    for email, mid in rows("SELECT lower(email), membership_id FROM tv_signup_src WHERE src = 'meta' AND email IS NOT NULL"):
+        out["meta"][email] = mid or ""
     c.close()
     return out
 
@@ -266,9 +269,10 @@ def load():
     buyers = {p["email"].lower() for p in out_p if p["email"]}
     web = {e: at for e, at in side["webinar"].items() if e in buyers}
     affs = {e: a for e, a in side["affiliates"].items() if e in buyers}
+    meta = {e: 1 for e in side["meta"] if e in buyers}
     return {"ok": True, "at": int(time.time()), "products": prods, "memberships": out_m, "payments": out_p,
             "disputes": out_d, "promos": promos,
-            "sources": {"affiliates": affs, "aff_codes": side["aff_codes"], "webinar": web},
+            "sources": {"affiliates": affs, "aff_codes": side["aff_codes"], "webinar": web, "meta": meta},
             "diag": {"db": side["err"], "promos": perr, "promo_count": len(promos), "commissions": len(side["commissions"]),
                      "emails": sum(1 for p in out_p if p["email"]), "webinar_regs": len(side["webinar"]),
                      "coded_members": len(code_of)}, "partial": not (m_ok and p_ok), "disputes_source": "whop" if disps is not None else "payments"}
