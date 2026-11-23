@@ -726,7 +726,15 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       if (!paid(p)) return;
       for (var i = 0; i < bs.length; i++) if (p.t >= bs[i].a && p.t < bs[i].b) { rv[i][p.tier] += p.net; rv[i]._ref += p.ref; rv[i]._n++; break; }
     });
-    stacked($('rev'), bs, rv, { fy: usdK, fv: function (v) { return usd(v); }, extra: function (i) { return (rv[i]._ref ? tipRow('', 'Refunded', '−' + usd(rv[i]._ref)) : '') + tipRow('', 'Payments', int(rv[i]._n)); } });
+    // free trials started per bucket (they pay $0 until day 8, so they have no bar of their own)
+    var zeroPay = {}; D.payments.forEach(function (p) { if (p.mid && paid(p) && !p.amt) zeroPay[p.mid] = 1; });
+    var trialN = bs.map(function () { return 0; }), trialTot = 0;
+    D.memberships.forEach(function (m) {
+      if (!(m.trial || zeroPay[m.id]) || m.c == null) return;
+      for (var i = 0; i < bs.length; i++) if (m.c >= bs[i].a && m.c < bs[i].b) { trialN[i]++; trialTot++; break; }
+    });
+    if (trialTot) $('rev').closest('.card').querySelector('.big small').insertAdjacentHTML('afterend', '<small style="color:var(--tx-dim)">+' + int(trialTot) + ' free trial' + (trialTot === 1 ? '' : 's') + ' ($0 until day 8)</small>');
+    stacked($('rev'), bs, rv, { fy: usdK, fv: function (v) { return usd(v); }, extra: function (i) { return (rv[i]._ref ? tipRow('', 'Refunded', '−' + usd(rv[i]._ref)) : '') + tipRow('', 'Payments', int(rv[i]._n)) + (trialN[i] ? tipRow('var(--t-trial)', 'Free trials started', int(trialN[i])) : ''); } });
 
     // tier mix
     var mixEl = $('mix'), liveN = mem.length || 1;
