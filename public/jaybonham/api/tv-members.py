@@ -153,6 +153,82 @@ def _member(c, ids, db):
 
 
 import _tv_trial  # noqa: E402
+from _tv_trace import classify  # noqa: E402
+
+
+def _sources():
+    """{email: (src, detail)} for how each person first came in, from our own records (one query per table):
+    affiliate referral > checkout / ad tracking (tv_signup_src) > Killshot game or webinar sign-up links.
+    Contacts with none of these fall back to their GHL tags / attribution in _source()."""
+    out = {}
+    if not _tv_db.DATABASE_URL:
+        return out
+    try:
+        conn, cur = _tv_db._conn()
+    except Exception as e:
+        log("TV_MEMBERS_SRC_DB:", e)
+        return out
+
+    def q(sql):
+        try:
+            cur.execute("SAVEPOINT s")
+            cur.execute(sql)
+            rows = cur.fetchall()
+            cur.execute("RELEASE SAVEPOINT s")
+            return rows
+        except Exception as e:  # table not there yet
+            cur.execute("ROLLBACK TO SAVEPOINT s")
+            log("TV_MEMBERS_SRC_Q:", e)
+            return []
+
+    def put(email, src, detail, weak=False):
+        e = (email or "").strip().lower()
+        if e and src and (e not in out or (out[e][2] and not weak)):
+            out[e] = (src, detail, weak)
+
+    for email, name, code in q("SELECT r.email, a.name, a.code FROM tv_aff_referrals r JOIN tv_affiliates a ON a.id = r.affiliate_id"):
+        put(email, "affiliate", name or code or "")
+    for email, src, ad, camp in q("SELECT email, src, ad, campaign FROM tv_signup_src WHERE coalesce(src, '') <> ''"):
+        put(email, src, ad or camp or "")
+    for table, label in (("tv_pass_claims", "Killshot game"), ("jb_webinar_regs", "webinar")):
+        for email, utm, ref, aff in q("SELECT email, utm, ref, to_jsonb(t)->>'aff' FROM %s t ORDER BY created_at ASC" % table):
+            if isinstance(utm, str):
+                try:
+                    utm = json.loads(utm)
+                except ValueError:
+                    utm = {}
+            c = classify(utm, ref or "", "", "")
+            if aff:
+                put(email, "affiliate", aff)
+            elif c[0]:
+                put(email, c[0], label + (" · " + c[2] if c[2] else ""))
+            elif table == "jb_webinar_regs":
+                put(email, "webinar", "", weak=True)  # a webinar sign-up with no link source: better than nothing
+    try:
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+    return out
+
+
+def _source(c, tags, srcs):
+    e = (c.get("email") or "").lower()
+    if e in srcs:
+        return srcs[e][0], srcs[e][1]
+    if "tv-src-meta-ads" in tags:
+        ad = next((t[6:] for t in tags if t.startswith("tv-ad-")), "")
+        return "meta", ad
+    t = next((t[7:] for t in tags if t.startswith("tv-src-")), "")
+    if t:
+        return t, ""
+    for k in ("attributionSource", "lastAttributionSource"):
+        a = c.get(k)
+        if isinstance(a, dict) and a:
+            got = classify(a, a.get("referrer") or a.get("url") or "", "", a.get("sessionSource") or "")
+            if got[0]:
+                return got[0], "GHL"
+    return "", ""
 
 
 class handler(BaseHTTPRequestHandler):
@@ -191,6 +267,12 @@ class handler(BaseHTTPRequestHandler):
                     contacts.append(c)
             contacts = [c for c in contacts if HIDDEN_TAG not in [t.lower() for t in c.get("tags") or []]]
             members = [_member(c, ids, db) for c in contacts]
+            try:
+                srcs = _sources()
+                for c, m in zip(contacts, members):
+                    m["src"], m["src_detail"] = _source(c, [t.lower() for t in c.get("tags") or []], srcs)
+            except Exception as e:  # never let attribution break the board
+                log("TV_MEMBERS_SRC_ERR:", e)
             trials = _tv_trial.trials_by_email()
             for m in members:
                 t = trials.get((m["email"] or "").lower()) or trials.get((db.get(m["id"]) or {}).get("email", ""))

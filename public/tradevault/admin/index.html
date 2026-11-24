@@ -90,6 +90,11 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.035em;line-height
 .search input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:14.5px}
 .search input::placeholder{color:#55647A}
 .chips{display:flex;gap:6px}
+.srcsel{min-height:42px;padding:0 34px 0 14px;border-radius:12px;background:rgba(255,255,255,.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237F8DA3' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--hair-2);color:var(--tx-dim);font:500 13px var(--body,inherit);-webkit-appearance:none;appearance:none;cursor:pointer}
+.srcsel:focus{outline:0;border-color:var(--acc)}
+.src{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--tx)}
+.src i{width:8px;height:8px;border-radius:50%;flex:none}
+.src.none{color:var(--tx-mute)}
 .chip{padding:9px 13px;border-radius:999px;border:1px solid var(--hair-2);background:none;cursor:pointer;font-size:13px;font-weight:500;color:var(--tx-mute);transition:all .2s}
 .chip[aria-pressed="true"]{background:var(--tx);border-color:var(--tx);color:#07101F}
 
@@ -239,13 +244,14 @@ footer{padding-block:32px 40px}
         <button class="chip" aria-pressed="false" data-tier="elite">Elite</button>
         <button class="chip" aria-pressed="false" data-tier="trial">Trial</button>
       </div>
+      <select class="srcsel" id="srcF" aria-label="Filter by where they came from"><option value="">All sources</option></select>
     </div>
   </div>
 
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>Member</th><th>Email</th><th>Plan</th><th>Onboarding</th><th>Educator</th><th>Scanner</th><th>TradingView</th><th>Telegram</th><th id="actH">Access</th>
+        <th>Member</th><th>Email</th><th>Plan</th><th>Came from</th><th>Onboarding</th><th>Educator</th><th>Scanner</th><th>TradingView</th><th>Telegram</th><th id="actH">Access</th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -284,7 +290,19 @@ footer{padding-block:32px 40px}
   document.getElementById('who').textContent = user;
 
   var $ = function (id) { return document.getElementById(id); };
-  var members = [], tab = 'new', tier = '', q = '', loadedAt = 0, busy = {};
+  var members = [], tab = 'new', tier = '', q = '', srcF = '', loadedAt = 0, busy = {};
+  // where each member first came from (api/tv-members: affiliate referral, ad tracking, game / webinar links, GHL tags)
+  var SRCN = { meta: 'Meta ad', affiliate: 'Affiliate', youtube: 'YouTube', seo: 'Google / SEO', social: 'Social', email: 'Email', webinar: 'Webinar', direct: 'Direct' };
+  var SRCC = { meta: '#33c3d6', affiliate: '#9085e9', youtube: '#e0794a', seo: '#58b97e', social: '#d9b44a', email: '#4B9EFF', webinar: '#d55181', direct: '#56657C' };
+  function srcKey(m) { return m.src || 'unknown'; }
+  function srcName(k) { return k === 'unknown' ? 'Unknown' : SRCN[k] || (k.charAt(0).toUpperCase() + k.slice(1)); }
+  function srcOptions() {
+    var n = {}; members.forEach(function (m) { if (!m.ended) n[srcKey(m)] = (n[srcKey(m)] || 0) + 1; });
+    var sel = $('srcF'), keep = srcF;
+    sel.innerHTML = '<option value="">All sources</option>' + Object.keys(n).sort(function (a, b) { return (a === 'unknown') - (b === 'unknown') || n[b] - n[a]; })
+      .map(function (k) { return '<option value="' + k + '">' + srcName(k) + ' (' + n[k] + ')</option>'; }).join('');
+    sel.value = n[keep] ? keep : ''; srcF = sel.value;
+  }
   var TIER = { tools: 'Tools', community: 'Community', elite: 'Elite' };
 
   function signOut() { try { localStorage.removeItem('tv_token'); localStorage.removeItem('tv_user'); } catch (e) {} location.replace('/admin-login'); }
@@ -305,7 +323,7 @@ footer{padding-block:32px 40px}
     $('refresh').classList.add('spinning');
     if (!quiet && !members.length) { $('state').hidden = false; $('state').className = 'state'; $('state').innerHTML = '<div class="loader"></div>Loading members from GHL…'; }
     return api('GET').then(function (d) {
-      members = d.members || []; loadedAt = Date.now(); render(); ago();
+      members = d.members || []; loadedAt = Date.now(); srcOptions(); render(); ago();
     }).catch(function (x) {
       if (members.length) return toast('Couldn’t refresh: ' + (x.msg || 'network error'));
       var s = $('state'); s.hidden = false; s.className = 'state err';
@@ -393,7 +411,8 @@ footer{padding-block:32px 40px}
       // ended members only matter while they still have access; then they're out of every tab
       if ((m.ended ? (m.assigned ? 'remove' : '') : m.assigned ? 'assigned' : 'new') !== tab) return false;
       if (tier === 'trial' ? !m.trial : (tier && m.tier !== tier)) return false;
-      if (needle && [m.name, m.email, m.tradingview, m.telegram, m.educator, m.scanner].join(' ').toLowerCase().indexOf(needle) < 0) return false;
+      if (srcF && srcKey(m) !== srcF) return false;
+      if (needle && [m.name, m.email, m.tradingview, m.telegram, m.educator, m.scanner, srcName(srcKey(m)), m.src_detail].join(' ').toLowerCase().indexOf(needle) < 0) return false;
       return true;
     }).sort(function (a, b) {
       if (tab === 'new' && a.setup !== b.setup) return a.setup ? -1 : 1; // ready first
@@ -412,8 +431,8 @@ footer{padding-block:32px 40px}
     if (!list.length) {
       s.hidden = false; s.className = 'state';
       s.innerHTML = '';
-      s.appendChild(el('h3', null, q || tier ? 'No matches' : tab === 'new' ? 'All caught up' : tab === 'remove' ? 'No one to remove' : 'No one assigned yet'));
-      s.appendChild(document.createTextNode(q || tier ? 'Try a different search or plan.' : tab === 'new' ? 'Every member has their access. New sign-ups appear here automatically.' : tab === 'remove' ? 'When a Whop membership ends or is cancelled, the member shows up here so you can take them out of the scanners.' : 'Members you assign will move here.'));
+      s.appendChild(el('h3', null, q || tier || srcF ? 'No matches' : tab === 'new' ? 'All caught up' : tab === 'remove' ? 'No one to remove' : 'No one assigned yet'));
+      s.appendChild(document.createTextNode(q || tier || srcF ? 'Try a different search, plan or source.' : tab === 'new' ? 'Every member has their access. New sign-ups appear here automatically.' : tab === 'remove' ? 'When a Whop membership ends or is cancelled, the member shows up here so you can take them out of the scanners.' : 'Members you assign will move here.'));
       return;
     }
     s.hidden = true;
@@ -430,6 +449,10 @@ footer{padding-block:32px 40px}
         trb.style.marginLeft = '6px'; c3.appendChild(trb);
       }
       if (m.upgraded) { var up = el('span', 'tier', '↑ Upgraded'); up.title = m.assigned ? 'Upgraded their plan: new tier\'s access given' : 'Upgraded their plan: give them the new tier\'s access'; up.style.marginLeft = '6px'; c3.appendChild(up); }
+      var cs = el('td'), sk = srcKey(m), sp = el('span', 'src' + (sk === 'unknown' ? ' none' : ''));
+      var dot = el('i'); dot.style.background = SRCC[sk] || (sk === 'unknown' ? 'transparent' : '#7F8DA3'); if (sk === 'unknown') dot.style.border = '1px solid #55647A';
+      sp.appendChild(dot); sp.appendChild(document.createTextNode(srcName(sk))); cs.appendChild(sp);
+      if (m.src_detail) cs.appendChild(el('div', 'sub', m.src_detail));
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());
       var c6 = el('td'); c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
@@ -438,7 +461,7 @@ footer{padding-block:32px 40px}
       var g = m.groups || [];
       if (g.length) { var gs = el('div', 'sub wrap', g.length > 2 ? 'Approve in all ' + g.length + ' groups' : 'Approve in: ' + g.join(' + ')); gs.title = g.join('\n'); c8.appendChild(gs); }
       var c9 = el('td'); var aw = el('div', 'actw'); aw.appendChild(chatBtn(m)); aw.appendChild(actBtn(m)); aw.appendChild(hideBtn(m)); c9.appendChild(aw);
-      [c1, c2, c3, c4, c5, c6, c7, c8, c9].forEach(function (c) { tr.appendChild(c); });
+      [c1, c2, c3, cs, c4, c5, c6, c7, c8, c9].forEach(function (c) { tr.appendChild(c); });
       body.appendChild(tr);
     });
   }
@@ -636,6 +659,7 @@ footer{padding-block:32px 40px}
     });
   });
   $('q').addEventListener('input', function () { q = this.value.trim(); render(); });
+  $('srcF').addEventListener('change', function () { srcF = this.value; render(); });
 
   // Support badge: Whop support chats waiting on a reply
   function supCount() {
