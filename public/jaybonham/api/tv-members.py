@@ -148,6 +148,7 @@ def _member(c, ids, db):
         "telegram": row.get("telegram") or vals.get("telegram_username", ""),
         "joined": row.get("purchased_at") or c.get("dateAdded") or "",
         "ended": bool(row.get("ended_at")), "ended_at": row.get("ended_at") or "",
+        "nudged": max([int(t[15:]) for t in tags if t.startswith("tv-setup-nudge-") and t[15:].isdigit()] or [0]),
         "groups": [g["name"] for g in groups_for(tier, next((k for k in EDUCATORS if "tv-educator-" + k in tags), ""))],
     }
 

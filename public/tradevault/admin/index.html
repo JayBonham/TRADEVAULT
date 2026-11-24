@@ -454,6 +454,7 @@ footer{padding-block:32px 40px}
       sp.appendChild(dot); sp.appendChild(document.createTextNode(srcName(sk))); cs.appendChild(sp);
       if (m.src_detail) cs.appendChild(el('div', 'sub', m.src_detail));
       var c4 = el('td'); c4.appendChild(m.setup ? el('span', 'ob yes', '✓ Yes') : el('span', 'ob no', '○ No'));
+      if (!m.setup && m.nudged) { var nd = el('div', 'sub', m.nudged >= 3 ? 'Trial reminder sent' : 'Reminder ' + m.nudged + ' sent'); nd.title = 'Automatic email from Jay with their setup link (24h, 48h, and day 4 for trials)'; c4.appendChild(nd); }
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());
       var c6 = el('td'); c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
       var c7 = el('td'); c7.appendChild(m.tradingview ? copyBtn(m.tradingview) : dash());

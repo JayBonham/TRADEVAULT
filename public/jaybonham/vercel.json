@@ -61,6 +61,10 @@
       "maxDuration": 60,
       "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
     },
+    "api/tv-nudge.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
+    },
     "api/tv-support.py": {
       "maxDuration": 20,
       "excludeFiles": "{assets,academy,admin,affiliate,apply,beforeyougo,book,booked,free-download,join,privacy,risk,schedule-call,terms,workshop}/**"
@@ -157,6 +161,10 @@
     {
       "path": "/api/tv-aff?action=free_months",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/tv-nudge",
+      "schedule": "15 * * * *"
     }
   ]
 }
