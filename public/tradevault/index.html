@@ -702,6 +702,14 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
   .cx-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 }
 
+/* 3D step stack: only painted while its section is near the screen, and dimmed with an overlay instead of a filter
+   (Chrome drew blank tilted 'egg' copies of these panels over the hero and curriculum) */
+@media(min-width:1024px){
+  .seq:not(.near) .seq-panel{visibility:hidden}
+  .seq-panel,.seq-item.on .seq-panel{filter:none}
+  .seq-panel::after{content:"";position:absolute;inset:0;border-radius:inherit;background:#050A14;opacity:.38;pointer-events:none;transition:opacity .7s var(--ease)}
+  .seq-item.on .seq-panel::after{opacity:0}
+}
 /* closed overlays stay out of the compositor (Safari/Chrome left frosted ghost shapes after Back) */
 #mob,.lb{visibility:hidden;-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .3s var(--ease),visibility 0s linear .3s}
 #mob.open,.lb.open{visibility:visible;transition:opacity .3s var(--ease),visibility 0s}
@@ -1320,6 +1328,7 @@ mob.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mob.classLis
 // pinned sequence (desktop only)
 (function(){
   var seq=document.getElementById('seq'); if(!seq) return;
+  if('IntersectionObserver' in window){ new IntersectionObserver(function(es){ seq.classList.toggle('near',es[0].isIntersecting); },{rootMargin:'60% 0px'}).observe(seq); } else seq.classList.add('near');
   var items=[...seq.querySelectorAll('.seq-item')], dots=[...seq.querySelectorAll('.seq-dots button')],
       desk=matchMedia('(min-width:1024px)'), cur=0;
   function set(n){ if(n===cur) return; cur=n;
