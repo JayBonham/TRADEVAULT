@@ -756,6 +756,16 @@ class handler(BaseHTTPRequestHandler):
                         c.close()
                     except Exception as e:
                         print("TV_UPGRADE_FINISH_ERR:", e, file=sys.stderr)
+            if is_trial and meta_src.get("tv_ref"):
+                # A free trial through an affiliate's link: no payment yet, so the block above never credits it.
+                try:
+                    sys.path.insert(0, sys_path)
+                    import _tv_aff
+                    mem = data.get("membership") if isinstance(data.get("membership"), dict) else {}
+                    _tv_aff.trial_claim(email, str(meta_src["tv_ref"]), name,
+                                        data.get("renewal_period_end") or data.get("current_period_end") or mem.get("renewal_period_end") or "")
+                except Exception as e:
+                    print("TV_AFF_TRIAL_ERR:", e, file=sys.stderr)
             self._meta_event(event_type, data, email, phone, name, is_trial, meta_src)
         else:
             self._record_affiliate_purchase(email, slug, None)

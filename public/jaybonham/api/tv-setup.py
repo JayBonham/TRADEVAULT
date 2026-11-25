@@ -119,11 +119,16 @@ class handler(BaseHTTPRequestHandler):
             return self._json(404, {"ok": False, "error": "not_member"})
         tags = [t.lower() for t in contact.get("tags") or []]
         done = DONE_TAG in tags or TRIAL_DONE_TAG in tags
+        trial = _trial(contact.get("email"))
         if ref:
             # Back from Whop in the same browser that followed an affiliate link: credit the affiliate.
             import _tv_aff
-            _tv_aff.claim(contact.get("email") or "", ref, tier)
-        trial = _trial(contact.get("email"))
+            if trial:  # a free trial: also emails the affiliate (once)
+                name = " ".join(filter(None, [contact.get("firstName"), contact.get("lastName")]))
+                if not _tv_aff.trial_claim(contact.get("email") or "", ref, name, trial.get("ends") or ""):
+                    _tv_aff.claim(contact.get("email") or "", ref, tier)
+            else:
+                _tv_aff.claim(contact.get("email") or "", ref, tier)
         self._json(200, {"ok": True, "contact": contact["id"], "first": contact.get("firstName") or "",
                          "tier": tier, "done": done, "partner": _partner(tags), "trial": trial,
                          "groups": groups_for(tier, _educator_key(tags), trial=bool(trial)) if done else []})

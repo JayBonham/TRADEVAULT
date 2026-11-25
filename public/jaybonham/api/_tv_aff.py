@@ -568,6 +568,51 @@ def claim(email, code, tier=None, all_payments=False):
         return False
 
 
+def trial_claim(email, code, name="", ends=""):
+    """A free-trial signup through an affiliate's link (Whop checkout tv_ref, or /setup?ref=): make them that
+    affiliate's referral now, so day 8's payment is credited as normal, and tell the affiliate once.
+    The email is GHL's "Affiliate trial signup" workflow on the tv-affiliate-trial tag (re-added each time), reading
+    {{contact.tv_sale_member}} and {{contact.tv_sale_plan}} (the sale email's fields, written just before)."""
+    email = (email or "").strip().lower()
+    code = (code or "").strip().lower()
+    if not (DATABASE_URL and email and CODE_RE.match(code)):
+        return False
+    try:
+        c = conn()
+        cur = c.cursor()
+        cur.execute("SELECT id, email, name FROM tv_affiliates WHERE code = %s AND status = 'active'", (code,))
+        aff = cur.fetchone()
+        if not aff or aff[1] == email or is_affiliate(cur, email):  # unknown code, self, or another affiliate
+            c.close()
+            return False
+        # first claim wins; RETURNING only on the insert that made it, so the affiliate is told exactly once
+        cur.execute("""INSERT INTO tv_aff_referrals (email, affiliate_id, tier) VALUES (%s, %s, 'elite')
+                       ON CONFLICT (email) DO NOTHING RETURNING affiliate_id""", (email, aff[0]))
+        new = cur.fetchone()
+        c.commit()
+        c.close()
+        if not new:
+            return False
+        aff = (aff[1], aff[2])
+        when = ""
+        if ends:
+            try:
+                import datetime
+                d = datetime.datetime.fromisoformat(str(ends).replace("Z", "+00:00")) if not str(ends).isdigit() \
+                    else datetime.datetime.fromtimestamp(int(ends), datetime.timezone.utc)
+                when = " · first payment " + d.strftime("%b ") + str(d.day)
+            except Exception:
+                pass
+        member = " ".join((name or "").split()) or mask(email)
+        ghl_tag(aff[0], aff[1], ["tv-affiliate-trial"], again=True,
+                fields={"tv_sale_member": member, "tv_sale_plan": "Elite 7-day free trial" + when})
+        log("TV_AFF_TRIAL_SIGNUP", code, "->", email[:3] + "***")
+        return True
+    except Exception as e:
+        log("TV_AFF_TRIAL_CLAIM_ERR:", e)
+        return False
+
+
 def webinar_claim(email, tier=None):
     """A payment arrived with no affiliate on it. If this email signed up for the webinar through an affiliate's
     link (thetradevault.co/webinar?ref=CODE) in the last WEBINAR_DAYS days, credit that affiliate. This covers
