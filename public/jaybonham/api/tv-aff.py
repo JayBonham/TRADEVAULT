@@ -357,6 +357,7 @@ class handler(BaseHTTPRequestHandler):
                             "unlock_wait_days": cfg["unlock_wait_days"],
                             "base_pct": cfg["base_pct"], "tier_pct": cfg["tier_pct"], "tier_count": cfg["tier_count"]},
                 "webinar": {"on": bool(cfg["webinar_link"]), "optins": A.webinar_signups(p[3], aff) if cfg["webinar_link"] else []},
+                "game": A.game_stats(p[3], aff),
                 "stats": {"clicks": p[7], "referrals": len(refs), "active": sum(1 for r in refs if r["active"]),
                           "pending": float(s[0]), "ready": float(s[1]), "paid": float(s[2]), "sales": float(s[3]),
                           "requested": float(s[4])},

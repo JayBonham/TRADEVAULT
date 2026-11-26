@@ -164,6 +164,10 @@ td.who b{display:block;font-weight:500}
 .links .webcard,.links .replaycard,.links .trialcard{margin-top:12px}
 .trialcard{border-color:rgba(34,211,154,.5);background:linear-gradient(160deg,rgba(20,90,70,.35),rgba(10,26,54,.7))}
 .trialcard .mono{color:#7BE0B0}
+.gamecard{margin-top:12px;border-color:rgba(245,184,75,.5);background:linear-gradient(160deg,rgba(120,80,20,.35),rgba(10,26,54,.7))}
+.gamecard .mono{color:#F5C46B}
+.gstats{display:flex;flex-wrap:wrap;gap:6px 14px}
+.gstats b{color:var(--tx);font-family:var(--display)}
 .links .btn.copy{min-height:44px;padding:10px 22px;font-size:15px}
 @media(max-width:560px){.links .linkcard .shot{max-height:140px}.links .btn.copy{width:100%}}
 tr[hidden]{display:none}
@@ -254,6 +258,19 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       <div class="more"><span>Every trial started through this link is credited to you. You earn when their membership starts on day 8. Graphics and captions for it are in the <a href="#kit" data-go="kit" style="color:var(--acc)">Promo kit</a>.</span></div>
     </section>
 
+    <section class="card linkcard hasshot gamecard" aria-label="Your chart game link">
+      <a class="shot" id="shotGame" href="/spot" target="_blank" rel="noopener"><img src="/assets/promo/preview-spot.jpg" style="object-position:14% center" alt="The Trade Vault chart game: spot the setup" loading="lazy"><span>Chart game</span></a>
+      <div style="min-width:0">
+        <span class="mono">🎯 Your chart game link · New</span>
+        <span class="goes">To the free chart game: 5 real charts, spot the setup. Players who finish claim a free 7-day pass, then go straight to the trial with your link on it.</span>
+        <div class="biglink"><code id="gameLink"></code></div>
+      </div>
+      <button class="btn copy" id="copyGame" type="button">Copy link</button>
+      <div class="more"><span class="gstats"><span><b id="gVis">0</b> opened it</span><span><b id="gPlay">0</b> played</span><span><b id="gFin">0</b> finished all 5</span><span><b id="gClaim">0</b> claimed the pass</span><a href="#gameSec" style="color:#F5C46B">See who ↓</a></span>
+        <span>Works as a post, a story link or a DM: "think you can spot the setup? 5 charts, about 60 seconds." If someone claims the pass and buys later with the same email, they're your member, even on another device.</span>
+      </div>
+    </section>
+
     <section class="card linkcard webcard hasshot" id="webCard" aria-label="Your webinar link" hidden>
       <a class="shot" id="shotWeb" href="/webinar" target="_blank" rel="noopener"><img src="/assets/promo/preview-webinar.jpg" style="object-position:18% top" alt="The Trade Vault webinar sign-up page" loading="lazy"><span>Webinar sign-up</span></a>
       <div style="min-width:0">
@@ -320,6 +337,11 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     <section class="sec">
       <div class="sech"><h2>Your members</h2><span class="mono" id="refCount"></span></div>
       <div class="tw"><table><thead><tr><th>Joined</th><th>Member</th><th>Plan</th><th>Status</th></tr></thead><tbody id="refs"></tbody></table></div>
+    </section>
+    <section class="sec" id="gameSec">
+      <div class="sech"><h2>Chart game claims</h2><span class="mono" id="gameCount"></span></div>
+      <p class="help" style="margin:-6px 0 12px">People who played the chart game through your game link and claimed the free 7-day pass. They're leads until they join. When one starts the trial or buys with the same email, they move into Your members and you earn on it.</p>
+      <div class="tw"><table><thead><tr><th>Claimed</th><th>Player</th><th>Status</th></tr></thead><tbody id="gclaims"></tbody></table></div>
     </section>
     <section class="sec" id="optSec" hidden>
       <div class="sech"><h2>Webinar opt-ins</h2><span class="mono" id="optCount"></span></div>
@@ -427,7 +449,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   $('retry').addEventListener('click', load);
 
   function links(code) {
-    return { main: SITE + '/?ref=' + code, pricing: SITE + '/?ref=' + code + '#pricing', pl: SITE + '/pl?ref=' + code, webinar: SITE + '/webinar?ref=' + code, replay: SITE + '/webinar/replay?ref=' + code, trial: SITE + '/trial?ref=' + code };
+    return { main: SITE + '/?ref=' + code, pricing: SITE + '/?ref=' + code + '#pricing', pl: SITE + '/pl?ref=' + code, webinar: SITE + '/webinar?ref=' + code, replay: SITE + '/webinar/replay?ref=' + code, trial: SITE + '/trial?ref=' + code, game: SITE + '/spot?ref=' + code };
   }
 
   function copy(text, btn, label) {
@@ -499,7 +521,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
     $('review').hidden = !pend; $('app').classList.toggle('pend', pend); $('sideCode').textContent = d.code;
     if (pend) showTab('payouts', true);
     $('revEmail').textContent = d.email; $('revLink').textContent = L.main;
-    $('link').textContent = L.main; $('replayLink').textContent = L.replay; $('trialLink').textContent = L.trial;
+    $('link').textContent = L.main; $('replayLink').textContent = L.replay; $('trialLink').textContent = L.trial; $('gameLink').textContent = L.game;
     var W = d.webinar || {};
     var O = W.optins || [];
     $('webCard').hidden = !W.on; $('webLink').textContent = L.webinar; $('webN').textContent = O.length;
@@ -632,6 +654,19 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
       opts.appendChild(tr);
     });
     paginate(opts);
+
+    var G = d.game || {}, GC = G.claims || [];
+    $('gVis').textContent = G.visits || 0; $('gPlay').textContent = G.played || 0; $('gFin').textContent = G.finished || 0; $('gClaim').textContent = GC.length;
+    var gt = $('gclaims'); gt.innerHTML = ''; $('gameCount').textContent = GC.length + (GC.length === 1 ? ' claim' : ' claims');
+    if (!GC.length) gt.innerHTML = '<tr><td colspan="3" class="empty">No claims yet. Share your chart game link: people play 5 charts, then claim a free 7-day pass.</td></tr>';
+    GC.forEach(function (o) {
+      var tr = document.createElement('tr');
+      tr.appendChild(td(date(o.at)));
+      tr.appendChild(who({ member: o.name, email: o.email }));
+      tr.appendChild(pillTd(o.member ? 'Became a member ✓' : 'Claimed the pass', o.member ? 'ok' : 'off'));
+      gt.appendChild(tr);
+    });
+    paginate(gt);
     renderClaims();
     $('payDot').hidden = !(P.can_payout && s.ready > 0) || !!open;
   }
@@ -672,7 +707,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   });
 
   // Sidebar sections. #links #stats #kit #requests #payouts; old in-page anchors map to their section.
-  var TABS = ['links', 'stats', 'kit', 'post', 'requests', 'payouts'], ALIAS = { claimSec: 'requests', optSec: 'stats' };
+  var TABS = ['links', 'stats', 'kit', 'post', 'requests', 'payouts'], ALIAS = { claimSec: 'requests', optSec: 'stats', gameSec: 'stats' };
   function showTab(t, quiet) {
     if (TABS.indexOf(t) < 0) t = 'links';
     if (data && data.status === 'pending' && !quiet) t = 'payouts';
@@ -690,6 +725,7 @@ td.who span{display:block;font-size:12.5px;color:var(--tx-mute);margin-top:2px}
   var h0 = location.hash.slice(1); showTab(ALIAS[h0] || h0 || 'links', true);
   $('copyMain').addEventListener('click', function () { copy(links(data.code).main, this, 'Copy link'); });
   $('copyTrial').addEventListener('click', function () { copy(links(data.code).trial, this, 'Copy link'); });
+  $('copyGame').addEventListener('click', function () { copy(links(data.code).game, this, 'Copy link'); });
   $('copyReplay').addEventListener('click', function () { copy(links(data.code).replay, this, 'Copy link'); });
   $('copyWeb').addEventListener('click', function () { copy(links(data.code).webinar, this, 'Copy link'); });
   document.querySelectorAll('[data-copy]').forEach(function (b) {

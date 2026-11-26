@@ -628,19 +628,69 @@ def webinar_claim(email, tier=None):
             c.close()
             return False
         # only buyers who first paid after signing up: an existing member watching the webinar isn't a new referral
-        cur.execute(f"""SELECT w.aff FROM jb_webinar_regs w WHERE lower(w.email) = %s AND w.aff IS NOT NULL
-                          AND w.created_at > NOW() - INTERVAL '{WEBINAR_DAYS} days'
-                          AND NOT EXISTS (SELECT 1 FROM tv_payments p WHERE p.email = %s AND p.paid_at < w.created_at)
-                        ORDER BY w.created_at DESC LIMIT 1""", (email, email))
-        row = cur.fetchone()
+        # Same for the chart game (thetradevault.co/spot?ref=CODE): claiming the pass leaves their email with the code.
+        hits = []
+        for table, col in (("jb_webinar_regs", "w.email"), ("tv_pass_claims", "w.email")):
+            try:
+                cur.execute(f"""SELECT w.aff, w.created_at FROM {table} w WHERE lower({col}) = %s AND w.aff IS NOT NULL
+                                  AND w.created_at > NOW() - INTERVAL '{WEBINAR_DAYS} days'
+                                  AND NOT EXISTS (SELECT 1 FROM tv_payments p WHERE p.email = %s AND p.paid_at < w.created_at)
+                                ORDER BY w.created_at DESC LIMIT 1""", (email, email))
+                r = cur.fetchone()
+                if r:
+                    hits.append(r)
+            except Exception as e:  # table/column not there yet
+                c.rollback()
+                log("TV_AFF_EMAIL_LOOKUP:", table, e)
         c.close()
-    except Exception as e:  # no webinar table/column yet
+    except Exception as e:
         log("TV_AFF_WEBINAR_LOOKUP:", e)
         return False
-    if not row:
+    if not hits:
         return False
+    row = max(hits, key=lambda r: r[1])  # the most recent affiliate link wins, same as clicks
     log("TV_AFF_WEBINAR_CLAIM", row[0], "->", mask(email))
     return claim(email, row[0], tier)
+
+
+def game_stats(code, aff_id=None):
+    """The chart game through this affiliate's link (thetradevault.co/spot?ref=CODE): how many people opened it,
+    played it and finished all 5 charts, and who claimed the 7-day pass (first name, masked email, when, whether
+    they've since become this affiliate's member). Shown in their portal under Your links."""
+    out = {"visits": 0, "played": 0, "finished": 0, "claims": []}
+    try:
+        c = conn()
+        cur = c.cursor()
+        try:
+            cur.execute("""SELECT COUNT(DISTINCT vid) FILTER (WHERE ev = 'view'),
+                                  COUNT(DISTINCT vid) FILTER (WHERE ev = 'start'),
+                                  COUNT(DISTINCT vid) FILTER (WHERE ev = 'finish')
+                             FROM tv_game_events WHERE src = 'affiliate' AND ad = %s""", (code,))
+            v = cur.fetchone()
+            out.update(visits=v[0] or 0, played=v[1] or 0, finished=v[2] or 0)
+        except Exception:
+            c.rollback()
+        for hide in ("AND NOT g.hidden", ""):  # 'hidden' (test claims removed in admin) may not exist yet
+            try:
+                cur.execute(f"""
+                    SELECT DISTINCT ON (lower(g.email)) lower(g.email), g.name, g.created_at,
+                           EXISTS (SELECT 1 FROM tv_aff_referrals r WHERE r.email = lower(g.email) AND r.affiliate_id = %s)
+                      FROM tv_pass_claims g WHERE g.aff = %s {hide}
+                     ORDER BY lower(g.email), g.created_at DESC
+                """, (aff_id, code))
+                rows = sorted(cur.fetchall(), key=lambda r: r[2], reverse=True)[:300]
+                out["claims"] = [{"name": (r[1] or "").split(" ")[0][:30], "email": mask(r[0]), "at": r[2].isoformat(), "member": bool(r[3])}
+                                 for r in rows]
+                break
+            except Exception:
+                c.rollback()
+        c.close()
+    except Exception as e:
+        log("TV_AFF_GAME_STATS:", e)
+    # a claim always means they played, even if the event beacon was blocked
+    out["played"] = max(out["played"], out["finished"], len(out["claims"]))
+    out["visits"] = max(out["visits"], out["played"])
+    return out
 
 
 def webinar_signups(code, aff_id=None):

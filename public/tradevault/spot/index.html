@@ -944,7 +944,10 @@ a{color:inherit}
   }
   // ?ref=CODE on the game link credits the affiliate, same as the main site
   (function () { try { var r = new URLSearchParams(location.search).get('ref'); if (!r || !/^[a-z0-9_]{3,20}$/i.test(r)) return; r = r.toLowerCase();
-    localStorage.setItem('tv_ref', JSON.stringify({ c: r, t: Date.now() })); document.cookie = 'tv_ref=' + r + '; path=/; max-age=5184000; SameSite=Lax'; } catch (e) {} })();
+    localStorage.setItem('tv_ref', JSON.stringify({ c: r, t: Date.now() })); document.cookie = 'tv_ref=' + r + '; path=/; max-age=5184000; SameSite=Lax';
+    if (location.hostname !== 'thetradevault.co' || /[?&]adkit=1/.test(location.search)) return;
+    var k = 'tv_ref_seen_' + r; try { if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); } catch (e) {}
+    fetch('https://jaybonham.com/api/tv-aff?action=click', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ code: r }), keepalive: true }).catch(function () {}); } catch (e) {} })();
   $('againBtn').addEventListener('click', function () { start(true); });
 
   /* ======================= input ======================= */
