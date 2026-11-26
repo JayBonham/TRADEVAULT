@@ -573,15 +573,15 @@ a{color:inherit}
         tri(x, mx, Y(cc[1]) - 18, 9, m.d, m.d === 1 ? C.arUp : C.arDn); x.restore();
       } else if (m.type === 'line') {
         // the line Killshot waits for price to test: the 20 EMA, from the arrow to the fill
-        var k2 = Math.min(nn, m.to);
+        var k2 = Math.min(nn, m.to - 1);
         if (k2 > m.k) { x.save(); x.strokeStyle = C.fast; x.lineWidth = 4; x.globalAlpha = .35 + .25 * Math.sin(performance.now() / 220);
           x.beginPath(); for (var q = m.k; q <= k2; q++) { var qy = Y(s.e[q][0]); if (q === m.k) x.moveTo(X(q), qy); else x.lineTo(X(q), qy); } x.stroke(); x.restore(); }
       } else if (m.type === 'zone') {
-        var a2 = 0.35 + 0.25 * Math.sin(performance.now() / 260);
+        var a2 = m.fixed ? 0.45 : 0.35 + 0.25 * Math.sin(performance.now() / 260);
         x.strokeStyle = 'rgba(75,158,255,' + a2 + ')'; x.lineWidth = 1.5;
         var zx = mx - cw * 2.2, zy = Y(cc[1]) - 18, zh = Y(cc[2]) - Y(cc[1]) + 36;
         bracket(x, zx, zy, cw * 3.2, zh);
-        if (!self.o.bare) { x.font = '700 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillStyle = C.ks; x.fillText('SETUP', mx - cw * 0.6, zy - 4); }
+        if (!self.o.bare) { x.font = '700 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillStyle = C.ks; x.fillText(m.fixed ? 'YOUR CALL' : 'SETUP', mx - cw * 0.6, zy - (m.fixed ? 24 : 4)); }
       }
     });
     // trade labels on top of everything
@@ -777,7 +777,7 @@ a{color:inherit}
     if (G.i >= G.rounds.length) return finish();
     var s = G.rounds[G.i];
     G.s = s; G.phase = 'print'; G.choice = null; G.ksT = null; G.youT = null; G.wait = 0;
-    cv.load(s, Math.max(20, s.at - 34));
+    cv.load(s, Math.max(20, fillOf(s) - 34));
     $('dots').children[G.i].className = 'on';
     $('mkName').textContent = s.sym === 'GOLD' ? 'Gold' : 'US30';
     var d = new Date((s.t0 + s.at * (s.tf || 900)) * 1000);
@@ -810,7 +810,7 @@ a{color:inherit}
       cv.p += dt / per;
       while (cv.p >= 1 && cv.n < s.c.length) {
         cv.p -= 1; cv.n++;
-        if (G.phase === 'print' && cv.n === s.at + 1) { cv.p = 0; decide(); break; }
+        if (G.phase === 'print' && cv.n === fillOf(s)) { cv.p = 0; decide(); break; }   // ask right where Killshot enters
         if (G.phase === 'wait' && cv.n === fillOf(s) + 1) { filled(); }
         if (G.phase === 'play') settle(cv.n - 1);
       }
@@ -832,7 +832,7 @@ a{color:inherit}
 
   function decide() {
     G.phase = 'decide'; G.wait = 0;
-    cv.marks.push({ type: 'zone', k: G.s.at });
+    cv.marks.push({ type: 'zone', k: cv.n - 1 });   // the last candle on screen: the entry comes next
     status('Your call', 'Killshot is off. Buy, sell, or skip?');
     setBtns(true);
     var tm = $('timer'); tm.style.transition = 'none'; tm.style.transform = 'scaleX(1)';
@@ -846,16 +846,16 @@ a{color:inherit}
     if (d) $(d === 1 ? 'bBuy' : 'bSell').classList.add('pick');
     var tm = $('timer'); tm.style.transition = 'none'; tm.style.transform = 'scaleX(0)';
     var s = G.s;
-    cv.marks = cv.marks.filter(function (m) { return m.type !== 'zone'; });
+    cv.marks.forEach(function (m) { if (m.type === 'zone') m.fixed = true; });
     cv.marks.push({ type: 'arrow', k: s.at, d: s.d });
     cv.cf = { d: s.d };
     var said = timedOut ? 'Too slow. Skipped.' : d === 0 ? 'You skipped.' : 'You went ' + (d === 1 ? 'long' : 'short') + '.';
     G.said = said;
-    if (fillOf(s) > s.at) {
-      cv.marks.push({ type: 'line', k: s.at, to: fillOf(s) });
-      status(said, 'Killshot ' + (s.d === 1 ? 'blue arrow: buy' : 'red arrow: sell') + ', all 5 confirmations. It doesn\'t chase: waiting for price to test the line.');
-      G.phase = 'wait'; cv.p = 0;
-    } else filled();
+    var back = fillOf(s) - s.at;
+    if (back > 1) cv.marks.push({ type: 'line', k: s.at, to: fillOf(s) });
+    filled();
+    status(said, 'Killshot printed a ' + (s.d === 1 ? 'blue buy' : 'red sell') + ' arrow ' + (back > 1 ? back + ' candles back' : 'on the last candle') + ' (all 5 confirmations), then waited for price to test the line. It ' + (s.d === 1 ? 'buys' : 'sells') + ' right here at ' + fmt(s.entry, 1) + ', 1:1.');
+    cv.p = 0;
   }
   // price tested the line: the Killshot trade (and yours) fills at 1:1
   function filled() {
@@ -865,7 +865,6 @@ a{color:inherit}
     if (d === s.d) { G.ksT.label = 'YOU + KILLSHOT ' + (s.d === 1 ? 'BUY' : 'SELL'); G.youT = G.ksT; }
     if (d && d !== s.d) { G.youT = mkTrade(s, d, 'YOU ' + (d === 1 ? 'BUY' : 'SELL')); G.youT.ghost = true; cv.trades.push(G.youT); }
     cv.protect = { d: s.d, at: fillOf(s) };
-    status(G.said, 'Price tested the line. Killshot ' + (s.d === 1 ? 'buys' : 'sells') + ' at ' + fmt(s.entry, 1) + ', 1:1. A star against it means protect the trade.');
     G.phase = 'play';   // the loop settles the fill bar itself next (a stop can be hit on it)
   }
   function settle(k) {
