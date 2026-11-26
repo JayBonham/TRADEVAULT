@@ -162,9 +162,6 @@ main{padding-bottom:max(48px,env(safe-area-inset-bottom,0px));max-width:1480px;m
 .gf-r .bar i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--acc);min-width:2px;transition:width .6s var(--ease)}
 .gf-r .n{font-family:var(--display);font-weight:700;text-align:right}
 .gf-r .p{font-size:12px;color:var(--tx-mute);text-align:right;white-space:nowrap}
-.gc-x{border:1px solid var(--hair-2);background:transparent;color:var(--tx-mute);border-radius:8px;padding:4px 9px;font-size:12px;cursor:pointer;white-space:nowrap}
-.gc-x:hover{color:var(--tx);border-color:var(--tx-mute)}
-.gc-x.sure{color:var(--tx);border-color:var(--tx-dim);background:rgba(255,255,255,.06)}
 .gf-r.sep{margin-top:6px;padding-top:10px;border-top:1px solid var(--hair)}
 @media (max-width:560px){.gf-r{grid-template-columns:minmax(0,104px) minmax(0,1fr) 44px 52px;gap:8px;font-size:12px}}
 @media (max-width:900px){.tr-k{grid-template-columns:repeat(2,minmax(0,1fr))}.tr-two{grid-template-columns:minmax(0,1fr)}}
@@ -1091,27 +1088,16 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
             '</tbody></table></div>' : '<div class="tr-note">Nobody opened the game in the ' + esc(w.label || lab) + '.</div>') +
         '</div>' +
       '</div>' +
-      (C.length ? '<h3 style="margin-top:22px">People who claimed · ' + esc(lab) + '</h3><div class="tw"><table class="sm" id="gClaims"><thead><tr><th style="text-align:left">When</th><th style="text-align:left">Name</th><th style="text-align:left">Email</th><th style="text-align:left">Came from</th><th style="text-align:left">Rank</th><th>Joined</th><th></th></tr></thead><tbody>' +
+      (C.length ? '<h3 style="margin-top:22px">People who claimed · ' + esc(lab) + '</h3><div class="tw"><table class="sm" id="gClaims"><thead><tr><th style="text-align:left">When</th><th style="text-align:left">Name</th><th style="text-align:left">Email</th><th style="text-align:left">Came from</th><th style="text-align:left">Rank</th><th>Joined</th></tr></thead><tbody>' +
         C.slice().sort(function (a, b) { return b[0] - a[0]; }).slice(0, gShow).map(function (r) {
           return '<tr><td style="text-align:left;white-space:nowrap">' + esc(new Date(r[0] * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '</td>' +
             '<td style="text-align:left">' + esc(r[8] || '—') + '</td><td style="text-align:left">' + esc(r[9] || '') + '</td><td style="text-align:left">' + esc(gKey(r[1], r[2])) + '</td>' +
-            '<td style="text-align:left">' + esc(r[3] ? r[3].charAt(0).toUpperCase() + r[3].slice(1) : '—') + '</td><td>' + (r[6] ? 'Paying' : r[5] ? 'Trial' : '—') + '</td>' +
-            '<td><button type="button" class="gc-x" data-id="' + esc(r[7]) + '">Remove test</button></td></tr>';
+            '<td style="text-align:left">' + esc(r[3] ? r[3].charAt(0).toUpperCase() + r[3].slice(1) : '—') + '</td><td>' + (r[6] ? 'Paying' : r[5] ? 'Trial' : '—') + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
         (C.length > gShow ? '<button type="button" class="more" id="gMore">Show all ' + int(C.length) + '</button>' : '') : '') +
       '<div class="tr-note">' + (since ? 'Visits and plays are counted from ' + new Date(since).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + '; claims and trials go back to the game\'s launch' + (w.a < since ? ', so this range can show more claims than finishers' : '') + '. ' : 'Visits and plays start counting from the next visit to the game. ') +
-        'Each visit is one browser tab. "Joined" means that email started a trial or paid after claiming. Deleting a contact in GHL doesn\'t remove their claim here: use Remove test.</div>';
+        'Each visit is one browser tab. "Joined" means that email started a trial or paid after claiming.</div>';
     var more = $('gMore'); if (more) more.addEventListener('click', function () { gShow = 1e9; renderGame(); });
-    Array.prototype.forEach.call(el.querySelectorAll('.gc-x'), function (bt) {
-      bt.addEventListener('click', function () {
-        if (!bt.classList.contains('sure')) { bt.classList.add('sure'); bt.textContent = 'Sure? Remove'; return; }
-        bt.disabled = true; bt.textContent = 'Removing…';
-        fetch('https://jaybonham.com/api/tv-pass?hide=1', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass }, body: JSON.stringify({ id: +bt.dataset.id }) })
-          .then(function (r) { return r.json(); })
-          .then(function (d) { if (!d.ok) throw new Error(d.error || 'failed'); loadGame(); })
-          .catch(function (e) { bt.disabled = false; bt.classList.remove('sure'); bt.textContent = 'Couldn\'t remove: retry'; });
-      });
-    });
   }
   function loadGame() {
     fetch('https://jaybonham.com/api/tv-pass?stats=1', { headers: { 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass } })
