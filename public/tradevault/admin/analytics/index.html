@@ -260,8 +260,6 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
 .heads .h em{font-style:normal;color:var(--tx-dim);white-space:nowrap}
 @media(max-width:1100px){.heads{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:560px){.heads{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.empty-tab{padding:48px 20px;text-align:center;color:var(--tx-mute);border:1px dashed var(--hair-2);border-radius:20px}
-.empty-tab b{display:block;font-family:var(--display);font-size:17px;color:var(--tx);margin-bottom:6px}
 /* cards of other tabs are still built (their renderers expect them) but kept off screen */
 .pool{position:absolute;left:-200vw;top:0;width:1200px;visibility:hidden;pointer-events:none}
 .foot{margin-top:18px;font-size:12px;color:var(--tx-mute);line-height:1.6;max-width:900px}
@@ -322,7 +320,6 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     <button type="button" role="tab" data-t="revenue">Revenue</button>
     <button type="button" role="tab" data-t="members">Members</button>
     <button type="button" role="tab" data-t="leads">Leads &amp; trials</button>
-    <button type="button" role="tab" data-t="affiliates">Affiliates</button>
   </nav>
 
   <div id="banner"></div>
@@ -769,7 +766,6 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     $('kpis').hidden = tab !== 'overview';
     body.innerHTML =
       (tab === 'overview' ? '<div class="heads" id="heads"></div>' : '') +
-      (tab === 'affiliates' ? '<div class="empty-tab"><b>Affiliate analytics are next</b>Clicks → trials → paying → commission per affiliate, for the date range above. Until then, the Affiliates page has each affiliate\'s sales.</div>' : '') +
       (lay.length ? '<div class="grid">' + lay.map(function (x) { return CARD[x[0]](x[1]); }).join('') + '</div>' : '') +
       (tab === 'overview' || tab === 'members' || tab === 'revenue' ? footHTML : '') +
       '<div class="pool" aria-hidden="true"><div class="grid">' + Object.keys(CARD).filter(function (k) { return !used[k]; }).map(function (k) { return CARD[k]('c12'); }).join('') + '</div></div>';
@@ -1071,13 +1067,12 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
         (ADS.remaining ? ' Catching up older signups…' : '') + '</div>';
   }
   /* ---------- tabs ---------- */
-  var TABS = ['overview', 'revenue', 'members', 'leads', 'affiliates'];
+  var TABS = ['overview', 'revenue', 'members', 'leads'];
   var LAYOUT = {
     overview: [['rev', 'c8'], ['mix', 'c4']],
     revenue: [['rev', 'c12'], ['upc', 'c7'], ['risk', 'c5'], ['feed', 'c7'], ['codes', 'c5']],
     members: [['act', 'c8'], ['mix', 'c4'], ['upg', 'c7'], ['flow', 'c5'], ['tbl', 'c12'], ['why', 'c12']],
-    leads: [['src', 'c12'], ['trial', 'c12'], ['game', 'c12']],
-    affiliates: []
+    leads: [['src', 'c12'], ['trial', 'c12'], ['game', 'c12']]
   };
   var HEAD = null, tab = 'overview';
   try { var h0 = (location.hash || '').slice(1), t0 = localStorage.getItem('tv_an_tab'); tab = TABS.indexOf(h0) >= 0 ? h0 : TABS.indexOf(t0) >= 0 ? t0 : 'overview'; } catch (e) {}
