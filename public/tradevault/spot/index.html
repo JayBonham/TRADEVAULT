@@ -696,7 +696,25 @@ a{color:inherit}
   // spotting the setup Killshot took is the skill being tested; skipping is half-credit caution, the wrong way is none
   function pts(choice, d) { return choice === d ? 20 : choice === 0 ? 5 : 0; }
 
+  // Funnel for the admin dashboard (Analytics > Chart game): one anonymous id per visit, no personal data.
+  var track = (function () {
+    if (!/(^|\.)thetradevault\.co$/.test(location.hostname) || /[?&]adkit=1/.test(location.search)) return function () {};
+    var vid = '';
+    try { vid = sessionStorage.getItem('spot_vid') || ''; } catch (e) {}
+    if (!/^[a-z0-9]{6,32}$/.test(vid)) { vid = (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)).slice(0, 24); try { sessionStorage.setItem('spot_vid', vid); } catch (e) {} }
+    var q = new URLSearchParams(location.search), base = { vid: vid, ref: document.referrer.slice(0, 300) }, sent = {};
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(function (k) { if (q.get(k)) base[k] = q.get(k).slice(0, 120); });
+    if (q.get('fbclid')) base.fbclid = '1';
+    return function (ev, step) {
+      var k = ev + (step || ''); if (sent[k]) return; sent[k] = 1;
+      var b = JSON.parse(JSON.stringify(base)); b.ev = ev; b.step = step || 0; b.aff = affCode();
+      var u = 'https://jaybonham.com/api/tv-pass?ev=1', body = JSON.stringify(b);
+      try { if (!(navigator.sendBeacon && navigator.sendBeacon(u, body))) fetch(u, { method: 'POST', body: body, keepalive: true, mode: 'no-cors' }); } catch (e) {}
+    };
+  })();
+
   function start(practice) {
+    track(practice === true ? 'again' : 'start');
     G = { rounds: pickRounds(practice === true ? 0 : today()), daily: practice !== true, i: -1, you: 0, ks: 0, score: 0, spot: 0, log: [] };
     $('hSpot').textContent = '0/5'; $('hScore').textContent = '0'; $('hSpot').style.color = $('hScore').style.color = '';
     Array.prototype.forEach.call($('dots').children, function (d) { d.className = ''; });
@@ -773,6 +791,7 @@ a{color:inherit}
   function choose(d, timedOut) {
     if (!G || G.phase !== 'decide') return;
     G.choice = d; setBtns(false); cv.ksOn = true;
+    if (G.daily) track('round', G.i + 1);
     if (d) $(d === 1 ? 'bBuy' : 'bSell').classList.add('pick');
     var tm = $('timer'); tm.style.transition = 'none'; tm.style.transform = 'scaleX(0)';
     var s = G.s;
@@ -842,6 +861,7 @@ a{color:inherit}
     try { sessionStorage.setItem('bk_shots', data); } catch (e) { try { localStorage.setItem('bk_shots', data); } catch (e2) {} }
   }
   function finish() {
+    if (G.daily) track('finish');
     saveShots();
     cancelAnimationFrame(raf); show('end');
     var sc = G.score, rk = rankOf(sc), idx = ['Rookie', 'Apprentice', 'Trader', 'Sharpshooter', 'Sniper'].indexOf(rk);
@@ -910,7 +930,7 @@ a{color:inherit}
       .then(function (r) { return r.json().then(function (d) { if (!d.ok) throw { msg: d.error }; return d; }); })
       .then(function () {
         try { localStorage.setItem('bk_lead', em); localStorage.setItem('bk_name', n); } catch (x) {}
-        unlock(true); confetti();
+        track('claim'); unlock(true); confetti();
         $('pass').scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'start' });
         setTimeout(function () { location.href = '/trial' + (body.aff ? '?ref=' + encodeURIComponent(body.aff) : '') + '#yourChart'; }, 2200);
       })
@@ -929,6 +949,7 @@ a{color:inherit}
 
   /* ======================= input ======================= */
   $('playBtn').addEventListener('click', function () { start(); });
+  track('view');
   // ?adkit=1: lets the ad-recording script reach the chart (no effect for players)
   if (/[?&]adkit=1/.test(location.search)) window.__spot = { cv: cv, G: function () { return G; } };
   $('bBuy').addEventListener('click', function () { choose(1); });
