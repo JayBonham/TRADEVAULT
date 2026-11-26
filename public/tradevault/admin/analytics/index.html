@@ -243,6 +243,27 @@ table.sm{min-width:440px}
 .code{font-family:var(--mono);font-size:12.5px;padding:2px 8px;border-radius:7px;background:rgba(255,255,255,.06);border:1px solid var(--hair-2);letter-spacing:.02em}
 td .tiers{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}
 td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
+.tabs{display:flex;gap:2px;margin:0 0 18px;border-bottom:1px solid var(--hair);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;position:relative;border:0;background:none;cursor:pointer;padding:12px 16px 13px;font-family:var(--display);font-weight:600;font-size:14.5px;color:var(--tx-mute);white-space:nowrap;transition:color .2s}
+.tabs button:hover{color:var(--tx-dim)}
+.tabs button[aria-selected="true"]{color:var(--tx)}
+.tabs button[aria-selected="true"]::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:2px;border-radius:2px;background:var(--acc)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-4px;border-radius:8px}
+.tabs .soon{font-size:10px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--tx-mute);margin-left:6px;padding:2px 6px;border-radius:6px;border:1px solid var(--hair-2)}
+.heads{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.heads button{display:flex;flex-direction:column;gap:3px;text-align:left;padding:13px 14px;border-radius:14px;border:1px solid var(--hair);background:rgba(255,255,255,.02);cursor:pointer;min-width:0;transition:border-color .2s,background .2s}
+.heads button:hover{border-color:var(--hair-2);background:rgba(255,255,255,.04)}
+.heads .l{font-size:11.5px;color:var(--tx-mute);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heads .v{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.02em;color:var(--tx)}
+.heads .h{font-size:12px;color:var(--tx-mute);display:flex;justify-content:space-between;gap:6px}
+.heads .h em{font-style:normal;color:var(--tx-dim);white-space:nowrap}
+@media(max-width:1100px){.heads{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.heads{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.empty-tab{padding:48px 20px;text-align:center;color:var(--tx-mute);border:1px dashed var(--hair-2);border-radius:20px}
+.empty-tab b{display:block;font-family:var(--display);font-size:17px;color:var(--tx);margin-bottom:6px}
+/* cards of other tabs are still built (their renderers expect them) but kept off screen */
+.pool{position:absolute;left:-200vw;top:0;width:1200px;visibility:hidden;pointer-events:none}
 .foot{margin-top:18px;font-size:12px;color:var(--tx-mute);line-height:1.6;max-width:900px}
 </style>
 </head>
@@ -295,6 +316,14 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       <button class="ghost ref" id="refresh" type="button" title="Reload from Whop"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh</button>
     </div>
   </div>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Analytics sections">
+    <button type="button" role="tab" data-t="overview">Overview</button>
+    <button type="button" role="tab" data-t="revenue">Revenue</button>
+    <button type="button" role="tab" data-t="members">Members</button>
+    <button type="button" role="tab" data-t="leads">Leads &amp; trials</button>
+    <button type="button" role="tab" data-t="affiliates">Affiliates</button>
+  </nav>
 
   <div id="banner"></div>
 
@@ -717,27 +746,36 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     var bs = buckets(w);
     var gran = granOf(w);
     var body = $('body');
+    var CARD = {
+      rev: function (c) { return card(c, 'rev', 'Revenue by ' + gran, 'Net of refunds · ' + w.label, '<div class="big">' + usd(S.net) + '<small>' + (S.refunds ? usd(S.refunds) + ' refunded' : 'no refunds') + '</small></div>', true); },
+      mix: function (c) { return card(c, 'mix', 'Members by tier', int(mem.length) + ' live memberships · as of ' + asOf, ''); },
+      src: function (c) { return card(c, 'src', 'Where sales come from', 'Each customer counted by how they arrived · ' + w.label, '<div class="big" id="srcBig"></div>'); },
+      trial: function (c) { return card(c, 'trial', 'Free trials', 'Black Friday 7-day Elite trial · live from Whop', ''); },
+      game: function (c) { return card(c, 'game', 'Chart game · Spot the Setup', 'thetradevault.co/spot: visits → plays → all 5 charts → pass claimed → joined · ' + w.label, ''); },
+      tbl: function (c) { return card(c, 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of ' + asOf, ''); },
+      act: function (c) { return card(c, 'act', 'Active members', 'Live memberships over the ' + w.label, '', true); },
+      flow: function (c) { return card(c, 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>'); },
+      upc: function (c) { return card(c, 'upc', 'Upcoming billings', 'Renewals due in the next 30 days (memberships set to cancel are left out)', '<div class="big">' + usd(upSum) + '<small>' + int(upcoming.length) + ' renewals</small></div>'); },
+      risk: function (c) { return card(c, 'risk', 'Revenue at risk', 'Failed payments, cancellations and disputes', ''); },
+      upg: function (c) { return card(c, 'upg', 'Upgrades', 'Members moving up a tier · ' + w.label, '<div class="big" id="upgBig"></div>'); },
+      codes: function (c) { return card(c, 'codes', 'Discount codes', 'Payments that used a Whop promo code · ' + w.label, '<div class="big" id="codesBig"></div>'); },
+      why: function (c) { return card(c, 'why', 'Why members cancel', 'Reason picked on Whop · ' + w.label, ''); },
+      feed: function (c) { return card(c, 'feed', 'Recent payments', 'Latest TradeVault payments from Whop', ''); }
+    };
+    var lay = LAYOUT[tab] || [], used = {};
+    lay.forEach(function (x) { used[x[0]] = 1; });
+    var footHTML = '<p class="foot">MRR counts every live membership\'s renewal price per month; members set to cancel at the end of their period are shown as "ending" instead. Cancellation rate is cancellations ÷ (members at the start of the range + new members), and leaves out upgrades (the old membership is cancelled when a member moves tier). Chargeback rate is disputes ÷ paid payments; card networks start monitoring around 0.9%.</p>';
+    HEAD = { pastDue: pastDue.length, up7: up7.length, up7Sum: up7Sum, capN: live.filter(function (m) { return m.cap && !m.trial; }).length };
+    $('kpis').hidden = tab !== 'overview';
     body.innerHTML =
-      '<div class="grid">' +
-      card('c8', 'rev', 'Revenue by ' + gran, 'Net of refunds · ' + w.label, '<div class="big">' + usd(S.net) + '<small>' + (S.refunds ? usd(S.refunds) + ' refunded' : 'no refunds') + '</small></div>', true) +
-      card('c4', 'mix', 'Members by tier', int(mem.length) + ' live memberships · as of ' + asOf, '') +
-      card('c12', 'src', 'Where sales come from', 'Each customer counted by how they arrived · ' + w.label, '<div class="big" id="srcBig"></div>') +
-      card('c12', 'trial', 'Free trials', 'Black Friday 7-day Elite trial · live from Whop', '') +
-      card('c12', 'game', 'Chart game · Spot the Setup', 'thetradevault.co/spot: visits → plays → all 5 charts → pass claimed → joined · ' + w.label, '') +
-      card('c12', 'tbl', 'Tier breakdown', 'Revenue, new members and cancellations are for the ' + w.label + '; members and MRR are as of ' + asOf, '') +
-      card('c7', 'act', 'Active members', 'Live memberships over the ' + w.label, '', true) +
-      card('c5', 'flow', 'New vs cancelled', 'New customers (upgrades excluded) against cancellations', '<div class="big">' + ((S.news.length - S.cancels.length) >= 0 ? '+' : '') + int(S.news.length - S.cancels.length) + '<small>net members</small></div>') +
-      card('c7', 'upc', 'Upcoming billings', 'Renewals due in the next 30 days (memberships set to cancel are left out)', '<div class="big">' + usd(upSum) + '<small>' + int(upcoming.length) + ' renewals</small></div>') +
-      card('c5', 'risk', 'Revenue at risk', 'Failed payments, cancellations and disputes', '') +
-      card('c7', 'upg', 'Upgrades', 'Members moving up a tier · ' + w.label, '<div class="big" id="upgBig"></div>') +
-      card('c5', 'codes', 'Discount codes', 'Payments that used a Whop promo code · ' + w.label, '<div class="big" id="codesBig"></div>') +
-      card('c5', 'why', 'Why members cancel', 'Reason picked on Whop · ' + w.label, '') +
-      card('c7', 'feed', 'Recent payments', 'Latest TradeVault payments from Whop', '') +
-      '</div>' +
-      '<p class="foot">MRR counts every live membership\'s renewal price per month; members set to cancel at the end of their period are shown as "ending" instead. Cancellation rate is cancellations ÷ (members at the start of the range + new members), and leaves out upgrades (the old membership is cancelled when a member moves tier). Chargeback rate is disputes ÷ paid payments; card networks start monitoring around 0.9%.</p>';
-
+      (tab === 'overview' ? '<div class="heads" id="heads"></div>' : '') +
+      (tab === 'affiliates' ? '<div class="empty-tab"><b>Affiliate analytics are next</b>Clicks → trials → paying → commission per affiliate, for the date range above. Until then, the Affiliates page has each affiliate\'s sales.</div>' : '') +
+      (lay.length ? '<div class="grid">' + lay.map(function (x) { return CARD[x[0]](x[1]); }).join('') + '</div>' : '') +
+      (tab === 'overview' || tab === 'members' || tab === 'revenue' ? footHTML : '') +
+      '<div class="pool" aria-hidden="true"><div class="grid">' + Object.keys(CARD).filter(function (k) { return !used[k]; }).map(function (k) { return CARD[k]('c12'); }).join('') + '</div></div>';
     renderTrial();
     renderGame();
+    renderHeads();
 
     // revenue
     var rv = bs.map(function () { var o = {}; TIERS.forEach(function (t) { o[t] = 0; }); o._ref = 0; o._n = 0; return o; });
@@ -1032,6 +1070,56 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
       '<div class="tr-note">' + (ADS.capi ? 'Meta Conversions API is on: ' + int(ADS.meta_sent || 0) + ' trial' + (ADS.meta_sent === 1 ? '' : 's') + ' sent to Meta (all time), so Ads Manager can credit them to the right ad.' : 'Meta Conversions API is off: add META_CAPI_TOKEN in Vercel.') +
         (ADS.remaining ? ' Catching up older signups…' : '') + '</div>';
   }
+  /* ---------- tabs ---------- */
+  var TABS = ['overview', 'revenue', 'members', 'leads', 'affiliates'];
+  var LAYOUT = {
+    overview: [['rev', 'c8'], ['mix', 'c4']],
+    revenue: [['rev', 'c12'], ['upc', 'c7'], ['risk', 'c5'], ['feed', 'c7'], ['codes', 'c5']],
+    members: [['act', 'c8'], ['mix', 'c4'], ['upg', 'c7'], ['flow', 'c5'], ['tbl', 'c12'], ['why', 'c12']],
+    leads: [['src', 'c12'], ['trial', 'c12'], ['game', 'c12']],
+    affiliates: []
+  };
+  var HEAD = null, tab = 'overview';
+  try { var h0 = (location.hash || '').slice(1), t0 = localStorage.getItem('tv_an_tab'); tab = TABS.indexOf(h0) >= 0 ? h0 : TABS.indexOf(t0) >= 0 ? t0 : 'overview'; } catch (e) {}
+  function setTab(t, fromHash) {
+    if (TABS.indexOf(t) < 0) t = 'overview';
+    tab = t;
+    try { localStorage.setItem('tv_an_tab', t); } catch (e) {}
+    if (!fromHash && location.hash !== '#' + t) history.replaceState(null, '', '#' + t);
+    Array.prototype.forEach.call($('tabs').children, function (b) { b.setAttribute('aria-selected', b.dataset.t === t ? 'true' : 'false'); b.tabIndex = b.dataset.t === t ? 0 : -1; });
+    if (D) { render(); window.scrollTo({ top: 0 }); }
+  }
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setTab(b.dataset.t); });
+  $('tabs').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var i = TABS.indexOf(tab) + (e.key === 'ArrowRight' ? 1 : -1); i = (i + TABS.length) % TABS.length;
+    setTab(TABS[i]); $('tabs').children[i].focus();
+  });
+  window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (TABS.indexOf(h) >= 0 && h !== tab) setTab(h, true); });
+  setTab(tab, true);
+
+  // Overview: one row of headlines from the other tabs; each opens its tab
+  function renderHeads() {
+    var el = $('heads'); if (!el || !HEAD) return;
+    var w = window_(range), lab = RLABEL[range] || 'range', now = Date.now();
+    var trialRows = ADS && ADS.rows ? ADS.rows : null;
+    var inTrial = trialRows ? trialRows.filter(function (r) { return r.status === 'in trial'; }) : null;
+    var soon = inTrial ? inTrial.filter(function (r) { return !r.cancelling && r.ends && r.ends * 1000 < now + 2 * DAY; }).length : null;
+    var startedR = trialRows ? trialRows.filter(function (r) { var t = r.started * 1000; return t >= w.a && t < w.b; }).length : null;
+    var claimsR = GAME && GAME.claims ? GAME.claims.filter(function (r) { var t = r[0] * 1000; return t >= w.a && t < w.b; }).length : null;
+    var dash = function (v, f) { return v == null ? '…' : f ? f(v) : int(v); };
+    var H = [
+      ['leads', 'Trials started · ' + lab, dash(startedR), 'Leads'],
+      ['leads', 'In trial now', dash(inTrial && inTrial.length), soon ? soon + ' convert in 48h' : 'Leads'],
+      ['leads', 'Game opt-ins · ' + lab, dash(claimsR), 'Leads'],
+      ['revenue', 'Renewals next 7 days', usd(HEAD.up7Sum), int(HEAD.up7) + ' due'],
+      ['revenue', 'Failed payments', int(HEAD.pastDue), 'Revenue'],
+      ['members', 'Set to cancel', int(HEAD.capN), 'Members']
+    ];
+    el.innerHTML = H.map(function (h) { return '<button type="button" data-t="' + h[0] + '"><span class="l">' + esc(h[1]) + '</span><span class="v num">' + h[2] + '</span><span class="h"><span>' + esc(h[3]) + '</span><em>→</em></span></button>'; }).join('');
+    Array.prototype.forEach.call(el.children, function (b) { b.addEventListener('click', function () { setTab(b.dataset.t); }); });
+  }
+
   /* ---------- chart game funnel (api/tv-pass?stats=1) ---------- */
   var GAME = null, gShow = 15, gOpen = false;
   var GSRC = { meta: 'Meta ad', affiliate: 'Affiliate', youtube: 'YouTube', seo: 'Google / blog (SEO)', social: 'Social (not an ad)', email: 'Email', '': 'Direct / no source' };
@@ -1126,7 +1214,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
   function loadGame() {
     fetch('https://jaybonham.com/api/tv-pass?stats=1', { headers: { 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass } })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Bad response (' + r.status + ')' }; }); })
-      .then(function (d) { GAME = d.ok ? d : { error: d.error || 'unknown error' }; renderGame(); })
+      .then(function (d) { GAME = d.ok ? d : { error: d.error || 'unknown error' }; renderGame(); renderHeads(); })
       .catch(function (e) { GAME = { error: e.message || 'network error' }; renderGame(); });
   }
 
@@ -1134,7 +1222,7 @@ td .tiers i{width:7px;height:7px;border-radius:2px;display:inline-block}
     fetch('https://jaybonham.com/api/tv-ads', { headers: { 'Authorization': 'Bearer ' + token, 'X-Analytics-Pass': pass } })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Bad response (' + r.status + ')' }; }); })
       .then(function (d) {
-        ADS = d.ok ? d : { error: d.error || 'unknown error' }; renderTrial();
+        ADS = d.ok ? d : { error: d.error || 'unknown error' }; renderTrial(); renderHeads();
         if (d.ok && d.remaining && ++adsTries < 12) setTimeout(loadAds, 500);
       })
       .catch(function (e) { ADS = { error: e.message || 'network error' }; renderTrial(); });
