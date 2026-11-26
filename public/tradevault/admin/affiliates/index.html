@@ -56,6 +56,7 @@
 .item .meta{font-size:13px;color:var(--tx-mute);margin-top:4px;overflow-wrap:anywhere}
 .qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
 .qa div{min-width:0}
+.qa .wide{grid-column:1/-1}
 .qa p{font-size:14px;color:var(--tx-dim);margin-top:4px;white-space:pre-wrap;overflow-wrap:anywhere}
 .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .amt{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-.03em}
@@ -412,8 +413,11 @@
 
   function qa(app) {
     var box = el('div', 'qa');
-    [['Where they’ll share', app.socials], ['Audience', app.audience], ['How they’ll promote', app.promote]].forEach(function (q) {
-      var d = el('div'); d.appendChild(el('span', 'mono', q[0])); d.appendChild(el('p', null, q[1] || '—')); box.appendChild(d);
+    var found = app.found ? app.found + (app.found_detail ? ' · ' + app.found_detail : '') : app.found_detail;
+    [['About them', app.about, 1], ['How they found us', found], ['Member?', app.member], ['Where they’ll share', app.socials], ['Audience', app.audience],
+     ['How they’ll promote', app.promote], ['Why they’re a fit', app.fit, 1]].forEach(function (q) {
+      if (q[1] == null && q[0] !== 'Where they’ll share' && q[0] !== 'How they’ll promote') return; // older applications didn't ask these
+      var d = el('div', q[2] ? 'wide' : null); d.appendChild(el('span', 'mono', q[0])); d.appendChild(el('p', null, q[1] || '—')); box.appendChild(d);
     });
     return box;
   }

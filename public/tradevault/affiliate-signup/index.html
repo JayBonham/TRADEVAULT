@@ -117,11 +117,22 @@ form{display:grid;gap:16px;margin-top:22px}
         <div class="field"><label for="pw">Password</label><div class="inp"><input id="pw" type="password" autocomplete="new-password" minlength="8" required></div><span class="help">At least 8 characters.</span></div>
         <div class="field"><label for="code">Your link name <small>Optional</small></label><div class="inp"><span>thetradevault.co/?ref=</span><input id="code" autocapitalize="off" spellcheck="false" maxlength="20" placeholder="yourname"></div><div class="codewrap"><span class="codemsg" id="codeMsg" aria-live="polite"></span><span class="help">3 to 20 lowercase letters, numbers or underscores. Leave blank and we'll make one.</span></div></div>
         <div class="step">About you</div>
+        <div class="field"><label for="about">Tell us a bit about yourself</label><div class="inp"><textarea id="about" rows="3" maxlength="800" placeholder="Who you are, what you do, how long you've been trading and what you trade"></textarea></div></div>
+        <div class="row2">
+          <div class="field"><label for="found">How did you find us?</label><div class="inp"><select id="found">
+            <option value="">Choose one</option><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Facebook</option><option>X / Twitter</option><option>Jay or one of the educators</option><option>A friend or member told me</option><option>A Trade Vault webinar</option><option>Google search</option><option>Other</option>
+          </select></div></div>
+          <div class="field"><label for="member">Are you a Trade Vault member?</label><div class="inp"><select id="member">
+            <option value="">Choose one</option><option>Yes, I'm a member now</option><option>I used to be</option><option>Not yet</option>
+          </select></div></div>
+        </div>
+        <div class="field"><label for="found_detail">Who referred you, or which post or video? <small>Optional</small></label><div class="inp"><input id="found_detail" maxlength="200" placeholder="e.g. Jay's reel on gold, my friend Sam"></div></div>
         <div class="field"><label for="socials">Where will you share your link?</label><div class="inp"><textarea id="socials" rows="2" maxlength="600" placeholder="Instagram, TikTok, YouTube, Discord, X… handles or links"></textarea></div></div>
         <div class="field"><label for="audience">Audience size</label><div class="inp"><select id="audience">
           <option value="">Choose one</option><option>Under 1,000</option><option>1,000 – 10,000</option><option>10,000 – 50,000</option><option>50,000 – 250,000</option><option>250,000+</option><option>Friends &amp; network only</option>
         </select></div></div>
         <div class="field"><label for="promote">How will you promote the Vault?</label><div class="inp"><textarea id="promote" rows="3" maxlength="600" placeholder="e.g. stories with my trades, a YouTube review, my trading Discord"></textarea></div></div>
+        <div class="field"><label for="fit">Why would you be a good fit for the Vault?</label><div class="inp"><textarea id="fit" rows="3" maxlength="800" placeholder="Your audience, your results, why they'd trust your recommendation"></textarea></div></div>
         <div class="step">How you get paid</div>
         <div id="payout"></div>
         <label class="check"><input type="checkbox" id="agree"> <span>I agree to the <a href="#terms">affiliate terms</a>.</span></label>
@@ -188,12 +199,16 @@ form{display:grid;gap:16px;margin-top:22px}
     var err = $('err'), go = $('go');
     var body = { name: $('name').value.trim(), email: $('email').value.trim(), phone: $('phone').value.trim(), password: $('pw').value,
       code: $('code').value.trim(), socials: $('socials').value.trim(), audience: $('audience').value, promote: $('promote').value.trim(),
+      about: $('about').value.trim(), found: $('found').value, found_detail: $('found_detail').value.trim(), member: $('member').value, fit: $('fit').value.trim(),
       agree: $('agree').checked };
     var pay = picker.value(); body.payout_method = pay.payout_method; body.payout = pay.payout;
     if (!body.name || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(body.email)) { err.textContent = 'Please enter your name and a valid email.'; return; }
     if (body.password.length < 8) { err.textContent = 'Your password needs at least 8 characters.'; return; }
     if (body.code && !/^[a-z0-9_]{3,20}$/.test(body.code)) { err.textContent = 'Your link name needs 3 to 20 lowercase letters, numbers or underscores.'; return; }
+    if (!body.about) { err.textContent = 'Tell us a bit about yourself.'; return; }
+    if (!body.found || !body.member) { err.textContent = "Tell us how you found us and whether you're a member."; return; }
     if (!body.socials || !body.promote) { err.textContent = "Tell us where you'll share your link and how you'll promote it."; return; }
+    if (!body.fit) { err.textContent = "Tell us why you'd be a good fit."; return; }
     if (pay.payout_method === 'paypal' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(pay.payout.email)) { err.textContent = 'Enter the email address on your PayPal account.'; return; }
     if (pay.payout_method === 'crypto' && !pay.payout.address) { err.textContent = pay.payout.network === 'BINANCE' ? 'Enter your Binance Pay ID.' : 'Paste your wallet address.'; return; }
     if (!body.agree) { err.textContent = 'Please accept the affiliate terms.'; return; }

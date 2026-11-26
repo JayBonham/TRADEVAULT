@@ -1,6 +1,7 @@
 """TradeVault affiliate API (pages live on thetradevault.co). Route: /api/tv-aff?action=<action>
 
-  register   POST   application: name, email, password, code?, socials, audience, promote,
+  register   POST   application: name, email, password, code?, about, found, found_detail?, member, socials, audience,
+                    promote, fit,
                     payout_method, payout {..}           -> {token} (status 'pending')
   login      POST   email, password                       -> {token}
   forgot     POST   email                     emails a 1-hour, one-use reset link (always says ok)
@@ -144,13 +145,19 @@ class handler(BaseHTTPRequestHandler):
         phone = (b.get("phone") or "").strip()[:40]
         password = b.get("password") or ""
         code = (b.get("code") or "").strip().lower()
-        app = {k: (str(b.get(k) or "").strip()[:600]) for k in ("socials", "audience", "promote")}
+        app = {k: (str(b.get(k) or "").strip()[:800]) for k in ("about", "found", "found_detail", "member", "socials", "audience", "promote", "fit")}
         if not name or not EMAIL_RE.match(email):
             return self._json(400, {"error": "Please enter your name and a valid email."})
         if len(password) < 8:
             return self._json(400, {"error": "Your password needs at least 8 characters."})
         if code and not A.CODE_RE.match(code):
             return self._json(400, {"error": "Your link name can use 3 to 20 lowercase letters, numbers or underscores."})
+        if not app["about"]:
+            return self._json(400, {"error": "Tell us a bit about yourself."})
+        if not app["found"] or not app["member"]:
+            return self._json(400, {"error": "Tell us how you found us and whether you're a member."})
+        if not app["fit"]:
+            return self._json(400, {"error": "Tell us why you'd be a good fit."})
         if not app["socials"] or not app["promote"]:
             return self._json(400, {"error": "Tell us where you'll share your link and how you'll promote it."})
         try:
