@@ -1,18 +1,20 @@
-/* Killshot live replay for the sales pages: real gold 3-minute charts with the Killshot overlay
-   (same data and look as /spot). Usage: <canvas data-ks-live></canvas> plus optional
+/* Killshot live replay for the sales pages: real gold 1-minute charts with the Killshot overlay, computed by a
+   port of the real Pine script (tools/spot/build_killshot.py; same data and look as /spot). The trade is the Killshot
+   arrow; it fills when price tests the 20 EMA, 1:1. Usage: <canvas data-ks-live></canvas> plus optional
    [data-ks-row="signal|trend|poc"] elements inside the same [data-ks-panel] to show live readouts. */
 (function () {
   'use strict';
   var SRC = '/spot/setups.json';
   // Polish page (<html lang="pl">) gets Polish readouts
   var PL = /^pl/i.test(document.documentElement.lang || '');
-  var D = { 'Buy': 'Kupno', 'Sell': 'Sprzedaż', ' star printed at ': ' – gwiazda na ', 'Target hit': 'Cel osiągnięty', 'Stopped': 'Stop', 'Setup': 'Setup',
-    'Watching for a stretched extreme': 'Czeka na rozciągnięte ekstremum', 'Scanning': 'Skanuje', 'Bullish': 'Wzrostowy', 'Bearish': 'Spadkowy',
+  var D = { 'Buy': 'Kupno', 'Sell': 'Sprzedaż', ' arrow, filled at the 20 EMA ': ' – strzałka, wejście na EMA 20 ', ' arrow: waiting for the test of the line': ' – strzałka: czeka na test linii', 'Target hit': 'Cel osiągnięty', 'Stopped': 'Stop', 'Setup': 'Setup', 'Waiting': 'Czeka',
+    'Watching for a Killshot arrow': 'Czeka na strzałkę Killshot', 'Scanning': 'Skanuje', 'Bullish': 'Wzrostowy', 'Bearish': 'Spadkowy',
     'Point of Control ': 'Point of Control ', 'Above': 'Powyżej', 'Below': 'Poniżej', 'Up': 'Góra', 'Down': 'Dół', 'TARGET ': 'CEL ', 'ENTRY ': 'WEJŚCIE ', 'STOP ': 'STOP ' };
   function T(k) { return PL && D[k] != null ? D[k] : k; }
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var C = { up: '#EAF0FA', dn: '#2F6BFF', wick: 'rgba(234,240,250,.55)', wickDn: 'rgba(47,107,255,.8)', fast: '#FF4D63', slow: '#3D7BFF', e200: '#FF9800',
-    bull: 'rgba(30,80,210,.17)', bear: 'rgba(120,24,46,.24)', yel: '#FFE14D', blue: '#3D7BFF', buy: '#22D39A', sell: '#FF4D63', grid: 'rgba(255,255,255,.05)', axis: '#76849B' };
+    bull: 'rgba(30,80,210,.17)', bear: 'rgba(120,24,46,.24)', yel: '#FFE14D', blue: '#3D7BFF', buy: '#22D39A', sell: '#FF4D63', lime: '#7CFF4F', grid: 'rgba(255,255,255,.05)', axis: '#76849B' };
+  function fillOf(s) { return s.fill != null ? s.fill : s.at; }
 
   function star(x, cx, cy, r, col, pts) {
     pts = pts || 16; x.save(); x.shadowColor = col; x.shadowBlur = r > 5 ? 12 : 3; x.fillStyle = col; x.beginPath();
@@ -56,13 +58,14 @@
     while (this.p >= 1) {
       this.p -= 1; this.n++;
       var k = this.n - 1;
-      if (k === s.at && !this.trade) {
+      if (k === fillOf(s) && !this.trade) {
         var r = Math.abs(s.entry - s.stop);
-        this.trade = { d: s.d, at: s.at, entry: s.entry, stop: s.entry - s.d * r, target: s.entry + s.d * s.rr * r, res: null, exit: null };
-      } else if (this.trade && !this.trade.res && k > s.at) {
+        this.trade = { d: s.d, at: fillOf(s), entry: s.entry, stop: s.entry - s.d * r, target: s.entry + s.d * s.rr * r, res: null, exit: null };
+      }
+      if (this.trade && !this.trade.res && k >= this.trade.at) {
         var c = s.c[k], t = this.trade;
         if (t.d === 1 ? c[2] <= t.stop : c[1] >= t.stop) { t.res = 'loss'; t.exit = k; }
-        else if (t.d === 1 ? c[1] >= t.target : c[2] <= t.target) { t.res = 'win'; t.exit = k; }
+        else if (k > t.at && (t.d === 1 ? c[1] >= t.target : c[2] <= t.target)) { t.res = 'win'; t.exit = k; }
       }
       if ((this.trade && this.trade.res && this.n > this.trade.exit + 4) || this.n >= s.c.length) { this.p = 0; this.wait = 3200; break; }
     }
@@ -91,11 +94,11 @@
     for (var g = Math.ceil(L / step) * step; g < Hh; g += step) { var gy = Y(g); x.strokeStyle = C.grid; x.lineWidth = 1; x.beginPath(); x.moveTo(0, gy); x.lineTo(W - axis, gy); x.stroke(); x.fillStyle = C.axis; x.fillText(fmt(g), W - axis + 6, gy); }
     // S/R lines + POC
     if (!nk) (s.ln || []).forEach(function (l) {
-      if (l[0] + 8 > nn || l[2] < first) return; var e2 = Math.min(l[2], nn); if (e2 <= l[0]) return;
+      if (l[0] + (s.v === 2 ? 0 : 8) >= nn || l[2] < first) return; var e2 = Math.min(l[2], nn); if (e2 <= l[0]) return;
       x.strokeStyle = l[3] === 1 ? 'rgba(34,211,154,.6)' : 'rgba(255,77,99,.65)'; x.lineWidth = 1.1;
       x.beginPath(); x.moveTo(X(Math.max(l[0], first)), Y(l[1])); x.lineTo(X(e2), Y(l[1])); x.stroke();
     });
-    if (s.p && nn >= 0 && !nk) { var py = Y(s.p[nn]); x.strokeStyle = C.e200; x.lineWidth = 1.4; x.beginPath(); x.moveTo(X(Math.max(first, last - 60)), py); x.lineTo(W - axis, py); x.stroke(); }
+    if (s.p && nn >= 0 && !nk && s.p[nn] != null) { var py = Y(s.p[nn]); x.strokeStyle = C.e200; x.lineWidth = 1.4; x.beginPath(); x.moveTo(X(Math.max(first, s.v === 2 ? nn - 359 : last - 60)), py); x.lineTo(W - axis, py); x.stroke(); }
     // EMAs
     if (!nk) [[2, C.e200, 2], [1, C.slow, 1.5], [0, C.fast, 1.4]].forEach(function (mm) {
       x.strokeStyle = mm[1]; x.lineWidth = mm[2]; x.beginPath();
@@ -123,10 +126,19 @@
       switch (mk[1]) {
         case 1: star(x, mx, Y(cc[1]) - 7, 2.6, C.yel, 6); break; case 2: star(x, mx, Y(cc[2]) + 7, 2.6, C.yel, 6); break;
         case 3: star(x, mx, Y(cc[1]) - 9, 4, C.blue, 8); break; case 4: star(x, mx, Y(cc[2]) + 9, 4, C.blue, 8); break;
-        case 5: tri(x, mx, Y(cc[2]) + 10, 5, 1, C.blue); break; case 6: tri(x, mx, Y(cc[1]) - 10, 5, -1, C.sell); break;
-        case 7: star(x, mx, Y(cc[1]) - 12, 6, C.sell); break; case 8: star(x, mx, Y(cc[2]) + 12, 6, C.buy); break;
+        case 5: tri(x, mx, s.v === 2 ? Y(cc[1]) - 10 : Y(cc[2]) + 10, 5, 1, C.blue); break; case 6: tri(x, mx, Y(cc[1]) - 10, 5, -1, C.sell); break;
+        case 7: star(x, mx, Y(cc[1]) - 12, 6, C.sell); break; case 8: star(x, mx, Y(cc[2]) + 12, 6, s.v === 2 ? C.lime : C.buy); break;
       }
     });
+    // each zigzag's current star (Killshot repaints it until the swing is done)
+    var zt = !nk && s.zt && s.zt[nn];
+    if (zt) for (var zi = 0; zi < 3; zi++) {
+      var zp = zt[zi * 2], zh = zt[zi * 2 + 1]; if (zp < 0 || zp < first || zp > nn) continue;
+      var zc = s.c[zp], zx = X(zp);
+      if (zi === 0) star(x, zx, zh ? Y(zc[1]) - 7 : Y(zc[2]) + 7, 2.6, C.yel, 6);
+      else if (zi === 1) star(x, zx, zh ? Y(zc[1]) - 9 : Y(zc[2]) + 9, 4, C.blue, 8);
+      else star(x, zx, zh ? Y(zc[1]) - 12 : Y(zc[2]) + 12, 6, zh ? C.sell : C.lime);
+    }
     if (t && this.tags) {
       var tg = function (tx, xx, yy, col) { x.font = '700 11px "JetBrains Mono", monospace'; var tw = x.measureText(tx).width + 14; xx = Math.min(xx, W - axis - tw - 4);
         x.fillStyle = 'rgba(5,10,20,.88)'; x.fillRect(xx, yy - 10, tw, 20); x.strokeStyle = col; x.lineWidth = 1; x.strokeRect(xx + .5, yy - 9.5, tw - 1, 19); x.fillStyle = col; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(tx, xx + 7, yy + .5); };
@@ -136,27 +148,30 @@
       L3.forEach(function (l) { tg(l[0], tx0, l[1], l[2]); });
       x.font = '500 10px "JetBrains Mono", monospace';
     }
-    if (t) { var sc = s.c[t.at]; star(x, X(t.at), t.d === 1 ? Y(sc[2]) + 13 : Y(sc[1]) - 13, 7.5, t.d === 1 ? C.buy : C.sell); }
+    // the Killshot arrow (the signal): blue buy / red sell, above the bar
+    if (!nk && nn >= s.at && s.at >= first) { var sc = s.c[s.at]; x.save(); x.shadowColor = s.d === 1 ? C.blue : C.sell; x.shadowBlur = 12; tri(x, X(s.at), Y(sc[1]) - 15, 7.5, s.d, s.d === 1 ? C.blue : C.sell); x.restore(); }
     // last price
     var lp = s.c[nn][3], ly = Y(lp);
     x.fillStyle = s.c[nn][3] >= s.c[nn][0] ? C.up : C.dn; x.fillRect(W - axis, ly - 9, axis - 2, 18);
     x.fillStyle = s.c[nn][3] >= s.c[nn][0] ? '#03060D' : '#fff'; x.font = '700 10px "JetBrains Mono", monospace'; x.fillText(fmt(lp), W - axis + 4, ly);
     // readouts
     var fl = s.f[nn], tr = function (b) { return (fl >> b & 1) ? '<b class="ks-up">' + T('Up') + '</b>' : '<b class="ks-dn">' + T('Down') + '</b>'; };
-    if (t) this.row('signal', T(t.d === 1 ? 'Buy' : 'Sell') + T(' star printed at ') + fmt(t.entry), T(t.res === 'win' ? 'Target hit' : t.res === 'loss' ? 'Stopped' : 'Setup'), t.res === 'loss' ? 'stop' : 'go');
-    else this.row('signal', T('Watching for a stretched extreme'), T('Scanning'), 'wait');
-    this.row('trend', 'M3 ' + tr(0) + ' · M15 ' + tr(1) + ' · H1 ' + tr(3) + ' · H4 ' + tr(4), T((fl & 1) ? 'Bullish' : 'Bearish'), (fl & 1) ? 'go' : 'stop');
-    this.row('poc', T('Point of Control ') + fmt(s.p[nn]), T(lp > s.p[nn] ? 'Above' : 'Below'), '');
+    if (t) this.row('signal', T(t.d === 1 ? 'Buy' : 'Sell') + T(' arrow, filled at the 20 EMA ') + fmt(t.entry), T(t.res === 'win' ? 'Target hit' : t.res === 'loss' ? 'Stopped' : 'Setup'), t.res === 'loss' ? 'stop' : 'go');
+    else if (nn >= s.at) this.row('signal', T(s.d === 1 ? 'Buy' : 'Sell') + T(' arrow: waiting for the test of the line'), T('Waiting'), 'wait');
+    else this.row('signal', T('Watching for a Killshot arrow'), T('Scanning'), 'wait');
+    if (s.v === 2) this.row('trend', 'M1 ' + tr(0) + ' · M5 ' + tr(1) + ' · M15 ' + tr(2) + ' · H4 ' + tr(4), T((fl & 1) ? 'Bullish' : 'Bearish'), (fl & 1) ? 'go' : 'stop');
+    else this.row('trend', 'M3 ' + tr(0) + ' · M15 ' + tr(1) + ' · H1 ' + tr(3) + ' · H4 ' + tr(4), T((fl & 1) ? 'Bullish' : 'Bearish'), (fl & 1) ? 'go' : 'stop');
+    if (s.p[nn] != null) this.row('poc', T('Point of Control ') + fmt(s.p[nn]), T(lp > s.p[nn] ? 'Above' : 'Below'), '');
   };
 
   // one still frame of a setup, Killshot off (naked) or on, framed so the whole trade is visible
   window.KSStill = function (cv, s, naked) {
     var lv = Object.create(Live.prototype); lv.cv = cv; lv.x = cv.getContext('2d'); lv.panel = null; lv.resize();
     lv.s = s; lv.naked = naked; lv.tags = !naked; lv.lo = null; lv.still = true;
-    var r = Math.abs(s.entry - s.stop), t = { d: s.d, at: s.at, entry: s.entry, stop: s.entry - s.d * r, target: s.entry + s.d * s.rr * r, res: null, exit: null };
-    for (var k = s.at + 1; k < s.c.length; k++) { var c = s.c[k];
+    var r = Math.abs(s.entry - s.stop), t = { d: s.d, at: fillOf(s), entry: s.entry, stop: s.entry - s.d * r, target: s.entry + s.d * s.rr * r, res: null, exit: null };
+    for (var k = t.at; k < s.c.length; k++) { var c = s.c[k];
       if (t.d === 1 ? c[2] <= t.stop : c[1] >= t.stop) { t.res = 'loss'; t.exit = k; break; }
-      if (t.d === 1 ? c[1] >= t.target : c[2] <= t.target) { t.res = 'win'; t.exit = k; break; } }
+      if (k > t.at && (t.d === 1 ? c[1] >= t.target : c[2] <= t.target)) { t.res = 'win'; t.exit = k; break; } }
     lv.trade = t; lv.n = Math.min(s.c.length, (t.exit || s.at) + 2);
     lv.draw();
   };
