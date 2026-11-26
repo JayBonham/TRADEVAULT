@@ -357,7 +357,7 @@ a{color:inherit}
     <div class="again">
       <button class="ghost" id="againBtn" type="button">Practice: 5 more charts ↻</button>
     </div>
-    <p class="fine">Replays of past gold futures charts (1-minute). Signals are Killshot's own rules (20/50 EMA cross arrows with its 5 confirmations) run on past data; the 1:1 entry at the test of the 20 EMA and the 2 ATR stop are how the game trades them. On these charts Killshot's arrows paid 1:1 on about 54% of trades. Results are hypothetical, in R (multiples of the risk on each trade), and past performance doesn't guarantee future results. Education only, not financial advice.</p>
+    <p class="fine">Replays of past gold futures charts (1-minute). Signals are Killshot's own rules (20/50 EMA cross arrows with its 5 confirmations) run on past data; the 1:1 entry at the test of the 20 EMA and the 2 ATR stop are how the game trades them. The five charts are picked examples where the trade paid; across every signal on these charts, about 54% paid 1:1. Trading involves risk and Killshot trades do lose. Results are hypothetical, in R (multiples of the risk on each trade), and past performance doesn't guarantee future results. Education only, not financial advice.</p>
   </div>
 </section>
 
@@ -579,9 +579,10 @@ a{color:inherit}
       } else if (m.type === 'zone') {
         var a2 = m.fixed ? 0.45 : 0.35 + 0.25 * Math.sin(performance.now() / 260);
         x.strokeStyle = 'rgba(75,158,255,' + a2 + ')'; x.lineWidth = 1.5;
+        if (m.hi != null) cc = [0, m.hi, m.lo, 0];
         var zx = mx - cw * 2.2, zy = Y(cc[1]) - 18, zh = Y(cc[2]) - Y(cc[1]) + 36;
         bracket(x, zx, zy, cw * 3.2, zh);
-        if (!self.o.bare) { x.font = '700 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillStyle = C.ks; x.fillText(m.fixed ? 'YOUR CALL' : 'SETUP', mx - cw * 0.6, zy - (m.fixed ? 24 : 4)); }
+        if (!self.o.bare) { x.font = '700 10px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'bottom'; x.fillStyle = C.ks; x.fillText(m.fixed ? 'YOUR CALL' : 'SETUP', mx - cw * 0.6, zy - (m.fixed ? 34 : 4)); }
       }
     });
     // trade labels on top of everything
@@ -720,22 +721,27 @@ a{color:inherit}
   var cv = new Chart($('cv')), G = null, raf = 0, fast = false, lastT = 0;
   // Killshot doesn't chase the arrow: the entry fills when price comes back to test the line (20 EMA)
   function fillOf(s) { return s.fill != null ? s.fill : s.at; }
+  // how far through candle k (0-1, along the same open -> extreme -> extreme -> close path the chart animates)
+  // price first trades at `px`
+  function touchAt(s, k, px) {
+    var c = s.c[k], o = c[0], path = c[3] >= o ? [o, c[2], c[1], c[3]] : [o, c[1], c[2], c[3]];
+    for (var i = 0; i < 3; i++) {
+      var a = path[i], b = path[i + 1];
+      if (px >= Math.min(a, b) && px <= Math.max(a, b)) return Math.max(0.02, (i + (b === a ? 0 : (px - a) / (b - a))) / 3);
+    }
+    return 0.02;
+  }
   function mkTrade(s, d, label) {
     var r = Math.abs(s.entry - s.stop);
     return { d: d, at: fillOf(s), entry: s.entry, stop: s.entry - d * r, target: s.entry + d * s.rr * r, rr: s.rr, r: r, res: null, R: 0, exit: null, label: label };
   }
   function pickRounds(seed) {
     var rnd = seed ? mulberry(seed) : Math.random;
-    var wins = POOL.filter(function (s) { return s.result === 'win'; }), loss = POOL.filter(function (s) { return s.result === 'loss'; });
-    shuffle(wins, rnd); shuffle(loss, rnd);
-    // 3 wins + 2 losses, close to Killshot's real 1:1 hit rate on these charts (54%); a win always opens,
-    // and at least one win is a buy (gold mostly fell over these weeks, so sells dominate the pool)
-    var buy = wins.filter(function (x) { return x.d === 1; })[0];
-    if (buy) { wins.splice(wins.indexOf(buy), 1); wins.splice(Math.floor(rnd() * 3), 0, buy); }
-    var r = wins.slice(0, 3), l1 = 1 + Math.floor(rnd() * 3);
-    r.splice(l1, 0, loss[0]);
-    r.splice(l1 + 1 + Math.floor(rnd() * (4 - l1)), 0, loss[1]);
-    return r;
+    // five Killshot trades that paid (picked examples; the small print gives the real hit rate), mixing buys and sells
+    var wins = POOL.filter(function (s) { return s.result === 'win'; });
+    var buys = shuffle(wins.filter(function (x) { return x.d === 1; }), rnd), sells = shuffle(wins.filter(function (x) { return x.d === -1; }), rnd);
+    var nb = 2 + Math.floor(rnd() * 2);
+    return shuffle(buys.slice(0, nb).concat(sells.slice(0, 5 - nb)), rnd);
   }
   function shuffle(a, rnd) { rnd = rnd || Math.random; for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -776,7 +782,7 @@ a{color:inherit}
     G.i++;
     if (G.i >= G.rounds.length) return finish();
     var s = G.rounds[G.i];
-    G.s = s; G.phase = 'print'; G.choice = null; G.ksT = null; G.youT = null; G.wait = 0;
+    G.s = s; G.phase = 'print'; G.choice = null; G.ksT = null; G.youT = null; G.wait = 0; G.pf = touchAt(s, fillOf(s), s.entry);
     cv.load(s, Math.max(20, fillOf(s) - 34));
     $('dots').children[G.i].className = 'on';
     $('mkName').textContent = s.sym === 'GOLD' ? 'Gold' : 'US30';
@@ -809,11 +815,13 @@ a{color:inherit}
       if (RM) per = 16;
       cv.p += dt / per;
       while (cv.p >= 1 && cv.n < s.c.length) {
+        if (G.phase === 'print' && cv.n === fillOf(s)) break;   // never finish the entry candle before the call
         cv.p -= 1; cv.n++;
-        if (G.phase === 'print' && cv.n === fillOf(s)) { cv.p = 0; decide(); break; }   // ask right where Killshot enters
         if (G.phase === 'wait' && cv.n === fillOf(s) + 1) { filled(); }
         if (G.phase === 'play') settle(cv.n - 1);
       }
+      // ask mid-candle, the moment price touches the line: the price on screen is Killshot's entry
+      if (G.phase === 'print' && cv.n === fillOf(s) && cv.p >= G.pf) { cv.p = G.pf; decide(); }
       if (G.phase === 'play' && done()) { G.phase = 'after'; G.wait = 0; }
       if (cv.n >= s.c.length) { cv.p = 0; if (G.phase === 'play') { closeOpen(); G.phase = 'after'; G.wait = 0; } }
     } else if (G.phase === 'decide') {
@@ -832,7 +840,8 @@ a{color:inherit}
 
   function decide() {
     G.phase = 'decide'; G.wait = 0;
-    cv.marks.push({ type: 'zone', k: cv.n - 1 });   // the last candle on screen: the entry comes next
+    var pc = cv.partial(cv.n, cv.p);   // the entry candle, as far as it has printed
+    cv.marks.push({ type: 'zone', k: cv.n, hi: pc[1], lo: pc[2] });
     status('Your call', 'Killshot is off. Buy, sell, or skip?');
     setBtns(true);
     var tm = $('timer'); tm.style.transition = 'none'; tm.style.transform = 'scaleX(1)';
@@ -855,7 +864,6 @@ a{color:inherit}
     if (back > 1) cv.marks.push({ type: 'line', k: s.at, to: fillOf(s) });
     filled();
     status(said, 'Killshot printed a ' + (s.d === 1 ? 'blue buy' : 'red sell') + ' arrow ' + (back > 1 ? back + ' candles back' : 'on the last candle') + ' (all 5 confirmations), then waited for price to test the line. It ' + (s.d === 1 ? 'buys' : 'sells') + ' right here at ' + fmt(s.entry, 1) + ', 1:1.');
-    cv.p = 0;
   }
   // price tested the line: the Killshot trade (and yours) fills at 1:1
   function filled() {

@@ -444,9 +444,8 @@ print('backtest (all setups that filled, any length):', BT); lo = [s for s in se
 print('setups', len(setups), 'wins', len(w), 'losses', len(lo))
 random.seed(11); random.shuffle(w); random.shuffle(lo)
 # Gold mostly fell over these weeks (sells outnumber buys ~3:1), so keep every buy and fill up with sells.
-# The game deals 3 wins + 2 losses a day, at least one of them a buy (the real 1:1 hit rate is ~54%).
-pick = lambda arr, n: [x for x in arr if x['d'] == 1][:n] + [x for x in arr if x['d'] == -1][:n]
-pool = pick(w, 8)[:16] + pick(lo, 6)[:12]
+# The game shows Killshot's winning trades only (picked examples; the page's small print gives the real ~54%).
+pool = [x for x in w if x['d'] == 1] + [x for x in w if x['d'] == -1][:14]
 for n_, s in enumerate(pool):
     s['id'] = n_
 if '--dry' not in sys.argv:
