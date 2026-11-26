@@ -8,9 +8,10 @@ POST {name, email, phone?, score, rank, aff?, ref?, utm_*}
 POST ?ev=1 {vid, ev, step, aff?, ref?, utm_*}   (sendBeacon from the game, no personal data)
     One row per visit (vid = random id per browser tab) and step: view, start, round 1-5, finish, claim, again.
 GET ?stats=1  (admin token + analytics password, like /api/tv-ads)
-    -> {ok, events: [[hour_epoch, ev, step, src, ad, n]], claims: [[ts, src, ad, rank, phone, joined, paid]], since}
+    -> {ok, events: [[hour_epoch, ev, step, src, ad, n]], claims: [[ts, src, ad, rank, phone, joined, paid, id, name, email]], since}
     claims are deduped per email; joined = a Trade Vault purchase or trial for that email from a day before the
-    claim onwards (tv_members), paid = a real payment over $0 (tv_payments). No names or emails leave the server.
+    claim onwards (tv_members), paid = a real payment over $0 (tv_payments).
+POST ?hide=1 {id}  (same lock) hides a test claim from the dashboard (every claim row for that email; kept in the table).
 """
 import http.client
 import json
@@ -84,16 +85,45 @@ class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self._json(204, None)
 
+    def _admin(self):
+        """None when the caller is an unlocked admin, else the error response already sent."""
+        from _auth import verify_token
+        auth = self.headers.get("Authorization", "")
+        if not (auth.startswith("Bearer ") and verify_token(auth[7:])):
+            return self._json(401, {"ok": False, "error": "Unauthorized"}) or True
+        if not pass_ok(self.headers.get("X-Analytics-Pass")):
+            return self._json(403, {"ok": False, "locked": True, "error": "Wrong password"}) or True
+        return None
+
+    def _hide(self):
+        if self._admin():
+            return
+        try:
+            length = min(int(self.headers.get("Content-Length", 0)), 2000)
+            cid = int(json.loads(self.rfile.read(length) or b"{}").get("id"))
+        except Exception:
+            return self._json(400, {"ok": False, "error": "Invalid request"})
+        try:
+            import psycopg2
+            conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
+            cur = conn.cursor()
+            cur.execute("ALTER TABLE tv_pass_claims ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT FALSE")
+            cur.execute("UPDATE tv_pass_claims SET hidden = TRUE WHERE lower(email) = (SELECT lower(email) FROM tv_pass_claims WHERE id = %s)", (cid,))
+            n = cur.rowcount
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            log("TV_PASS_HIDE_ERR:", e)
+            return self._json(502, {"ok": False, "error": str(e)[:200]})
+        log("TV_PASS_HIDE", cid, n)
+        self._json(200, {"ok": True, "hidden": n})
+
     def do_GET(self):
         qs = parse_qs(urlparse(self.path).query)
         if qs.get("stats") != ["1"]:
             return self._json(404, {"ok": False, "error": "Not found"})
-        from _auth import verify_token
-        auth = self.headers.get("Authorization", "")
-        if not (auth.startswith("Bearer ") and verify_token(auth[7:])):
-            return self._json(401, {"ok": False, "error": "Unauthorized"})
-        if not pass_ok(self.headers.get("X-Analytics-Pass")):
-            return self._json(403, {"ok": False, "locked": True, "error": "Wrong password"})
+        if self._admin():
+            return
         if not DATABASE_URL:
             return self._json(500, {"ok": False, "error": "DATABASE_URL is not set"})
         out = {"ok": True, "events": [], "claims": [], "since": None}
@@ -102,6 +132,7 @@ class handler(BaseHTTPRequestHandler):
             conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
             cur = conn.cursor()
             cur.execute(_EV_TABLE)
+            cur.execute("ALTER TABLE tv_pass_claims ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT FALSE")
             conn.commit()
             cur.execute("""SELECT EXTRACT(EPOCH FROM date_trunc('hour', created_at))::BIGINT, ev, step, COALESCE(src, ''), COALESCE(ad, ''), COUNT(*)
                            FROM tv_game_events WHERE created_at > NOW() - INTERVAL '400 days' GROUP BY 1, 2, 3, 4, 5""")
@@ -118,11 +149,11 @@ class handler(BaseHTTPRequestHandler):
                         joined = expr
                     else:
                         paid = expr
-            cur.execute("""SELECT EXTRACT(EPOCH FROM c.created_at)::BIGINT, c.utm, c.ref, c.aff, c.rank, c.phone IS NOT NULL AND c.phone <> '', %s, %s
-                           FROM (SELECT DISTINCT ON (lower(email)) lower(email) AS em, * FROM tv_pass_claims ORDER BY lower(email), created_at) c""" % (joined, paid))
-            for ts, utm, ref, aff, rank, phone, j, pd in cur.fetchall():
+            cur.execute("""SELECT EXTRACT(EPOCH FROM c.created_at)::BIGINT, c.utm, c.ref, c.aff, c.rank, c.phone IS NOT NULL AND c.phone <> '', %s, %s, c.id, c.name, c.em
+                           FROM (SELECT DISTINCT ON (lower(email)) lower(email) AS em, * FROM tv_pass_claims WHERE NOT hidden ORDER BY lower(email), created_at) c""" % (joined, paid))
+            for ts, utm, ref, aff, rank, phone, j, pd, cid, name, em in cur.fetchall():
                 src, ad = source_of(utm if isinstance(utm, dict) else {}, ref or "", aff or "")
-                out["claims"].append([ts, src, ad, rank or "", bool(phone), bool(j or pd), bool(pd)])
+                out["claims"].append([ts, src, ad, rank or "", bool(phone), bool(j or pd), bool(pd), cid, name or "", em or ""])
             conn.close()
         except Exception as e:
             log("TV_PASS_STATS_ERR:", e)
@@ -163,8 +194,11 @@ class handler(BaseHTTPRequestHandler):
         self._json(204, None)
 
     def do_POST(self):
-        if parse_qs(urlparse(self.path).query).get("ev") == ["1"]:
+        q = parse_qs(urlparse(self.path).query)
+        if q.get("ev") == ["1"]:
             return self._event()
+        if q.get("hide") == ["1"]:
+            return self._hide()
         try:
             length = min(int(self.headers.get("Content-Length", 0)), 8000)
             b = json.loads(self.rfile.read(length) or b"{}")
