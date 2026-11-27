@@ -714,6 +714,27 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 #mob,.lb{visibility:hidden;-webkit-backdrop-filter:none;backdrop-filter:none;transition:opacity .3s var(--ease),visibility 0s linear .3s}
 #mob.open,.lb.open{visibility:visible;transition:opacity .3s var(--ease),visibility 0s}
 .hero .pill{-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* video testimonials (files hosted on jaybonham.com) */
+.tvv{margin-top:clamp(36px,5vh,52px);display:grid;gap:16px}
+.tvv-feat{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);border:1px solid var(--hair-2);border-radius:22px;overflow:hidden;background:linear-gradient(160deg,rgba(75,158,255,.08),rgba(255,255,255,.01) 60%)}
+.tvv-q{padding:clamp(24px,3.4vw,40px);display:flex;flex-direction:column;gap:18px;justify-content:center;min-width:0}
+.tvv-q blockquote{font-family:var(--display);font-weight:600;font-size:clamp(19px,1.9vw,24px);line-height:1.35;letter-spacing:-.015em;color:var(--tx)}
+.tvv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.tvv-card{border:1px solid var(--hair-2);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.02)}
+.tvv-v{position:relative;aspect-ratio:16/9;background:#000;max-width:100%}
+.tvv-v video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.tvv-play{position:absolute;inset:0;display:grid;place-items:center;border:0;cursor:pointer;background:linear-gradient(180deg,rgba(5,10,20,0) 40%,rgba(5,10,20,.55));color:#fff}
+.tvv-play i{width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 10px 40px rgba(0,0,0,.45);transition:transform .2s}
+.tvv-play:hover i{transform:scale(1.06)}
+.tvv-play svg{width:24px;height:24px;margin-left:4px}
+.tvv-play em{position:absolute;right:12px;bottom:10px;font-style:normal;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:4px 8px;border-radius:6px;background:rgba(5,10,20,.7)}
+.tvv-v.on .tvv-play{display:none}
+.tvv-f{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px}
+.tvv-f b{display:block;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.tvv-f span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-mute)}
+.tvv-ok{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ok);border:1px solid rgba(123,224,176,.35);border-radius:999px;padding:5px 10px;white-space:nowrap}
+@media(max-width:860px){.tvv-feat{grid-template-columns:minmax(0,1fr)}.tvv-grid{grid-template-columns:minmax(0,1fr)}}
 </style>
 <script>
 /* Affiliate links: remember ?ref=CODE for 60 days (last click wins) and count the visit once per session. */
@@ -1149,8 +1170,20 @@ if(P[k])a.href='https://jaybonham.com/api/tv-checkout?plan='+P[k]+'&ref='+encode
     <div class="head reveal">
       <span class="kick"><b>06</b>The community</span>
       <h2>Rated <span class="hl">5 stars</span> by members.</h2>
-      <p class="lede">Verified Whop reviews, plus direct messages and screenshots from active members.</p>
+      <p class="lede">Unscripted videos from traders Jay has coached, verified Whop reviews, plus messages and screenshots from active members.</p>
     </div>
+    <div class="tvv reveal" aria-label="Video testimonials">
+      <div class="tvv-feat">
+        <div class="tvv-v"><video src="https://jaybonham.com/assets/testimonials/ash.mp4" poster="https://jaybonham.com/assets/testimonials/ash.jpg" playsinline preload="none"></video><button class="tvv-play" type="button" aria-label="Play Ash Barks"><i><svg viewBox="0 0 24 24" fill="#07101F"><path d="M7 4.5v15l13-7.5z"/></svg></i><em>1:03</em></button></div>
+        <div class="tvv-q">
+          <span class="mono" style="color:var(--acc)">Student case study</span>
+          <blockquote>“I was blowing an account every month. Frustrated. Never following my own rules. Jay showed me exactly what I was doing wrong, technically and in my head. I genuinely wouldn’t have got there without him.”</blockquote>
+          <div class="tvv-f" style="padding:0"><div><b>Ash Barks</b><span>Sniper Academy · Student</span></div><span class="tvv-ok">Verified</span></div>
+        </div>
+      </div>
+      <div class="tvv-grid"><div class="tvv-card"><div class="tvv-v"><video src="https://jaybonham.com/assets/testimonials/jeremy.mp4" poster="https://jaybonham.com/assets/testimonials/jeremy.jpg" playsinline preload="none"></video><button class="tvv-play" type="button" aria-label="Play Jeremy Daniel"><i><svg viewBox="0 0 24 24" fill="#07101F"><path d="M7 4.5v15l13-7.5z"/></svg></i><em>2:59</em></button></div><div class="tvv-f"><div><b>Jeremy Daniel</b><span>Sniper Academy · Student</span></div><span class="tvv-ok">Verified</span></div></div><div class="tvv-card"><div class="tvv-v"><video src="https://jaybonham.com/assets/testimonials/rees.mp4" poster="https://jaybonham.com/assets/testimonials/rees.jpg" playsinline preload="none"></video><button class="tvv-play" type="button" aria-label="Play Rees Roberts"><i><svg viewBox="0 0 24 24" fill="#07101F"><path d="M7 4.5v15l13-7.5z"/></svg></i><em>1:23</em></button></div><div class="tvv-f"><div><b>Rees Roberts</b><span>Sniper Academy · Student</span></div><span class="tvv-ok">Verified</span></div></div><div class="tvv-card"><div class="tvv-v"><video src="https://jaybonham.com/assets/testimonials/hifzah.mp4" poster="https://jaybonham.com/assets/testimonials/hifzah.jpg" playsinline preload="none"></video><button class="tvv-play" type="button" aria-label="Play Hifzah Mahmood"><i><svg viewBox="0 0 24 24" fill="#07101F"><path d="M7 4.5v15l13-7.5z"/></svg></i><em>2:12</em></button></div><div class="tvv-f"><div><b>Hifzah Mahmood</b><span>Sniper Academy · Student</span></div><span class="tvv-ok">Verified</span></div></div><div class="tvv-card"><div class="tvv-v"><video src="https://jaybonham.com/assets/testimonials/gary.mp4" poster="https://jaybonham.com/assets/testimonials/gary.jpg" playsinline preload="none"></video><button class="tvv-play" type="button" aria-label="Play Gary Brunskill"><i><svg viewBox="0 0 24 24" fill="#07101F"><path d="M7 4.5v15l13-7.5z"/></svg></i><em>1:03</em></button></div><div class="tvv-f"><div><b>Gary Brunskill</b><span>Sniper Academy · Student</span></div><span class="tvv-ok">Verified</span></div></div></div>
+    </div>
+
         <div class="wrev" id="wrev" hidden>
       <div class="wrev-h"><div class="wrev-score"><b id="wrevAvg">5.0</b><span class="wrev-stars" aria-hidden="true">★★★★★</span></div><p><span id="wrevN"></span> verified reviews on <b>Whop</b>, where members join and pay.</p></div>
       <div class="wrev-grid" id="wrevGrid"></div>
@@ -1492,6 +1525,16 @@ window.addEventListener('pageshow', function (e) {
   n.style.webkitBackdropFilter = n.style.backdropFilter = 'none';
   requestAnimationFrame(function () { requestAnimationFrame(function () { n.style.webkitBackdropFilter = n.style.backdropFilter = ''; }); });
 });
+</script>
+<script>
+/* video testimonials: tap to play, only one plays at a time */
+(function () {
+  document.querySelectorAll('.tvv-v').forEach(function (w) {
+    var v = w.querySelector('video'), b = w.querySelector('.tvv-play');
+    b.addEventListener('click', function () { w.classList.add('on'); v.setAttribute('controls', ''); v.play().catch(function () {}); });
+    v.addEventListener('play', function () { document.querySelectorAll('.tvv-v video').forEach(function (o) { if (o !== v) o.pause(); }); });
+  });
+})();
 </script>
 </body>
 </html>
