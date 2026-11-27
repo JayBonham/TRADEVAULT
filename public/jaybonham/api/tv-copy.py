@@ -56,9 +56,20 @@ def link(email, region):
 
 
 def elite(cur, email):
-    """True when the email has an active (or trialing) Elite membership on Whop."""
-    best = U.current(cur, email, U.tier_plans(cur))
-    return bool(best and best[1] == "elite")
+    """True when the email has an active (or trialing) Elite membership on Whop, or, when Whop's
+    lookup doesn't confirm it (a plan on another Elite product, a search miss, an API error), when the
+    members board has them on Elite and the membership hasn't ended."""
+    try:
+        best = U.current(cur, email, U.tier_plans(cur))
+        if best and best[1] == "elite":
+            return True
+        A.log("TV_COPY_WHOP_NOT_ELITE", email, best and best[1])
+    except Exception as e:
+        A.log("TV_COPY_WHOP_ERR", email, e)
+        cur.connection.rollback()
+    cur.execute("""SELECT 1 FROM tv_members WHERE lower(email) = %s AND lower(tier) = 'elite'
+                   AND ended_at IS NULL AND removed_at IS NULL LIMIT 1""", (email,))
+    return cur.fetchone() is not None
 
 
 class handler(BaseHTTPRequestHandler):
