@@ -242,9 +242,9 @@ h2{font-size:clamp(34px,4.8vw,60px)}
   .seq-txt{position:absolute;left:0;top:50%;width:36%;transform:translateY(-50%) translateY(24px);opacity:0;filter:blur(6px);pointer-events:none;transition:opacity .6s var(--ease),transform .8s var(--ease),filter .6s var(--ease)}
   .seq-item.on .seq-txt{opacity:1;transform:translateY(-50%);filter:none;pointer-events:auto}
   .seq-panel{position:absolute;right:0;top:50%;width:min(620px,56%);margin-top:-150px;z-index:calc(5 - var(--i));
-    transform:perspective(1800px) translate3d(calc(70px + var(--i) * 8px),calc(-235px + var(--i) * 42px),0) rotateX(58deg) rotateZ(-30deg) scale(.82);
-    opacity:.8;filter:brightness(.62) saturate(.85);transition:transform 1s var(--ease),opacity .7s var(--ease),filter .7s var(--ease)}
-  .seq-item.on .seq-panel{z-index:10;opacity:1;filter:none;transform:perspective(1800px) translate3d(0,60px,0) rotateX(0) rotateZ(0) scale(1)}
+    transform:translate(calc(30px + var(--i) * 22px),calc(-10px - var(--i) * 24px)) scale(calc(.9 - var(--i) * .03));max-height:300px;
+    opacity:.8;filter:brightness(.62) saturate(.85);transition:transform 1s var(--ease),opacity .7s var(--ease),filter .7s var(--ease),max-height .8s var(--ease)}
+  .seq-item.on .seq-panel{z-index:10;opacity:1;filter:none;transform:translate(0,60px) scale(1);max-height:900px}
   .seq-dots{display:flex;position:absolute;left:0;bottom:4%;width:36%}
   .seq-dots button{flex:1;position:relative;padding:18px 0 0;border:0;background:none;color:var(--tx-mute);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-align:left;cursor:pointer}
   .seq-dots button::before{content:"";position:absolute;left:0;right:8px;top:0;height:2px;background:var(--hair-2);transition:background .4s}
@@ -614,7 +614,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 @media(max-width:860px){.pv-lessons{grid-template-columns:1fr}.pv-lessons div:nth-child(n+5){display:none}}
 /* playbook slide fan */
 .media.book.slides{display:block;position:relative;overflow:hidden}
-.sfan{position:absolute;inset:0;perspective:900px}
+.sfan{position:absolute;inset:0}
 .sl{position:absolute;left:50%;top:50%;width:62%;aspect-ratio:16/9.6;background-size:cover!important;background-position:center!important;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 40px rgba(0,0,0,.5);
   background:radial-gradient(ellipse 90% 120% at 0% 0%,rgba(75,158,255,.35),transparent 60%),linear-gradient(150deg,#0F2448,#081329);padding:9% 8%;display:flex;flex-direction:column;justify-content:space-between;transition:transform .6s var(--ease)}
 .sl small{font:500 7px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#6CB1FF}
@@ -710,7 +710,7 @@ footer{border-top:1px solid var(--hair);padding-block:56px 44px}
 @media(max-width:860px){.pv-cv b{font-size:15px}}
 
 /* 3D step stack: only painted while its section is near the screen, and dimmed with an overlay instead of a filter
-   (Chrome drew blank tilted 'egg' copies of these panels over the hero and curriculum) */
+   (flat 2D stack, no 3D tilt: Chrome drew blank tilted 'egg' copies of 3D panels over the hero) */
 @media(min-width:1024px){
   .seq:not(.near) .seq-panel{visibility:hidden}
   .seq-panel,.seq-item.on .seq-panel{filter:none}
