@@ -131,6 +131,17 @@ td .sub.wrap{white-space:normal;max-width:170px;line-height:1.35}
 #mvLinks .lk b{font-size:14px;font-weight:600}
 #mvLinks .lk code{font-family:var(--mono);font-size:12px;color:var(--tx-dim);word-break:break-all}
 #mvLinks .lk button{justify-self:start;border:0;background:none;color:var(--acc);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:2px 0}
+#tvd{margin:auto;width:min(440px,calc(100vw - 32px));background:var(--g2);color:var(--tx);border:1px solid var(--hair-2);border-radius:16px;padding:24px}
+#tvd::backdrop{background:rgba(2,6,14,.7)}
+#tvd h2{font-family:var(--display);font-size:20px;font-weight:600;margin-bottom:4px}
+#tvd .from{color:var(--tx-mute);font-size:14px;margin-bottom:16px;word-break:break-all}
+#tvd label{display:block;font-size:13px;color:var(--tx-dim);margin-bottom:6px}
+#tvd input{width:100%;min-height:42px;padding:8px 12px;border-radius:10px;border:1px solid var(--hair-2);background:var(--g1);color:var(--tx);font-family:var(--mono);font-size:14px}
+#tvd input:focus{outline:2px solid var(--acc);outline-offset:1px}
+#tvd .note{margin-top:14px;font-size:13px;color:var(--tx-mute)}
+#tvdMsg{margin-top:12px;font-size:14px;color:var(--warn)}
+#tvd .btns{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+.tvprev{margin-top:2px;font-size:12px;color:var(--warn);font-family:var(--mono);word-break:break-all}
 #mv .btns{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
 .dash{color:#4A586D}
 .tier{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--hair-2);color:var(--tx-dim)}
@@ -279,6 +290,21 @@ footer{padding-block:32px 40px}
   </form>
 </dialog>
 
+<dialog id="tvd" aria-labelledby="tvdH">
+  <form method="dialog" id="tvdForm">
+    <h2 id="tvdH">Change TradingView username</h2>
+    <p class="from" id="tvdFrom"></p>
+    <label for="tvdNew">Correct TradingView username</label>
+    <input id="tvdNew" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" required>
+    <div id="tvdMsg" aria-live="polite"></div>
+    <p class="note">Updates the board, their GHL contact (with a note) and their Whop membership. The old username stays listed under the new one, so you can take both out of the scanners if they leave.</p>
+    <div class="btns">
+      <button type="button" class="act undo" id="tvdCancel">Cancel</button>
+      <button type="submit" class="act go" id="tvdGo">Save</button>
+    </div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastUndo">Undo</button></div>
 
 <script>
@@ -412,7 +438,7 @@ footer{padding-block:32px 40px}
       if ((m.ended ? (m.assigned ? 'remove' : '') : m.assigned ? 'assigned' : 'new') !== tab) return false;
       if (tier === 'trial' ? !m.trial : (tier && m.tier !== tier)) return false;
       if (srcF && srcKey(m) !== srcF) return false;
-      if (needle && [m.name, m.email, m.tradingview, m.telegram, m.educator, m.scanner, srcName(srcKey(m)), m.src_detail].join(' ').toLowerCase().indexOf(needle) < 0) return false;
+      if (needle && [m.name, m.email, m.tradingview, m.tv_previous, m.telegram, m.educator, m.scanner, srcName(srcKey(m)), m.src_detail].join(' ').toLowerCase().indexOf(needle) < 0) return false;
       return true;
     }).sort(function (a, b) {
       if (tab === 'new' && a.setup !== b.setup) return a.setup ? -1 : 1; // ready first
@@ -458,6 +484,8 @@ footer{padding-block:32px 40px}
       var c5 = el('td'); c5.appendChild(m.educator ? el('span', null, m.educator) : dash());
       var c6 = el('td'); c6.appendChild(m.scanner ? el('span', null, m.scanner) : dash());
       var c7 = el('td'); c7.appendChild(m.tradingview ? copyBtn(m.tradingview) : dash());
+      if (m.tradingview || m.setup) c7.appendChild(editTvBtn(m));
+      if (m.tv_previous) { var pv = el('div', 'tvprev', 'was: ' + m.tv_previous); pv.title = 'Earlier TradingView username(s). If they ever had scanner access, remove these too when they leave.'; c7.appendChild(pv); }
       var c8 = el('td'); c8.appendChild(m.telegram ? el('span', 'em', '@' + m.telegram) : dash());
       var g = m.groups || [];
       if (g.length) { var gs = el('div', 'sub wrap', g.length > 2 ? 'Approve in all ' + g.length + ' groups' : 'Approve in: ' + g.join(' + ')); gs.title = g.join('\n'); c8.appendChild(gs); }
@@ -551,6 +579,35 @@ footer{padding-block:32px 40px}
       var s = $('mvSum'); s.textContent = ''; s.appendChild(el('div', 'err', x.msg || 'Network error'));
       checked = ''; go.textContent = 'Check';
     }).then(function () { go.disabled = false; });
+  });
+
+  function editTvBtn(m) {
+    var b = el('button', 'em-edit');
+    b.type = 'button'; b.title = 'Change TradingView username'; b.setAttribute('aria-label', 'Change TradingView username for ' + (m.name || m.email));
+    b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+    b.addEventListener('click', function () { openTv(m); });
+    return b;
+  }
+  var tvMember = null;
+  function openTv(m) {
+    tvMember = m;
+    $('tvdFrom').textContent = (m.name || m.email) + (m.tradingview ? ' · now ' + m.tradingview : '');
+    $('tvdNew').value = ''; $('tvdMsg').textContent = ''; $('tvdGo').disabled = false;
+    $('tvd').showModal(); $('tvdNew').focus();
+  }
+  $('tvdCancel').addEventListener('click', function () { $('tvd').close(); });
+  $('tvdForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var m = tvMember, v = $('tvdNew').value.trim().replace(/^@/, ''), go = $('tvdGo');
+    if (!m || !v) return;
+    if (m.tradingview && v.toLowerCase() === m.tradingview.toLowerCase()) { $('tvdMsg').textContent = 'That’s already their username.'; return; }
+    go.disabled = true; go.innerHTML = '<span class="spin"></span>';
+    api('POST', { action: 'tradingview', c: m.id, tv: v, shown: m.tradingview || '' }).then(function (d) {
+      m.tradingview = d.tradingview; m.tv_previous = d.tv_previous; render(); $('tvd').close();
+      var miss = [!d.ghl && 'GHL', d.whop === false && 'Whop'].filter(Boolean);
+      toast('TradingView for ' + (m.name || m.email) + ' is now ' + d.tradingview + '.' + (miss.length ? ' Couldn’t update ' + miss.join(' or ') + ': check it there.' : ''));
+    }).catch(function (x) { $('tvdMsg').textContent = x.msg || 'Network error'; })
+      .then(function () { go.disabled = false; go.textContent = 'Save'; });
   });
 
   function copyBtn(v) {

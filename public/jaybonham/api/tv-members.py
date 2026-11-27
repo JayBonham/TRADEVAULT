@@ -3,6 +3,9 @@ GET  -> {ok, members:[{id, name, email, tier, setup, assigned, educator, scanner
                        tradingview, telegram, joined}]}
         everyone tagged tradevault-purchased (set by the Whop webhook), read live from GHL.
 POST {action: "assign"|"unassign"|"revoked"|"hide", c}
+POST {action: "tradingview", c, tv, shown}
+   tradingview: correct a member's TradingView username: our DB (the old one is kept as "previous" so access
+        comes off both when they leave), the GHL field + a note, and the Whop membership metadata the portal reads
    hide: takes a test or junk contact off the board (GHL tag tv-hidden; remove the tag in GHL to bring it back)
         assign adds tv-access-granted; the GHL "Access Granted" workflow triggers on that tag,
         moves the card and emails the member. unassign removes the tag (no email is unsent).
@@ -35,6 +38,7 @@ EDUCATORS = {"jay": "Jay Bonham", "adam": "Adam Haase", "tyler": "Tyler Collins"
 SCANNERS = {"killshot": "Killshot", "smartshot": "Smartshot", "spectrum": "Spectrum"}
 FIELD_KEYS = ("tv_educator", "tv_scanner", "tradingview_username", "telegram_username")
 CID_RE = re.compile(r"^[A-Za-z0-9]{10,40}$")
+TV_RE = re.compile(r"^[A-Za-z0-9_.\-]{1,40}$")
 PAGE = 100
 
 
@@ -145,6 +149,7 @@ def _member(c, ids, db):
         "tier": tier, "partner": PARTNER_TAG in tags, "upgraded": "tv-upgraded" in tags, "setup": setup, "assigned": ASSIGNED_TAG in tags,
         "educator": educator, "scanner": scanner,
         "tradingview": row.get("tradingview") or vals.get("tradingview_username", ""),
+        "tv_previous": row.get("tv_previous") or "",
         "telegram": row.get("telegram") or vals.get("telegram_username", ""),
         "joined": row.get("purchased_at") or c.get("dateAdded") or "",
         "ended": bool(row.get("ended_at")), "ended_at": row.get("ended_at") or "",
@@ -308,6 +313,8 @@ class handler(BaseHTTPRequestHandler):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         cid = str(b.get("c") or "")
         action = b.get("action")
+        if action == "tradingview" and CID_RE.match(cid):
+            return self._tradingview(cid, b)
         if not CID_RE.match(cid) or action not in ("assign", "unassign", "revoked", "hide"):
             return self._json(400, {"ok": False, "error": "Invalid request"})
         method = "POST" if action in ("assign", "hide") else "DELETE"
@@ -319,6 +326,52 @@ class handler(BaseHTTPRequestHandler):
             _tv_db.set_removed(cid)
         log("TV_MEMBERS", action, cid)
         self._json(200, {"ok": True})
+
+    def _tradingview(self, cid, b):
+        new = str(b.get("tv") or "").strip().lstrip("@")
+        shown = str(b.get("shown") or "").strip().lstrip("@")[:40]
+        if not TV_RE.match(new):
+            return self._json(400, {"ok": False, "error": "Enter a TradingView username (letters, numbers, _ . -)."})
+        status, data, _ = _ghl("GET", "/contacts/" + cid)
+        c = data.get("contact") if status < 300 else None
+        if not c:
+            return self._json(404, {"ok": False, "error": "Couldn't find that contact in GHL."})
+        tags = [t.lower() for t in c.get("tags") or []]
+        tier = next((t for tag, t in TIERS if tag in tags), "")
+        row = _tv_db.set_tradingview(cid, (c.get("email") or "").lower(), tier, new, shown)
+        if not row:
+            return self._json(502, {"ok": False, "error": "Couldn't save it. Try again in a minute."})
+        old = [p.strip() for p in (row.get("tv_previous") or "").split(",") if p.strip()]
+        out = {"ok": True, "tradingview": new, "tv_previous": row.get("tv_previous") or "", "ghl": False, "whop": None}
+        fids = _field_ids()
+        # a member set up before the DB copy: their educator/scanner come from GHL, as the board shows them
+        board = _member(c, fids, {cid: row})
+        for k in ("educator", "scanner", "telegram"):
+            row[k] = row.get(k) or board.get(k) or ""
+        # GHL: the field (by id when we can read the list) and a note for the history
+        ids = {k: i for i, k in fids.items()}
+        f = {"id": ids["tradingview_username"]} if ids.get("tradingview_username") else {"key": "tradingview_username"}
+        st, _, _ = _ghl("PUT", "/contacts/" + cid, {"customFields": [dict(f, field_value=new)]})
+        out["ghl"] = st < 300
+        _ghl("POST", "/contacts/" + cid + "/notes", {"body": "TradingView username changed to " + new + " on the members board"
+                                                     + (" (previously: " + ", ".join(old) + ")" if old else "")})
+        # Whop: the portal reads tv_tradingview off the membership
+        try:
+            if tier not in ("elite", "tools") and not row.get("scanner"):
+                raise ValueError("no scanner on record: not writing Whop metadata")
+            import _tv_aff
+            import _tv_whop
+            conn = _tv_aff.conn()
+            cur = conn.cursor()
+            r = _tv_whop.sync(cur, row)
+            conn.commit()
+            conn.close()
+            out["whop"] = r.get("written", 0) > 0 or (r.get("memberships", 0) > 0 and not r.get("errors"))
+        except Exception as e:
+            log("TV_MEMBERS_TV_WHOP_ERR:", e)
+            out["whop"] = False
+        log("TV_MEMBERS tradingview", cid, new, "prev=" + (row.get("tv_previous") or ""), "ghl=%s whop=%s" % (out["ghl"], out["whop"]))
+        self._json(200, out)
 
     def _json(self, status, body):
         self.send_response(status)
